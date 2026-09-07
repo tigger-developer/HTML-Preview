@@ -1,0 +1,24 @@
+authorities:
+    architecture:
+        - docs/ARCHITECTURE.md
+    product:
+        - docs/VISION.md
+    requirements:
+        - docs/work.org
+infrastructure:
+    role: none
+migration:
+    archive_branch: sdlc_new_state_2026-09-07
+    branch: sdlc-v3-migration-2026-09-07
+    date: "2026-09-07"
+project:
+    kind: application
+    migration_source: new
+    primary_branch: master
+standards:
+    technologies:
+        - GO
+        - JAVASCRIPT
+        - SHELL
+        - WEB
+version: 3
