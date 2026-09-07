@@ -12,8 +12,8 @@
   =audit-test-definitions= in this authoring context, followed by one retained
   external context after a local PASS.
 - External profile :: Codex with =gpt-5.6-luna=; timeout eight minutes, resolved
-  from the installed non-secret SDLC configuration. No external context has
-  been started.
+  from the installed non-secret SDLC configuration. The retained external
+  context and its revision-specific results are recorded below.
 
 ** Local round 1 - Product decisions prevent a delivery-ready definition
 :PROPERTIES:
@@ -198,12 +198,62 @@ VERDICT: PASS
 
 ** External review
 :PROPERTIES:
-:CONTEXT: NOT_STARTED
+:CONTEXT: /root/definition_audit
 :END:
 
-- Audits :: The combined =audit-spec=, =audit-design=, and
-  =audit-test-definitions= review is required after local PASS.
-- Verdict :: Not run; no independent verdict is claimed.
+- Audits :: *Combined audit-spec, audit-design, and audit-test-definitions* in
+  the single retained external context.
+- Start :: 2026-09-07 20:27 UTC; eight-minute timeout.
+- Revision :: =a5dd737adf809e5b09f05d5e2303f108062c5e5ee6c150f34ae856031923541f=,
+  committed in =924371a866009d125ccf718e7e847c581f853282=.
+- Input boundary :: Current specification, project profile, named authorities,
+  selected standards, and focused repository evidence. No drafting conversation
+  or local verdict rationale was supplied.
+- Verdict :: *PASS*, returned before 20:29 UTC within the eight-minute limit.
+
+*** External round 1 - Composite definition PASS
+:PROPERTIES:
+:CUSTOM_ID: definition-external-1
+:ROUND: 1
+:DATE: 2026-09-07
+:END:
+
+- Gate :: Definition.
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =a5dd737adf809e5b09f05d5e2303f108062c5e5ee6c150f34ae856031923541f=.
+- Context :: =/root/definition_audit=, Codex =gpt-5.6-luna=; one retained
+  independent context for all three component audits.
+- Verdict :: *PASS with two advisories*. No blocking finding or required
+  correction remains.
+
+#+begin_example
+GATE: definition
+REVISION: a5dd737adf809e5b09f05d5e2303f108062c5e5ee6c150f34ae856031923541f
+VERDICT: PASS
+
+All three audits were applied: audit-spec, audit-design, and audit-test-definitions.
+
+1. [audit-test-definitions] [ADVISORY] TD-FILE-MODES - RT001.2 verifies owner-private session directories but does not explicitly verify the design's generated-file mode 0600 requirement (spec.org:1303-1305). Add that assertion if the file-mode detail remains part of the delivery contract.
+2. [audit-test-definitions] [ADVISORY] TD-TIMER-BOUNDARY - RT001.12 describes quick-preview retention checks but does not define an observable timing tolerance around the configured grace period (spec.org:837-840). A bounded tolerance would reduce flaky interpretation while preserving the contract.
+#+end_example
+
+- Advisory disposition :: *Both advisories remain visible for operator review*.
+  The file-mode assertion and timing-observation tolerance are test-detail
+  improvements; the auditor did not require a specification correction. No
+  material content changed after this verdict.
+- Effective gate :: *Definition PASS is recorded* in the specification and its
+  work item moves to REVIEW. Only lifecycle metadata changes after the audited
+  hash; this does not invalidate the verdict under =AUDITS.md=.
+- Approval boundary :: *Operator sign-off remains PENDING*. Candidate defaults
+  still require explicit approval; no implementation, application regression,
+  user validation, or Homebrew one-off result is claimed.
+- Presentation :: *sdlc-preview returned 0 and reported opening spec.org*.
+  Its generated adjacent HTML remained after return and was moved into this
+  workflow's OS-temporary scratch directory. This records command handoff,
+  not human inspection or browser-rendering approval.
+- Integrity receipt :: *The audited content is unchanged*. Replacing only the
+  PASS gate field with its audited PENDING value reproduces the audited SHA-256.
+  The final documentation was processed with sanitize; whitespace checks pass.
 
 * Implementation gate
 
