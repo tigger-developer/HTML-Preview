@@ -78,6 +78,18 @@ classification; it is provenance, not current state.
 
 * Work items
 
+** BLOCKED W001 - Installable local Markdown and Org previews :feature:
+:PROPERTIES:
+:CUSTOM_ID: w-001
+:PRIORITY: P1
+:SOURCE: operator
+:CREATED: 2026-09-07
+:END:
+
+- Specification :: [[file:../specs/001-local-document-preview/spec.org][W001 - Installable local Markdown and Org previews]].
+- Definition evidence :: [[file:../specs/001-local-document-preview/audits.org][W001 - Local document preview audit evidence]].
+- User validation :: [[file:../specs/001-local-document-preview/validation.org][W001 - Pending browser validation]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

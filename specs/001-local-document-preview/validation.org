@@ -1,0 +1,58 @@
+#+TITLE: W001 - Local document preview validation evidence
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Automated regression
+
+- Status :: Not run. The application and its maintained tests have not been
+  implemented. Definition-stage Pandoc probes are design evidence, not
+  application regression results.
+
+* User tests
+
+** UT001.1 - Document typography and readability
+:PROPERTIES:
+:CUSTOM_ID: ut-001-1-result
+:END:
+
+- Category :: User test.
+- Definition :: [[file:spec.org::#ut-001-1][UT001.1 - Document typography and readability]].
+- Criteria :: [[file:spec.org::#ac-001-4][AC001.4 - Markdown structure]],
+  [[file:spec.org::#ac-001-5][AC001.5 - Org information]], and
+  [[file:spec.org::#ac-001-7][AC001.7 - Embedded Asap]].
+- Reviewer :: Taḋg or an explicitly named operator.
+- Procedure :: Inspect representative Markdown and Org output at wide and
+  narrow window sizes in light and dark modes. Include regular, italic, bold,
+  code, tables, images, and =Taḋg ÁÉÍÓÚ áéíóú= text. Record the final supported
+  browser/platform and viewing conditions when this test is run.
+- Expected :: Text is *readable without clipping or missing glyphs*; headings,
+  Org metadata, and code remain distinguishable; Asap uses the correct faces.
+- Result :: PENDING.
+- Evidence :: No human validation of the proposed application has occurred.
+
+** UT001.2 - Browser navigation and outline controls
+:PROPERTIES:
+:CUSTOM_ID: ut-001-2-result
+:END:
+
+- Category :: User test.
+- Definition :: [[file:spec.org::#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+- Criteria :: [[file:spec.org::#ac-001-9][AC001.9 - Source-relative references]],
+  [[file:spec.org::#ac-001-10][AC001.10 - Identifier destinations]], and
+  [[file:spec.org::#ac-001-11][AC001.11 - Accessible reading and controls]].
+- Reviewer :: Taḋg or an explicitly named operator.
+- Procedure :: Navigate local images/file links and fragments; operate folding
+  with keyboard only; disable JavaScript; inspect print preview from every fold
+  state. Navigate to a target inside a folded ancestor. Record the final
+  supported browser/platform and viewing conditions when this test is run.
+- Expected :: Links reach their destinations; *normal focus traversal works*,
+  focus is visible, fragment targets are revealed, and all printed content is
+  available.
+- Result :: PENDING.
+- Evidence :: No human validation of the proposed application has occurred.
+
+* One-off tests
+
+- Selection :: No delivery one-off test has yet been selected. Installation
+  evidence may require one after the release scope is resolved. Any selected
+  test must have a definition and pending entry before implementation.

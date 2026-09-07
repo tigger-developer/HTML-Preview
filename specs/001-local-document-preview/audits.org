@@ -1,0 +1,98 @@
+#+TITLE: W001 - Local document preview audit evidence
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Definition gate
+
+- Artefact :: [[file:spec.org][W001 - Installable local Markdown and Org previews]].
+- Initial status :: Before local round 1, the draft recorded unresolved operator
+  decisions affecting scope, retention, packaging, and source safety; no audit
+  had been run.
+- Required components :: =audit-spec=, =audit-design=, and
+  =audit-test-definitions= in this authoring context, followed by one retained
+  external context after a local PASS.
+- External profile :: Codex with =gpt-5.6-luna=; timeout eight minutes, resolved
+  from the installed non-secret SDLC configuration. No external context has
+  been started.
+
+** Local round 1 - Product decisions prevent a delivery-ready definition
+:PROPERTIES:
+:CUSTOM_ID: definition-local-1
+:DATE: 2026-09-07
+:END:
+
+- Gate :: Definition.
+- Artefact :: [[file:spec.org][W001 - Installable local Markdown and Org previews]].
+- Revision :: =e670be74f7a5592f5f6d3b724a3b8d74db8c1f27f09eda6b542a22595176b018=.
+- Context :: Authoring context; all three component reviews were applied
+  locally. No independent audit has occurred.
+- Verdict :: FAIL.
+
+#+begin_example
+GATE: definition
+REVISION: e670be74f7a5592f5f6d3b724a3b8d74db8c1f27f09eda6b542a22595176b018
+VERDICT: FAIL
+
+1. [audit-spec] [BLOCKING] Linked-browsing scope is unresolved.
+2. [audit-design] [BLOCKING] Retention and cleanup behaviour are unresolved.
+3. [audit-design] [BLOCKING] Release and compatibility contracts are unresolved.
+4. [audit-design] [BLOCKING] Source trust and its negative tests are unresolved.
+5. [audit-test-definitions] [BLOCKING] The dependent outcome and failure-path coverage cannot yet be finalized.
+#+end_example
+
+*** Findings and required resolution
+
+- D001 - Linked browsing :: Select whether W001 includes local document
+  traversal. If included, finish the opt-in interface, directory and filesystem
+  boundary, budgets, symlink contexts, ambiguous targets, partial failures, and
+  traced tests. If excluded, state how unconverted document links behave.
+- D002 - Preview lifetime :: Select how the command remains active or returns,
+  how the reader ends a session, and when files expire. Then define normal,
+  interrupted, failed-handoff, cleanup-failure, and slow-browser outcomes with
+  quantitative bounds and tests. A successful opener call is not page-readiness
+  evidence.
+- D003 - Release contract :: Select the platform and installation route. Then
+  define the supported architectures, OS/browser/Pandoc versions, exact input
+  dialects, public settings, build/install interfaces, and installation evidence.
+  Record the replacement checking contract for the operator's exclusion of CLI
+  JavaScript, which overrides ESLint/stylelint defaults.
+- D004 - Source trust :: Select the source-document safety policy. Complete its
+  raw HTML/CSS, script, URL-scheme, include, metadata-resource, and remote-resource
+  boundaries. Add tests demonstrating both retained passive content and rejection
+  or neutralization of unsupported active content.
+- D005 - Dependent test coverage :: Add acceptance criteria and traced tests for
+  the selected traversal, retention, compatibility, installation, and trust
+  outcomes. Resolve duplicate identifier and search ambiguity. The existing
+  RT/UT definitions are a draft baseline, not sufficient final coverage.
+
+*** Disposition
+
+- Remediation :: No operator-controlled policy has been silently selected.
+  Four free-form questions were sent during definition; their answers remain
+  pending. The specification records reviewable proposals and dependent gaps.
+- Autonomous boundary :: =AUDITS.md= requires stopping a gate loop at a
+  human-controlled decision. Resume local composite review after the directions
+  are incorporated. This is one failed local round, not an external verdict.
+- External context :: None. Start the single retained external context only
+  after all three local reviews pass.
+
+** Definition-stage inspection evidence
+
+- Scope :: Repository authorities, relevant prototype code, selected standards,
+  and the maintained-regression baseline were inspected. No maintained
+  application suite or earlier numbered project specification was found.
+- Org probe :: A bounded synthetic =pandoc -f org -t json= probe used an isolated
+  data directory on Pandoc 3.9.0.2. It confirmed the ID, planning, drawer, literal
+  block, and link-suffix observations recorded in the specification's fidelity
+  contract. These observations guide design; they are not application tests.
+- Validation ledger :: The selected browser tests are recorded as PENDING in
+  [[file:validation.org][W001 - Local document preview validation evidence]].
+- Document checks :: =sanitize= processed all four changed Org files without
+  changes. Pandoc parsed all four; a one-off AST inspection found unique heading
+  identifiers, 77 resolving local links, and reciprocal links between 14 draft
+  criteria and 11 test definitions. These are structural checks, not a
+  definition-gate PASS or evidence of implemented behaviour.
+
+* Implementation gate
+
+- Status :: Not run. Implementation is outside this definition workflow.
