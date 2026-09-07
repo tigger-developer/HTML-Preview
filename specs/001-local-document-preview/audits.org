@@ -320,6 +320,66 @@ VERDICT: PASS
 - Retained context :: =/root/definition_audit=. Its next review is limited to
   the amendment and enough surrounding contract to assess it safely.
 
+** External review - Round 2: Iosevka Custom definition PASS
+:PROPERTIES:
+:CUSTOM_ID: definition-external-2
+:ROUND: 2
+:DATE: 2026-09-08
+:CONTEXT: /root/definition_audit
+:END:
+
+- Gate :: Definition.
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =49047d7b3a5162342732a729d5c56a101fa2b879e936477f7a8f20a35d296659=,
+  committed in =34d93ca8b26826c51078d0f7e404e133f3131ba5=.
+- Context :: *The same retained Codex gpt-5.6-luna context*, applying
+  audit-spec, audit-design, and audit-test-definitions together.
+- Start :: 2026-09-07 23:51 UTC (8 September in the operator's timezone);
+  verdict returned within the configured eight-minute limit.
+- Verdict :: *PASS for the specification and committed font assets*. The
+  separate working-tree anomaly below is excluded from this integrity claim.
+
+#+begin_example
+GATE: definition
+REVISION: 49047d7b3a5162342732a729d5c56a101fa2b879e936477f7a8f20a35d296659
+VERDICT: PASS
+
+All three component audits were applied: audit-spec, audit-design, and audit-test-definitions.
+
+1. [audit-spec] [ADVISORY] FONT-AMENDMENT-SCOPE - The amendment records Iosevka Custom as the fixed-width default while retaining Asap as the proportional default, with implementation and browser evidence still pending.
+2. [audit-test-definitions] [ADVISORY] FONT-TRACEABILITY - RT001.5 checks all six hashes, CSS mappings, embedded data URLs, notices, and package contents; UT001.1 checks actual browser face selection and fixed-width coverage.
+#+end_example
+
+- Format receipt :: The first returned verdict used a combined audit-name
+  label for one finding. It was *not accepted as a valid verdict*. The retained
+  reviewer returned the normalized component names above for the same revision;
+  no specification or asset correction was required by that review.
+- Advisory disposition :: *The two font entries confirm the reviewed scope and
+  traceability*. The earlier generated-file-mode and timer-tolerance advisories
+  remain unchanged and non-blocking; no unrelated remediation was introduced.
+- Effective gate :: *Definition PASS is restored* for this specification
+  revision. Operator sign-off remains PENDING; only lifecycle metadata changes
+  after the audited content. No renderer implementation or human font-validation
+  result is claimed.
+- Presentation :: *sdlc-preview returned 0 and reported opening the specification*.
+  Its adjacent generated HTML remained after return and was moved into the
+  workflow's OS-temporary scratch directory. Preview handoff does not establish
+  human inspection or font validation.
+
+*** Working-tree font anomaly
+
+- Observation :: After verified import and commit, *the working bold-italic
+  WOFF2 became empty* at 2026-09-07 23:51:45 UTC. The committed asset and the
+  operator's source still contain 385,208 bytes and retain the documented hash.
+- Isolation :: The auditor reported only checksum, size, and base64 reads.
+  A bounded reproduction using an OS-temporary copy found that those same
+  read operations left the file unchanged. *The writer has not been identified*;
+  neither tool behaviour nor operator action is asserted as the cause.
+- Preservation :: *The unexpected change remains unstaged and untouched*
+  while its ownership or restoration authority is clarified. The independent
+  reviewer explicitly excluded this working-tree state from the committed-asset
+  integrity PASS. All other authorized documentation and asset work continues.
+
 * Implementation gate
 
 - Status :: Not run. Implementation is outside this definition workflow.
