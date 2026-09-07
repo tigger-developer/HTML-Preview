@@ -1,0 +1,319 @@
+# Architecture
+
+**Status:** Initial design. Go and temporary-directory output are selected.
+Detailed interfaces, cleanup defaults, traversal limits, and release packaging
+below are proposals for the implementation specification. No implementation or
+browser compatibility is established by this document.
+
+## System shape
+
+`htmlpreview` is a local Go command-line application that uses Pandoc to render
+Markdown and Org as HTML, repairs references for temporary output, and opens
+the result in a browser. [VISION.md](VISION.md) defines the product intent.
+
+The application owns one private temporary directory per invocation. Sources
+remain in their original locations and are read without modification. The
+browser reads generated files through local file URLs; no HTTP server is needed
+for the proposed design.
+
+The processing sequence is:
+
+1. Validate input files, installed Pandoc, and invocation settings.
+2. Allocate the session directory and register its cleanup.
+3. Render the explicit inputs and, when enabled, discover bounded linked inputs.
+4. Finalize the source-to-preview mapping and rewrite document references.
+5. Publish the generated pages within the session and open the explicit inputs.
+6. Retain the session for the selected reading mode, then clean up its directory.
+
+## Existing foundations
+
+The personal preview command provides the basic interaction: one or more input
+files, a styled Pandoc conversion, source-path metadata, browser opening, and a
+three-second delay before cleanup. It writes random HTML filenames beside each
+source, rather than necessarily in the shell's current directory. Its personal
+shell helpers and Pandoc data paths are not a public installation contract.
+
+The repository prototype supplies a different, complementary foundation:
+
+| Source | Intended contribution |
+| --- | --- |
+| [org2html](../prototype/org2html) | Conversion wiring and Pandoc options |
+| [org-fidelity.css](../prototype/org-fidelity.css) | Typography, document elements, Org details, themes, and print styling |
+| [org-fidelity.lua](../prototype/org-fidelity.lua) | Org-specific structural and inline transformations |
+| [org-prepass.awk](../prototype/org-prepass.awk) | Preservation of planning lines and logbook drawers before parsing |
+| [org-fold.html](../prototype/org-fold.html) | Browser outline controls |
+
+The Org fidelity prototype is project-owned code, including for design, build,
+licensing, and verification. Reuse does not exempt it from refactoring or the
+project's engineering standards. It must become part of the normal build and
+test boundaries rather than an opaque external tool.
+
+These sources are not an established compatibility suite.
+The prototype's [README](../prototype/README.md) records reader limitations,
+including startup visibility and mixed definition/checkbox lists. Its features
+need verification against the supported Pandoc release.
+
+The [initial code assessment](ORG-FIDELITY-REVIEW.md) identifies source-context
+handling, identifier loss, keyboard interception, presentation state, and print
+coverage as areas requiring work. It recommends retaining the split between
+source preservation, Pandoc transformations, and presentation while replacing
+the shell pipeline and ad hoc text transformations.
+
+## Technology and ownership
+
+Go is the selected application language. Its additional build and release
+toolchain is accepted in exchange for structured path handling, graph traversal,
+process control, cleanup ownership, and tests. Lua remains useful inside Pandoc;
+it does not need a separate installed interpreter. Pandoc provides that runtime.
+[Pandoc Lua documentation](https://pandoc.org/lua-filters.html).
+
+| Component | Responsibility |
+| --- | --- |
+| Go entry point | Inputs, settings, dependency checks, diagnostics, and exit status |
+| Session manager | Private workspace, output budget, retention, cancellation, and cleanup |
+| Renderer | Org pre-processing, Pandoc invocation, packaged assets, and conversion errors |
+| Reference resolver | Source-relative URLs, filesystem identity, document graph, and output mapping |
+| HTML processor | Structured discovery and rewriting of rendered links and resource references |
+| Browser adapter | Open the finished entry pages using the platform's desktop mechanism |
+| HTML/CSS and browser JavaScript | Presentation, accessible folding, and optional copy interaction |
+
+These are responsibilities, not a requirement for one package per row. A small
+`cmd/htmlpreview` entry point, private implementation under `internal/`, and
+versioned presentation assets are sufficient starting boundaries.
+
+There is no JavaScript command-line runtime. Bash is limited to optional build
+and packaging glue. The prototype's pre-processing should move into Go, avoiding
+an additional text-processing runtime dependency.
+
+## Rendering and presentation
+
+Package the template, defaults, stylesheet, Lua transformations, browser script,
+and help text with the executable. Go's [embed package](https://pkg.go.dev/embed)
+supports packaging these files. Extract files required by Pandoc into the
+session, and include application-owned CSS and JavaScript in each output page.
+Keep their editable sources as separate repository files.
+
+Use explicit packaged defaults and asset paths. Normal rendering must not depend
+on personal Pandoc defaults or machine-specific fonts. Provide system font
+fallbacks and a consistent base presentation for both input formats.
+
+Asap is the selected default for body text, headings, and interface text. The
+regular and italic variable WOFF2 files are included under
+[assets/fonts/asap](../assets/fonts/asap/README.md). Inspection of both files
+confirmed version 3.002, weight 100 to 900, and width 75% to 125%, with defaults
+400 and 100%. Use matching normal and italic `@font-face` declarations with
+those ranges, and sensible `font-weight` and `font-stretch` values. Keep code
+and preformatted content monospace. Verify Irish characters and dotted letters
+in the presentation checks.
+
+Embed the font bytes in the executable and include them as WOFF2 data URLs in
+generated CSS. This avoids dependence on locally installed fonts, remote font
+services, or font-file URLs outside the generated page. Account for both faces
+and base64 expansion in the output budget. Include the Asap copyright notice
+and full OFL text in the readable HTML source when embedding the fonts, and
+retain both in release packages. Font embedding is specified here; no renderer
+has yet been implemented.
+
+For Org, preserve planning information and logbooks before Pandoc parses the
+source, then apply the adapted Lua filter. Pre-processing must recognize literal
+source and example blocks so that text inside them is not transformed. Keep
+section wrappers for outline folding. Preserve source content and identifiers;
+do not recompute task statistics or execute source blocks.
+
+The browser script should remain a small enhancement. Ordinary reading and
+navigation must work without it. Folding must preserve keyboard navigation,
+visible focus, and fragment destinations, including revealing folded ancestors
+when a link targets their contents. Clipboard support is optional.
+
+Application styling is included locally. Source images remain references to
+their original files unless a later requirement explicitly adds embedding.
+Pandoc's `--embed-resources` also incorporates document resources and can fetch
+remote assets, so it is not the default mechanism for packaging only the theme.
+[Pandoc resource options](https://pandoc.org/MANUAL.html#option--embed-resources).
+
+## Temporary files and reference resolution
+
+Allocate a private session directory with the operating system API, using
+`os.MkdirTemp` with its default temporary location. This API creates a directory
+with owner-only permissions before the process umask is applied.
+[Go temporary-directory documentation](https://pkg.go.dev/os#MkdirTemp).
+
+Keep generated names independent of source filenames, for example numbered
+pages inside the randomly named session. Maintain a mapping from each resolved
+source identity to its generated page; two files named `README.md` must remain
+distinct. Write final pages before opening any browser window.
+
+Resolve every supported relative reference against its containing source's
+directory, never against the process working directory or the temporary output
+directory. Separate URL paths, queries, and fragments before resolving a local
+path. Encode the resulting file URL correctly for spaces, Unicode, percent
+signs, and literal filename delimiters. Use Go's
+[URL types](https://pkg.go.dev/net/url) alongside filesystem path operations.
+
+| Original reference | Preview destination |
+| --- | --- |
+| `guide.md#install`, when converted | The generated guide page with `#install` |
+| `../notes.org`, when converted | The generated notes page |
+| A local document not converted | An absolute file URL to the original document |
+| `images/chart.png` | An absolute file URL to the original image |
+| `appendix.pdf` or an existing HTML file | An absolute file URL to the original file |
+| `#heading` or a footnote fragment | The same generated page and fragment |
+| An external URL | The original external URL |
+
+Discover links and rewrite output with an HTML parser. This includes ordinary
+links emitted by Pandoc and literal HTML anchors preserved in source documents.
+The proposed dependency is `golang.org/x/net/html`, the Go project's HTML5
+parser. It handles HTML structure; the standard library's escaping helpers and
+XML parser are insufficient substitutes. Its maintained release series is a
+reason to prefer it to a project-written parser; select and pin the actual
+version during implementation.
+[HTML parser documentation](https://pkg.go.dev/golang.org/x/net/html).
+
+Reference coverage must include supported resource attributes as well as anchor
+destinations. `srcset`, inline CSS `url()` references, and SVG fragments need
+syntax-specific handling; an HTML parser alone does not resolve these. Define
+and test that raw HTML/CSS subset before claiming all relative references work.
+Unsupported forms must be reported. Dynamically constructed JavaScript URLs
+are outside the initial document-preview contract.
+
+A source-directory `<base>` element is an alternative, but is not the proposed
+default: it changes the meaning of same-page links and would need corresponding
+fragment repairs. Explicit rewriting keeps generated-page navigation local.
+[HTML base-element semantics](https://html.spec.whatwg.org/multipage/semantics.html#the-base-element).
+Source-supplied base elements also require an explicit policy before support.
+
+This output remains a local preview, not a portable export. Absolute resource
+references still depend on the original files being present and accessible.
+
+## Optional linked-document conversion
+
+The proposed extension is opt-in. Treat the explicit inputs as graph roots,
+follow supported local Markdown and Org hyperlinks in source order, and render
+each admitted document once. A breadth-first queue gives nearby documents
+priority when the limit is reached. Do not enumerate unrelated directories.
+
+Resolve the containing source's path first, then apply the traversal boundary.
+The proposed default boundary is each entry source's directory tree, with an
+explicit wider root available when sibling documentation is needed. Resolve
+symlinks before checking containment and filesystem identity. A shared device
+alone is too broad a scope: it can include unrelated documents.
+
+Keep the logical source location used for relative references distinct from
+the resolved file identity used for containment and cycle detection. Define how
+symlink aliases with different relative contexts are handled; do not silently
+merge contexts whose links resolve differently.
+
+Proposed starting limits, to be confirmed against representative documents:
+
+| Limit | Proposed value |
+| --- | --- |
+| Unique rendered documents, including explicit inputs | 50 per invocation |
+| Link depth, with explicit inputs at depth zero | 3 |
+| Source size | 10 MiB per document |
+| Total source bytes read | 50 MiB per invocation |
+| Total generated session data | 100 MiB |
+| Conversion deadline | 60 seconds for discovery and rendering |
+
+Enforce limits during work, including bounded subprocess output. Stop admitting
+new linked documents when a limit is reached and report what was skipped.
+Images, directories, remote URLs, other filesystems, and non-document formats
+are not graph nodes. Multiple fragments of the same document share a page.
+
+Rendering and publication form two phases. First retain rendered documents,
+their outgoing references, and their actual HTML identifiers. Then rewrite
+links using the set of successful outputs. A failed or excluded target must
+never be rewritten to an HTML file that does not exist. Open only explicit
+inputs, not every linked document.
+
+Plain Org file links participate alongside Markdown links. Org search suffixes
+such as `file:notes.org::#custom-id` and `file:notes.org::*Heading` require
+translation to actual generated identifiers. Custom identifiers and unambiguous
+heading targets are candidates for support. Arbitrary search expressions,
+line-number searches, and ambiguous headings should retain the original target
+with an explanation until their semantics are defined.
+
+Missing or unreadable linked documents should not prevent a readable entry
+preview. Report the affected links and retain original-file destinations.
+Failure of an explicitly requested input produces a non-zero exit status even
+if another requested preview can be opened.
+
+## Browser lifetime and cleanup
+
+The existing three-second delay is a compatibility reference, not evidence that
+the browser has read the file. Successful desktop handoff does not establish
+page readiness. Deleting output also prevents later reloads and linked-page
+navigation, regardless of whether the first page loaded.
+
+The proposed interface distinguishes two lifetimes:
+
+- **Quick preview:** open explicit documents, retain output for a configurable
+  grace period, then remove the session. Three seconds is the initial candidate
+  inherited from the personal command. This mode does not promise reload after
+  cleanup or eliminate slow-browser races.
+- **Reading session:** keep all generated pages while the command remains
+  active; end the session explicitly from the terminal. Linked browsing uses
+  this lifetime so pages remain available until the reader ends it. It does
+  not try to infer whether a browser tab is still open.
+
+The exact interaction and non-interactive retention option remain to be
+specified. Do not start a detached cleanup service or add a local server merely
+to retain files. Keep the whole linked set for the same lifetime.
+
+Register cleanup immediately after allocation. Normal exit, conversion failure,
+browser-launch failure, and supported termination signals must remove only the
+directory owned by that invocation. Report cleanup failure and the remaining
+path. Forced process termination or system failure may leave a directory behind;
+automatic deletion of other sessions based only on a filename prefix is excluded.
+
+## Installation and local boundaries
+
+Distribute a Go executable for each supported platform, containing its own
+presentation assets and Asap fonts. Project code and documentation are under
+[Apache License 2.0](../LICENSE); Asap remains under OFL 1.1 as recorded in
+[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). Build and release checks
+must include the appropriate licence files alongside packaged assets.
+Pandoc is a separately managed runtime dependency; the Go
+toolchain is needed only to build from source. Check compatibility before
+creating output and give an actionable dependency error.
+
+A Homebrew formula declaring Pandoc is the proposed first packaging route.
+This provides dependency installation through the package manager rather than
+download or installation during previewing. A prefix-based binary installation
+can be documented separately. No published package name, release URL, minimum
+Pandoc version, or operating-system support range is established yet.
+[Homebrew dependency declaration](https://docs.brew.sh/Formula-Cookbook#specifying-other-formulae-as-dependencies).
+
+The proposed initial platform is macOS, with the browser adapter and filesystem
+operations kept separable for Linux support. Use direct executable invocation
+with argument arrays for Pandoc and browser opening. Never interpolate document
+names into shell commands.
+
+The tool does not publish documents or widen file permissions. Temporary-directory
+isolation protects generated-file placement; it does not sanitize source HTML
+or sandbox Pandoc. Raw HTML, Org includes, document metadata that names external
+resources, and source-supplied scripts need an explicit trust policy before
+implementation. Graph limits must not be presented as limits on those separate
+mechanisms. The template itself needs no network resources.
+
+## Verification and remaining decisions
+
+Inspection on 7 September 2026 found Pandoc 3.9.0.2 installed. Small conversion
+probes confirmed that Markdown document links remain source-file links and Org
+search suffixes survive parsing without becoming HTML fragment destinations.
+These observations support the need for reference rewriting; they do not verify
+the proposed application or the prototype's full fidelity.
+
+Implementation verification should cover installation outside the checkout,
+real Pandoc output for both formats, reference resolution from nested and
+read-only sources, special characters in paths, graph cycles and limits, partial
+failures, simultaneous invocations, cancellation, and cleanup ownership.
+Browser review should cover image loading from temporary pages, linked
+navigation, fragments inside folded sections, keyboard use, both themes, print
+layout, and a deliberately slow browser launch. No browser harness is selected
+by this document.
+
+Before implementation, specify the public settings and help, input dialects,
+supported Pandoc and platform versions, cleanup interaction, raw HTML/CSS and
+include policy, symlink semantics, and whether linked browsing is in the first
+release. The numeric limits above and Homebrew packaging remain proposals;
+the selected Go stack and temporary-directory direction do not depend on them.
