@@ -1,4 +1,4 @@
-#+TITLE: W001 - Installable local Markdown and Org previews
+#+TITLE: W001 - Installable Markdown and Org previews with linked browsing
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
@@ -10,25 +10,39 @@
 :CUSTOM_ID: summary
 :END:
 
-- Outcome :: A globally installed =htmlpreview= command *opens readable local
-  Markdown and Org previews* without modifying source documents.
-- Before :: The repository contains *prototype rendering code and font assets*;
-  it has no packaged application or maintained application test suite.
-- After :: A *Go application invokes Pandoc*, packages its presentation and Asap
-  fonts, and owns output in a *private temporary directory*.
-- Changes :: Source-relative references are *rewritten for temporary output*;
-  Org preservation and outline controls become *maintained application code*.
-- Unchanged :: Documents remain *read-only inputs*. JavaScript runs *only in the
-  browser*. Project code uses Apache 2.0; Asap retains OFL 1.1.
-- Edge cases :: The definition covers *invalid inputs, source preservation,
-  reference encoding, rendering failure, missing assets, and concurrent runs*.
-- Decisions :: Go, Pandoc, embedded regular and italic Asap, temporary-directory
-  output, and assessment of all reused prototype code are *operator-selected*.
-- Open scope :: Linked browsing, retention, release platforms/installation, and
-  source trust *await operator direction*. Their acceptance criteria and test
-  definitions cannot be finalized until that direction is recorded.
-- Next step :: Resolve the named choices, finish the dependent definitions,
-  perform the definition gate, then request operator sign-off.
+- Outcome :: A *global command previews Markdown and Org* in the browser while
+  leaving *source files unchanged*.
+- Before :: The *repository contains prototypes and licensed fonts*, with no
+  packaged application or maintained application regression suite.
+- After :: A *Go binary for macOS 26 arm64* uses Pandoc 3.9.0.2 through 3.9.x and
+  opens source-labelled pages from an *owner-private temporary directory*.
+  Safari 26 is the browser target; installation is staged for Homebrew.
+- Changes :: The candidate defines four connected capabilities:
+  - *Rendering preserves Org metadata, literal blocks, and identifiers*, embeds
+    both Asap faces/notices, and retains accessible outline controls and printing.
+  - *Local references resolve from their source directories*. Opt-in traversal
+    defaults to 50 contexts, depth 3, 10 MiB per source, 50 MiB total source,
+    100 MiB output, and 60 seconds of conversion.
+  - *Quick previews expire after three seconds*; reading sessions retain pages
+    until SIGINT/SIGTERM. Slow browsers can miss quick previews.
+  - *Passive rendering blocks active source content and network URLs*. Includes
+    stay literal; unsupported raw CSS, srcset, and SVG are diagnosed.
+- Unchanged :: *Pandoc performs conversion*; Lua runs inside Pandoc; JavaScript
+  runs only in the browser. *Sources remain read-only* and code blocks are not
+  executed. There is no server, publication, or remote crawling.
+- Edge cases :: *Concurrent runs remain isolated*; empty inputs retain source
+  labels; encoded paths and fragments retain their destinations. *Failed inputs
+  and handoffs are diagnosed*; aliases and ambiguous IDs have explicit rules.
+  Partial publication aborts opening. *Cleanup affects only the owned session*;
+  forced termination may leave its directory behind.
+- Decisions :: *Go and temporary-directory output are selected*. Asap is the
+  default proportional font; code remains monospace. *Project code uses Apache
+  2.0* and Asap retains OFL 1.1. Platform, browsing, retention, and passive-source
+  defaults are *candidate choices for approval*. CSS/JS use source and browser
+  review; no CLI JavaScript lint runtime is introduced.
+- Next step :: *Audit this candidate, then obtain operator sign-off*. Linked
+  browsing, lifetimes, macOS packaging, and passive-source policy are explicit
+  proposals for approval; no implementation is authorized.
 
 -----
 
@@ -39,145 +53,128 @@
 
 ** Problem
 
-- Readers need a *single globally available command* to inspect local Markdown
-  and Org in a browser with consistent presentation.
-- The prototype's Org rendering contains *useful behaviour and identified
-  defects*. It is project-owned source, not an external compatibility boundary.
-- Source-adjacent temporary HTML preserves ordinary relative links but *writes
-  into document directories*. The selected design moves output to a private
-  temporary directory and *resolves references explicitly*.
+- Readers need a *globally available preview command* for local Markdown and Org,
+  with consistent presentation and useful document structure.
+- The *Org prototype needs revision*: preservation, identifiers, keyboard
+  handling, and printing have identified defects.
+- *Source-adjacent HTML writes into document directories*. Moving output to a
+  private temporary directory requires explicit source-relative references.
 
 ** Outcome
 
-- A packaged command *renders separate previews* for explicit local inputs,
-  *opens their finished HTML*, and preserves source data.
-- The application *owns conversion, asset packaging, reference handling,
-  diagnostics, retention, and cleanup*.
-- Visual and keyboard quality require *recorded human validation* alongside
-  automated verification of the command and generated output.
+- The *command opens one finished preview per distinct explicit input*, with
+  source identity, readable typography, and preserved document content.
+- The *application owns conversion and output lifetime*: packaging, references,
+  diagnostics, retention, and cleanup.
+- *Automated tests verify command and output behaviour*; human tests assess
+  typography, browser navigation, and keyboard interaction.
 
 ** Scope
 
 *** In scope
 
-- A *Go command-line application* with Pandoc as a runtime dependency.
-- Markdown and Org conversion with *packaged presentation assets*.
-- *Embedded Asap regular and italic variable fonts* and their licence notices.
-- *Private temporary output* and source-relative link/image resolution.
-- *Project-owned revision* of relevant Org pre-processing, Lua, CSS, and browser
-  JavaScript, informed by the prototype assessment.
-- *Local build, lint, test, installation, and dependency-check entry points*.
-- Explicit *file-lifetime, release-platform, and source-trust contracts* once
-  the outstanding decisions below are resolved.
+- *Go application orchestration* with Pandoc as a runtime dependency.
+- *Markdown and Org rendering* with packaged HTML, CSS, browser controls, and
+  both variable Asap faces.
+- *Source-preserving temporary output* and local link/image resolution.
+- *Revision of project-owned Org code*, including pre-processing, Lua, CSS, and
+  browser JavaScript.
+- *Build, lint, test, installation, and dependency-check entry points*.
+- *Opt-in linked browsing, quick/read lifetimes, macOS installation, and passive
+  source handling*, with the contracts below.
 
 *** Out of scope
 
-- Editing source documents, live reload, a persistent service, an HTTP server,
-  publication, remote document crawling, PDF conversion, and a plugin system.
-- A JavaScript CLI runtime, a separate Lua runtime, or a Go toolchain required
-  on machines using a prebuilt executable.
-- Implementation during this definition workflow.
+- *Source editing, live reload, and persistent services*.
+- *HTTP serving, publication, remote crawling, PDF conversion, and plugins*.
+- *JavaScript on the CLI or a separate Lua runtime*. Prebuilt-binary users do
+  not need a Go toolchain or source checkout.
+- *Implementation during definition*.
 
 *** Unchanged
 
-- Original source files, linked assets, and unrelated temporary directories
-  *remain untouched*.
-- Pandoc remains responsible for *ordinary document parsing and conversion*.
-- Org code blocks are *displayed without execution*.
-- External hyperlinks remain *external destinations*; the application does not
-  recursively convert remote pages.
+- *Source files, linked assets, and unrelated directories remain untouched*.
+- *Pandoc owns ordinary parsing and conversion*; Org blocks are displayed
+  without execution.
+- *External hyperlinks retain their destinations* without remote conversion.
 
 ** Authority and starting point
 
 - Project profile :: [[file:../../.sdlc/project.yaml][Project standards and authority profile]].
-- Product authority :: [[file:../../docs/VISION.md][Vision: reading experience, temporary output, technology, and boundaries]].
-- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture: component ownership, rendering, references, sessions, and installation]].
-- Code assessment :: [[file:../../docs/ORG-FIDELITY-REVIEW.md][Org fidelity review: preservation, identifiers, folding, CSS, and wrapper findings]].
-- Implementation evidence :: [[file:../../prototype/README.md][Prototype description]],
-  [[file:../../prototype/org2html][Org conversion wrapper]],
+- Product authority :: [[file:../../docs/VISION.md][Vision]], especially the
+  reading experience, temporary output, linked browsing, and installation.
+- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture]],
+  especially rendering, reference resolution, traversal, lifetime, and packaging.
+- Historical requirement or evidence :: [[file:../../docs/ORG-FIDELITY-REVIEW.md][Org fidelity assessment]]
+  records the prototype findings. [[file:../../docs/work.org][Project work ledger]]
+  is the current requirements index; no earlier numbered project work was found
+  during allocation.
+- Current implementation fact :: *The prototype is the rendering baseline*:
+  [[file:../../prototype/README.md][Prototype description]],
+  [[file:../../prototype/org2html][Conversion wrapper]],
   [[file:../../prototype/org-prepass.awk][Org pre-pass]],
   [[file:../../prototype/org-fidelity.lua][Org transformations]],
-  [[file:../../prototype/org-fidelity.css][Org presentation]], and
+  [[file:../../prototype/org-fidelity.css][Presentation]], and
   [[file:../../prototype/org-fold.html][Outline controls]].
-- Font authority :: [[file:../../assets/fonts/asap/README.md][Asap versions, variation axes, checksums, and licence provenance]].
-- Licensing :: [[file:../../LICENSE][Apache License 2.0]] and
-  [[file:../../THIRD_PARTY_NOTICES.md][Third-party notices and Asap OFL boundary]].
-- Current requirements :: [[file:../../docs/work.org][Project work ledger]]. No
-  earlier numbered project work or =specs/= history was found during allocation.
-- Regression baseline :: No maintained application regression suite is present
-  in the inspected repository. The large =prototype/work.org= file is sample
-  source content, *not this project's requirements or work-number namespace*.
-- External infrastructure :: The project profile declares =role: none=; this
-  work has *no deployment integration* with another project.
+- Asset authority :: [[file:../../assets/fonts/asap/README.md][Asap provenance and checksums]],
+  [[file:../../LICENSE][Apache License 2.0]], and
+  [[file:../../THIRD_PARTY_NOTICES.md][Third-party licence boundary]].
+- Regression baseline :: *No maintained application suite is present* in the
+  inspected repository. The large =prototype/work.org= file is sample content,
+  not this project's requirements or work-number namespace.
+- External contract :: The profile declares =role: none=; *no external
+  infrastructure integration is involved*.
 
 ** Constraints and dependencies
 
-- *Go owns application behaviour*; Lua is limited to useful Pandoc integration.
-- *Packaged assets* replace reliance on personal shell helpers, private font
-  installations, user Pandoc defaults, or a source checkout at runtime.
-- *Generated HTML and bundled fonts* are local output; no font service is needed.
-- The repository has a *user-owned uncommitted profile amendment* selecting the
-  Lua standard. Definition work must not stage, revert, or overwrite it.
-- Initial inspection environment :: Go 1.26.3, Pandoc 3.9.0.2 with Lua 5.4,
-  macOS 26.6 on arm64. This is *inspection evidence*, not an approved support
-  matrix.
+- *Go owns application behaviour*; Lua is limited to Pandoc integration.
+- *Packaged assets replace personal configuration*: shell helpers, Pandoc data,
+  private fonts, and checkout paths must not be runtime requirements.
+- *Fonts and application styling are local*; neither conversion nor initial
+  page loading fetches remote resources.
+- *JavaScript runs only in the browser*. This operator constraint overrides the
+  selected standards' CLI JavaScript tooling defaults.
+- *Sources and asset locations are read-only*. Output contains local document
+  content and paths, with no telemetry or publication.
 
 ** Decisions
 
-- Application language :: The operator reconfirmed *Go* after considering Lua.
-- Output placement :: A *private operating-system temporary directory* replaces
-  source-adjacent preview files.
-- Presentation :: *Asap is the default proportional face*; code remains
-  monospace. Both variable WOFF2 faces and their notices are already included.
-- Ownership :: Reused Org fidelity code is *maintained project code*, subject to
-  the same design, build, and verification requirements as new code.
-- Licensing :: Project code and documentation are *Apache 2.0*; the font files
-  retain *SIL OFL 1.1*.
+- Application language :: *Go is selected* after the operator considered Lua.
+- Output placement :: *Private OS-temporary output replaces source-adjacent HTML*.
+- Presentation :: *Asap is the default proportional face*; code is monospace.
+  Both regular and italic variable WOFF2 faces and notices are already included.
+- Ownership :: *Reused Org fidelity code is maintained project code*, subject to
+  normal design, build, and verification.
+- Licensing :: *Project code and documentation use Apache 2.0*; Asap retains
+  SIL OFL 1.1.
+
+- Definition choices :: The following *candidate defaults require sign-off*:
+  linked browsing is opt-in; quick retention is three seconds; linked sessions
+  remain foreground until signalled; the first supported platform is macOS on
+  arm64 with Homebrew packaging; source rendering is passive.
+- Authority boundary :: These *authoring proposals are not recorded as operator
+  approval*. Signing off this specification adopts their exact contracts.
+  Earlier unanswered clarification questions are preserved in audit history.
 
 ** Unresolved blockers
 
-- Linked browsing :: Whether this change includes bounded traversal and
-  conversion of linked local Markdown and Org documents is *unresolved*.
-- Lifetime :: How long previews remain usable and whether the command must
-  return immediately are *unresolved*.
-- Release scope :: Supported platforms and the first installation route are
-  *unresolved*. macOS/Homebrew is the architecture's proposal.
-- Source safety :: A proposed passive-document policy blocks source-supplied
-  scripts and leaves Org includes unexpanded; operator direction is *pending*.
-
-** Proposals awaiting those decisions
-
-- Linked browsing :: Include the extension in this change as an *opt-in mode*,
-  using the architecture's breadth-first traversal, explicit directory boundary,
-  and finite budgets. Ordinary invocation still previews only explicit inputs.
-- Lifetime :: Retain the architecture's *quick preview and foreground reading
-  session* distinction. The existing three-second delay is a candidate quick
-  grace period, not evidence that a browser has loaded the page. Linked browsing
-  requires the reading-session lifetime.
-- Installation :: Start with *macOS and a Homebrew formula declaring Pandoc*.
-  Specify architecture, OS, browser, and Pandoc support ranges after that
-  platform decision. Publishing a release or tap is not part of definition work.
-- Source safety :: Permit *passive document content and application-owned
-  controls*. Prevent document-supplied script execution and leave includes
-  unexpanded. The final policy must also cover active URL schemes, raw HTML/CSS,
-  metadata resources, and network-loaded content; private output alone does not
-  resolve these boundaries.
-- Authority :: These are *proposals for operator direction*, not accepted
-  requirements or defaults. No implementation may infer approval from them.
+- *No implementation choice is left for the delivery agent to guess*. Operator
+  approval of the candidate remains PENDING. Release publication is a separate
+  human action and is not needed for local package validation.
 
 * Acceptance Criteria
 :PROPERTIES:
 :CUSTOM_ID: acceptance-criteria
 :END:
 
-** AC001.1 - Explicit local documents produce separate previews
+** AC001.1 - Explicit inputs produce separate previews
 :PROPERTIES:
 :CUSTOM_ID: ac-001-1
 :END:
 
-- Criterion :: Given one or more supported readable local source files, the
-  application produces *one separate finished HTML document per distinct
-  explicit input*, with a visible source filename and location.
+- Criterion :: Given readable local UTF-8 files with =.md=, =.markdown=, or =.org=
+  suffixes, *each distinct source context* produces *one finished HTML preview*;
+  suffix matching is case-insensitive.
 - Proven by :: [[#rt-001-1][RT001.1 - Explicit inputs and source identity]].
 
 ** AC001.2 - Source documents and unrelated data remain unchanged
@@ -185,115 +182,108 @@
 :CUSTOM_ID: ac-001-2
 :END:
 
-- Criterion :: Previewing *does not modify source documents, linked assets, or
-  unrelated files*, including when conversion fails or inputs are read-only.
+- Criterion :: *Sources, assets, and unrelated files remain unchanged* in their
+  bytes and permissions during previewing, including when sources are
+  read-only or conversion fails.
 - Proven by :: [[#rt-001-2][RT001.2 - Source preservation and session isolation]].
 
-** AC001.3 - Each invocation owns private temporary output
+** AC001.3 - Generated output is owner-private
 :PROPERTIES:
 :CUSTOM_ID: ac-001-3
 :END:
 
-- Criterion :: Generated data is confined to an *owner-private directory in the
-  operating system's temporary location*. Concurrent invocations *do not share
-  or overwrite output*.
+- Criterion :: For each invocation, *generated data stays inside* an
+  *owner-private operating-system temporary directory*.
 - Proven by :: [[#rt-001-2][RT001.2 - Source preservation and session isolation]].
 
-** AC001.4 - Markdown content remains readable and structurally intact
+** AC001.4 - Markdown structure survives conversion
 :PROPERTIES:
 :CUSTOM_ID: ac-001-4
 :END:
 
-- Criterion :: Supported Markdown headings, paragraphs, emphasis, lists,
-  quotations, code, tables, images, and footnotes retain their *text and document
-  relationships* in the generated HTML.
-- Proven by :: [[#rt-001-3][RT001.3 - Markdown rendering through Pandoc]] and
+- Criterion :: *Markdown text and structure survive conversion* to HTML:
+  headings, paragraphs, emphasis, lists, quotations, code, tables,
+  images, and footnotes.
+- Proven by :: [[#rt-001-3][RT001.3 - Markdown rendering through Pandoc]],
   [[#ut-001-1][UT001.1 - Document typography and readability]].
 
-** AC001.5 - Org-specific information survives conversion
+** AC001.5 - Org information survives conversion
 :PROPERTIES:
 :CUSTOM_ID: ac-001-5
 :END:
 
-- Criterion :: Supported Org task states, tags, priorities, statistics cookies,
-  timestamps, planning fields, property drawers, logbook drawers, and custom
-  drawers remain *visible or explicitly expandable*, with their original values.
-- Proven by :: [[#rt-001-4][RT001.4 - Org preservation and literal regions]] and
+- Criterion :: The *Org preview retains original values* for task states,
+  tags, priorities, statistics, timestamps, planning
+  fields, and property, logbook, and custom drawers. *Drawer content remains
+  available* visibly or through an explicit expansion control.
+- Proven by :: [[#rt-001-4][RT001.4 - Org preservation and literal regions]],
   [[#ut-001-1][UT001.1 - Document typography and readability]].
 
-** AC001.6 - Literal Org content is preserved without execution
+** AC001.6 - Literal Org content remains literal
 :PROPERTIES:
 :CUSTOM_ID: ac-001-6
 :END:
 
-- Criterion :: Org source and example blocks *retain literal content*, including
-  text resembling planning lines, drawers, or links. Previewing *does not execute
-  their contents*.
+- Criterion :: *Source and example blocks retain literal content*, including planning,
+  drawer, and link lookalikes, without changes caused by Org preservation.
 - Proven by :: [[#rt-001-4][RT001.4 - Org preservation and literal regions]].
 
-** AC001.7 - Embedded Asap is available without external font access
+** AC001.7 - Both Asap variable faces are embedded
 :PROPERTIES:
 :CUSTOM_ID: ac-001-7
 :END:
 
-- Criterion :: Generated previews contain *both bundled Asap faces*, preserve
-  their weight range 100 to 900 and width range 75% to 125%, and use Asap for
-  proportional text. Italics use the italic face; *code remains monospace*.
-- Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]] and
-  [[#ut-001-1][UT001.1 - Document typography and readability]].
+- Criterion :: Each *preview embeds both Asap WOFF2 faces*, with declared *weight
+  100 to 900* and *width 75% to 125%* ranges, without external font access.
+- Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]].
 
-** AC001.8 - Distribution retains project and font licence notices
+** AC001.8 - Distribution retains licence notices
 :PROPERTIES:
 :CUSTOM_ID: ac-001-8
 :END:
 
-- Criterion :: Packaged distributions retain *Apache 2.0 and applicable
-  third-party notices*. Generated previews containing Asap retain the *font
-  copyright and full OFL 1.1 text* in readable source.
-- Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]].
+- Criterion :: A packaged *distribution retains Apache 2.0 and applicable
+  third-party notices*, including the bundled font notices.
+- Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]],
+  [[#ot-001-1][OT001.1 - Local Homebrew package validation]].
 
-** AC001.9 - Source-relative references resolve from temporary pages
+** AC001.9 - Local references use the source directory
 :PROPERTIES:
 :CUSTOM_ID: ac-001-9
 :END:
 
-- Criterion :: Supported local links and images resolve against the *containing
-  source document's directory*, independent of invocation and output location.
-  Same-page fragments remain *on the generated page*. External destinations
-  retain their URL.
-- Proven by :: [[#rt-001-6][RT001.6 - Reference resolution and encoding]] and
+- Criterion :: Supported *local links and images resolve from their containing
+  source directory*, independent of invocation and output location.
+- Proven by :: [[#rt-001-6][RT001.6 - Reference resolution and encoding]],
   [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
 
-** AC001.10 - Identifier preservation supports outline destinations
+** AC001.10 - Org IDs remain usable
 :PROPERTIES:
 :CUSTOM_ID: ac-001-10
 :END:
 
-- Criterion :: A supported Org =ID= and =CUSTOM_ID= combination retains *distinct
-  usable destinations*, without duplicate HTML identifier attributes. Heading
-  destinations refer to the *actual generated identifiers*.
-- Proven by :: [[#rt-001-7][RT001.7 - Org identifiers and heading targets]] and
+- Criterion :: For distinct Org =ID= and =CUSTOM_ID= values on one heading, *both
+  Org identifiers remain usable destinations*. *Generated identifiers are unique*,
+  with no duplicate identifier attributes.
+- Proven by :: [[#rt-001-7][RT001.7 - Org identifiers and heading targets]],
   [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
 
-** AC001.11 - Reading and outline controls remain accessible
+** AC001.11 - Reading works without JavaScript
 :PROPERTIES:
 :CUSTOM_ID: ac-001-11
 :END:
 
-- Criterion :: Ordinary text and navigation remain usable *without JavaScript*.
-  With controls enabled, normal Tab/Shift+Tab focus navigation is preserved,
-  focused controls are visible, and fragment navigation *reveals folded
-  ancestors*. Print output includes content from all fold states.
+- Criterion :: In previews with *JavaScript disabled*, *document text and ordinary
+  navigation remain usable* through the browser's standard controls.
 - Proven by :: [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
 
-** AC001.12 - Conversion failure is reported without opening partial output
+** AC001.12 - Explicit-input failure is diagnosed
 :PROPERTIES:
 :CUSTOM_ID: ac-001-12
 :END:
 
-- Criterion :: A failed explicit input is *identified in diagnostics* and causes
-  a non-zero invocation status. The application *does not open its partial
-  output*, even when other explicit inputs succeed.
+- Criterion :: A *failed explicit input is identified in diagnostics* and causes a
+  *non-zero invocation status*, including in a partly successful batch.
 - Proven by :: [[#rt-001-8][RT001.8 - Conversion and browser-handoff failures]].
 
 ** AC001.13 - Help and version have no preview side effects
@@ -301,20 +291,307 @@
 :CUSTOM_ID: ac-001-13
 :END:
 
-- Criterion :: =-h= and =--help= provide equivalent guidance; =--version= reports
-  the application version. These requests *succeed without Pandoc, temporary
-  output, browser launch, or document reads*.
+- Criterion :: *Help aliases* =-h= and =--help= *provide equivalent guidance*; =--version=
+  reports the application version. *Informational requests succeed without Pandoc
+  or preview side effects*: no document reads, temporary output, or browser
+  launch.
 - Proven by :: [[#rt-001-9][RT001.9 - Command information and invalid invocation]].
 
-** AC001.14 - Invalid invocation is distinguished from operational failure
+** AC001.14 - Exit status distinguishes invalid invocation
 :PROPERTIES:
 :CUSTOM_ID: ac-001-14
 :END:
 
-- Criterion :: Missing inputs, unknown options, and invalid settings cause
-  *exit status 2 with an actionable diagnostic*. Operational failures use status
-  1; successful requests use status 0.
-- Proven by :: [[#rt-001-9][RT001.9 - Command information and invalid invocation]].
+- Criterion :: *Invalid invocation returns status 2* with an actionable diagnostic
+  for missing inputs, unknown options, or invalid settings. *Operational failure
+  returns 1*; *success returns 0*.
+- Proven by :: [[#rt-001-9][RT001.9 - Command information and invalid invocation]],
+  [[#rt-001-8][RT001.8 - Conversion and browser-handoff failures]].
+
+** AC001.15 - Previews identify their source
+:PROPERTIES:
+:CUSTOM_ID: ac-001-15
+:END:
+
+- Criterion :: Each *preview displays its source filename and location*, including
+  for an empty readable document.
+- Proven by :: [[#rt-001-1][RT001.1 - Explicit inputs and source identity]].
+
+** AC001.16 - Concurrent invocations remain isolated
+:PROPERTIES:
+:CUSTOM_ID: ac-001-16
+:END:
+
+- Criterion :: *Concurrent invocations produce separate outputs* without sharing
+  or overwriting another invocation's files.
+- Proven by :: [[#rt-001-2][RT001.2 - Source preservation and session isolation]].
+
+** AC001.17 - Org source blocks are never executed
+:PROPERTIES:
+:CUSTOM_ID: ac-001-17
+:END:
+
+- Criterion :: When previewing Org, the *application does not execute source-block
+  contents*.
+- Proven by :: [[#rt-001-4][RT001.4 - Org preservation and literal regions]].
+
+** AC001.18 - Proportional text uses the appropriate Asap face
+:PROPERTIES:
+:CUSTOM_ID: ac-001-18
+:END:
+
+- Criterion :: *Proportional text uses Asap* by default; *italic text uses the
+  italic face* at the requested weight.
+- Proven by :: [[#ut-001-1][UT001.1 - Document typography and readability]].
+
+** AC001.19 - Code remains monospace
+:PROPERTIES:
+:CUSTOM_ID: ac-001-19
+:END:
+
+- Criterion :: *Code and preformatted text use a monospace face*, independently of
+  the proportional font.
+- Proven by :: [[#ut-001-1][UT001.1 - Document typography and readability]].
+
+** AC001.20 - Embedded fonts retain their licence in HTML
+:PROPERTIES:
+:CUSTOM_ID: ac-001-20
+:END:
+
+- Criterion :: Every preview retains *Asap copyright and full OFL 1.1 text* in
+  its *readable HTML source*, alongside the embedded font payloads.
+- Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]].
+
+** AC001.21 - Same-page fragments stay on the preview
+:PROPERTIES:
+:CUSTOM_ID: ac-001-21
+:END:
+
+- Criterion :: A *same-page fragment resolves within the generated page*,
+  including a footnote destination.
+- Proven by :: [[#rt-001-6][RT001.6 - Reference resolution and encoding]],
+  [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** AC001.22 - External hyperlinks retain their destinations
+:PROPERTIES:
+:CUSTOM_ID: ac-001-22
+:END:
+
+- Criterion :: An allowed *external hyperlink retains its HTTP, HTTPS, or mailto
+  URL* and is not admitted to local document traversal.
+- Proven by :: [[#rt-001-6][RT001.6 - Reference resolution and encoding]].
+
+** AC001.23 - Heading links use actual generated destinations
+:PROPERTIES:
+:CUSTOM_ID: ac-001-23
+:END:
+
+- Criterion :: Supported *heading links resolve to actual generated identifiers*,
+  rather than independently guessed slugs.
+- Proven by :: [[#rt-001-7][RT001.7 - Org identifiers and heading targets]],
+  [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** AC001.24 - Keyboard focus traversal remains available
+:PROPERTIES:
+:CUSTOM_ID: ac-001-24
+:END:
+
+- Criterion :: With outline controls enabled, *Tab and Shift+Tab preserve normal
+  focus traversal*; *focused controls remain visibly identifiable*.
+- Proven by :: [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** AC001.25 - Fragment navigation reveals folded ancestors
+:PROPERTIES:
+:CUSTOM_ID: ac-001-25
+:END:
+
+- Criterion :: For a destination inside a folded section, *fragment navigation
+  reveals the target and its folded ancestors*.
+- Proven by :: [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** AC001.26 - Printing includes every fold state
+:PROPERTIES:
+:CUSTOM_ID: ac-001-26
+:END:
+
+- Criterion :: From any supported fold state, *print output includes the full
+  document content*, including drawers.
+- Proven by :: [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** AC001.27 - Incomplete output is never opened
+:PROPERTIES:
+:CUSTOM_ID: ac-001-27
+:END:
+
+- Criterion :: When conversion fails, *the application does not open partial
+  HTML*, even when another explicit input succeeds.
+- Proven by :: [[#rt-001-8][RT001.8 - Conversion and browser-handoff failures]].
+
+** AC001.28 - Browser-handoff failure is diagnosed
+:PROPERTIES:
+:CUSTOM_ID: ac-001-28
+:END:
+
+- Criterion :: If the desktop opener fails, *diagnostics identify the failed
+  handoff* and the invocation returns *operational-failure status 1*.
+- Proven by :: [[#rt-001-8][RT001.8 - Conversion and browser-handoff failures]].
+
+** AC001.29 - The packaged command installs independently
+:PROPERTIES:
+:CUSTOM_ID: ac-001-29
+:END:
+
+- Criterion :: The *binary installs on PATH without a checkout, Go toolchain, or
+  personal configuration*. The Homebrew formula *declares Pandoc as a runtime
+  dependency*.
+- Proven by :: [[#rt-001-14][RT001.14 - Installation outside the checkout]],
+  [[#ot-001-1][OT001.1 - Local Homebrew package validation]].
+
+** AC001.30 - Incompatible dependencies fail before rendering
+:PROPERTIES:
+:CUSTOM_ID: ac-001-30
+:END:
+
+- Criterion :: A *missing or unsupported Pandoc produces status 1* with an
+  actionable dependency diagnostic, *before allocating a session or opening a
+  browser*.
+- Proven by :: [[#rt-001-15][RT001.15 - Dependency and input compatibility]].
+
+** AC001.31 - Linked browsing follows only admitted documents
+:PROPERTIES:
+:CUSTOM_ID: ac-001-31
+:END:
+
+- Criterion :: With linked browsing enabled, the *application converts reachable
+  Markdown and Org contexts once* in breadth-first source order, subject to the
+  declared root, filesystem, and limits. *Only explicit inputs are opened*.
+- Proven by :: [[#rt-001-10][RT001.10 - Bounded local link browsing]].
+
+** AC001.32 - Traversal and conversion enforce finite budgets
+:PROPERTIES:
+:CUSTOM_ID: ac-001-32
+:END:
+
+- Criterion :: *Count, depth, and byte limits are inclusive and enforced during work*.
+  *Conversion is cancelled when its deadline expires*. No additional node, read,
+  or write is admitted after its applicable budget is exhausted.
+- Proven by :: [[#rt-001-11][RT001.11 - Budget and filesystem boundaries]].
+
+** AC001.33 - Skipped links never point to missing previews
+:PROPERTIES:
+:CUSTOM_ID: ac-001-33
+:END:
+
+- Criterion :: A *failed, excluded, or over-limit linked document retains its
+  original file destination* with a diagnostic. *Only successful outputs enter the
+  preview mapping*; linked failures alone do not fail a successful entry preview.
+- Proven by :: [[#rt-001-10][RT001.10 - Bounded local link browsing]],
+  [[#rt-001-11][RT001.11 - Budget and filesystem boundaries]].
+
+** AC001.34 - Reading sessions retain their whole preview set
+:PROPERTIES:
+:CUSTOM_ID: ac-001-34
+:END:
+
+- Criterion :: In reading mode, *all generated pages remain available until SIGINT
+  or SIGTERM ends the session*, supporting reload and linked navigation. Normal
+  session termination then triggers cleanup.
+- Proven by :: [[#rt-001-12][RT001.12 - Retention cancellation and cleanup ownership]],
+  [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** AC001.35 - Quick previews expire after their grace period
+:PROPERTIES:
+:CUSTOM_ID: ac-001-35
+:END:
+
+- Criterion :: Without cancellation, *quick output remains for the configured grace
+  period after the last handoff attempt*, then cleanup runs and the command
+  returns. The grace is a retention policy, not a browser-readiness guarantee.
+- Proven by :: [[#rt-001-12][RT001.12 - Retention cancellation and cleanup ownership]],
+  [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** AC001.36 - Cleanup affects only the owned session
+:PROPERTIES:
+:CUSTOM_ID: ac-001-36
+:END:
+
+- Criterion :: On normal expiry, session termination, conversion failure without
+  usable outputs, or cancellation, *cleanup removes only the invocation's
+  directory*. *Cleanup failure reports the remaining path and returns status 1*.
+- Proven by :: [[#rt-001-12][RT001.12 - Retention cancellation and cleanup ownership]].
+
+** AC001.37 - Source content cannot supply executable browser code
+:PROPERTIES:
+:CUSTOM_ID: ac-001-37
+:END:
+
+- Criterion :: The *preview neutralizes source scripts, event handlers, active URL
+  schemes, forms, frames, and executable embeds*. Only the packaged browser
+  enhancement may execute.
+- Proven by :: [[#rt-001-13][RT001.13 - Passive source and resource policy]],
+  [[#ut-001-3][UT001.3 - Passive-document browser checks]].
+
+** AC001.38 - Org includes remain unexpanded
+:PROPERTIES:
+:CUSTOM_ID: ac-001-38
+:END:
+
+- Criterion :: *Org INCLUDE and SETUPFILE directives remain visible as literal
+  directives* with a diagnostic, without incorporating referenced content;
+  lookalikes in literal blocks remain unchanged.
+- Proven by :: [[#rt-001-13][RT001.13 - Passive source and resource policy]].
+
+** AC001.39 - Preview generation and loading do not fetch remote resources
+:PROPERTIES:
+:CUSTOM_ID: ac-001-39
+:END:
+
+- Criterion :: *Conversion and initial page loading do not fetch source-directed
+  network URLs*. Remote resource references become explanatory placeholders
+  with ordinary links where the URL is allowed; user-followed external links
+  remain available.
+- Proven by :: [[#rt-001-13][RT001.13 - Passive source and resource policy]],
+  [[#ut-001-3][UT001.3 - Passive-document browser checks]].
+
+** AC001.40 - Unsupported raw reference forms are reported
+:PROPERTIES:
+:CUSTOM_ID: ac-001-40
+:END:
+
+- Criterion :: *Unsupported raw HTML/CSS resource forms are neutralized and
+  diagnosed*, including =srcset=, style URLs, stylesheet links, and inline SVG.
+  Supported local images and anchors retain their declared behaviour.
+- Proven by :: [[#rt-001-13][RT001.13 - Passive source and resource policy]],
+  [[#ut-001-3][UT001.3 - Passive-document browser checks]].
+
+** AC001.41 - Org outline state is deterministic
+:PROPERTIES:
+:CUSTOM_ID: ac-001-41
+:END:
+
+- Criterion :: *Org STARTUP and VISIBILITY initialize the declared fold states*;
+  unknown values leave content open and produce a diagnostic. Overview, contents,
+  and show-all controls produce the states defined in the design.
+- Proven by :: [[#rt-001-16][RT001.16 - Outline metadata and destinations]],
+  [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** AC001.42 - Embedded application assets retain their licence
+:PROPERTIES:
+:CUSTOM_ID: ac-001-42
+:END:
+
+- Criterion :: In previews containing application CSS or JavaScript, *HTML source
+  retains Apache 2.0 and applicable application notices* alongside the payloads.
+- Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]].
+
+** AC001.43 - Application text meets contrast requirements
+:PROPERTIES:
+:CUSTOM_ID: ac-001-43
+:END:
+
+- Criterion :: In light and dark themes, *application text meets WCAG AA contrast*:
+  at least 4.5:1 for body text and 3:1 for large text.
+- Proven by :: [[#ut-001-1][UT001.1 - Document typography and readability]].
 
 * Test Definitions
 :PROPERTIES:
@@ -326,179 +603,434 @@
 :CUSTOM_ID: rt-001-1
 :END:
 
-- Covers :: [[#ac-001-1][AC001.1 - Explicit local documents produce separate previews]].
-- Boundary :: The *public executable and generated HTML*.
-- Setup :: Synthetic Markdown and Org files, including identical basenames in
-  different directories, duplicate arguments, and an empty readable file.
-- Action :: Invoke the executable using a controlled desktop-opening adapter.
-- Expected :: Each *distinct input* has its own readable output and source
-  identity; input order is retained for browser-opening requests. An empty
-  document still produces a source-labelled preview.
-- Retention :: Persistent regression under =make test=; TDD is required.
+- Covers :: [[#ac-001-1][AC001.1 - Explicit inputs produce separate previews]],
+  [[#ac-001-15][AC001.15 - Previews identify their source]].
+- Boundary :: Exercise the *public executable and generated HTML*.
+- Setup :: Create *synthetic Markdown and Org inputs*: duplicate arguments,
+  identical basenames in different directories, and an empty readable file.
+- Action :: *Invoke the executable* with those inputs and a controlled
+  desktop-opening boundary.
+- Expected :: *Distinct inputs produce separate, source-labelled previews*;
+  duplicate arguments reuse one preview. *Open requests retain input order*; the
+  empty document still identifies its source.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** RT001.2 - Source preservation and session isolation
 :PROPERTIES:
 :CUSTOM_ID: rt-001-2
 :END:
 
-- Covers :: [[#ac-001-2][AC001.2 - Source documents and unrelated data remain unchanged]]
-  and [[#ac-001-3][AC001.3 - Each invocation owns private temporary output]].
-- Boundary :: The *executable and filesystem effects*.
-- Setup :: Temporary fixtures with known bytes and permissions, a read-only
-  source directory, and a neighbouring unrelated sentinel directory.
-- Action :: Preview successfully, induce conversion failure, and run two
-  invocations concurrently.
-- Expected :: *Source bytes and permissions are unchanged*; output directories
-  are owner-private and distinct; the unrelated sentinel survives.
-- Retention :: Persistent regression under =make test=; TDD is required.
+- Covers :: [[#ac-001-2][AC001.2 - Source documents and unrelated data remain unchanged]],
+  [[#ac-001-3][AC001.3 - Generated output is owner-private]],
+  [[#ac-001-16][AC001.16 - Concurrent invocations remain isolated]].
+- Boundary :: Inspect *filesystem effects of the executable*.
+- Setup :: Create sources and assets with *known bytes and permissions*, a
+  read-only source directory, and an unrelated sentinel directory.
+- Action :: Run *successful, failed, and simultaneous previews* against the
+  fixtures.
+- Expected :: *Source bytes and permissions remain unchanged*; the sentinel
+  survives. *Session directories are owner-private and distinct*, with no output
+  outside their owned directories.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** RT001.3 - Markdown rendering through Pandoc
 :PROPERTIES:
 :CUSTOM_ID: rt-001-3
 :END:
 
-- Covers :: [[#ac-001-4][AC001.4 - Markdown content remains readable and structurally intact]].
-- Boundary :: The executable with *real local Pandoc* and parsed generated HTML.
-- Setup :: Small synthetic examples for every named Markdown construct.
-- Action :: Render each example through the installed application interface.
-- Expected :: Generated semantic elements preserve *text, ordering, nesting,
-  image alternatives, table cells, and footnote relationships*.
-- Retention :: Persistent regression under =make test=; no source-text checks.
+- Covers :: [[#ac-001-4][AC001.4 - Markdown structure survives conversion]].
+- Boundary :: Exercise the *executable with real local Pandoc* and parse its
+  generated HTML.
+- Setup :: Provide *separate synthetic examples* for every Markdown construct
+  named in the criterion.
+- Action :: *Render each example* through the application interface.
+- Expected :: *Rendered elements preserve text and relationships*: order, nesting,
+  image alternatives, table cells, and footnote targets. Inspect rendered output,
+  never source-template text.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** RT001.4 - Org preservation and literal regions
 :PROPERTIES:
 :CUSTOM_ID: rt-001-4
 :END:
 
-- Covers :: [[#ac-001-5][AC001.5 - Org-specific information survives conversion]]
-  and [[#ac-001-6][AC001.6 - Literal Org content is preserved without execution]].
-- Boundary :: The executable with *real Pandoc* and generated HTML.
-- Setup :: Synthetic Org examples for each named construct, with planning and
-  drawer syntax repeated inside source/example blocks. An executable-looking
-  block would create a sentinel if incorrectly executed. Include =LOGBOOK=
-  beside a real =LOGBOOK_= drawer to expose preservation-marker collisions,
-  long timestamps/ranges, and identifiers resembling internal marker names.
-- Action :: Render the examples and inspect their output structure and text.
-- Expected :: Semantic Org values are retained; *literal examples are unchanged*
-  and the execution sentinel *does not exist*.
-- Retention :: Persistent regression under =make test=; TDD is required.
+- Covers :: [[#ac-001-5][AC001.5 - Org information survives conversion]],
+  [[#ac-001-6][AC001.6 - Literal Org content remains literal]],
+  [[#ac-001-17][AC001.17 - Org source blocks are never executed]].
+- Boundary :: Exercise the *executable with real Pandoc* and parse its generated
+  HTML.
+- Setup :: Provide *synthetic Org constructs and literal lookalikes*. Include a
+  real =LOGBOOK_= drawer beside =LOGBOOK=, long timestamps/ranges, marker-like
+  IDs, and a source block that would create a sentinel if executed.
+- Action :: *Render the examples* and inspect output text, structure, and the
+  sentinel path.
+- Expected :: *Org values survive* with named drawers; *literal block text is
+  unchanged*; the *execution sentinel is absent*. Preservation markers must not
+  collide with source content.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** RT001.5 - Embedded assets and licence payload
 :PROPERTIES:
 :CUSTOM_ID: rt-001-5
 :END:
 
-- Covers :: [[#ac-001-7][AC001.7 - Embedded Asap is available without external font access]]
-  and [[#ac-001-8][AC001.8 - Distribution retains project and font licence notices]].
-- Boundary :: The *built distribution and generated output*.
-- Setup :: The executable is placed outside its checkout with no personal
-  Pandoc data or font installation available to the test.
-- Action :: Produce Markdown and Org previews; extract bundled font payloads
-  and notices from the distribution and HTML.
-- Expected :: Font hashes match the *recorded Asap assets*; CSS declares both
-  variation ranges; theme/script payloads and licence notices are present.
-- Retention :: Persistent regression under =make test=; appearance is checked
-  separately by the user test.
+- Covers :: [[#ac-001-7][AC001.7 - Both Asap variable faces are embedded]],
+  [[#ac-001-8][AC001.8 - Distribution retains licence notices]],
+  [[#ac-001-20][AC001.20 - Embedded fonts retain their licence in HTML]],
+  [[#ac-001-42][AC001.42 - Embedded application assets retain their licence]].
+- Boundary :: Inspect the *built distribution and generated output*.
+- Setup :: Place the *executable outside its checkout*, without personal Pandoc
+  data or installed Asap fonts.
+- Action :: *Generate Markdown and Org previews* and extract their font bytes, CSS
+  declarations, and notices.
+- Expected :: *Font hashes match the recorded assets*; both variation ranges and
+  packaged presentation assets are present. *Distribution and embedded HTML
+  retain the complete required notices*: Apache 2.0, applicable application
+  notices, Asap copyright, and full OFL 1.1. Browser appearance is checked separately.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** RT001.6 - Reference resolution and encoding
 :PROPERTIES:
 :CUSTOM_ID: rt-001-6
 :END:
 
-- Covers :: [[#ac-001-9][AC001.9 - Source-relative references resolve from temporary pages]].
-- Boundary :: The public executable and *parsed output URLs*.
-- Setup :: Nested source directories with relative images, file links, fragments,
-  query components, external URLs, and filenames containing spaces, Unicode,
-  percent signs, and literal URL delimiters.
-- Action :: Preview from a different working directory.
-- Expected :: Local targets identify the *correct original resources*;
-  same-page fragments identify the generated document; encoding round-trips
-  without double decoding; external URLs are unchanged.
-- Retention :: Persistent regression under =make test=; TDD is required.
+- Covers :: [[#ac-001-9][AC001.9 - Local references use the source directory]],
+  [[#ac-001-21][AC001.21 - Same-page fragments stay on the preview]],
+  [[#ac-001-22][AC001.22 - External hyperlinks retain their destinations]].
+- Boundary :: Inspect *generated URLs from the public executable* using a
+  format-aware parser.
+- Setup :: Create nested sources containing *local links, images, fragments,
+  queries, and external links*. Include filenames with spaces, Unicode, percent
+  signs, and literal URL delimiters.
+- Action :: *Preview from another working directory*.
+- Expected :: *Local targets identify the correct resources*; fragments stay on
+  the preview; encoding round-trips without double decoding. *External URLs remain
+  unchanged* and are not conversion inputs.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** RT001.7 - Org identifiers and heading targets
 :PROPERTIES:
 :CUSTOM_ID: rt-001-7
 :END:
 
-- Covers :: [[#ac-001-10][AC001.10 - Identifier preservation supports outline destinations]].
-- Boundary :: The executable with real Pandoc and *generated identifiers*.
-- Setup :: ID-only, custom-ID-only, both-ID, and repeated-heading fixtures.
-- Action :: Render the documents and resolve the supported link forms against
-  actual generated elements.
-- Expected :: Both source identifiers remain usable when distinct; *no element
-  has duplicate identifier attributes*; no two generated elements share an
-  identifier; heading links use actual destinations. Duplicate source IDs and
-  cross-document =id:= searches require a final ambiguity policy before this
-  definition can pass.
-- Retention :: Persistent regression under =make test=; TDD is required.
+- Covers :: [[#ac-001-10][AC001.10 - Org IDs remain usable]],
+  [[#ac-001-23][AC001.23 - Heading links use actual generated destinations]].
+- Boundary :: Inspect *generated destinations from real Pandoc output* through the
+  executable.
+- Setup :: Create *ID-only, custom-ID-only, both-ID, and repeated-heading
+  fixtures*, plus duplicate/invalid IDs, ambiguous headings, =id:= links, and
+  supported/unsupported Org file-search suffixes.
+- Action :: *Render each document and resolve supported links* against its actual
+  output elements.
+- Expected :: *Distinct source IDs remain usable*; generated IDs are unique;
+  heading links use actual destinations. Duplicate or unknown source targets
+  follow the declared ambiguity fallback, including =id:= and Org search suffixes.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** RT001.8 - Conversion and browser-handoff failures
 :PROPERTIES:
 :CUSTOM_ID: rt-001-8
 :END:
 
-- Covers :: [[#ac-001-12][AC001.12 - Conversion failure is reported without opening partial output]].
-- Boundary :: The *executable's dependency and desktop-opening boundaries*.
-- Setup :: A mixed valid/invalid batch, a converter failure, and an opener that
-  returns a non-zero status. Doubles force failures only at those boundaries.
-- Action :: Invoke each failure case and capture status, diagnostics, and open
+- Covers :: [[#ac-001-12][AC001.12 - Explicit-input failure is diagnosed]],
+  [[#ac-001-14][AC001.14 - Exit status distinguishes invalid invocation]],
+  [[#ac-001-27][AC001.27 - Incomplete output is never opened]],
+  [[#ac-001-28][AC001.28 - Browser-handoff failure is diagnosed]].
+- Boundary :: Exercise *converter and desktop-opening failure boundaries* through
+  the executable.
+- Setup :: Prepare a *mixed valid/invalid batch*, a converter failure, and an
+  opener returning non-zero. Force a final-publication write failure and expiry
+  of its five-second deadline. Use doubles only at those external boundaries.
+- Action :: *Invoke each failure case* and capture status, diagnostics, and open
   requests.
-- Expected :: The failing input/operation is identified, status is non-zero,
-  and *no incomplete output is opened*. Real browser readiness is not inferred
-  from the opener double.
-- Retention :: Persistent regression under =make test=; TDD is required.
+- Expected :: *Diagnostics name the failing input or operation*; operational
+  failures return 1; *no partial output is opened*. An opener double does not
+  establish real browser readiness. *Publication failure opens no entry*, even
+  one published earlier in the same invocation, and triggers owned cleanup.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** RT001.9 - Command information and invalid invocation
 :PROPERTIES:
 :CUSTOM_ID: rt-001-9
 :END:
 
-- Covers :: [[#ac-001-13][AC001.13 - Help and version have no preview side effects]]
-  and [[#ac-001-14][AC001.14 - Invalid invocation is distinguished from operational failure]].
-- Boundary :: The *public executable*.
-- Setup :: An isolated environment without Pandoc and with monitored output
-  and desktop-opening boundaries.
-- Action :: Exercise help, version, no arguments, unknown options, and invalid
-  settings.
-- Expected :: Informational requests *succeed without side effects*; invalid
-  invocations return status 2 and identify the problem.
-- Retention :: Persistent regression under =make test=; TDD is required.
+- Covers :: [[#ac-001-13][AC001.13 - Help and version have no preview side effects]],
+  [[#ac-001-14][AC001.14 - Exit status distinguishes invalid invocation]].
+- Boundary :: Exercise the *public executable*.
+- Setup :: Use an *isolated environment without Pandoc* and monitor document
+  reads, temporary output, and desktop handoff.
+- Action :: *Request help and version*, then try no arguments, unknown options,
+  each invalid environment setting, and all valid boundary settings.
+- Expected :: *Help and version return 0 without preview side effects*; the help
+  aliases agree and the version is identified. *Invalid invocations return 2* and
+  identify the problem. Valid settings reach the missing-dependency check and
+  return 1 in this isolated environment; they are not rejected as invalid.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
+
+** RT001.10 - Bounded local link browsing
+:PROPERTIES:
+:CUSTOM_ID: rt-001-10
+:END:
+
+- Covers :: [[#ac-001-31][AC001.31 - Linked browsing follows only admitted documents]],
+  [[#ac-001-33][AC001.33 - Skipped links never point to missing previews]].
+- Boundary :: Exercise the *executable, generated graph, and rewritten URLs*.
+- Setup :: Create a *synthetic Markdown/Org graph* with cycles, repeated
+  fragments, sibling roots, duplicate basenames, missing targets, and symlink
+  aliases in distinct relative contexts.
+- Action :: *Render with traversal disabled and enabled*, then with an explicit
+  root.
+- Expected :: *Disabled traversal converts only explicit contexts*. Enabled
+  traversal follows source-order breadth-first discovery, honours canonical
+  containment, resolves source-relative contexts correctly, and opens only
+  entries. Failed or excluded nodes keep original-file links; multiple source
+  contexts never silently merge.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
+
+** RT001.11 - Budget and filesystem boundaries
+:PROPERTIES:
+:CUSTOM_ID: rt-001-11
+:END:
+
+- Covers :: [[#ac-001-32][AC001.32 - Traversal and conversion enforce finite budgets]],
+  [[#ac-001-33][AC001.33 - Skipped links never point to missing previews]].
+- Boundary :: Exercise *admission, conversion deadlines, and output limits*
+  through the executable.
+- Setup :: Construct *below, exact, and above cases for each count/depth/byte budget*.
+  Use a controllable converter for excess output/time and a platform-device
+  adapter for a different-device result; real containment and symlink tests remain
+  in the suite.
+- Action :: *Preview each boundary fixture* with a short configured deadline where
+  needed.
+- Expected :: *Exact count/depth/byte limits are admitted; excess work is stopped and diagnosed*.
+  No extra node, source read, or output write passes its limit. Linked skips
+  preserve readable entries; explicit failures return 1. Cancellation terminates
+  and reaps converter processes. The device double checks handling, not a real
+  second-volume claim.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
+
+** RT001.12 - Retention cancellation and cleanup ownership
+:PROPERTIES:
+:CUSTOM_ID: rt-001-12
+:END:
+
+- Covers :: [[#ac-001-34][AC001.34 - Reading sessions retain their whole preview set]],
+  [[#ac-001-35][AC001.35 - Quick previews expire after their grace period]],
+  [[#ac-001-36][AC001.36 - Cleanup affects only the owned session]].
+- Boundary :: Exercise *executable lifetime, signals, and filesystem ownership*.
+- Setup :: Use *short valid grace/deadline settings*, a controlled opener, two
+  sessions, and unrelated sentinels. Force converter, opener, cleanup, and signal
+  outcomes at their real external boundaries.
+- Action :: *Run quick and reading modes*, signal during conversion and retention,
+  and attempt cleanup failure.
+- Expected :: *Reading outputs survive until signalled*; quick outputs survive the
+  configured interval and are then removed. Failures and signals remove only owned
+  output; cleanup failure returns 1 with the remaining path. Check retained files
+  before signalling; do not infer browser readiness from a timer.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
+
+** RT001.13 - Passive source and resource policy
+:PROPERTIES:
+:CUSTOM_ID: rt-001-13
+:END:
+
+- Covers :: [[#ac-001-37][AC001.37 - Source content cannot supply executable browser code]],
+  [[#ac-001-38][AC001.38 - Org includes remain unexpanded]],
+  [[#ac-001-39][AC001.39 - Preview generation and loading do not fetch remote resources]],
+  [[#ac-001-40][AC001.40 - Unsupported raw reference forms are reported]].
+- Boundary :: Inspect *real Pandoc output, sanitized HTML, and conversion network
+  effects*.
+- Setup :: Use *synthetic passive and hostile Markdown/Org*: scripts, encoded
+  active URLs, event attributes, base elements, forms, frames, CSS URLs, srcset,
+  SVG, metadata resources, and include targets containing sentinel text. A
+  loopback HTTP fixture records attempted source-directed fetches.
+- Action :: *Render each fixture*, including the same strings inside code blocks.
+- Expected :: *Passive text, local images, anchors, and literal code survive*.
+  Prohibited executable/resource structures are absent or neutralized with
+  diagnostics; include sentinel content is absent; the HTTP fixture records zero
+  conversion requests. CSP permits only the declared packaged assets. Browser
+  execution/loading is checked by
+  [[#ut-001-3][UT001.3 - Passive-document browser checks]].
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
+
+** RT001.14 - Installation outside the checkout
+:PROPERTIES:
+:CUSTOM_ID: rt-001-14
+:END:
+
+- Covers :: [[#ac-001-29][AC001.29 - The packaged command installs independently]].
+- Boundary :: Exercise *make build, make install, the installed executable, and
+  package contents*.
+- Setup :: Use an *OS-temporary installation prefix* and synthetic documents
+  outside the checkout.
+- Action :: *Build, install twice, and invoke the installed binary* from an
+  unrelated directory; inspect the release archive.
+- Expected :: *Repeated installation preserves the managed result*; the binary
+  runs with only supported Pandoc, retains packaged assets/notices, and requires
+  no private helpers. Homebrew execution is the bounded one-off test.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
+
+** RT001.15 - Dependency and input compatibility
+:PROPERTIES:
+:CUSTOM_ID: rt-001-15
+:END:
+
+- Covers :: [[#ac-001-30][AC001.30 - Incompatible dependencies fail before rendering]].
+- Boundary :: Exercise *the executable's input and converter boundary*.
+- Setup :: Prepare *allowed suffixes, empty content, invalid UTF-8, missing files,
+  directories, and non-regular files*. Use version-reporting converter doubles for
+  supported/unsupported boundaries, an absent converter, a stalled version
+  query, and a query exceeding the 64 KiB preflight-output cap.
+- Action :: *Invoke the compatibility cases*, including mixed readable and invalid
+  sources.
+- Expected :: *Supported local files render*; invalid sources are identified and
+  return 1 without opening their output. Unsupported/missing Pandoc fails before
+  session allocation; stalled/excess-output preflight is bounded and fails
+  without allocation. The real-Pandoc rendering tests verify conversion; version
+  doubles verify only preflight policy.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
+
+** RT001.16 - Outline metadata and destinations
+:PROPERTIES:
+:CUSTOM_ID: rt-001-16
+:END:
+
+- Covers :: [[#ac-001-41][AC001.41 - Org outline state is deterministic]].
+- Boundary :: Inspect *generated Org structure from the executable*.
+- Setup :: Provide *STARTUP overview/content/showall and VISIBILITY
+  folded/children/all fixtures*, unknown values, nested sections, and property
+  drawers.
+- Action :: *Render each fixture* through real Pandoc.
+- Expected :: *Output retains the declared initial states and section
+  relationships* for browser controls; unknown values are diagnosed. Runtime
+  interaction and no-JavaScript expansion are human-verified; generated metadata
+  alone does not prove folding.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN.
 
 ** UT001.1 - Document typography and readability
 :PROPERTIES:
 :CUSTOM_ID: ut-001-1
 :END:
 
-- Covers :: [[#ac-001-4][AC001.4 - Markdown content remains readable and structurally intact]],
-  [[#ac-001-5][AC001.5 - Org-specific information survives conversion]], and
-  [[#ac-001-7][AC001.7 - Embedded Asap is available without external font access]].
+- Covers :: [[#ac-001-4][AC001.4 - Markdown structure survives conversion]],
+  [[#ac-001-5][AC001.5 - Org information survives conversion]],
+  [[#ac-001-18][AC001.18 - Proportional text uses the appropriate Asap face]],
+  [[#ac-001-19][AC001.19 - Code remains monospace]],
+  [[#ac-001-43][AC001.43 - Application text meets contrast requirements]].
 - Reviewer :: Taḋg or an explicitly named operator.
-- Procedure :: Inspect representative Markdown and Org output in the supported
-  browser, at wide and narrow window sizes, in light and dark modes, with
-  regular, italic, bold, code, tables, images, and =Taḋg ÁÉÍÓÚ áéíóú= text.
-- Expected :: Text is *readable without clipping or missing glyphs*; headings,
-  Org metadata, and code remain distinguishable; Asap uses the correct faces.
-- Record :: The dated result and browser/platform conditions belong in
-  =validation.org= after implementation.
+- Procedure :: *Inspect representative Markdown and Org* at wide and narrow window
+  sizes, in light and dark modes. Include regular, italic, bold, code, tables,
+  images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use Safari 26 on macOS 26 arm64 and record
+  exact versions and viewport sizes. Confirm the rendered font faces in the
+  browser inspector, not just their CSS declarations.
+  Measure the application text colours against their backgrounds in both themes;
+  record the lowest body and large-text contrast ratios.
+- Expected :: *Text remains readable without clipping or missing glyphs*;
+  headings, metadata, and code remain distinguishable. *Asap uses the appropriate
+  face* and code remains monospace. *Contrast meets 4.5:1 for body text and 3:1
+  for large text* across both themes.
+- Record :: Record the *dated human result, revision, and viewing conditions* in
+  =validation.org=; currently PENDING.
 
 ** UT001.2 - Browser navigation and outline controls
 :PROPERTIES:
 :CUSTOM_ID: ut-001-2
 :END:
 
-- Covers :: [[#ac-001-9][AC001.9 - Source-relative references resolve from temporary pages]],
-  [[#ac-001-10][AC001.10 - Identifier preservation supports outline destinations]], and
-  [[#ac-001-11][AC001.11 - Reading and outline controls remain accessible]].
+- Covers :: [[#ac-001-9][AC001.9 - Local references use the source directory]],
+  [[#ac-001-10][AC001.10 - Org IDs remain usable]],
+  [[#ac-001-11][AC001.11 - Reading works without JavaScript]],
+  [[#ac-001-21][AC001.21 - Same-page fragments stay on the preview]],
+  [[#ac-001-23][AC001.23 - Heading links use actual generated destinations]],
+  [[#ac-001-24][AC001.24 - Keyboard focus traversal remains available]],
+  [[#ac-001-25][AC001.25 - Fragment navigation reveals folded ancestors]],
+  [[#ac-001-26][AC001.26 - Printing includes every fold state]],
+  [[#ac-001-34][AC001.34 - Reading sessions retain their whole preview set]],
+  [[#ac-001-35][AC001.35 - Quick previews expire after their grace period]],
+  [[#ac-001-41][AC001.41 - Org outline state is deterministic]].
 - Reviewer :: Taḋg or an explicitly named operator.
-- Procedure :: Navigate local images/file links and fragments, operate folding
-  with keyboard only, disable JavaScript, and inspect print preview for all
-  fold states. Repeat with a destination inside a folded ancestor.
-- Expected :: Links reach their intended destinations; *normal focus traversal
-  works*, focus is visible, fragment targets are revealed, and printed content
-  remains available.
-- Record :: The dated result and browser/platform conditions belong in
-  =validation.org= after implementation.
+- Procedure :: *Navigate local links and fragments*, including targets with folded
+  ancestors. Use controls with the keyboard, disable JavaScript, and inspect print
+  preview from every fold state, including closed drawers. Use Safari 26 on
+  macOS 26 arm64 and record exact versions. In reading mode, reload
+  and follow generated pages before ending the session; in quick mode, note the
+  declared expiry and try a deliberately delayed browser launch.
+- Expected :: *Links reach their destinations*; normal focus traversal and visible
+  focus remain available; *fragment navigation reveals hidden targets*. Reading
+  works without JavaScript, and *printing includes all content*. *Reading-mode
+  pages remain available until termination*. Quick mode's slow-browser race is
+  reported as a documented limitation, never as proof that the browser loaded
+  before expiry.
+- Record :: Record the *dated human result, revision, and viewing conditions* in
+  =validation.org=; currently PENDING.
+
+** UT001.3 - Passive-document browser checks
+:PROPERTIES:
+:CUSTOM_ID: ut-001-3
+:END:
+
+- Covers :: [[#ac-001-37][AC001.37 - Source content cannot supply executable browser code]],
+  [[#ac-001-39][AC001.39 - Preview generation and loading do not fetch remote resources]],
+  [[#ac-001-40][AC001.40 - Unsupported raw reference forms are reported]].
+- Reviewer :: Taḋg or an explicitly named operator.
+- Procedure :: *Open synthetic passive and hostile previews* with developer tools
+  recording console execution and network requests. Include source scripts/events,
+  encoded active links, remote images, raw CSS/srcset/SVG, and the same strings in
+  code. Use Safari 26 on macOS 26 arm64. Use only synthetic data and loopback endpoints; verify normal packaged
+  folding and local images.
+- Expected :: *Source code never executes and initial loading fetches no
+  source-directed network URLs*. Packaged controls and local images work; neutralized content has an
+  explanation, and literal code remains readable. Record Safari/macOS versions,
+  requests, and console observations.
+- Record :: Record the *dated human result, revision, and viewing conditions* in
+  =validation.org=; currently PENDING.
+
+** OT001.1 - Local Homebrew package validation
+:PROPERTIES:
+:CUSTOM_ID: ot-001-1
+:END:
+
+- Covers :: [[#ac-001-29][AC001.29 - Independent installation]] and
+  [[#ac-001-8][AC001.8 - Distribution licence notices]].
+- Boundary :: *The actual Homebrew installer and built release archive* on the
+  supported macOS/arm64 host, using only a local temporary tap.
+- Procedure :: Build the candidate archive and checksum with =make release=.
+  Prepare a temporary local tap from the generated formula and compare its recipe
+  with the committed template. Use *the exact local archive and checksum*.
+  Install, run help/version and one
+  synthetic preview outside the checkout, then uninstall and remove the tap.
+  Record the archive hash, recipe delta, Pandoc version, and actual commands.
+- Expected :: *Homebrew declares/resolves Pandoc and installs a usable command*
+  with packaged assets and notices. This validates local installation mechanics,
+  not release hosting, published tap discovery, or older platforms.
+- Bounds :: *One install and one uninstall*, no release publication, no private
+  source data, no metered service, and no automatic retries. Stop after the first
+  failure and retain diagnostics. Use the same htmlpreview formula class/name
+  in an unoccupied temporary tap;
+  stop if htmlpreview is already installed through Homebrew. Never replace an
+  unrelated installed package. Allocate scratch with the OS
+  temporary-directory API. Limit the operation to ten minutes.
+- Execution owner :: *The operator runs the Homebrew steps*. The agent prepares
+  the candidate and temporary recipe only; this test does not grant the agent
+  permission to modify global package-manager state.
+- Record :: Write the *dated result, environment, package hash, and cleanup* to
+  =validation.org=. This is not part of regression, CI, or a recurring target.
 
 * Edge Cases
 :PROPERTIES:
@@ -507,32 +1039,102 @@
 
 ** Read-only sources and simultaneous invocations
 
-- Condition :: Sources cannot be written, or multiple invocations preview the
-  same source concurrently.
-- Required behaviour :: *Separate private outputs* are generated without source
-  mutation or interference.
+- Condition :: *Sources are read-only* or several invocations use the same input.
+- Required behaviour :: *Private outputs remain separate*; sources and unrelated
+  data remain unchanged.
 - Covered by :: [[#ac-001-2][AC001.2 - Source preservation]],
-  [[#ac-001-3][AC001.3 - Private session output]], and
+  [[#ac-001-3][AC001.3 - Private output]],
+  [[#ac-001-16][AC001.16 - Concurrent isolation]], and
   [[#rt-001-2][RT001.2 - Source preservation and session isolation]].
+
+** Empty inputs and repeated basenames
+
+- Condition :: An *input is empty*, repeated, or shares a basename with another
+  file in a different directory.
+- Required behaviour :: *Each distinct input retains its own source-labelled
+  preview*; opening order follows explicit input order.
+- Covered by :: [[#ac-001-1][AC001.1 - Separate previews]],
+  [[#ac-001-15][AC001.15 - Source identity]], and
+  [[#rt-001-1][RT001.1 - Explicit inputs and source identity]].
 
 ** Relative references and literal delimiters
 
-- Condition :: Input paths differ from the current directory or contain
+- Condition :: *Source and invocation directories differ*, or names contain
   Unicode, spaces, percent signs, question marks, or hash characters.
-- Required behaviour :: The resolver *distinguishes filesystem names from URL
-  components* and preserves the intended target.
-- Covered by :: [[#ac-001-9][AC001.9 - Source-relative references]] and
+- Required behaviour :: *Local references preserve their intended targets* by
+  distinguishing filesystem names from URL components.
+- Covered by :: [[#ac-001-9][AC001.9 - Local reference origins]],
+  [[#ac-001-21][AC001.21 - Same-page fragments]],
+  [[#ac-001-22][AC001.22 - External destinations]], and
   [[#rt-001-6][RT001.6 - Reference resolution and encoding]].
 
-** Invalid and partially rendered inputs
+** Invalid inputs and partial rendering
 
-- Condition :: An explicit input is invalid, conversion fails, or desktop
-  handoff fails while another input succeeds.
-- Required behaviour :: *Incomplete pages are not opened* and the invocation
-  reports failure without hiding successful outputs.
-- Covered by :: [[#ac-001-12][AC001.12 - Conversion failure reporting]],
-  [[#ac-001-14][AC001.14 - Exit-status classification]], and
+- Condition :: An *explicit input or conversion fails*, or desktop handoff fails
+  while another input succeeds.
+- Required behaviour :: *Diagnostics identify the failure*; partial pages are
+  not opened and successful outputs are not hidden.
+- Covered by :: [[#ac-001-12][AC001.12 - Input-failure diagnostics]],
+  [[#ac-001-14][AC001.14 - Exit-status classification]],
+  [[#ac-001-27][AC001.27 - No partial opens]],
+  [[#ac-001-28][AC001.28 - Handoff diagnostics]], and
   [[#rt-001-8][RT001.8 - Conversion and browser-handoff failures]].
+
+** Literal Org lookalikes and preservation collisions
+
+- Condition :: *Literal blocks resemble Org metadata*, or real drawer/identifier
+  names resemble preservation markers.
+- Required behaviour :: *Literal content and source values survive unchanged*;
+  no block is executed or confused with an internal marker.
+- Covered by :: [[#ac-001-5][AC001.5 - Org values]],
+  [[#ac-001-6][AC001.6 - Literal content]],
+  [[#ac-001-17][AC001.17 - No block execution]], and
+  [[#rt-001-4][RT001.4 - Org preservation and literal regions]].
+
+** Folded targets and printing
+
+- Condition :: A *fragment target is folded*, or printing begins with sections
+  or drawers closed.
+- Required behaviour :: *Fragment navigation reveals the target*; printing
+  includes all document content.
+- Covered by :: [[#ac-001-25][AC001.25 - Fragment revelation]],
+  [[#ac-001-26][AC001.26 - Full print content]], and
+  [[#ut-001-2][UT001.2 - Browser navigation and outline controls]].
+
+** Traversal exclusions and exhausted budgets
+
+- Condition :: *Links cycle, leave the allowed root/device, or exceed a budget*.
+- Required behaviour :: *Convert each admitted context once*; diagnose exclusions
+  and keep original-file destinations for unconverted targets. Explicit-input
+  failures return 1; linked skips alone do not fail a readable entry.
+- Covered by :: [[#ac-001-31][AC001.31 - Admitted linked documents]],
+  [[#ac-001-32][AC001.32 - Finite budgets]],
+  [[#ac-001-33][AC001.33 - Successful target mapping]],
+  [[#rt-001-10][RT001.10 - Bounded local link browsing]], and
+  [[#rt-001-11][RT001.11 - Budget and filesystem boundaries]].
+
+** Active content and indirect resources
+
+- Condition :: *Sources contain executable markup, includes, or network URLs*.
+- Required behaviour :: *Preserve passive content and literal code*, neutralize
+  unsupported active/resource forms, and report the affected construct.
+- Covered by :: [[#ac-001-37][AC001.37 - Passive browser code policy]],
+  [[#ac-001-38][AC001.38 - Unexpanded includes]],
+  [[#ac-001-39][AC001.39 - No network URL fetches]],
+  [[#ac-001-40][AC001.40 - Unsupported raw forms]],
+  [[#rt-001-13][RT001.13 - Passive source and resource policy]], and
+  [[#ut-001-3][UT001.3 - Passive-document browser checks]].
+
+** Expiry interruption and cleanup failure
+
+- Condition :: *Quick retention expires, a session is signalled, or cleanup fails*.
+- Required behaviour :: *Apply the selected lifetime and remove only owned output*.
+  Report cleanup failure and its remaining path. SIGKILL/system failure may leave
+  that directory; there is no automatic cross-session deletion.
+- Covered by :: [[#ac-001-34][AC001.34 - Reading lifetime]],
+  [[#ac-001-35][AC001.35 - Quick lifetime]],
+  [[#ac-001-36][AC001.36 - Cleanup ownership]], and
+  [[#rt-001-12][RT001.12 - Retention cancellation and cleanup ownership]].
 
 * Solution Design
 :PROPERTIES:
@@ -541,144 +1143,414 @@
 
 ** Architecture context
 
-- Components :: Go owns *input handling, sessions, rendering orchestration,
-  references, and desktop handoff*. Pandoc owns document conversion.
-- Source preservation :: Replace the AWK pre-pass with *context-aware Go
-  processing*. Preserve only the Org information that the selected Pandoc reader
-  demonstrably loses; retain literal blocks and identifiers.
-- Transformation boundary :: Adapt the project-owned Lua modules for *parsed
-  Org structure*. Keep generic reference policy in the Go application.
-- Presentation :: Maintain HTML, CSS, fonts, and limited browser JavaScript as
-  *reviewable source assets*. Include them through the normal build.
-
-** Fidelity contract to retain during scope resolution
-
-- Markdown :: Define the exact Pandoc reader and extension set in the final
-  compatibility contract. Fixtures must separately exercise headings, nested
-  lists, emphasis, quotations, fenced code, tables, images, and footnotes.
-  Pandoc's name alone is not a dialect specification.
-- Org structure :: Preserve declared task keywords, tag order, priority and
-  statistics text, planning labels and values, and drawer names and content.
-  Statistics remain *source values*, without recalculation.
-- Org timestamps :: Preserve active and inactive timestamps, times, repeaters,
-  warning offsets, ranges, and trailing punctuation. Unrecognized text must
-  remain readable; styling must not *consume or truncate source values*.
-- Literal regions :: Track source/example/comment block boundaries and drawer
-  context before preserving semantic Org information. Text resembling a
-  directive inside a literal block must remain *literal text*. Do not reuse
-  =LOGBOOK_= or another valid source name as an unchecked internal marker.
-- Identifiers :: Capture IDs before parsing where needed; derive navigation
-  from *actual output identifiers*. Retain a distinct =ID= as an alias when
-  =CUSTOM_ID= is the primary destination. Finalize duplicate-ID and
-  cross-document search handling with the linked-browsing decision.
-- Evidence :: A synthetic Pandoc 3.9.0.2 Org-reader probe on 7 September 2026
-  retained an ID-only heading as =only-id=, but a heading with both =ID= and
-  =CUSTOM_ID= retained only =public-id= in its parsed heading attributes.
-  =LOGBOOK_= survived as a custom drawer; the planning lines and =LOGBOOK=
-  drawer did not survive. Source/example blocks retained their literal text.
-  This supports *context-aware preservation before parsing*; it does not prove
-  the proposed application or the prototype's complete fidelity.
+- Relevant components :: *Go coordinates inputs, sessions, rendering, references,
+  and desktop handoff*. Pandoc converts Markdown and Org.
+- Ownership boundary :: *This project owns pre-processing, Lua integration,
+  presentation, and policy*. Reused prototype code is part of the normal build
+  and tests; no personal wrapper or separate prototype runtime is invoked.
+- Existing pattern :: *Replace the shell/AWK pipeline with context-aware Go
+  preservation*. Keep source recovery before Pandoc, semantic transforms in
+  small Lua modules, and reference policy in Go.
+- Alternatives :: *File URLs avoid an HTTP server*. Explicit rewriting avoids
+  the fragment side effects of a source-directory base element. A foreground
+  session retains linked files without a background cleanup service.
+- Evidence :: [[file:audits.org][Definition evidence]] retains the earlier
+  inspection environment and ID/planning/drawer probes. These establish reader
+  losses, not full application fidelity.
+- Technical sources :: [[https://pandoc.org/MANUAL.html#option--sandbox][Pandoc reader/writer isolation]],
+  [[https://pkg.go.dev/os#Root][Go confined filesystem access]],
+  [[https://pkg.go.dev/os/exec#CommandContext][Go process cancellation]],
+  [[https://pkg.go.dev/golang.org/x/net/html][HTML5 parsing]],
+  [[https://github.com/microcosm-cc/bluemonday][bluemonday sanitization policy]], and
+  [[https://docs.brew.sh/Formula-Cookbook#specifying-other-formulae-as-dependencies][Homebrew dependency declarations]].
 
 ** High-level design
 
 *** Flow
 
-1. Parse the invocation and *validate configuration and explicit inputs*.
-2. Check Pandoc and allocate an *owner-private temporary session*.
-3. Preserve Org metadata as needed, invoke Pandoc with explicit packaged
-   settings, and retain *bounded generated documents*.
-4. Resolve references against source locations, transform supported output
-   structures, and *write finished HTML atomically* within the session.
-5. Open explicit outputs through the desktop adapter; apply the *operator-defined
-   retention and cleanup contract* once resolved.
+1. *Validate arguments and environment settings*, then check the Pandoc version.
+2. *Allocate a private session* and register cleanup before extracting assets.
+3. *Process explicit sources first*, in argument order, reserving their places
+   within the document limit. Read one bounded snapshot per source context.
+4. If enabled, *discover linked contexts breadth-first* from rendered anchors,
+   within their permitted root, device, depth, and budgets.
+5. *Finalize successful pages and target identifiers*, rewrite supported URLs,
+   sanitize document HTML, and insert the packaged presentation.
+6. *Publish finished entry pages before opening any*, then invoke the macOS
+   opener once per distinct successful explicit context.
+7. *Retain the whole session* for the selected lifetime and clean up its owned
+   directory when that lifetime ends.
 
 *** Interfaces and configuration
 
-- Invocation :: =htmlpreview FILE [FILE ...]=, with =--= for filenames beginning
-  with a hyphen; =-h=, =--help=, and =--version= are informational interfaces.
-- Settings :: Public setting names, defaults, valid ranges, and precedence
-  must be finalized after the pending scope/lifetime decisions. The Go standard
-  selects *environment variables for runtime configuration*.
-- Conversion :: Use *direct executable invocation with argument arrays*;
-  do not interpolate filenames into shell commands.
-- File resolution :: Keep source context distinct from output placement. Use
-  filesystem operations for local identity and *URL-aware encoding* for emitted
-  references.
-- HTML handling :: The architecture proposes =golang.org/x/net/html= for
-  structural output processing. Pin a reviewed version during delivery;
-  ordinary string replacement is not an HTML parser.
+- Invocation :: =htmlpreview FILE [FILE ...]= accepts *local files only*; =--=
+  ends option parsing. =-h= and =--help= are equivalent; =--version= identifies
+  the build. Informational requests bypass settings, dependency checks, and
+  all preview effects. Accept one informational option with no inputs; combining
+  informational options or adding inputs is invalid. Before the explicit =--=,
+  recognize options anywhere in the argument list; unknown options return 2.
+- Inputs :: Accept *regular UTF-8 files* ending in =.md=, =.markdown=, or =.org=
+  without case sensitivity. Empty files are valid. Stdin documents, directories,
+  URLs, devices, and FIFOs are unsupported source inputs.
+- Input failure :: *Unreadable, unsupported, or malformed source files fail
+  individually* with status 1 while other inputs may succeed. Missing arguments,
+  unknown options, and invalid settings fail before output with status 2.
+- Compatibility :: The initial *supported platform is macOS 26 on arm64*, using
+  Safari 26 as the browser validation target. Other platforms/browsers may work
+  but have no release claim. The build baseline is Go 1.26.3; a later reviewed compatible
+  patch may be pinned during delivery. Go is not a binary runtime dependency.
+- Pandoc :: Require *Pandoc 3.9.0.2 or a later 3.9 patch release*, with its bundled
+  Lua 5.4. Reject other release series with status 1 before session allocation.
+  Real conversion tests run against the declared minimum and the packaging
+  candidate's Pandoc version when they differ.
+- Dialects :: Org uses =org=. Markdown uses *Pandoc's 3.9.0.2 default markdown
+  extension set* with =raw_tex= and =latex_macros= disabled. Record the explicit
+  enabled/disabled set below in packaged defaults, rather than inheriting
+  another release's changed defaults. Raw HTML follows the policy below.
+
+- Enabled Markdown extensions :: *Freeze this exact enabled set*; all other
+  3.9 reader extensions are disabled. Source raw HTML remains subject to the
+  passive policy.
+
+#+begin_example
+all_symbols_escapable
+auto_identifiers
+backtick_code_blocks
+blank_before_blockquote
+blank_before_header
+bracketed_spans
+citations
+definition_lists
+escaped_line_breaks
+example_lists
+fancy_lists
+fenced_code_attributes
+fenced_code_blocks
+fenced_divs
+footnotes
+grid_tables
+header_attributes
+table_attributes
+implicit_figures
+implicit_header_references
+inline_code_attributes
+inline_notes
+intraword_underscores
+line_blocks
+link_attributes
+markdown_in_html_blocks
+multiline_tables
+native_divs
+native_spans
+pandoc_title_block
+pipe_tables
+raw_attribute
+raw_html
+shortcut_reference_links
+simple_tables
+smart
+space_in_atx_header
+startnum
+strikeout
+subscript
+superscript
+task_lists
+table_captions
+tex_math_dollars
+yaml_metadata_block
+#+end_example
+
+- Configuration :: *Environment values override documented defaults*. No user
+  config file or arbitrary Pandoc flags are accepted. Empty values use defaults
+  except an explicitly empty root, which selects the per-entry root. Unknown
+  =HTMLPREVIEW_= variables are invalid to expose misspelled controls.
+- Desktop handoff :: Invoke */usr/bin/open with argument arrays* and absolute
+  generated file paths. Resolve Pandoc from PATH once; no shell interpolation.
+  Each version check and opener invocation has a five-second deadline;
+  preflight output is capped at 64 KiB before session allocation.
+- Output :: *Diagnostics go to stderr*; stdout lists each successfully published
+  explicit preview's absolute file URL. Reading mode also reports its session
+  path and termination instruction on stderr. No document content is logged.
+
+| Environment setting | Default | Valid values and meaning |
+|---------------------+---------+--------------------------|
+| =HTMLPREVIEW_LINKS= | =0= | =0= or =1=; enables local traversal |
+| =HTMLPREVIEW_MODE= | =quick=, or =read= when links are enabled | =quick= or =read=; links plus quick is invalid |
+| =HTMLPREVIEW_ROOT= | Each entry's canonical physical parent | Existing absolute or cwd-relative directory containing every explicit canonical input |
+| =HTMLPREVIEW_GRACE= | =3s= | Go duration from =100ms= to =1h=; used only in quick mode |
+| =HTMLPREVIEW_MAX_FILES= | =50= | Integer 1 to 500; includes explicit inputs and distinct source contexts |
+| =HTMLPREVIEW_MAX_DEPTH= | =3= | Integer 0 to 10; explicit inputs have depth zero |
+| =HTMLPREVIEW_MAX_SOURCE_BYTES= | =10485760= | Integer 1 to 10485760; at most 10 MiB per context |
+| =HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES= | =52428800= | Integer 1 to 52428800; at most 50 MiB per session |
+| =HTMLPREVIEW_MAX_OUTPUT_BYTES= | =104857600= | Integer 1 to 104857600; at most 100 MiB of session data |
+| =HTMLPREVIEW_DEADLINE= | =60s= | Go duration from =100ms= to =10m=; total discovery/render deadline |
+
+- Validation :: *Validate every supplied setting*, even if inactive in the
+  selected mode. Reject distinct explicit-context counts exceeding the file limit before
+  allocation. A resource limit too small for a valid document produces a
+  diagnosed operational failure, not an invalid-setting result.
+- Reading lifetime :: *Keep every page until SIGINT or SIGTERM*. Once retention begins,
+  either signal is a normal request to end retention; return the accumulated
+  result after cleanup. Before retention begins, either signal cancels all work
+  and returns 1. This also supports non-interactive supervisors; stdin is not consumed.
+- Quick lifetime :: *Start one retention timer after the final handoff attempt*.
+  Wait for the configured grace, then clean up. There is no browser readiness
+  signal and no promise of reload or successful slow-browser loading after expiry.
+  The timer is an expiry policy, not synchronization evidence.
 
 *** Data and state
 
-- Source documents and original linked assets are *read-only*.
-- The session owns generated HTML and conversion assets. *No durable cache,
-  database, or source-adjacent output* is introduced.
-- Each document record identifies its source context, resolved identity,
-  generated destination, rendering result, and outgoing references. The linked
-  traversal contract remains pending the scope decision.
-- Embed Asap WOFF2 bytes in the binary and generated CSS, with *full retained
-  copyright and OFL notices*. Do not relicense the font files.
+- Session ownership :: Use *os.MkdirTemp with the OS-selected location* and
+  mode 0700; generated files are mode 0600. Paths are session-local, independent
+  of source basenames. No cache, database, source write, or shared session exists.
+- Budget accounting :: *Count admitted source bytes per context*, even if bytes
+  are reused from a snapshot. Count all generated session bytes, including
+  extracted assets, staging files, font expansion, and final HTML, before writes.
+  Bound stdout/stderr buffers and retained diagnostics within that budget.
+- Source snapshots :: *Read each admitted context once*. Source edits during
+  a run do not update its preview; no cross-document atomic snapshot is promised.
+  Regular-file and size checks apply to the opened handle, not only path metadata.
+  The macOS adapter opens candidates non-blockingly before the type check so a
+  path swapped to a FIFO cannot stall admission; non-regular handles are closed
+  without reading document content.
+- Identity :: A *source context is canonical file path plus logical source
+  parent directory*. Identical arguments share a page. Symlink aliases with
+  different relative contexts may produce separate pages and consume separate
+  budget slots. Hard links with different canonical paths remain distinct.
+- Relative origin :: *Resolve links from the logical source parent*, then
+  canonicalize the target for admission. Keep that origin distinct from output
+  placement and physical identity.
+- Traversal roots :: Without a root override, *each explicit source owns its
+  canonical physical parent directory tree*. With an override, every explicit
+  canonical source must be inside it.
+  Each root retains its starting device identifier; linked targets must remain
+  inside that canonical root and on that device. Already explicit successful
+  targets may be linked across roots because they were explicitly requested.
+- Traversal access :: *Open admitted files through a Go os.Root boundary* after
+  canonical containment checks; inspect the opened file's device and type before
+  reading. Do not rely only on string prefixes or a pre-open symlink check.
+  Roots on separate filesystems are independent; do not enumerate directories.
+- Discovery :: *Visit local document anchors in rendered document order*.
+  Images, directories, non-document files, remote URLs, and unresolved =id:=
+  links do not add graph nodes. Explicit contexts precede every discovered node.
+  Depth limits apply to outgoing discovery, not links to an already rendered page.
+- Mapping :: *Only successfully rendered targets enter the final catalogue*.
+  Render into bounded staging, derive identifiers, then rewrite and publish every
+  selected page within a separate five-second publication deadline. *Any final
+  publication failure aborts the invocation before browser opening*, with cleanup
+  and status 1; partial success applies to source/conversion failures, not a
+  failed publication transaction.
+- URL handling :: *Split URL path, query, and fragment before filesystem
+  resolution*. Decode path escapes once and encode emitted file URLs once;
+  preserve queries and fragments. Malformed URLs become inactive labelled
+  references with diagnostics. Missing local targets retain absolute file URLs
+  and a warning; the preview does not create or search for them.
+- Reference subset :: *Rewrite anchor href and image src*, including Pandoc's
+  output and permitted literal HTML. Same-page fragments stay on generated pages.
+  Unconverted local documents/assets use absolute original-file URLs. Remote
+  HTTP/HTTPS/mailto anchors remain unchanged.
+- Org file searches :: *Resolve Org file searches* =::#custom-id= and =::*Heading=
+  against the actual
+  target catalogue. Heading matching is case-sensitive after trimming/collapsing
+  whitespace and excluding task keywords, priority, and trailing tags; statistics
+  remain part of the title. Match only a unique target.
+- Ambiguity :: *Duplicate, unknown, and unsupported Org searches are diagnosed*.
+  File links fall back to the absolute original source without a search suffix;
+  an adjacent explanation retains the original search text. =id:= resolves only
+  within the already admitted set and only when unique; otherwise its label is
+  inactive with an explanation. No global Org-ID database is read.
+- Identifiers :: *Capture ID and CUSTOM_ID before parsing*. Prefer CUSTOM_ID as
+  primary and retain a distinct ID alias. Repeated generated slugs receive stable
+  suffixes. Duplicate or invalid source IDs retain their property text but are
+  marked ambiguous for source-link resolution; output identifiers remain unique.
+- Literal preservation :: *Track Org blocks, drawers, and comments*. Preserve
+  source/example contents, including tabs, without interpreting directive
+  lookalikes. Use collision-checked internal names, never an unchecked LOGBOOK_
+  substitution. Incomplete literal blocks remain literal through end of input.
+- Org values :: *Retain task declarations, tags, priorities, statistics,
+  planning, and drawers*. Support TODO/SEQ_TODO/TYP_TODO declarations and preserve
+  active/inactive dates, times, repeaters, warning offsets, ranges, and punctuation.
+  Unknown timestamp forms remain text; no statistics or calendar values are
+  recomputed. Plain-source line endings may normalize in rendered text.
+- Outline :: *No-JavaScript output starts fully readable*. With enhancement,
+  STARTUP overview hides section bodies, content shows all headings without
+  bodies, and showall shows everything. Default is showall. Per-heading VISIBILITY
+  folded/children/all overrides its subtree at startup only; unknown values open
+  that subtree and warn. Runtime toolbar or local controls override initial
+  metadata, with fragment revelation taking precedence.
+- Local fold states :: *Folded hides the body and all descendant sections*;
+  children shows immediate child headings without their bodies or descendants;
+  all opens the whole subtree, including drawers. Global overview shows root
+  headings only; content shows every heading without bodies; showall opens all.
+- Presentation :: *Use one source-identity h1*; source headings begin at h2.
+  Generated levels follow actual ancestor nesting without gaps; retain original
+  source levels as metadata. Beyond h6, use role=heading with aria-level rather
+  than invalid h7 elements. Fold controls are native buttons; no document-wide
+  Tab interception. Drawers/details are emitted open for no-JavaScript reading;
+  enhancement applies their initial folding. Before print, expand all sections
+  and drawers; restore prior state afterwards. Print styling shows all content.
+  Dark/light palettes meet WCAG AA body/large-text contrast requirements.
+- Browser script :: *Use a small inline ES2020 module without imports* or global
+  mutable state. Scope listeners and DOM queries to application-owned controls;
+  use safe DOM APIs and register teardown for listeners/print-state changes.
+  Build the outline index in linear time and yield during large initialization
+  batches so static reading remains available before enhancement is ready.
+- Assets :: *Embed separate reviewable HTML/CSS/JS/Lua sources and Asap bytes*.
+  Use regular/italic @font-face rules, weight 100 to 900, width 75% to 125%, and
+  monospace code. Include full font copyright/OFL text in HTML comments and all
+  applicable notices in release archives.
 
 *** Failure behaviour
 
-- Check every process and filesystem result. *No partial HTML is opened*.
-- Preserve diagnostics with the relevant source or operation. *Do not hide
-  errors* through broad recovery or suppressed exit status.
-- Input, byte, time, traversal, and cleanup limits must be stated quantitatively
-  when the outstanding scope/lifetime decisions are resolved.
+- Explicit failures :: *Report each failed source and return 1* while opening
+  other successful explicit previews. Linked skips alone return 0; report a
+  concise count and affected original targets without source content.
+- Limit exhaustion :: *Stop new linked admission at count/depth/source limits*.
+  If an explicit input cannot be rendered within a resource limit, it fails.
+  On output/time exhaustion, cancel current conversion, reject unfinished pages,
+  publish only already rendered pages under the separate publication deadline
+  if output capacity remains, and report every skipped explicit input as a failure.
+- Process lifetime :: *Cancel and reap every converter on deadline or signal*.
+  Use context-controlled execution and close bounded pipes; do not leave child
+  processes after return. Go's process-control boundary and reader/writer budget
+  adapters remain small and testable.
+- Cleanup :: *Remove only the exact owned directory*, never a prefix/glob search.
+  No-output failure cleans immediately; usable outputs retain the chosen lifetime,
+  even if a handoff failed so their printed paths remain usable. Attempt cleanup
+  once, report its error and remaining path, and return 1 on failure.
+- Abrupt termination :: *SIGKILL or system failure may leave output behind*.
+  No cross-session scavenger is included; document the exact manual removal path.
+  Normal cleanup is best effort on a functioning filesystem, not a guarantee
+  against a stalled or unavailable storage device.
 
 ** Architecture impact
 
 *** Security impact
 
-- Threat boundary :: Source documents can carry active HTML or indirect file
-  references. The passive-document policy is *pending operator direction*.
-- Data and secrets :: Output contains source content and paths. Keep sessions
-  *owner-private*, avoid content in diagnostics, and introduce no telemetry or
-  publication.
-- Access :: The application *does not widen permissions or network access*.
-  It executes only packaged transformations and the declared converter/opener.
-- Conclusion :: Temporary-directory isolation alone *is not document
-  sanitization*. Finalize the source trust and include policy before auditing
-  or signing off this definition.
+- Threat boundary :: *Source content is passive input*. The application never
+  loads user filters/templates or executes Org source blocks.
+- Reader isolation :: Feed bounded source snapshots through *Pandoc --sandbox*
+  with explicit packaged defaults/data and owned Lua only. Disable raw TeX and
+  latex macros for Markdown, preserve tabs, and do not use embed-resources.
+  Pandoc's sandbox covers readers/writers, not the trusted filter code.
+- Includes :: *Neutralize Org INCLUDE and SETUPFILE before parsing*, retaining
+  the directive as literal visible text and warning. Ignore source metadata
+  requesting styles, filters, includes, bibliographies, or scripts. Preserve
+  title/author/date/language as escaped display data only.
+- Sanitization :: *Sanitize after all source-derived HTML transformations* with
+  a purpose-built bluemonday allowlist; use x/net/html for structural processing.
+  Keep document content separate from packaged chrome. Insert only static owned
+  CSS/JS afterwards, with contextual escaping for source names and diagnostics.
+- Allowed elements :: *Retain passive document structure*: a, abbr, b, blockquote,
+  br, caption, code, col, colgroup, dd, del, details, div, dl, dt, em, figcaption,
+  figure, h1-h6, hr, i, img, ins, kbd, li, mark, ol, p, pre, q, s, samp, section,
+  small, span, strong, sub, summary, sup, table, tbody, td, tfoot, th, thead, time,
+  tr, u, ul, var, and wbr. Unknown structural containers unwrap to passive text;
+  script/style/frame/embed/form/SVG content becomes an explanatory placeholder.
+- Allowed attributes :: *Retain bounded presentation data*: id/class, title,
+  lang/dir, image alt/width/height, table spans/scope, list start/value/type, and
+  generated accessibility/Org metadata. Source event attributes, style, srcset,
+  base, name, form actions, srcdoc, and executable embeds are removed and warned.
+  Source content cannot claim reserved application control attributes.
+- URLs :: *Allow local file images and raster data images* (PNG/JPEG/GIF/WebP/
+  AVIF), and file/fragment/HTTP/HTTPS/mailto anchors. Remove all other schemes.
+  Remote images and stylesheet URLs become explanatory linked placeholders;
+  inline SVG/CSS URLs/srcset are unsupported. This is an explicit subset, not
+  a claim that every raw reference can be rewritten.
+- File authorities :: *Accept file URLs only with an empty or localhost host*.
+  Reject other file authorities. Ordinary OS access to mounted/cloud-backed
+  filesystems is outside the no-network-URL promise; graph device limits still
+  apply to document admission.
+- Browser policy :: *Emit an application-owned Content Security Policy* before
+  content: default-src 'none'; base-uri 'none'; form-action 'none'; object-src
+  'none'; script-src and style-src restricted to hashes of packaged inline
+  payloads; font-src data:; img-src file: data:. Do not permit unsafe-inline,
+  eval, connections, frames, or remote automatic resources.
+- Data and secrets :: *Keep source content and paths in owner-private output*;
+  minimize diagnostics, and add no telemetry or publication. Local images remain
+  dependent on the original files and OS/browser permissions.
+- Access :: *Traversal cannot widen its root or device boundary implicitly*.
+  Resource links outside that boundary remain original browser references, not
+  graph inputs. Following an external hyperlink is an explicit browser action.
+- Conclusion :: *Layer reader isolation, passive HTML policy, and CSP*, with
+  negative regression and real-browser tests. No whole-process OS sandbox or
+  guarantee against converter/browser vulnerabilities is claimed.
 
 *** Other relevant qualities
 
-- Reliability :: Separate *rendering from browser handoff* and own all generated
-  data through a single session. Retention is an unresolved product boundary.
-- Performance :: Use bounded data and process lifetimes; exact budgets await
-  the linked-browsing decision.
-- Operability :: Provide build/install/test/lint and vulnerability-check entry
-  points. Packaging and the support matrix await operator direction.
-- Accessibility :: Preserve *normal focus traversal* and readable content across
-  folding, disabled JavaScript, light/dark presentation, and printing.
-- Portability :: Keep desktop-opening and filesystem-specific operations behind
-  *small platform adapters*. No support matrix is implied by the inspected host.
-- Maintainability :: Prefer the Go standard library; treat reused Lua, CSS, and
-  JavaScript as *owned source with normal checks*. No separate prototype runtime
-  or new browser automation framework is selected.
-- Tooling precedence :: The operator's *no JavaScript on the CLI* constraint
-  takes precedence over the selected web standards' ESLint/stylelint tooling
-  defaults. Do not silently introduce Node or npm. The final definition must
-  state the replacement review/check contract and its limitations; browser
-  user tests remain necessary for interaction and visual behaviour.
+- Reliability :: *Separate snapshots, conversion, publication, handoff, and
+  retention*. A rendered page is usable only after publication; opener success
+  does not mean page readiness.
+- Performance :: *Bound session data and conversion work* with the public
+  settings. The limits do not bound browser memory, original image sizes, or
+  total process RSS. Pandoc receives its documented 512 MiB RTS heap limit.
+- Operability :: *Provide make build, lint, test, install, sync, vulncheck, and
+  release*. Build produces the binary; install uses PREFIX (default /usr/local)
+  and DESTDIR for staged installs; repeat installation replaces only managed
+  binary/licence files. Release produces a versioned darwin-arm64 archive,
+  SHA-256, and Homebrew formula declaring Pandoc.
+- Packaging :: *Maintain packaging/htmlpreview.rb.tmpl and the release generator*.
+  For example, ~make release VERSION=0.1.0~ produces the binary
+  archive, SHA-256, and =dist/Formula/htmlpreview.rb=. VERSION is required for
+  release and consists of three non-negative decimal components separated by
+  dots, with no prefix or suffix; invalid or absent values fail before packaging.
+  With no release URL,
+  the generated formula points to the actual local archive's file URL. A supplied
+  RELEASE_BASE_URL selects an existing operator-provided asset location; verify
+  it and its checksum before generating a public formula. Local validation keeps
+  the same formula class/name, dependency, checksum, and install recipe; only the
+  archive transport differs. Publication is outside this change's authority.
+- Installation boundary :: *Do not alter shell profiles or an existing personal
+  preview script*. Document PREFIX/bin on PATH and detect/report command
+  shadowing during package validation. The default install prefix may require
+  operator permissions; no automatic sudo or permission widening is permitted.
+- Versioning :: *Embed version and source revision at build time*; this is build
+  identity, not runtime configuration. Documentation marks unsupported platforms
+  and the supported Pandoc series explicitly.
+- Accessibility :: *Human review checks Safari 26 on macOS 26 arm64*, including
+  both themes, narrow/wide layouts, focus, fragments, print, Irish glyphs, no-JS
+  reading, and passive-source browser behaviour.
+- Portability :: *Desktop and device operations stay in macOS adapters*. Linux,
+  Windows, and amd64 support are excluded from this first validation claim.
+- Maintainability :: *Use Go's testing package and small interfaces*. x/net/html
+  supplies HTML5 parsing; bluemonday supplies a reviewed sanitizer policy engine.
+  The standard library has no equivalent HTML parser/sanitizer. Review and pin
+  both modules and transitive licences/advisories in go.mod/go.sum during delivery.
+- Static checks :: *Go uses gofmt, go vet, and the selected golangci-lint rules*;
+  maintained Lua uses StyLua and a syntax check in Pandoc's Lua host. Review Lua
+  globals/errors explicitly. Use generated-HTML validation and human browser
+  evidence for presentation.
+- Tooling exception :: *No Node/npm, ESLint, stylelint, or separate Lua runtime is
+  introduced*. CSS/JS receive source review under WEB/JAVASCRIPT standards and
+  the declared browser tests; automated CSS/JS lint coverage is not claimed.
+  This candidate deviation follows the operator's CLI-language constraint and
+  remains visible for sign-off.
+- Vulnerabilities :: *make vulncheck runs govulncheck against pinned Go inputs*
+  without installing tools or changing dependencies. The scanner is provisioned
+  separately and fails closed. Owned Lua/CSS/JS are source-reviewed; Pandoc is
+  separately package-managed and its exact version is recorded in validation.
+- Test boundaries :: *Go tests exercise the installed CLI and generated HTML*.
+  Use real Pandoc for normal conversion; doubles only force process/device/
+  cleanup failures. Human browser tests avoid adding a new browser harness.
+  Homebrew packaging is a bounded one-off test, not a repeated regression.
 
 * Delivery Handoff
 :PROPERTIES:
 :CUSTOM_ID: delivery-handoff
 :END:
 
-- Required reading :: This specification, =.sdlc/project.yaml=, the named vision,
-  architecture, Org assessment, font/licence records, and selected SDLC standards.
-- First implementation step :: After an effective gate and explicit sign-off,
-  define [[#rt-001-1][RT001.1 - Explicit inputs and source identity]] through the
-  public command boundary and *observe the expected RED result*.
+- Required reading :: The *named vision, architecture, Org assessment, and
+  font/licence authorities*, plus the selected standards. This candidate
+  concretizes the architecture's proposals; it does not claim implementation.
+- First implementation step :: After definition PASS and explicit sign-off,
+  write [[#rt-001-1][RT001.1 - Explicit inputs and source identity]] through the
+  executable and *observe the intended RED result*.
 - Definition evidence :: [[file:audits.org][W001 - Definition audit evidence]].
-- Validation evidence :: [[file:validation.org][W001 - Pending browser validation]]
-  records the selected user tests. Extend it with any further tests selected
-  during scope resolution; *no implementation result has been recorded*.
-- Documentation impact :: Update the architecture, vision, public README/help,
-  installation guidance, and notices where delivered behaviour makes their
-  current proposal wording inaccurate.
-- Delivery restriction :: *Do not implement this draft*. Its scope blockers,
-  definition gate, and operator sign-off are pending.
+- Validation evidence :: [[file:validation.org][W001 - Pending validation]]
+  contains every selected UT and OT, with *no implementation result claimed*.
+- Documentation impact :: *Update vision and architecture proposal status after
+  sign-off*, then public README/help, supported versions, settings, install/
+  release instructions, limitations, and notices during delivery.
+- Implementation boundary :: *No source, test, build, or release implementation
+  occurs in define-change*. Audit PASS precedes operator sign-off; sign-off
+  precedes delivery.

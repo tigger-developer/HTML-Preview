@@ -4,9 +4,8 @@
 
 * Automated regression
 
-- Status :: Not run. The application and its maintained tests have not been
-  implemented. Definition-stage Pandoc probes are design evidence, not
-  application regression results.
+- Status :: *Not run*. The application and maintained tests are not implemented.
+  Definition probes are design evidence, not application regression results.
 
 * User tests
 
@@ -17,18 +16,12 @@
 
 - Category :: User test.
 - Definition :: [[file:spec.org::#ut-001-1][UT001.1 - Document typography and readability]].
-- Criteria :: [[file:spec.org::#ac-001-4][AC001.4 - Markdown structure]],
-  [[file:spec.org::#ac-001-5][AC001.5 - Org information]], and
-  [[file:spec.org::#ac-001-7][AC001.7 - Embedded Asap]].
+- Criteria :: [[spec.org::#ac-001-4][AC001.4 - Markdown structure survives conversion]], [[spec.org::#ac-001-5][AC001.5 - Org information survives conversion]], [[spec.org::#ac-001-18][AC001.18 - Proportional text uses the appropriate Asap face]], [[spec.org::#ac-001-19][AC001.19 - Code remains monospace]], [[spec.org::#ac-001-43][AC001.43 - Application text meets contrast requirements]].
 - Reviewer :: Taḋg or an explicitly named operator.
-- Procedure :: Inspect representative Markdown and Org output at wide and
-  narrow window sizes in light and dark modes. Include regular, italic, bold,
-  code, tables, images, and =Taḋg ÁÉÍÓÚ áéíóú= text. Record the final supported
-  browser/platform and viewing conditions when this test is run.
-- Expected :: Text is *readable without clipping or missing glyphs*; headings,
-  Org metadata, and code remain distinguishable; Asap uses the correct faces.
+- Procedure :: *Inspect representative Markdown and Org* at wide and narrow window sizes, in light and dark modes. Include regular, italic, bold, code, tables, images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use Safari 26 on macOS 26 arm64 and record exact versions and viewport sizes. Confirm the rendered font faces in the browser inspector, not just their CSS declarations. Measure the application text colours against their backgrounds in both themes; record the lowest body and large-text contrast ratios.
+- Expected :: *Text remains readable without clipping or missing glyphs*; headings, metadata, and code remain distinguishable. *Asap uses the appropriate face* and code remains monospace. *Contrast meets 4.5:1 for body text and 3:1 for large text* across both themes.
 - Result :: PENDING.
-- Evidence :: No human validation of the proposed application has occurred.
+- Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
 
 ** UT001.2 - Browser navigation and outline controls
 :PROPERTIES:
@@ -37,22 +30,43 @@
 
 - Category :: User test.
 - Definition :: [[file:spec.org::#ut-001-2][UT001.2 - Browser navigation and outline controls]].
-- Criteria :: [[file:spec.org::#ac-001-9][AC001.9 - Source-relative references]],
-  [[file:spec.org::#ac-001-10][AC001.10 - Identifier destinations]], and
-  [[file:spec.org::#ac-001-11][AC001.11 - Accessible reading and controls]].
+- Criteria :: [[spec.org::#ac-001-9][AC001.9 - Local references use the source directory]], [[spec.org::#ac-001-10][AC001.10 - Org IDs remain usable]], [[spec.org::#ac-001-11][AC001.11 - Reading works without JavaScript]], [[spec.org::#ac-001-21][AC001.21 - Same-page fragments stay on the preview]], [[spec.org::#ac-001-23][AC001.23 - Heading links use actual generated destinations]], [[spec.org::#ac-001-24][AC001.24 - Keyboard focus traversal remains available]], [[spec.org::#ac-001-25][AC001.25 - Fragment navigation reveals folded ancestors]], [[spec.org::#ac-001-26][AC001.26 - Printing includes every fold state]], [[spec.org::#ac-001-34][AC001.34 - Reading sessions retain their whole preview set]], [[spec.org::#ac-001-35][AC001.35 - Quick previews expire after their grace period]], [[spec.org::#ac-001-41][AC001.41 - Org outline state is deterministic]].
 - Reviewer :: Taḋg or an explicitly named operator.
-- Procedure :: Navigate local images/file links and fragments; operate folding
-  with keyboard only; disable JavaScript; inspect print preview from every fold
-  state. Navigate to a target inside a folded ancestor. Record the final
-  supported browser/platform and viewing conditions when this test is run.
-- Expected :: Links reach their destinations; *normal focus traversal works*,
-  focus is visible, fragment targets are revealed, and all printed content is
-  available.
+- Procedure :: *Navigate local links and fragments*, including targets with folded ancestors. Use controls with the keyboard, disable JavaScript, and inspect print preview from every fold state, including closed drawers. Use Safari 26 on macOS 26 arm64 and record exact versions. In reading mode, reload and follow generated pages before ending the session; in quick mode, note the declared expiry and try a deliberately delayed browser launch.
+- Expected :: *Links reach their destinations*; normal focus traversal and visible focus remain available; *fragment navigation reveals hidden targets*. Reading works without JavaScript, and *printing includes all content*. *Reading-mode pages remain available until termination*. Quick mode's slow-browser race is reported as a documented limitation, never as proof that the browser loaded before expiry.
 - Result :: PENDING.
-- Evidence :: No human validation of the proposed application has occurred.
+- Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
+
+** UT001.3 - Passive-document browser checks
+:PROPERTIES:
+:CUSTOM_ID: ut-001-3-result
+:END:
+
+- Category :: User test.
+- Definition :: [[file:spec.org::#ut-001-3][UT001.3 - Passive-document browser checks]].
+- Criteria :: [[spec.org::#ac-001-37][AC001.37 - Source content cannot supply executable browser code]], [[spec.org::#ac-001-39][AC001.39 - Preview generation and loading do not fetch remote resources]], [[spec.org::#ac-001-40][AC001.40 - Unsupported raw reference forms are reported]].
+- Reviewer :: Taḋg or an explicitly named operator.
+- Procedure :: *Open synthetic passive and hostile previews* with developer tools recording console execution and network requests. Include source scripts/events, encoded active links, remote images, raw CSS/srcset/SVG, and the same strings in code. Use Safari 26 on macOS 26 arm64. Use only synthetic data and loopback endpoints; verify normal packaged folding and local images.
+- Expected :: *Source code never executes and initial loading fetches no source-directed network URLs*. Packaged controls and local images work; neutralized content has an explanation, and literal code remains readable. Record Safari/macOS versions, requests, and console observations.
+- Result :: PENDING.
+- Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
 
 * One-off tests
 
-- Selection :: No delivery one-off test has yet been selected. Installation
-  evidence may require one after the release scope is resolved. Any selected
-  test must have a definition and pending entry before implementation.
+** OT001.1 - Local Homebrew package validation
+:PROPERTIES:
+:CUSTOM_ID: ot-001-1-result
+:END:
+
+- Category :: Bounded one-off test.
+- Definition :: [[file:spec.org::#ot-001-1][OT001.1 - Local Homebrew package validation]].
+- Criteria :: [[spec.org::#ac-001-29][AC001.29 - Independent installation]] and [[spec.org::#ac-001-8][AC001.8 - Distribution licence notices]].
+- Boundary :: *The actual Homebrew installer and built release archive* on the supported macOS/arm64 host, using only a local temporary tap.
+- Procedure :: Build the candidate archive and checksum with =make release=. Prepare a temporary local tap from the generated formula and compare its recipe with the committed template. Use *the exact local archive and checksum*. Install, run help/version and one synthetic preview outside the checkout, then uninstall and remove the tap. Record the archive hash, recipe delta, Pandoc version, and actual commands.
+- Expected :: *Homebrew declares/resolves Pandoc and installs a usable command* with packaged assets and notices. This validates local installation mechanics, not release hosting, published tap discovery, or older platforms.
+- Bounds :: *One install and one uninstall*, no release publication, no private source data, no metered service, and no automatic retries. Stop after the first failure and retain diagnostics. Use the same htmlpreview formula class/name in an unoccupied temporary tap; stop if htmlpreview is already installed through Homebrew. Never replace an unrelated installed package. Allocate scratch with the OS temporary-directory API. Limit the operation to ten minutes.
+- Execution owner :: *The operator runs the Homebrew steps*. The agent prepares the candidate and temporary recipe only; this test does not grant the agent permission to modify global package-manager state.
+- Result :: PENDING.
+- Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
+
+- Definition history :: The initial draft selected UT001.1 - Typography and UT001.2 - Navigation. Their pending procedures were refined; UT001.3 - Passive browser behaviour and OT001.1 - Homebrew packaging were added. No executed result was removed.

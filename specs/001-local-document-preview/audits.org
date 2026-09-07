@@ -18,6 +18,7 @@
 ** Local round 1 - Product decisions prevent a delivery-ready definition
 :PROPERTIES:
 :CUSTOM_ID: definition-local-1
+:ROUND: 1
 :DATE: 2026-09-07
 :END:
 
@@ -92,6 +93,117 @@ VERDICT: FAIL
   identifiers, 77 resolving local links, and reciprocal links between 14 draft
   criteria and 11 test definitions. These are structural checks, not a
   definition-gate PASS or evidence of implemented behaviour.
+
+** Local review - Round 2: template correction and concrete candidate
+:PROPERTIES:
+:CUSTOM_ID: definition-local-2
+:ROUND: 2
+:DATE: 2026-09-07
+:END:
+
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =216bd3d5675ca67ec813f0e5d95fc887c90cd46d027a6df49e7c224b4f7b2409=.
+- Audits :: =audit-spec=, =audit-design=, and =audit-test-definitions= in the
+  authoring context.
+- Verdict :: FAIL.
+
+#+begin_example
+GATE: definition
+REVISION: 216bd3d5675ca67ec813f0e5d95fc887c90cd46d027a6df49e7c224b4f7b2409
+VERDICT: FAIL
+
+1. [audit-spec] [BLOCKING] D006 - Browser procedures still defer conditions that the candidate now defines.
+2. [audit-design] [BLOCKING] D007 - Local formula generation and its transport-only validation delta need an exact contract.
+3. [audit-test-definitions] [BLOCKING] D008 - Pending validation records and licence assertions do not yet cover the revised criteria.
+4. [audit-spec] [CONDITION] D009 - Replace the bare UT001.3 reference with its descriptive link and align the root setting description.
+#+end_example
+
+- Remediation required :: Pin browser viewing conditions in all user tests;
+  define local archive/formula generation without publishing; refresh pending
+  records and licence assertions; correct the named reference and root label.
+- Presentation correction :: The operator reported that the prior draft did
+  not match the template. Round 1's structural checks had not established ABC
+  or template compliance. The revised candidate restores the fixed section
+  hierarchy, improves the independent meaning of bold fragments, and separates
+  compound criteria. Template and semantic checks must precede the next verdict.
+- Candidate authority :: Earlier scope questions were not answered and no
+  answer is inferred. The resumed definition now supplies explicit authoring
+  proposals for final operator approval. This records a reviewable candidate,
+  not resolved operator decisions or implementation permission.
+- Identifier lineage :: Existing acceptance identifiers remain allocated.
+  Source identity, concurrency, execution, font use, notices, references,
+  accessibility, and failure components were separated into AC001.15 through
+  AC001.28. AC001.29 through AC001.43 define the concrete installation, limits,
+  retention, trust, outline, embedded-asset, and contrast contracts. Existing test IDs
+  remain; new tests use IDs above the previously allocated values.
+- Moved evidence :: The previous draft's inspection environment was Go 1.26.3,
+  Pandoc 3.9.0.2/Lua 5.4, and macOS 26.6 arm64. Its user-owned profile amendment
+  selected LUA and remains outside agent commits. These are authoring provenance,
+  not application requirements.
+- Org probe detail :: An ID-only heading retained =only-id=; a heading with
+  both ID and CUSTOM_ID retained only =public-id= in Pandoc heading attributes.
+  Planning lines and LOGBOOK were dropped; LOGBOOK_ survived as a custom drawer;
+  source/example blocks retained literal text. The earlier detailed observation
+  has moved here from the solution design without becoming a regression result.
+- External context :: None has been started. Local PASS remains a prerequisite.
+
+** Local review - Round 3: composite candidate review
+:PROPERTIES:
+:CUSTOM_ID: definition-local-3
+:ROUND: 3
+:DATE: 2026-09-07
+:END:
+
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =a5dd737adf809e5b09f05d5e2303f108062c5e5ee6c150f34ae856031923541f=.
+- Context :: Authoring context; specification, design, and test definitions
+  reviewed together against the named authorities and selected standards.
+- Verdict :: *Local PASS*. Independent review and operator sign-off remain
+  separate requirements.
+
+#+begin_example
+GATE: definition
+REVISION: a5dd737adf809e5b09f05d5e2303f108062c5e5ee6c150f34ae856031923541f
+VERDICT: PASS
+#+end_example
+
+- Specification review :: *The summary represents the concrete candidate*;
+  title, fixed hierarchy, description lists, semantic emphasis, criterion
+  identifiers, authority boundary, and delivery handoff were reviewed. The
+  candidate makes proposals reviewable without claiming operator approval.
+- Design review :: *Temporary ownership, graph admission, source-relative
+  resolution, Org preservation, passive rendering, lifetimes, installation,
+  and failure contracts are explicit*. Publication failure aborts before any
+  browser opening; preflight and conversion have bounded process boundaries.
+  The tooling deviation and supported platform remain visible for sign-off.
+- Test-definition review :: *Every criterion has reciprocal coverage* through
+  executable/output regression or named human/one-off validation. Normal
+  conversion uses real Pandoc; doubles force stated external failures. Browser
+  readiness, rendering, and actual Homebrew installation are not inferred from
+  mocks. No implemented test result is required or claimed at this gate.
+- Round 2 receipt :: *D006 through D009 are addressed*: browser conditions are
+  pinned; the generated formula and local transport are specified; pending
+  validation and licence assertions match the candidate; the UT reference and
+  root label resolve correctly. Later consistency edits bound preflight output,
+  distinguish cancellation from retention, and cover publication failure.
+- Document evidence :: *sanitize left all four documents unchanged*. Pandoc
+  parsed them; a one-off structure/trace inspection verified seven ordered
+  template sections, eight summary fields, 43 criteria, 20 reciprocal test
+  definitions, unique heading IDs, and 207 resolving local links.
+  =git diff --check= passed. These checks support document integrity, not
+  application behaviour or independent audit.
+- Remaining approval :: *Operator sign-off is PENDING*. Candidate platform,
+  browsing, retention, packaging, passive-source, and tooling choices have not
+  been adopted by the operator merely because this local review passes.
+
+** External review
+:PROPERTIES:
+:CONTEXT: NOT_STARTED
+:END:
+
+- Audits :: The combined =audit-spec=, =audit-design=, and
+  =audit-test-definitions= review is required after local PASS.
+- Verdict :: Not run; no independent verdict is claimed.
 
 * Implementation gate
 
