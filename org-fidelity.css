@@ -1,0 +1,450 @@
+/* ==========================================================================
+   org-fidelity.css
+   A stylesheet for HTML produced by:  pandoc -f org -t html5 --section-divs
+
+   It targets the DOM pandoc's org reader actually emits:
+     span.todo.<KEYWORD>            TODO / NEXT / WAITING ...
+     span.done.<KEYWORD>            DONE / CANCELLED ...
+     span.tag[data-tag-name]        :tags:
+     div.<NAME>.drawer              :MYDRAWER: ... :END:
+     section.levelN[data-*]         :PROPERTIES: become data-* attributes
+     div.captioned-content          #+CAPTION:
+     div.line-block                 #+begin_verse
+     pre.example                    #+begin_example
+     div.sourceCode[data-*]         #+begin_src with :header args
+
+   plus the extra hooks added by org-fidelity.lua:
+     details.org-properties, span.priority, span.cookie, span.timestamp,
+     div.planning, section[data-visibility]
+   ========================================================================== */
+
+/* ------------------------------------------------------------ design tokens */
+:root {
+  --org-bg:        #fdfdfb;
+  --org-fg:        #23262b;
+  --org-muted:     #6c7480;
+  --org-faint:     #949aa4;
+  --org-rule:      #e2e4e8;
+  --org-panel:     #f5f6f7;
+  --org-panel-2:   #eceef1;
+  --org-link:      #2b6cb0;
+
+  --org-l1:        #1f5aa6;
+  --org-l2:        #0b7a6e;
+  --org-l3:        #8a5a00;
+  --org-l4:        #9b3d8a;
+  --org-l5:        #3c6e2f;
+  --org-l6:        #7a4a2a;
+
+  --org-todo:      #b1272d;
+  --org-done:      #3d7a3d;
+  --org-wait:      #9a6b00;
+  --org-tag:       #5b6470;
+  --org-pri-a:     #b1272d;
+  --org-pri-b:     #9a6b00;
+  --org-pri-c:     #4a7a3f;
+  --org-stamp:     #6b5bb0;
+
+  --org-mono: ui-monospace, "SF Mono", "JetBrains Mono", "DejaVu Sans Mono",
+              Menlo, Consolas, monospace;
+  --org-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter,
+              "Helvetica Neue", Arial, sans-serif;
+  --org-serif: "Iowan Old Style", "Source Serif 4", Charter, Georgia, serif;
+
+  --org-measure: 46rem;
+  --org-indent: 1.15rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --org-bg: #16181c;   --org-fg: #d7dae0;
+    --org-muted: #9aa2ae; --org-faint: #6d7683;
+    --org-rule: #2c3038;  --org-panel: #1d2026; --org-panel-2: #23272f;
+    --org-link: #7fb2ec;
+    --org-l1: #7fb2ec; --org-l2: #4fc5b4; --org-l3: #d8a852;
+    --org-l4: #d78fc6; --org-l5: #8fc97a; --org-l6: #c79a78;
+    --org-todo: #e8737a; --org-done: #79c07b; --org-wait: #d8a852;
+    --org-tag: #98a2b0;
+    --org-pri-a: #e8737a; --org-pri-b: #d8a852; --org-pri-c: #8fc97a;
+    --org-stamp: #a99af0;
+  }
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+/* -------------------------------------------------------------------- page */
+html { color-scheme: light dark; }
+
+body {
+  margin: 0 auto;
+  max-width: var(--org-measure);
+  padding: 3rem 1.5rem 6rem;
+  background: var(--org-bg);
+  color: var(--org-fg);
+  font-family: var(--org-serif);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: var(--org-link); text-decoration-thickness: 1px;
+    text-underline-offset: 2px; }
+
+#title-block-header {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--org-rule);
+}
+#title-block-header .title { margin: 0 0 .35rem; font-size: 1.9rem; }
+#title-block-header .author,
+#title-block-header .date {
+  margin: 0; color: var(--org-muted);
+  font-family: var(--org-sans); font-size: .9rem;
+}
+
+/* --------------------------------------------------------------- headlines */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--org-sans);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 2.2rem 0 .6rem;
+  scroll-margin-top: 1rem;
+  /* room for the fold marker injected by org-fold.js */
+  position: relative;
+}
+section.level1 > h1 { font-size: 1.5rem;  color: var(--org-l1); }
+section.level2 > h2 { font-size: 1.28rem; color: var(--org-l2); }
+section.level3 > h3 { font-size: 1.13rem; color: var(--org-l3); }
+section.level4 > h4 { font-size: 1.04rem; color: var(--org-l4); }
+section.level5 > h5 { font-size: 1rem;    color: var(--org-l5); font-style: normal; }
+section.level6 > h6 { font-size: 1rem;    color: var(--org-l6); font-weight: 600; }
+
+/* org-indent-mode-ish: nested sections step in a little */
+section.level2 { margin-left: var(--org-indent); }
+section.level3,
+section.level4,
+section.level5,
+section.level6 { margin-left: var(--org-indent); }
+
+section[class^="level"] {
+  border-left: 1px solid transparent;
+  padding-left: .75rem;
+  margin-left: 0;
+  transition: border-color .15s ease;
+}
+section.level2, section.level3, section.level4,
+section.level5, section.level6 { border-left-color: var(--org-rule); }
+
+/* ------------------------------------------------------- TODO / DONE states */
+.todo, .done {
+  display: inline-block;
+  font-family: var(--org-mono);
+  font-size: .68em;
+  font-weight: 700;
+  letter-spacing: .04em;
+  line-height: 1.5;
+  padding: .12em .45em;
+  border-radius: 3px;
+  vertical-align: .12em;
+  margin-right: .35em;
+  border: 1px solid currentColor;
+}
+.todo { color: var(--org-todo); }
+.done { color: var(--org-done); background: color-mix(in srgb, var(--org-done) 12%, transparent); }
+
+/* per-keyword overrides — add your own #+TODO: keywords here */
+.todo.NEXT      { color: #1f5aa6; }
+.todo.WAITING,
+.todo.HOLD,
+.todo.DEFERRED  { color: var(--org-wait); }
+.done.CANCELLED,
+.done.CANCELED  { color: var(--org-faint); text-decoration: line-through;
+                  background: none; }
+
+h1 .todo, h1 .done, h2 .todo, h2 .done,
+h3 .todo, h3 .done, h4 .todo, h4 .done { font-size: .62em; }
+
+/* ------------------------------------------------------------------ tags */
+.tags {
+  float: right;
+  display: inline-flex;
+  gap: .3rem;
+  margin-left: .75rem;
+}
+
+.tag {
+  margin-left: 0;
+  font-family: var(--org-mono);
+  font-size: .68em;
+  font-weight: 500;
+  color: var(--org-tag);
+  background: var(--org-panel-2);
+  border-radius: 999px;
+  padding: .1em .6em;
+  vertical-align: .15em;
+}
+.tag .smallcaps { font-variant: none; text-transform: lowercase; }
+.tag::before { content: ":"; opacity: .5; }
+.tag::after  { content: ":"; opacity: .5; }
+
+/* handy: colour specific tags */
+.tag[data-tag-name="urgent"] { color: var(--org-todo); }
+.tag[data-tag-name="ARCHIVE"] { opacity: .5; }
+
+/* ------------------------------------------------- priorities and cookies */
+.priority {
+  font-family: var(--org-mono);
+  font-size: .72em;
+  font-weight: 700;
+  margin-right: .3em;
+}
+.priority-A { color: var(--org-pri-a); }
+.priority-B { color: var(--org-pri-b); }
+.priority-C { color: var(--org-pri-c); }
+
+.cookie {
+  font-family: var(--org-mono);
+  font-size: .72em;
+  color: var(--org-muted);
+  background: var(--org-panel-2);
+  border-radius: 3px;
+  padding: .05em .35em;
+}
+.cookie-done { color: var(--org-done); }
+
+/* ------------------------------------------------------------ timestamps */
+.timestamp {
+  font-family: var(--org-mono);
+  font-size: .82em;
+  color: var(--org-stamp);
+  white-space: nowrap;
+}
+.timestamp.inactive { color: var(--org-faint); }
+.timestamp.repeater { text-decoration: underline dotted; }
+
+/* --------------------------------------------- planning (via org-prepass) */
+.planning {
+  font-family: var(--org-mono);
+  font-size: .8rem;
+  color: var(--org-muted);
+  margin: .1rem 0 .9rem;
+  letter-spacing: .01em;
+}
+.planning p { margin: 0; }
+.planning .timestamp { color: var(--org-stamp); }
+
+/* ------------------------------------------------------ property drawers */
+details.org-properties {
+  margin: .3rem 0 1rem;
+  font-family: var(--org-mono);
+  font-size: .78rem;
+  background: var(--org-panel);
+  border: 1px solid var(--org-rule);
+  border-radius: 5px;
+}
+details.org-properties > summary {
+  cursor: pointer;
+  padding: .3rem .6rem;
+  color: var(--org-faint);
+  list-style: none;
+  user-select: none;
+}
+details.org-properties > summary::-webkit-details-marker { display: none; }
+details.org-properties > summary::before {
+  content: "▸ "; display: inline-block; width: 1em;
+  transition: transform .12s ease;
+}
+details.org-properties[open] > summary::before { content: "▾ "; }
+details.org-properties[open] > summary { border-bottom: 1px solid var(--org-rule); }
+
+details.org-properties dl { margin: 0; padding: .45rem .6rem; }
+details.org-properties .prop {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) 1fr;
+  gap: .5rem;
+  padding: .08rem 0;
+}
+details.org-properties dt { color: var(--org-l3); font-weight: 500; }
+details.org-properties dd { margin: 0; color: var(--org-fg); overflow-wrap: anywhere; }
+
+/* ---------------------------------------------------------- other drawers */
+.drawer {
+  margin: .6rem 0 1rem;
+  padding: .5rem .75rem;
+  border-left: 3px solid var(--org-panel-2);
+  background: var(--org-panel);
+  border-radius: 0 4px 4px 0;
+  font-size: .9em;
+  color: var(--org-muted);
+}
+.drawer > :first-child { margin-top: 0; }
+.drawer > :last-child  { margin-bottom: 0; }
+.drawer::before {
+  content: ":" attr(data-drawer-name) ":";
+  display: block;
+  font-family: var(--org-mono);
+  font-size: .72rem;
+  letter-spacing: .04em;
+  color: var(--org-faint);
+  margin-bottom: .3rem;
+}
+.drawer.LOGBOOK_::before { content: ":LOGBOOK:"; }
+.drawer.LOGBOOK_ { font-family: var(--org-mono); font-size: .78rem; }
+.drawer.RESULTS { border-left-color: var(--org-l2); }
+
+/* ------------------------------------------------------------- code blocks */
+div.captioned-content { margin: 1.2rem 0; }
+div.captioned-content > .caption {
+  font-family: var(--org-sans);
+  font-size: .8rem;
+  color: var(--org-muted);
+  margin-bottom: .3rem;
+}
+div.captioned-content > .caption::before { content: "#+CAPTION: "; color: var(--org-faint); }
+
+pre, div.sourceCode {
+  background: var(--org-panel);
+  border: 1px solid var(--org-rule);
+  border-radius: 5px;
+}
+pre {
+  margin: 1.1rem 0;
+  padding: .7rem .9rem;
+  overflow-x: auto;
+  font-family: var(--org-mono);
+  font-size: .85rem;
+  line-height: 1.5;
+}
+div.sourceCode { margin: 1.1rem 0; position: relative; }
+div.sourceCode pre { margin: 0; border: 0; background: none; }
+
+/* show the org source-block language and :header args, which pandoc keeps */
+div.sourceCode[class*="sourceCode"]::before { content: none; }
+div.sourceCode > pre.sourceCode::before {
+  content: attr(class);
+  display: none;
+}
+pre.example {
+  background: transparent;
+  border-style: dashed;
+  color: var(--org-muted);
+}
+code { font-family: var(--org-mono); font-size: .88em; }
+code.verbatim { background: var(--org-panel-2); border-radius: 3px; padding: .08em .3em; }
+p > code:not(.verbatim) { background: var(--org-panel-2); border-radius: 3px; padding: .08em .3em; }
+
+/* ------------------------------------------------------------------ verse */
+div.line-block {
+  font-family: var(--org-serif);
+  font-style: italic;
+  margin: 1.1rem 0 1.1rem 1.2rem;
+  color: var(--org-fg);
+  white-space: normal;
+}
+
+/* -------------------------------------------------------------- quotations */
+blockquote {
+  margin: 1.2rem 0;
+  padding: .2rem 0 .2rem 1.1rem;
+  border-left: 3px solid var(--org-rule);
+  color: var(--org-muted);
+}
+
+/* --------------------------------------------------- lists and checkboxes */
+ul, ol { padding-left: 1.5rem; }
+li > p:first-child { margin-top: 0; }
+ul.task-list, li:has(> label > input[type="checkbox"]) { list-style: none; }
+li > label > input[type="checkbox"] { margin-right: .45em; margin-left: -1.35em; }
+li:has(> label > input[type="checkbox"]:checked) { color: var(--org-muted); }
+
+dl > dt { font-weight: 600; margin-top: .6rem; }
+dl > dd { margin-left: 1.2rem; }
+
+/* ------------------------------------------------------------------ tables */
+table {
+  border-collapse: collapse;
+  margin: 1.2rem 0;
+  font-size: .93em;
+  font-variant-numeric: tabular-nums;
+  width: auto;
+}
+th, td { padding: .3rem .7rem; border: 1px solid var(--org-rule); text-align: left; }
+thead th { background: var(--org-panel); font-family: var(--org-sans); font-size: .85em; }
+caption { caption-side: top; font-size: .8rem; color: var(--org-muted);
+          text-align: left; margin-bottom: .3rem; }
+
+/* --------------------------------------------------------------- footnotes */
+.footnotes { margin-top: 3rem; font-size: .9em; color: var(--org-muted); }
+.footnotes hr { border: 0; border-top: 1px solid var(--org-rule); }
+.footnote-ref { text-decoration: none; }
+
+/* ------------------------------------------------------------ folding (JS) */
+.org-fold-toggle {
+  position: absolute;
+  left: -1.15rem;
+  top: 0;
+  width: 1rem;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--org-faint);
+  font: inherit;
+  font-size: .8em;
+  line-height: inherit;
+  opacity: 0;
+  transition: opacity .12s ease;
+}
+section:hover > h1 > .org-fold-toggle,
+section:hover > h2 > .org-fold-toggle,
+section:hover > h3 > .org-fold-toggle,
+section:hover > h4 > .org-fold-toggle,
+section:hover > h5 > .org-fold-toggle,
+section:hover > h6 > .org-fold-toggle,
+section.org-folded > :is(h1,h2,h3,h4,h5,h6) > .org-fold-toggle { opacity: 1; }
+
+section.org-folded > :not(:is(h1,h2,h3,h4,h5,h6)) { display: none; }
+section.org-folded > :is(h1,h2,h3,h4,h5,h6)::after {
+  content: "…";
+  color: var(--org-faint);
+  margin-left: .4em;
+  font-weight: 400;
+}
+/* CONTENTS state: children headings visible, bodies hidden */
+section.org-contents > :not(:is(h1,h2,h3,h4,h5,h6,section)) { display: none; }
+
+#org-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: .4rem;
+  justify-content: flex-end;
+  margin: -1rem 0 1rem;
+  padding: .35rem 0;
+  background: color-mix(in srgb, var(--org-bg) 88%, transparent);
+  backdrop-filter: blur(6px);
+  font-family: var(--org-sans);
+  font-size: .75rem;
+}
+#org-toolbar button {
+  border: 1px solid var(--org-rule);
+  background: var(--org-panel);
+  color: var(--org-muted);
+  border-radius: 4px;
+  padding: .18rem .5rem;
+  cursor: pointer;
+}
+#org-toolbar button:hover { color: var(--org-fg); border-color: var(--org-faint); }
+
+/* ------------------------------------------------------------------- print */
+@media print {
+  body { max-width: none; font-size: 11pt; color: #000; background: #fff; }
+  #org-toolbar, .org-fold-toggle { display: none; }
+  section.org-folded > * { display: revert !important; }
+  details.org-properties { break-inside: avoid; }
+  details.org-properties[open] > summary { border: 0; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  pre, table, blockquote { break-inside: avoid; }
+  a { color: #000; }
+}

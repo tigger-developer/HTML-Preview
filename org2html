@@ -1,0 +1,24 @@
+#!/bin/sh
+# org2html — pandoc org -> HTML with org-fidelity styling
+# usage: org2html input.org [output.html] [extra pandoc args...]
+set -eu
+
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+in=${1:?usage: org2html input.org [output.html]}
+shift
+out=${1:-${in%.org}.html}
+[ $# -gt 0 ] && shift || true
+
+awk -f "$here/org-prepass.awk" "$in" |
+pandoc -f org -t html5 -s \
+       --section-divs \
+       --lua-filter="$here/org-fidelity.lua" \
+       --css="$here/org-fidelity.css" \
+       --include-after-body="$here/org-fold.html" \
+       -M document-css=false \
+       --embed-resources \
+       --metadata title="$(basename "${in%.org}")" \
+       "$@" \
+       -o "$out"
+
+printf '%s\n' "$out"

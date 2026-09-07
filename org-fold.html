@@ -1,0 +1,131 @@
+<!-- org-fold.html — pass to pandoc with --include-after-body=org-fold.html
+     Gives pandoc's --section-divs output org-style outline folding.
+       * click the ▸ marker (or the heading) to fold/unfold a subtree
+       * TAB           cycle the focused subtree: FOLDED -> CHILDREN -> SHOWN
+       * SHIFT+TAB     cycle the whole buffer:    OVERVIEW -> CONTENTS -> SHOW ALL
+     Initial state comes from each headline's :VISIBILITY: property, which
+     pandoc preserves as data-visibility on the <section>. -->
+<script>
+(function () {
+  var SECTIONS = 'section[class*="level"]';
+  var HEADS = 'h1,h2,h3,h4,h5,h6';
+
+  function headOf(sec) {
+    for (var n = sec.firstElementChild; n; n = n.nextElementSibling) {
+      if (/^H[1-6]$/.test(n.tagName)) return n;
+    }
+    return null;
+  }
+
+  // state: 'folded' | 'contents' | 'shown'
+  function setState(sec, state) {
+    sec.classList.toggle('org-folded', state === 'folded');
+    sec.classList.toggle('org-contents', state === 'contents');
+    var btn = sec.querySelector(':scope > * > .org-fold-toggle');
+    if (btn) {
+      btn.textContent = state === 'shown' ? '▾' : '▸';
+      btn.setAttribute('aria-expanded', String(state === 'shown'));
+    }
+    if (state !== 'shown') return;
+    // showing a subtree reveals its immediate children as fully shown
+    sec.querySelectorAll(':scope > section').forEach(function (kid) {
+      if (!kid.dataset.visibility) setState(kid, 'shown');
+    });
+  }
+
+  function stateOf(sec) {
+    if (sec.classList.contains('org-folded')) return 'folded';
+    if (sec.classList.contains('org-contents')) return 'contents';
+    return 'shown';
+  }
+
+  function hasChildSections(sec) {
+    return !!sec.querySelector(':scope > section');
+  }
+
+  function cycle(sec) {
+    var s = stateOf(sec);
+    if (s === 'folded') setState(sec, hasChildSections(sec) ? 'contents' : 'shown');
+    else if (s === 'contents') setState(sec, 'shown');
+    else setState(sec, 'folded');
+  }
+
+  var sections = Array.prototype.slice.call(document.querySelectorAll(SECTIONS));
+
+  sections.forEach(function (sec) {
+    var h = headOf(sec);
+    if (!h) return;
+
+    var btn = document.createElement('button');
+    btn.className = 'org-fold-toggle';
+    btn.type = 'button';
+    btn.textContent = '▾';
+    btn.setAttribute('aria-label', 'Fold or unfold this subtree');
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      cycle(sec);
+    });
+    h.insertBefore(btn, h.firstChild);
+
+    h.tabIndex = 0;
+    h.style.cursor = 'pointer';
+    h.addEventListener('click', function (e) {
+      if (e.target.closest('a')) return;
+      cycle(sec);
+    });
+    h.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycle(sec); }
+    });
+
+    // honour :VISIBILITY: from the org property drawer
+    var vis = (sec.dataset.visibility || '').toLowerCase();
+    if (vis === 'folded' || vis === 'hideall') setState(sec, 'folded');
+    else if (vis === 'children' || vis === 'contents') setState(sec, 'contents');
+    else setState(sec, 'shown');
+  });
+
+  // ---- global cycling ------------------------------------------------------
+  var GLOBAL = ['overview', 'contents', 'showall'];
+  var gi = -1;
+
+  function applyGlobal(mode) {
+    sections.forEach(function (sec) {
+      var top = sec.parentElement && !sec.parentElement.closest(SECTIONS);
+      if (mode === 'overview') setState(sec, top ? 'folded' : 'folded');
+      else if (mode === 'contents') setState(sec, 'contents');
+      else setState(sec, 'shown');
+    });
+  }
+
+  function cycleGlobal() {
+    gi = (gi + 1) % GLOBAL.length;
+    applyGlobal(GLOBAL[gi]);
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return;
+    var h = document.activeElement && document.activeElement.closest(HEADS);
+    if (e.shiftKey) { e.preventDefault(); cycleGlobal(); return; }
+    if (h && h.parentElement.matches(SECTIONS)) {
+      e.preventDefault();
+      cycle(h.parentElement);
+    }
+  });
+
+  // ---- toolbar -------------------------------------------------------------
+  var bar = document.createElement('div');
+  bar.id = 'org-toolbar';
+  [['Overview', 'overview'], ['Contents', 'contents'], ['Show all', 'showall']]
+    .forEach(function (pair) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = pair[0];
+      b.addEventListener('click', function () {
+        gi = GLOBAL.indexOf(pair[1]);
+        applyGlobal(pair[1]);
+      });
+      bar.appendChild(b);
+    });
+  document.body.insertBefore(bar, document.body.firstChild);
+})();
+</script>
