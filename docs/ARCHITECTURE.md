@@ -102,17 +102,28 @@ regular and italic variable WOFF2 files are included under
 [assets/fonts/asap](../assets/fonts/asap/README.md). Inspection of both files
 confirmed version 3.002, weight 100 to 900, and width 75% to 125%, with defaults
 400 and 100%. Use matching normal and italic `@font-face` declarations with
-those ranges, and sensible `font-weight` and `font-stretch` values. Keep code
-and preformatted content monospace. Verify Irish characters and dotted letters
-in the presentation checks.
+those ranges, and sensible `font-weight` and `font-stretch` values. Verify Irish
+characters and dotted letters in the presentation checks.
+
+Iosevka Custom is the selected default for code blocks, inline code,
+preformatted text, and all other fixed-width styling. The
+[four included WOFF2 faces](../assets/fonts/iosevka-custom/README.md) are static
+version 34.1.0 fonts at normal width: regular/italic at weight 400 and
+bold/bold italic at weight 700. Declare each face separately and route
+fixed-width styling through the same family, with a generic monospace fallback.
+Use the packaged data URLs without a `local()` source, so installed fonts
+cannot replace the selected assets. This choice, made on 8 September 2026,
+specifies the earlier generic monospace requirement.
 
 Embed the font bytes in the executable and include them as WOFF2 data URLs in
 generated CSS. This avoids dependence on locally installed fonts, remote font
-services, or font-file URLs outside the generated page. Account for both faces
-and base64 expansion in the output budget. Include the Asap copyright notice
-and full OFL text in the readable HTML source when embedding the fonts, and
-retain both in release packages. Font embedding is specified here; no renderer
-has yet been implemented.
+services, or font-file URLs outside the generated page. Account for both Asap
+faces and all four Iosevka Custom faces, including base64 expansion, in the
+output budget. Iosevka adds 1,923,456 bytes of base64 payload per page before
+CSS and notices; the existing byte budget may therefore stop traversal before
+the document-count limit. Include both families' copyright notices and full
+OFL text in readable HTML source and release packages. Font embedding is
+specified here; no renderer has yet been implemented.
 
 For Org, preserve planning information and logbooks before Pandoc parses the
 source, then apply the adapted Lua filter. Pre-processing must recognize literal
@@ -268,8 +279,8 @@ automatic deletion of other sessions based only on a filename prefix is excluded
 ## Installation and local boundaries
 
 Distribute a Go executable for each supported platform, containing its own
-presentation assets and Asap fonts. Project code and documentation are under
-[Apache License 2.0](../LICENSE); Asap remains under OFL 1.1 as recorded in
+presentation assets, Asap, and Iosevka Custom fonts. Project code and documentation
+are under [Apache License 2.0](../LICENSE); both font families retain OFL 1.1 as recorded in
 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). Build and release checks
 must include the appropriate licence files alongside packaged assets.
 Pandoc is a separately managed runtime dependency; the Go

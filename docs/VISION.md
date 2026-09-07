@@ -34,8 +34,8 @@ The reader should receive:
 
 - **Readable presentation:** embedded Asap variable fonts, considered spacing,
   tables, code, quotations, lists, images, footnotes, and light and dark
-  appearances. Asap provides adjustable weight and width; code retains a
-  monospace face.
+  appearances. Asap provides adjustable weight and width; code blocks, inline
+  code, and other fixed-width text use embedded Iosevka Custom.
 - **Org fidelity:** recognizable task states, tags, priorities, timestamps,
   planning information, drawers, and an outline that can be folded.
 - **Source context:** a visible filename and location, without allowing a long
@@ -97,6 +97,13 @@ Project-owned code and documentation, including the Org fidelity code, use the
 [SIL Open Font License 1.1](../assets/fonts/asap/OFL.txt). Their regular and
 italic WOFF2 files should be embedded in the distributed application and its
 generated previews, without a font download at viewing time.
+
+The selected [Iosevka Custom faces](../assets/fonts/iosevka-custom/README.md)
+provide regular, italic, bold, and bold italic fixed-width text. Their separate
+[SIL Open Font License 1.1](../assets/fonts/iosevka-custom/OFL.md) and copyright
+notice accompany the fonts in packages and generated previews. Selecting
+Iosevka Custom on 8 September 2026 specifies the earlier generic monospace
+requirement; Asap remains the proportional default.
 
 ## Boundaries and priorities
 

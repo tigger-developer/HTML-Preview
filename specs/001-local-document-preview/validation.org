@@ -16,10 +16,10 @@
 
 - Category :: User test.
 - Definition :: [[file:spec.org::#ut-001-1][UT001.1 - Document typography and readability]].
-- Criteria :: [[spec.org::#ac-001-4][AC001.4 - Markdown structure survives conversion]], [[spec.org::#ac-001-5][AC001.5 - Org information survives conversion]], [[spec.org::#ac-001-18][AC001.18 - Proportional text uses the appropriate Asap face]], [[spec.org::#ac-001-19][AC001.19 - Code remains monospace]], [[spec.org::#ac-001-43][AC001.43 - Application text meets contrast requirements]].
+- Criteria :: [[spec.org::#ac-001-4][AC001.4 - Markdown structure survives conversion]], [[spec.org::#ac-001-5][AC001.5 - Org information survives conversion]], [[spec.org::#ac-001-18][AC001.18 - Proportional text uses the appropriate Asap face]], [[spec.org::#ac-001-19][AC001.19 - Fixed-width text uses Iosevka Custom]], [[spec.org::#ac-001-43][AC001.43 - Application text meets contrast requirements]].
 - Reviewer :: Taḋg or an explicitly named operator.
-- Procedure :: *Inspect representative Markdown and Org* at wide and narrow window sizes, in light and dark modes. Include regular, italic, bold, code, tables, images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use Safari 26 on macOS 26 arm64 and record exact versions and viewport sizes. Confirm the rendered font faces in the browser inspector, not just their CSS declarations. Measure the application text colours against their backgrounds in both themes; record the lowest body and large-text contrast ratios.
-- Expected :: *Text remains readable without clipping or missing glyphs*; headings, metadata, and code remain distinguishable. *Asap uses the appropriate face* and code remains monospace. *Contrast meets 4.5:1 for body text and 3:1 for large text* across both themes.
+- Procedure :: *Inspect representative Markdown and Org* at wide and narrow window sizes, in light and dark modes. Include regular, italic, bold, code, tables, images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use Safari 26 on macOS 26 arm64 and record exact versions and viewport sizes. Confirm the rendered font faces in the browser inspector, not just their CSS declarations. Inspect *inline code, code blocks, preformatted text, keyboard/sample text, and fixed-width Org metadata*; include regular, italic, bold, and bold italic examples. Verify equal-width character columns and the actual packaged Iosevka Custom face selected for each style, including Irish glyphs within code. Measure the application text colours against their backgrounds in both themes; record the lowest body and large-text contrast ratios.
+- Expected :: *Text remains readable without clipping or missing glyphs*; headings, metadata, and code remain distinguishable. *Asap uses the appropriate face* for proportional text; *fixed-width text uses the matching Iosevka Custom face and aligned character columns*. *Contrast meets 4.5:1 for body text and 3:1 for large text* across both themes.
 - Result :: PENDING.
 - Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
 
@@ -70,3 +70,4 @@
 - Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
 
 - Definition history :: The initial draft selected UT001.1 - Typography and UT001.2 - Navigation. Their pending procedures were refined; UT001.3 - Passive browser behaviour and OT001.1 - Homebrew packaging were added. No executed result was removed.
+- Font amendment :: On 8 September 2026, UT001.1 - Document typography and readability was refined to check the selected Iosevka Custom faces. Its result remains PENDING; asset inspection does not establish browser rendering.

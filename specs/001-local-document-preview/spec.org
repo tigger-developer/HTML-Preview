@@ -2,10 +2,10 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PASS
+#+DEFINITION_GATE: PENDING
 #+OPERATOR_SIGNOFF: PENDING
 
-* Specification Summary
+* Installable Markdown and Org previews with linked browsing
 :PROPERTIES:
 :CUSTOM_ID: summary
 :END:
@@ -19,7 +19,8 @@
   Safari 26 is the browser target; installation is staged for Homebrew.
 - Changes :: The candidate defines four connected capabilities:
   - *Rendering preserves Org metadata, literal blocks, and identifiers*, embeds
-    both Asap faces/notices, and retains accessible outline controls and printing.
+    both Asap faces and four Iosevka Custom faces with their notices, and retains
+    accessible outline controls and printing.
   - *Local references resolve from their source directories*. Opt-in traversal
     defaults to 50 contexts, depth 3, 10 MiB per source, 50 MiB total source,
     100 MiB output, and 60 seconds of conversion.
@@ -35,9 +36,10 @@
   and handoffs are diagnosed*; aliases and ambiguous IDs have explicit rules.
   Partial publication aborts opening. *Cleanup affects only the owned session*;
   forced termination may leave its directory behind.
-- Decisions :: *Go and temporary-directory output are selected*. Asap is the
-  default proportional font; code remains monospace. *Project code uses Apache
-  2.0* and Asap retains OFL 1.1. Platform, browsing, retention, and passive-source
+- Decisions :: *Go and temporary-directory output are selected*. *Asap is the
+  proportional default*; *Iosevka Custom is the fixed-width and code default*.
+  *Project code uses Apache 2.0* and both font families retain OFL 1.1.
+  Platform, browsing, retention, and passive-source
   defaults are *candidate choices for approval*. CSS/JS use source and browser
   review; no CLI JavaScript lint runtime is introduced.
 - Next step :: *Audit this candidate, then obtain operator sign-off*. Linked
@@ -75,7 +77,7 @@
 
 - *Go application orchestration* with Pandoc as a runtime dependency.
 - *Markdown and Org rendering* with packaged HTML, CSS, browser controls, and
-  both variable Asap faces.
+  both variable Asap faces plus four static Iosevka Custom faces.
 - *Source-preserving temporary output* and local link/image resolution.
 - *Revision of project-owned Org code*, including pre-processing, Lua, CSS, and
   browser JavaScript.
@@ -117,6 +119,7 @@
   [[file:../../prototype/org-fidelity.css][Presentation]], and
   [[file:../../prototype/org-fold.html][Outline controls]].
 - Asset authority :: [[file:../../assets/fonts/asap/README.md][Asap provenance and checksums]],
+  [[file:../../assets/fonts/iosevka-custom/README.md][Iosevka Custom faces, provenance, and checksums]],
   [[file:../../LICENSE][Apache License 2.0]], and
   [[file:../../THIRD_PARTY_NOTICES.md][Third-party licence boundary]].
 - Regression baseline :: *No maintained application suite is present* in the
@@ -141,12 +144,17 @@
 
 - Application language :: *Go is selected* after the operator considered Lua.
 - Output placement :: *Private OS-temporary output replaces source-adjacent HTML*.
-- Presentation :: *Asap is the default proportional face*; code is monospace.
-  Both regular and italic variable WOFF2 faces and notices are already included.
+- Presentation :: *Asap is the default proportional face*; *Iosevka Custom is the
+  default for all fixed-width text*, including code blocks and inline code.
+  The two variable Asap faces and four static Iosevka Custom faces, with their
+  notices, are included as WOFF2 assets.
+- Font amendment :: On 8 September 2026, the operator selected *Iosevka Custom
+  from the local font archive*. This specifies the earlier generic monospace
+  requirement; the prior audit remains historical evidence for its revision.
 - Ownership :: *Reused Org fidelity code is maintained project code*, subject to
   normal design, build, and verification.
-- Licensing :: *Project code and documentation use Apache 2.0*; Asap retains
-  SIL OFL 1.1.
+- Licensing :: *Project code and documentation use Apache 2.0*; both Asap and
+  Iosevka Custom retain SIL OFL 1.1 and their respective copyright notices.
 
 - Definition choices :: The following *candidate defaults require sign-off*:
   linked browsing is opt-in; quick retention is three seconds; linked sessions
@@ -344,13 +352,15 @@
   italic face* at the requested weight.
 - Proven by :: [[#ut-001-1][UT001.1 - Document typography and readability]].
 
-** AC001.19 - Code remains monospace
+** AC001.19 - Fixed-width text uses Iosevka Custom
 :PROPERTIES:
 :CUSTOM_ID: ac-001-19
 :END:
 
-- Criterion :: *Code and preformatted text use a monospace face*, independently of
-  the proportional font.
+- Criterion :: *Code blocks, inline code, and all other fixed-width text use
+  Iosevka Custom* by default, including preformatted, keyboard, and sample
+  output text. *Regular, italic, bold, and bold italic use their packaged faces*,
+  independently of the proportional font.
 - Proven by :: [[#ut-001-1][UT001.1 - Document typography and readability]].
 
 ** AC001.20 - Embedded fonts retain their licence in HTML
@@ -358,8 +368,9 @@
 :CUSTOM_ID: ac-001-20
 :END:
 
-- Criterion :: Every preview retains *Asap copyright and full OFL 1.1 text* in
-  its *readable HTML source*, alongside the embedded font payloads.
+- Criterion :: Every preview retains *both font families' copyright notices and
+  full OFL 1.1 text* in its *readable HTML source*, alongside the embedded font
+  payloads.
 - Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]].
 
 ** AC001.21 - Same-page fragments stay on the preview
@@ -593,6 +604,16 @@
   at least 4.5:1 for body text and 3:1 for large text.
 - Proven by :: [[#ut-001-1][UT001.1 - Document typography and readability]].
 
+** AC001.44 - Iosevka Custom faces are embedded
+:PROPERTIES:
+:CUSTOM_ID: ac-001-44
+:END:
+
+- Criterion :: Each *preview embeds the four selected Iosevka Custom WOFF2
+  faces*: regular, italic, bold, and bold italic at normal width, without
+  depending on installed fonts or network font access.
+- Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]].
+
 * Test Definitions
 :PROPERTIES:
 :CUSTOM_ID: test-definitions
@@ -681,16 +702,20 @@
 - Covers :: [[#ac-001-7][AC001.7 - Both Asap variable faces are embedded]],
   [[#ac-001-8][AC001.8 - Distribution retains licence notices]],
   [[#ac-001-20][AC001.20 - Embedded fonts retain their licence in HTML]],
-  [[#ac-001-42][AC001.42 - Embedded application assets retain their licence]].
+  [[#ac-001-42][AC001.42 - Embedded application assets retain their licence]],
+  [[#ac-001-44][AC001.44 - Iosevka Custom faces are embedded]].
 - Boundary :: Inspect the *built distribution and generated output*.
 - Setup :: Place the *executable outside its checkout*, without personal Pandoc
-  data or installed Asap fonts.
+  data or installed Asap or Iosevka Custom fonts.
 - Action :: *Generate Markdown and Org previews* and extract their font bytes, CSS
   declarations, and notices.
-- Expected :: *Font hashes match the recorded assets*; both variation ranges and
-  packaged presentation assets are present. *Distribution and embedded HTML
+- Expected :: *All six font hashes match the recorded assets*. Asap's variation
+  ranges and the four Iosevka Custom style/weight pairs are declared correctly;
+  generated font sources use data URLs without =local()= or remote sources.
+  Packaged presentation assets are present. *Distribution and embedded HTML
   retain the complete required notices*: Apache 2.0, applicable application
-  notices, Asap copyright, and full OFL 1.1. Browser appearance is checked separately.
+  notices, both font families' copyrights, and full OFL 1.1. Browser appearance
+  and actual face selection are checked separately.
 - Retention :: *Persistent regression* under =make test=; observe the expected
   *RED before implementation*, then GREEN.
 
@@ -931,20 +956,25 @@
 - Covers :: [[#ac-001-4][AC001.4 - Markdown structure survives conversion]],
   [[#ac-001-5][AC001.5 - Org information survives conversion]],
   [[#ac-001-18][AC001.18 - Proportional text uses the appropriate Asap face]],
-  [[#ac-001-19][AC001.19 - Code remains monospace]],
+  [[#ac-001-19][AC001.19 - Fixed-width text uses Iosevka Custom]],
   [[#ac-001-43][AC001.43 - Application text meets contrast requirements]].
 - Reviewer :: Taḋg or an explicitly named operator.
 - Procedure :: *Inspect representative Markdown and Org* at wide and narrow window
   sizes, in light and dark modes. Include regular, italic, bold, code, tables,
   images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use Safari 26 on macOS 26 arm64 and record
   exact versions and viewport sizes. Confirm the rendered font faces in the
-  browser inspector, not just their CSS declarations.
+  browser inspector, not just their CSS declarations. Inspect *inline code,
+  code blocks, preformatted text, keyboard/sample text, and fixed-width Org
+  metadata*; include regular, italic, bold, and bold italic examples. Verify
+  equal-width character columns and the actual packaged Iosevka Custom face
+  selected for each style, including Irish glyphs within code.
   Measure the application text colours against their backgrounds in both themes;
   record the lowest body and large-text contrast ratios.
 - Expected :: *Text remains readable without clipping or missing glyphs*;
   headings, metadata, and code remain distinguishable. *Asap uses the appropriate
-  face* and code remains monospace. *Contrast meets 4.5:1 for body text and 3:1
-  for large text* across both themes.
+  face* for proportional text; *fixed-width text uses the matching Iosevka Custom
+  face and aligned character columns*. *Contrast meets 4.5:1 for body text and
+  3:1 for large text* across both themes.
 - Record :: Record the *dated human result, revision, and viewing conditions* in
   =validation.org=; currently PENDING.
 
@@ -1395,10 +1425,19 @@ yaml_metadata_block
   use safe DOM APIs and register teardown for listeners/print-state changes.
   Build the outline index in linear time and yield during large initialization
   batches so static reading remains available before enhancement is ready.
-- Assets :: *Embed separate reviewable HTML/CSS/JS/Lua sources and Asap bytes*.
-  Use regular/italic @font-face rules, weight 100 to 900, width 75% to 125%, and
-  monospace code. Include full font copyright/OFL text in HTML comments and all
-  applicable notices in release archives.
+- Assets :: *Embed separate reviewable HTML/CSS/JS/Lua sources and both font
+  families*. For Asap, use regular/italic @font-face rules, weight 100 to 900,
+  width 75% to 125%. Include both families' full copyright/OFL text in HTML
+  comments and all applicable notices in release archives.
+- Fixed-width font :: *Use Iosevka Custom for every fixed-width style*, including
+  =pre=, =code=, =kbd=, =samp=, and fixed-width Org metadata. Embed the four WOFF2
+  files named by the asset authority in the executable and each preview's CSS
+  data URLs. Declare normal/italic at weights 400 and 700, normal stretch;
+  these are static fonts, with no variation axes. Select the packaged face
+  without =local()=, followed by a generic monospace fallback.
+- Font budget :: *Count all six embedded faces and their base64 expansion* in
+  the existing output budget. Iosevka adds 1,923,456 bytes per page before CSS
+  and notices; the byte limit can stop rendering before the document limit.
 
 *** Failure behaviour
 

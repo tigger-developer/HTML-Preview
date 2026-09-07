@@ -255,6 +255,71 @@ All three audits were applied: audit-spec, audit-design, and audit-test-definiti
   PASS gate field with its audited PENDING value reproduces the audited SHA-256.
   The final documentation was processed with sanitize; whitespace checks pass.
 
+** Local review - Round 4: Iosevka Custom amendment
+:PROPERTIES:
+:CUSTOM_ID: definition-local-4
+:ROUND: 4
+:DATE: 2026-09-08
+:END:
+
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =49047d7b3a5162342732a729d5c56a101fa2b879e936477f7a8f20a35d296659=.
+- Authority :: The operator requested *Iosevka Custom WOFF2 assets from the local
+  font archive* and explicitly requested the specification use them for
+  fixed-width text and code blocks. This amends the existing definition; it
+  does not sign off the whole candidate or authorize renderer implementation.
+- Supersession :: *The earlier external PASS is historical for its audited
+  revision*. The font change resets the gate to PENDING; operator sign-off
+  remains PENDING and the work item remains REVIEW.
+- Context :: Authoring context, applying *audit-spec, audit-design, and
+  audit-test-definitions* to the changed scope and adjacent font, licensing,
+  output-budget, packaging, and validation contracts.
+- Verdict :: *Local PASS*; resume the same retained external context.
+
+#+begin_example
+GATE: definition
+REVISION: 49047d7b3a5162342732a729d5c56a101fa2b879e936477f7a8f20a35d296659
+VERDICT: PASS
+#+end_example
+
+- Specification review :: *Summary, criteria, design, and authorities name
+  Iosevka Custom consistently*. AC001.19 - Fixed-width text uses Iosevka Custom
+  refines the existing family requirement; AC001.20 - Embedded font licences
+  includes both copyrights. AC001.44 - Iosevka Custom faces are embedded uses
+  the next never-used criterion identifier, verified against current records
+  and Git history. No earlier identifier was recycled.
+- Template review :: *The current canonical template uses the change title as
+  its opening headline*. The summary headline now follows that form while
+  preserving its CUSTOM_ID and all eight summary fields; the remaining major
+  sections and their order are unchanged.
+- Design review :: *Four static normal-width faces map to normal/italic styles
+  at 400/700*. Packaged data URLs, a generic monospace fallback, both font
+  licences, and output-budget accounting are explicit. The amendment adds no
+  runtime, remote font access, or renderer implementation.
+- Test-definition review :: *RT001.5 - Embedded assets and licence payload*
+  covers six exact font hashes, face declarations, data URLs, and notices.
+  *UT001.1 - Document typography and readability* checks actual Iosevka faces,
+  fixed-width elements, four styles, aligned columns, and Irish glyphs. Its
+  pending validation record matches the definition; no application or human
+  validation PASS is inferred from the asset probes.
+- Asset evidence :: *Four copies match the source bytes and SHA-256 values*.
+  Temporary decompression and OpenType inspection identify Iosevka Custom
+  34.1.0, normal width, weights 400/700, fixed-pitch flags, and no variation
+  axes. HarfBuzz found no missing glyphs in the recorded Irish/code sample;
+  sampled letters, digits, and spaces have equal advances in all four faces.
+- Licence evidence :: *Embedded metadata identifies SIL OFL 1.1*. The retained
+  upstream licence has matching copyright holder/years and permits embedding
+  with the notice and licence retained. Only trailing whitespace was normalized
+  in the copied licence; the WOFF2 bytes were not modified. Full provenance and
+  hashes are in [[file:../../assets/fonts/iosevka-custom/README.md][Iosevka Custom asset documentation]].
+- Document evidence :: *sanitize processed every authored document without
+  changes*. Pandoc parsed ten relevant Org/Markdown documents; a one-off check
+  verified the current template, 44 criteria, 20 reciprocal test definitions,
+  unique heading IDs, 238 resolving local links, and matching typography-test
+  procedures. =git diff --check= passed.
+- Retained context :: =/root/definition_audit=. Its next review is limited to
+  the amendment and enough surrounding contract to assess it safely.
+
 * Implementation gate
 
 - Status :: Not run. Implementation is outside this definition workflow.

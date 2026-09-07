@@ -21,7 +21,8 @@ their OpenType variation tables established these ranges for both faces:
 
 The width values correspond to percentage stretch values. Both faces should be
 declared with their full weight and stretch ranges; use the italic file for
-italic text. Code and preformatted content retain a separate monospace face.
+italic text. Code and preformatted content use the separately bundled
+[Iosevka Custom faces](../iosevka-custom/README.md).
 
 A one-off HarfBuzz shaping check of temporary decompressed copies produced no
 missing glyphs for `Taḋg ÁÉÍÓÚ áéíóú` in either face. A direct character-map check
