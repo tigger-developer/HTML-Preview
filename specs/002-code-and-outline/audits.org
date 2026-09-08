@@ -91,6 +91,41 @@
   explicit design obligation, protected by generated-output tests.
 - Remediation :: Resubmit to the retained external auditor.
 
+** External review - contents and standalone
+:PROPERTIES:
+:ROUND: 2
+:CONTEXT: /root/code_outline_definition_audit
+:END:
+
+- Artefact :: [[file:spec.org][W002 - Code highlighting, copying and document navigation]].
+- Revision :: SHA-256 =74f384c113400136d327edcce9a890aa91f3f23040750e1cb71d1f981f887e58=.
+- Audits :: =audit-spec=, =audit-design= and =audit-test-definitions=.
+- Verdict :: FAIL.
+- Finding :: [audit-test-definitions] [BLOCKING]
+  W002-TEST-STANDALONE-IMMUTABILITY - The auditor requested an explicit
+  =HTMLPREVIEW_STANDALONE=0= comparison asserting identical complete output,
+  with the setting ignored and no accepted standalone configuration path.
+- Assessment :: Ignoring an unknown setting conflicts with W001 and the
+  current configuration contract. The next revision instead makes rejection
+  explicit: status 2, no allocation/opening; the ordinary invocation remains
+  standalone. This demonstrates immutability without changing error handling.
+- Supersedes :: External round 1 for its recorded revision.
+
+** Local review - standalone rejection evidence
+:PROPERTIES:
+:ROUND: 4
+:END:
+
+- Artefact :: [[file:spec.org][W002 - Code highlighting, copying and document navigation]].
+- Revision :: SHA-256 =ee7d917fbffb02b7776020b9d8999972656b7eeffcc2ea2867dfa07ebac83cc3=.
+- Audits :: =audit-spec=, =audit-design= and =audit-test-definitions=.
+- Verdict :: PASS.
+- Findings :: No blocking findings. The explicit standalone-setting rejection
+  now appears beside its no-output expectations. No interface or product
+  behaviour changes from the previous proposal.
+- Remediation :: Return the exact expectation and baseline rationale to the
+  retained auditor; do not adopt its suggested silent-ignore behaviour.
+
 * Implementation gate
 
 ** Local review

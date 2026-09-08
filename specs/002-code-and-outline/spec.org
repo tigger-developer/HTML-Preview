@@ -400,6 +400,11 @@
   and restored Org IDs. Disabled/empty TOCs are absent; no contents entry creates
   a graph node or heading. Application settings override source TOC metadata.
   Invalid invocation has no generated files or desktop calls and status 2.
+  In particular, =HTMLPREVIEW_STANDALONE=0= returns status 2 as an unknown
+  setting, without output allocation or desktop calls. It is neither accepted
+  nor ignored; omitting it produces the normal complete document. This
+  preserves W001's rejection of unknown HTMLPREVIEW settings and proves there
+  is no supported path to fragment output.
 - Retention :: *Persistent under make test*. Observe missing default contents
   and rejected valid settings as the expected RED before implementation.
 
