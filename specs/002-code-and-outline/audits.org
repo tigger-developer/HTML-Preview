@@ -149,8 +149,50 @@
 
 ** Local review
 
-- Status :: Not started. No W002 implementation is authorized by this record.
+- Definition-time status :: Not started at the definition gate. Delivery was
+  subsequently authorized by the operator's recorded approval in spec.org.
 
 ** External review
 
 - Status :: Not started.
+
+** Local implementation review - semantic scope
+:PROPERTIES:
+:ROUND: 1
+:END:
+
+- Revision :: =7cd698d6d5ea42ca2f576107156d619b921d3889=, initial implementation.
+- Audits :: =audit-test-code= and =audit-code= in the delivery context.
+- Verdict :: FAIL.
+- Test review :: The declared subprocess and installed-entry boundaries have
+  real Pandoc RED/GREEN evidence. The neighbour list assertion now scopes to
+  the document body so the added TOC does not replace its subject.
+- Code finding :: [audit-code] [BLOCKING] W002-CODE-SEMANTIC-SCOPE - Code
+  copying used the surrounding pre's text rather than the specified code-node
+  value, and syntax selectors also matched code outside the document container.
+- Remediation :: Capture code.textContent, scope token selectors to hp-document
+  and supply the specified next-action tooltip on each folding bar.
+- Advisory :: Browser interaction, geometry, printing and clipboard policy
+  require the pending operator tests; generated HTML is not that evidence.
+
+** Local implementation review - scoped candidate
+:PROPERTIES:
+:ROUND: 2
+:END:
+
+- Revision :: =3a77a328cdbc7ce56a25fac793306b2469a34898=, semantic-scope correction.
+- Audits :: =audit-test-code= and =audit-code= in the delivery context.
+- Verdict :: PASS.
+- Findings :: No required local correction remains. Round-one scope changes
+  match the signed-off design. Transport validation, token ownership, literal
+  fallback, final heading binding, passive content, bounded process/session
+  ownership, clipboard activation and outline lifecycle were reviewed together.
+- Evidence :: The full race suite passed before the browser-only scope
+  correction. Current focused generated-output checks and native JS/CSS static
+  checks pass. Runtime coverage is 87.8%; make lint and make vulncheck pass.
+  The validation record distinguishes these from unexecuted browser tests.
+- Structure :: The transport coordinator retains one ordered validation and
+  restoration pass. Outline setup keeps its shared state, handlers and teardown
+  in one lifecycle; clipboard and code enhancement are separate functions.
+- Remediation :: Round-one findings addressed; submit this candidate to the
+  retained independent implementation gate.

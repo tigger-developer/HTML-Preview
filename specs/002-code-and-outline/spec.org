@@ -193,6 +193,20 @@
 - Effect :: Branch =002-code-and-outline-implementation= in the existing
   OS-temporary worktree. The original checkout's edits remain untouched.
 
+*** D002.2 - Keep intermediate presentation separate
+:PROPERTIES:
+:CUSTOM_ID: d-002-2
+:END:
+
+- Decision :: Name the owned intermediate Pandoc template =page.html5= and
+  reserve =.html= session files for published preview pages. Contents labels
+  use heading-image alternative text, while source images keep normal document
+  resource resolution.
+- Reason :: Intermediate inputs cannot be mistaken for published pages, and
+  contents do not create a second resource/discovery path.
+- Effect :: This is a reversible implementation detail within the specified
+  separate contents/body and passive-resource boundaries.
+
 * Acceptance Criteria
 :PROPERTIES:
 :CUSTOM_ID: acceptance-criteria
