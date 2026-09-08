@@ -275,10 +275,14 @@ func TestRT002_3_ContentsSettings(t *testing.T) {
 				fmt.Fprintf(&body, "%s Level %d\nBody %d\n\n", strings.Repeat(marker, i), i, i)
 			}
 			p := source(t, root, "levels."+format, body.String())
+			defaultDepth := 3
+			if format == "org" {
+				defaultDepth = 0
+			}
 			cases := []struct {
 				env   []string
 				depth int
-			}{{nil, 3}, {[]string{"HTMLPREVIEW_TOC=", "HTMLPREVIEW_TOC_DEPTH="}, 3}, {[]string{"HTMLPREVIEW_TOC=0"}, 0}}
+			}{{nil, defaultDepth}, {[]string{"HTMLPREVIEW_TOC=", "HTMLPREVIEW_TOC_DEPTH="}, defaultDepth}, {[]string{"HTMLPREVIEW_TOC=0"}, 0}, {[]string{"HTMLPREVIEW_TOC=1"}, 3}}
 			for depth := 1; depth <= 6; depth++ {
 				cases = append(cases, struct {
 					env   []string
@@ -322,7 +326,7 @@ func TestRT002_3_ContentsDestinations(t *testing.T) {
 	a := source(t, root, "a.md", "# Same {#duplicate}\nFirst\n\n### Gap *formatted*\nBody\n\n# Same {#duplicate}\nSecond\n\n[next](b.org)\n\n```go\npackage main\n```\n")
 	b := source(t, root, "b.org", "* Same\n:PROPERTIES:\n:ID: alias\n:CUSTOM_ID: duplicate\n:END:\n*** Gap /formatted/\nBody\n* Same\n:PROPERTIES:\n:CUSTOM_ID: duplicate\n:END:\n#+BEGIN_SRC go\npackage main\n#+END_SRC\n")
 	empty := source(t, root, "empty.md", "No headings.\n")
-	r := run(t, t.TempDir(), []string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_ROOT=" + root}, a, empty)
+	r := run(t, t.TempDir(), []string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_ROOT=" + root, "HTMLPREVIEW_TOC=1"}, a, empty)
 	success(t, r, 3)
 	checkContents(t, r.pages[0], []string{"Same", "Gap formatted", "Same"})
 	checkContents(t, r.pages[1], nil)

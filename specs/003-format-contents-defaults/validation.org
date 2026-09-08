@@ -1,0 +1,39 @@
+#+TITLE: W003 - Format-specific contents validation
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Emergency authority and regression evidence
+
+- Authority :: Taḋg requested Markdown TOC on at depth 3 and Org TOC off with
+  =BYPASS-GATE-7= on 8 September 2026. The bounded request is the temporary
+  specification; the durable specification is reconciled after implementation.
+- Selected evidence :: RT003.1 - Per-document defaults exercises generated
+  HTML through the existing command subprocess and installed-entry boundaries.
+  OT003.1 - Documentation reconciliation checks the affected guidance once.
+- RED :: Before production changes, the new mixed-entry and linked-page cases
+  fail because Org publishes a TOC with unset/empty TOC or depth-only settings.
+  The amended existing Org-default and installed-symlink cases also fail.
+  Explicit on/off settings continue to pass. Runtime 12.967 s; integration
+  1.818 s. The expected diagnostic is "empty/disabled TOC published".
+- GREEN :: PENDING.
+- User tests :: No new user test is selected: TOC presence, depth and per-file
+  selection are observable in generated HTML, with no browser-control change.
+  Existing W001/W002 browser qualification remains separate and pending.
+
+* OT003.1 - Documentation reconciliation
+:PROPERTIES:
+:CUSTOM_ID: ot-003-1
+:CATEGORY: ONE-OFF
+:RESULT: PENDING
+:END:
+
+- Requirement :: The format defaults, explicit override and depth behaviour
+  authorized by the emergency request.
+- Procedure :: Review CLI help, README, Vision, Architecture and the W002
+  supersession notice against the reconciled specification. Process edited
+  documentation with sanitize and parse edited Org artefacts with Pandoc.
+- Expected :: Guidance agrees on Markdown on, Org off, depth 3 and explicit
+  overrides; W002's original all-format default remains identifiable as history.
+- Bounds :: Local documentation and scratch output only; no global installation,
+  browser qualification or remote service calls.
+- Evidence :: PENDING.

@@ -110,8 +110,9 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 			if !found || strings.Count(string(data), "data:font/woff2;base64,") != 6 || !strings.Contains(string(data), "SIL OPEN FONT LICENSE") {
 				t.Fatal("installed renderer lost its source or embedded assets")
 			}
-			if !contents || !highlighted {
-				t.Fatal("RT002: installed symlink lost default contents or highlighting")
+			wantContents := !strings.HasSuffix(name, ".org")
+			if contents != wantContents || !highlighted {
+				t.Fatal("RT003: installed symlink lost format-specific contents or highlighting")
 			}
 		}
 	})
