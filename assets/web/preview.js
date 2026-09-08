@@ -117,7 +117,7 @@ async function enhanceCode(main, copyValue, controller, dispose) {
     if (pre) blocks.add(pre);
     // Capture before any controls are inserted; never derive this from a class,
     // source attribute, control label or highlighted span.
-    const value = pre ? pre.textContent : code.textContent;
+    const value = code.textContent;
     const label = pre ? 'Code block ' + (++blockNumber) : 'Inline code ' + (++inlineNumber);
     if (value === '') continue;
     const button = document.createElement('button');
@@ -209,6 +209,7 @@ async function enhanceOutline(main, controller, dispose) {
       const expanded = record.mode === 'all';
       record.button.setAttribute('aria-expanded', String(expanded));
       record.button.setAttribute('aria-label', (expanded ? 'Collapse ' : 'Expand ') + record.label);
+      record.button.title = (expanded ? 'Collapse ' : 'Expand ') + record.label;
     }
   }
 

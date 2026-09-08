@@ -52,13 +52,13 @@ section[data-hp-level] section[data-hp-level] { margin-left:.6rem; padding-left:
 /* Built-in Pandoc token classes use an owned palette; no writer CSS is loaded. */
 :root { --syntax-keyword:#65369a; --syntax-string:#176438; --syntax-number:#924318; --syntax-comment:#535c69; --syntax-function:#20599b; --syntax-error:#a52132; }
 @media (prefers-color-scheme:dark) { :root { --syntax-keyword:#d3b4ff; --syntax-string:#96d8a6; --syntax-number:#f6b785; --syntax-comment:#b2bac6; --syntax-function:#94c4fc; --syntax-error:#ffadb5; } }
-code .kw,code .cf,code .dt,code .bu,code .ex { color:var(--syntax-keyword); font-weight:700; }
-code .st,code .vs,code .ch,code .sc,code .ss,code .im { color:var(--syntax-string); }
-code .dv,code .bn,code .fl,code .cn { color:var(--syntax-number); }
-code .co,code .cv,code .do,code .an,code .wa { color:var(--syntax-comment); font-style:italic; }
-code .fu,code .at,code .pp { color:var(--syntax-function); }
-code .er,code .al { color:var(--syntax-error); font-weight:700; }
-code .op,code .ot,code .va,code .in { color:var(--fg); }
+#hp-document code :is(.kw,.cf,.dt,.bu,.ex) { color:var(--syntax-keyword); font-weight:700; }
+#hp-document code :is(.st,.vs,.ch,.sc,.ss,.im) { color:var(--syntax-string); }
+#hp-document code :is(.dv,.bn,.fl,.cn) { color:var(--syntax-number); }
+#hp-document code :is(.co,.cv,.do,.an,.wa) { color:var(--syntax-comment); font-style:italic; }
+#hp-document code :is(.fu,.at,.pp) { color:var(--syntax-function); }
+#hp-document code :is(.er,.al) { color:var(--syntax-error); font-weight:700; }
+#hp-document code :is(.op,.ot,.va,.in) { color:var(--fg); }
 @media (max-width:35rem) { body { padding:1rem .9rem 3rem; } section[data-hp-level] section[data-hp-level] { margin-left:.2rem; padding-left:.4rem; } }
 @media (max-width:35rem) { .hp-outline-section,section[data-hp-level] .hp-outline-section { margin-left:0; padding-left:1.6rem; } }
 @media print {
