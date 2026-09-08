@@ -4,8 +4,34 @@
 
 * Automated regression
 
-- Status :: *Not run*. The application and maintained tests are not implemented.
-  Definition probes are design evidence, not application regression results.
+- Status :: *Implementation in progress*. The first executable and rendering
+  regressions run on macOS arm64 with Go 1.26.3 and Pandoc 3.9.0.2/Lua 5.4.
+  This is partial implementation evidence, not the implementation gate.
+
+** Initial rendering checkpoint - 8 September 2026
+
+- RED :: The bootstrap test first reported the missing executable. The source
+  identity, ownership, Markdown, Org, font, URL, search, partial-failure, resource,
+  and passive-content cases then failed at the explicit unimplemented-renderer
+  boundary before their rendering implementation. A separate transient compile
+  failure while assembling the scaffold was not accepted as behavioural RED.
+- GREEN :: =go test ./internal/preview ./integration= passed the current twelve
+  preview tests and executable bootstrap on macOS arm64. Normal conversion uses
+  real Pandoc; the subprocess test entry uses the same command coordinator and
+  replaces only desktop handoff. The separately built public binary supplies
+  the informational-command bootstrap check.
+- Observed :: Source identity and retained bytes, owner-private modes, ordinary
+  Markdown, preserved Org literals and metadata, six font hashes/full licences,
+  encoded local references, basic Org searches, partial failures, invalid input,
+  and the initial passive-source fixtures.
+- Limits :: These are initial cases within the signed-off regression definitions.
+  Graph traversal, WSL policy, packaging, further adversarial/failure cases,
+  implementation review, and every human/one-off result remain outstanding.
+- Recoverability :: Implementation uses the isolated feature checkout created
+  after admission. The original checkout and its operator profile edit are
+  untouched. The operator subsequently restored the empty working font; fresh
+  inspection found it matches the 385,208-byte committed asset. Its cause remains
+  unidentified; no attribution is inferred.
 
 * User tests
 

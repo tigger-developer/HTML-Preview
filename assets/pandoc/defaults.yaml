@@ -1,0 +1,9 @@
+# ABOUTME: Pins the writer and isolation options used for document conversion.
+# ABOUTME: The Go reader selection freezes the matching Markdown extensions.
+to: html5
+standalone: false
+section-divs: true
+wrap: none
+preserve-tabs: true
+syntax-highlighting: none
+sandbox: true

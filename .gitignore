@@ -1,0 +1,8 @@
+# Local agent runtime, build products, and coverage evidence.
+.agent/
+.agents/
+.claude/
+.codex/
+bin/
+dist/
+coverage.out

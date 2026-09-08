@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="{{.Policy}}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Name}}</title>
+{{.Notices}}
+<style>{{.CSS}}</style>
+</head>
+<body>
+<header id="hp-header"><h1 data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1></header>
+<main id="hp-document" data-hp-startup="{{.Startup}}">{{.Body}}</main>
+<script type="module">{{.Script}}</script>
+</body>
+</html>
