@@ -140,8 +140,13 @@ func (s *session) restoreTransport(doc *html.Node, p *page, token string) (map[s
 				return nil, err
 			}
 		} else {
-			heading := directHeading(owner)
-			if owner.Data != "section" || heading == nil || record.Parent != owner {
+			heading, parent := owner, owner.Parent
+			if owner.Data == "section" {
+				heading, parent = directHeading(owner), owner
+			}
+			// Pandoc leaves headers in quotations and lists as bare headings.
+			// Catalogue wraps them later; retain the actual node across that step.
+			if heading == nil || !isHeading(heading) || record.Parent != parent {
 				return nil, errors.New("invalid heading association")
 			}
 			setAttribute(owner, "id", values[field])

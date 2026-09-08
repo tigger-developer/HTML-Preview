@@ -95,7 +95,7 @@ async function enhanceCode(main, copyValue, controller, dispose) {
   const buttons = [];
   const wrappers = [];
   const linkTails = new WeakMap();
-  const blocks = new Set();
+  const blockWrappers = new WeakMap();
   let inlineNumber = 0;
   let blockNumber = 0;
   let gesture;
@@ -112,9 +112,7 @@ async function enhanceCode(main, copyValue, controller, dispose) {
     if (controller.signal.aborted) return;
     const code = codes[i];
     const pre = code.closest('pre');
-    if (pre && blocks.has(pre)) continue;
     if (code.parentElement.closest('code')) continue;
-    if (pre) blocks.add(pre);
     // Capture before any controls are inserted; never derive this from a class,
     // source attribute, control label or highlighted span.
     const value = code.textContent;
@@ -135,17 +133,24 @@ async function enhanceCode(main, copyValue, controller, dispose) {
       tail.after(button);
       linkTails.set(link, button);
     } else if (pre) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'hp-code-block';
-      wrapper.hidden = pre.hidden;
-      pre.hidden = false;
-      pre.before(wrapper);
-      wrapper.append(button, pre);
-      wrappers.push(wrapper);
+      let wrapper = blockWrappers.get(pre);
+      if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'hp-code-block';
+        wrapper.hidden = pre.hidden;
+        pre.hidden = false;
+        pre.before(wrapper);
+        wrapper.append(pre);
+        wrappers.push(wrapper);
+        blockWrappers.set(pre, wrapper);
+      }
+      wrapper.insertBefore(button, pre);
     } else {
       code.after(button);
     }
-    targets.set(pre || code, { value, label, button });
+    const target = { value, label, button };
+    targets.set(code, target);
+    if (pre && pre.querySelectorAll('code').length === 1) targets.set(pre, target);
     if (i % 250 === 249) await nextFrame(controller.signal);
   }
   if (controller.signal.aborted) return;
@@ -153,9 +158,9 @@ async function enhanceCode(main, copyValue, controller, dispose) {
   function targetFor(event) {
     if (!(event.target instanceof Element)) return undefined;
     if (event.target.closest('a,button,summary,textarea,input,select')) return undefined;
-    const code = event.target.closest('code');
+    const code = event.target.closest('code,pre');
     if (!code || !main.contains(code)) return undefined;
-    return targets.get(code.closest('pre') || code);
+    return targets.get(code);
   }
   main.addEventListener('pointerdown', event => {
     gesture = { target: targetFor(event), x: event.clientX, y: event.clientY, selected: hasSelection(), dragged: false };

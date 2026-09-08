@@ -68,6 +68,11 @@ Raw semantic <code>inline HTML code</code> follows the same copying rule.
 <pre><code>Raw HTML block &lt;text&gt; &amp; spaces
 </code></pre>
 
+Two semantic code values can share one preformatted block. Each copy button
+copies its own value:
+
+<pre><code>first value</code> / <code>second value</code></pre>
+
 The block below contains only whitespace and remains copyable:
 
 <pre><code> 	 

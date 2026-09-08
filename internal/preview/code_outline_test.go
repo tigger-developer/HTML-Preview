@@ -354,3 +354,25 @@ func TestRT002_3_ContentsDestinations(t *testing.T) {
 		}
 	}
 }
+
+func TestRT002_3_QuotedHeadings(t *testing.T) {
+	root := t.TempDir()
+	p := source(t, root, "quoted.md", "# Document\n\n> # Quoted heading {#quoted}\n>\n> Quoted body.\n>\n> ```go\n> package main\n> ```\n\n- # Listed heading {#listed}\n\n  Listed body.\n\n[quote](#quoted) [list](#listed)\n")
+	r := run(t, root, nil, p)
+	success(t, r, 1)
+	main := documentNode(t, r.pages[0], "hp-document")
+	for _, id := range []string{"quoted", "listed"} {
+		section := documentNode(t, main, id)
+		if section.Data != "section" {
+			t.Errorf("%s did not retain its final heading destination", id)
+		}
+	}
+	quotes := nodes(main, "blockquote")
+	if len(quotes) != 1 || !strings.Contains(textOf(quotes[0]), "Quoted body.") {
+		t.Fatal("quotation structure lost")
+	}
+	blocks := nodes(quotes[0], "pre")
+	if len(blocks) != 1 || textOf(blocks[0]) != "package main" || len(nodes(blocks[0], "span")) == 0 {
+		t.Fatal("quoted code lost literal highlighting")
+	}
+}
