@@ -102,7 +102,7 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/002-code-and-outline/audits.org][W002 - Definition and implementation audit evidence]].
 - User validation :: [[file:../specs/002-code-and-outline/validation.org][W002 - Browser validation]].
 
-** ACTIVE W003 - Format-specific contents defaults :maintenance:
+** REVIEW W003 - Format-specific contents defaults :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-003
 :PRIORITY: P1

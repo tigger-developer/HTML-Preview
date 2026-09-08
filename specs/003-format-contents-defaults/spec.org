@@ -21,7 +21,8 @@
   contents off; invalid depth still fails before preview allocation.
 - Decisions :: *The operator authorized this bounded change with BYPASS-GATE-7*.
   This document records the result after implementation, not an earlier definition.
-- Next step :: *Implementation audit and final verification*, then operator closure.
+- Next step :: *Operator closure*. Implementation audit, final regressions and
+  documentation verification pass; existing browser qualification stays separate.
 
 -----
 

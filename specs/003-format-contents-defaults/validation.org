@@ -24,11 +24,28 @@
   selection are observable in generated HTML, with no browser-control change.
   Existing W001/W002 browser qualification remains separate and pending.
 
+** Final verification after implementation PASS
+
+- Candidate :: =f5ba6ea18d306b86a9c944069a0fad1986fd7683=, the audited review checkpoint;
+  production code is =f1bc879=, the format-default correction.
+- Regression :: =go test -race -count=1 ./...= passed: integration 10.981 s,
+  runtime 181.032 s. This is the full make test suite with caching disabled.
+  The installed-command cases include repeated prefix installation and the
+  Markdown/Org default expectations through an executable symlink.
+- Static and dependencies :: =make lint= passed. =make vulncheck= reported
+  "No vulnerabilities found". No dependency or browser source changed.
+- Documentation :: OT003.1 - Documentation reconciliation passed below.
+  Final updates record results and lifecycle; they do not change the audited
+  production code or test expectations.
+- Disposition :: Required evidence for this bounded emergency change passes.
+  Operator closure is pending. Existing W001/W002 browser/platform qualification,
+  global installation, integration into master and release remain separate.
+
 * OT003.1 - Documentation reconciliation
 :PROPERTIES:
 :CUSTOM_ID: ot-003-1
 :CATEGORY: ONE-OFF
-:RESULT: PENDING
+:RESULT: PASS
 :END:
 
 - Requirement :: The format defaults, explicit override and depth behaviour
@@ -40,4 +57,15 @@
   overrides; W002's original all-format default remains identifiable as history.
 - Bounds :: Local documentation and scratch output only; no global installation,
   browser qualification or remote service calls.
-- Evidence :: PENDING.
+- Revision :: =f5ba6ea18d306b86a9c944069a0fad1986fd7683=, the audited candidate;
+  subsequent changes record evidence and lifecycle only.
+- Environment :: macOS arm64, Go 1.26.8, Pandoc 3.9.0.2; local review on
+  8 September 2026 after the implementation gate PASS.
+- Evidence :: Current CLI help reports Markdown 1, Org 0 and depth 3. Reviewed
+  README, Vision and Architecture agree on defaults, explicit overrides,
+  empty settings and depth-only behaviour. W002's original default statements
+  have a visible supersession notice and its Org TOC procedure now enables TOC.
+  sanitize produced no text changes. Pandoc parsed the six affected Org
+  artefacts; the specification has all eight canonical major sections in order,
+  unique heading IDs, resolving internal fragments and existing local targets.
+  Referenced W002 criterion/test IDs resolve. No browser result is inferred.
