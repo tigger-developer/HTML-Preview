@@ -3,7 +3,7 @@
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 #+DEFINITION_GATE: PASS
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: Taḋg, 2026-09-08; explicit "approved" in the project conversation
 
 * Code highlighting, copying and document navigation
 :PROPERTIES:
@@ -38,8 +38,8 @@
   *TOC and depth are configurable* through =HTMLPREVIEW_TOC= (default =1=)
   and =HTMLPREVIEW_TOC_DEPTH= (default =3=, valid =1= to =6=).
   *Standalone is hardcoded true*, following the operator's correction.
-- Next step :: *Definition gate passed; obtain operator sign-off* before
-  implementation. Browser results remain separate human evidence.
+- Next step :: *Deliver the approved change and record its validation*.
+  Browser results remain separate human evidence.
 
 -----
 
@@ -154,13 +154,13 @@
 - Operator configuration direction :: *Hardcode standalone=true*. Expose
   *TOC=true and maximum levels=3* as defaults. The earlier suggestion of a
   standalone switch was explicitly withdrawn before definition sign-off.
-- Authority :: These are *reviewable definition choices awaiting sign-off*,
-  not a claim of prior human approval.
+- Authority :: *Taḋg approved this specification on 8 September 2026*,
+  adopting the proposed choices above through an explicit "approved" response.
 
 ** Unresolved blockers
 
-- *No additional operator decision is required to review this proposal*.
-  Implementation remains gated by explicit sign-off.
+- *No preflight decision is required to start implementation*.
+  The definition gate and explicit operator approval are recorded above.
 
 * Hands-off mode decision log
 :PROPERTIES:
@@ -168,7 +168,30 @@
 :VISIBILITY: folded
 :END:
 
-- Invocation :: *None*. Definition is attended; no delivery has started.
+- Definition history :: *No hands-off invocation occurred during definition*.
+
+** Hands-off invocation 2026-09-08T03:26:00Z :hands-off:review:
+:PROPERTIES:
+:CUSTOM_ID: hands-off-20260908-032600
+:INVOCATION_TIMESTAMP: 2026-09-08T03:26:00Z
+:END:
+
+*** D002.1 - Build on the existing preview implementation
+:PROPERTIES:
+:CUSTOM_ID: d-002-1
+:END:
+
+- Question :: W001's implementation and this approved definition are on the
+  existing implementation branch; the primary branch predates both.
+- Decision :: *Create the W002 implementation branch from the approved current
+  checkpoint*, after synchronizing the recorded primary branch.
+- Reason :: W002 explicitly depends on the W001 implementation. No W001 merge
+  or closure is inferred.
+- Evidence :: The baseline relationship above and the Git branch history.
+- Reversibility :: The new branch is a reversible checkpoint with unchanged
+  source ownership; no shared history is rewritten.
+- Effect :: Branch =002-code-and-outline-implementation= in the existing
+  OS-temporary worktree. The original checkout's edits remain untouched.
 
 * Acceptance Criteria
 :PROPERTIES:
