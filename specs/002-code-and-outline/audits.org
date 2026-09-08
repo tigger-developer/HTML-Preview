@@ -196,3 +196,44 @@
   in one lifecycle; clipboard and code enhancement are separate functions.
 - Remediation :: Round-one findings addressed; submit this candidate to the
   retained independent implementation gate.
+
+** External implementation review - heading containers
+:PROPERTIES:
+:ROUND: 1
+:CONTEXT: /root/code_outline_implementation_audit
+:END:
+
+- Target revision :: =f92f39e1b2d10a7b8c54b4472e51a3774404a937=, local evidence checkpoint.
+  The returned revision text omitted one character; the request and repository
+  identify the target above. The next retained-context review must confirm it.
+- Audits :: =audit-test-code= and =audit-code=, configured gpt-5.6-luna.
+- Verdict :: FAIL, returned within the eight-minute invocation bound.
+- Finding :: [audit-code] [BLOCKING] W002-CODE-HEADING-CONTAINER - Pandoc
+  headings inside blockquotes can be direct heading elements instead of section
+  children. Requiring a section rejects those valid source documents.
+- Advisory :: [audit-test-code] [ADVISORY] W002-TEST-HEADING-CONTAINERS - Add
+  command coverage for headings in quotations and other non-section containers.
+- Independent confirmation :: The new CLI regression returned status 1,
+  no published page and "invalid heading association" before the correction.
+- Remediation :: Restore both section-owned and bare heading nodes, retaining
+  their identity through the existing catalogue wrapping step. The quoted/list
+  heading regression and neighbouring W002 cases then pass.
+
+** Local implementation review - container correction
+:PROPERTIES:
+:ROUND: 3
+:END:
+
+- Revision :: =8f5312569903564ef4308df7689e438c60d8dd7e=, container and raw-code correction.
+- Audits :: =audit-test-code= and =audit-code= in the delivery context.
+- Verdict :: PASS.
+- Evidence :: The added public CLI case failed before the container correction
+  and now passes; focused W002 and bare-HTML-heading checks pass in 8.321 s.
+  make lint and the native browser-source checks pass.
+- Scope review :: Multiple raw semantic code values sharing a preformatted
+  element now keep independent code-node payloads and controls, using one
+  wrapper. This follows the already-approved semantic-code scope. A synthetic
+  example exposes it for the pending browser check. No test-only browser
+  interface or new runtime was introduced.
+- Remediation :: Resubmit to the same external context. Browser evidence
+  remains PENDING; no operator closure is inferred.
