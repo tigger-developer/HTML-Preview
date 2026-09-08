@@ -589,7 +589,7 @@ VERDICT: PASS
 
 All three component audits were applied: audit-spec, audit-design, and audit-test-definitions.
 
-1. [audit-test-definitions] [ADVISORY] HEADER-VISUAL-DETAILS - The authority specifies a compact right-aligned header and separator above the document body, but UT001.5 does not name those two visual observations explicitly (docs/ARCHITECTURE.md:149-158; spec.org:1129-1148). This does not require correction for the source-path behavior gate.
+1. [audit-test-definitions] [ADVISORY] HEADER-VISUAL-DETAILS - The authority specifies a compact right-aligned header and separator above the document body, but UT001.5 does not name those two visual observations explicitly (docs/ARCHITECTURE.md:149-158; spec.org:1129-1148). This does not require correction for the source-path behaviour gate.
 #+end_example
 
 - Review scope :: The reviewer confirmed *reciprocal source-identity and
@@ -609,6 +609,24 @@ All three component audits were applied: audit-spec, audit-design, and audit-tes
   Its adjacent generated HTML remained after handoff and was moved into this
   amendment's unique OS-temporary scratch directory. This does not establish
   human inspection or a clipboard-test result.
+
+** Operator sign-off and delivery direction
+:PROPERTIES:
+:CUSTOM_ID: definition-operator-signoff
+:DATE: 2026-09-08
+:END:
+
+- Authority :: *Taḋg explicitly approved the specification* in the project
+  conversation, then directed the work to move to implementation.
+- Approved revision :: The source-header definition audited at
+  =e2db66f35261830c34c1fa64f97cb1a618f67de960b8fa7d82cc7290dc98fe1b=,
+  with subsequent definition-gate and sign-off metadata only.
+- Lifecycle receipt :: *The sign-off authority/date are recorded in spec.org*
+  and the work-item headline moves to ACTIVE. This authorizes delivery; it does
+  not establish implementation, test execution, or operator closure.
+- Documentation receipt :: *sanitize normalizes one spelling in the recorded
+  advisory* from behaviour to behaviour. Its meaning and the audited specification
+  content are unchanged.
 
 * Implementation gate
 

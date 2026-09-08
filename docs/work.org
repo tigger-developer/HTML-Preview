@@ -78,7 +78,7 @@ classification; it is provenance, not current state.
 
 * Work items
 
-** REVIEW W001 - Installable Markdown and Org previews with linked browsing :feature:
+** ACTIVE W001 - Installable Markdown and Org previews with linked browsing :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-001
 :PRIORITY: P1
