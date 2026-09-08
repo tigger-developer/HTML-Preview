@@ -112,18 +112,37 @@ make build
 ```
 
 ```sh
+make install
+```
+
+The default installation creates `~/.local/bin/htmlpreview` as an absolute
+symlink to this checkout's `bin/htmlpreview`. Keep the checkout at a stable
+location; rebuilding the binary updates the linked command. Reinstalling accepts
+the matching link. A conflicting file, directory or different link is preserved
+and reported; move it aside before retrying.
+
+Put `~/.local/bin` on PATH. Check command shadowing with
+`command -v htmlpreview`, particularly if you already have a personal script.
+An executable symlink works without neighbouring assets: fonts, templates,
+CSS, browser JavaScript, and Lua are embedded in the binary. The default link
+uses the checkout's licence notices and does not register system fonts.
+
+For a copied installation independent of the checkout, supply a non-empty,
+absolute prefix explicitly:
+
+```sh
 make install PREFIX="$HOME/.local"
 ```
 
-Put the selected prefix's `bin` directory on PATH. Check command shadowing with
-`command -v htmlpreview`, particularly if you already have a personal script.
-An executable symlink works without neighbouring assets: fonts, templates,
-CSS, browser JavaScript, and Lua are embedded in the binary. Installation copies
-only the binary and notices; it does not register system fonts.
-
-The default prefix is `/usr/local`. `DESTDIR` supports staged installation;
-the installer never invokes sudo. Repeating installation replaces only the
-managed binary and licence files.
+This copies the binary and notices into the prefix; repeated prefix installation
+replaces its managed binary and licence files. Put that prefix's `bin` on PATH.
+When switching from a linked installation, move the existing link aside first;
+copy installation refuses symlink destinations.
+`DESTDIR` stages either mode beneath an absolute temporary root. A staged
+default symlink still points to the checkout; use explicit prefix installation
+for packaging. Neither mode invokes sudo or downloads Pandoc. The former
+`/usr/local` default is superseded by the user-local symlink; an earlier
+installation there is not removed automatically.
 
 ## Configuration
 

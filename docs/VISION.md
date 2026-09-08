@@ -104,16 +104,21 @@ limits and link semantics are proposed in [the architecture](ARCHITECTURE.md).
 ## Installation and technology
 
 The distribution should install `htmlpreview` on `PATH` and declare Pandoc as
-a runtime dependency. Normal use should not require a Go toolchain, a source
+a runtime dependency. Packaged use should not require a Go toolchain, a source
 checkout, personal shell functions, or a user's existing Pandoc configuration.
+For source development, plain `make install` creates a user-local symlink from
+`~/.local/bin/htmlpreview` to the checkout's built executable. That mode retains
+the checkout; explicit prefix and package installations remain independent.
 
 Support macOS, Linux desktops, and WSL. Open the system default browser;
 from WSL this means the Windows default browser, including when WSLg is
 available. Translate local references for that browser without changing system
 associations, file permissions, or WSL configuration.
 
-Fonts belong to the application and each generated page. Installation copies
-the executable and licence notices; it does not install system fonts. Running
+Fonts belong to the application and each generated page. Explicit prefix
+installation copies the executable and licence notices; default source
+installation links the executable and retains the checkout's notices.
+Neither mode installs system fonts. Running
 through a symlink on `PATH`, or from another directory, must retain the same
 fonts and presentation.
 

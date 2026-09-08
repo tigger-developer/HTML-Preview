@@ -440,6 +440,18 @@ the command. The current specification defines release targets and qualification
 baselines; it establishes no published package name or release URL.
 [Homebrew dependency declaration](https://docs.brew.sh/Formula-Cookbook#specifying-other-formulae-as-dependencies).
 
+The operator's installation correction on 8 September 2026 supersedes the
+original `/usr/local` default: plain `make install` builds the host executable
+and creates `~/.local/bin/htmlpreview` as an absolute symlink to the resolved
+checkout binary. The checkout must remain available. Repeated installation
+accepts the matching link and rejects conflicting files, directories and other
+links without replacing them. Moving the checkout requires moving the old
+link aside and reinstalling. Licence files remain available in the checkout.
+A non-empty absolute `PREFIX` retains copied binary and licence installation.
+An absolute `DESTDIR` stages either mode; staged default links deliberately
+retain their checkout target. Releases and explicit prefix installs remain
+independent of the checkout. No shell profile or old installation is changed.
+
 Release candidates contain macOS and Linux executables for amd64 and arm64;
 WSL uses the matching Linux executable. Use direct executable invocation with
 argument arrays for Pandoc and platform tools. Never interpolate document names

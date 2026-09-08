@@ -2,7 +2,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PASS
+#+DEFINITION_GATE: PENDING
 #+OPERATOR_SIGNOFF: Taḋg, 2026-09-08; explicit approval in the project conversation
 
 * Installable Markdown and Org previews with linked browsing
@@ -17,7 +17,9 @@
 - After :: A *Go binary for macOS, Linux, and WSL* uses Pandoc 3.9.0.2 through
   3.9.x and opens source-labelled pages in the *system default browser* from an
   *owner-private temporary directory*. WSL opens the Windows default browser
-  using translated file URLs. Install by prefix or the macOS Homebrew recipe.
+  using translated file URLs. Default source installation links
+  =~/.local/bin/htmlpreview= to the checkout's built executable. Explicit prefix
+  installation and the macOS Homebrew recipe remain independent of the checkout.
 - Changes :: The approved change defines four connected capabilities:
   - *Rendering preserves Org metadata, literal blocks, and identifiers*, embeds
     both Asap faces and four Iosevka Custom faces with their notices, and retains
@@ -183,6 +185,57 @@
 - Authority boundary :: These *authoring proposals received explicit operator
   approval on 8 September 2026*. Their exact contracts now govern delivery.
   Earlier unanswered clarification questions are preserved in audit history.
+
+** Default installation correction - 8 September 2026
+
+- Authority :: The operator approved the concrete layout
+  =~/.local/bin/htmlpreview -> <checkout>/bin/htmlpreview= with "so fix it pls".
+  This *supersedes the original default /usr/local copy installation*; the
+  earlier approval and audit rounds remain historical evidence.
+- Scope :: With =PREFIX= unset or empty, *make install builds the host binary
+  and creates the user-local executable symlink*. The target is the absolute,
+  resolved =bin/htmlpreview= path in the current checkout. The checkout and
+  built binary must remain available; rebuilding that binary updates the
+  linked command. Licences remain in the checkout and embedded font payload.
+- Compatibility :: A *non-empty absolute PREFIX retains copied installation*
+  with binary and licence notices. =DESTDIR=, when supplied, must be absolute
+  and stages either mode beneath that directory. No default write targets
+  =/usr/local=. Staged default links still point to the source checkout; they
+  are development links, not relocatable release packages.
+  Switching from a default link to copied installation requires moving the
+  link aside first; *copy installation refuses symlink destinations* to avoid
+  writing through them or falsely claiming an independent copy.
+- Repetition and conflicts :: An *existing symlink with the exact intended
+  target is accepted unchanged*. An existing regular file, directory, or
+  different symlink, including a dangling link, causes a non-zero failure
+  naming the path and advising the operator to move it aside. The installer
+  never removes or overwrites that conflicting destination or follows it to
+  modify its target. A permission failure is reported without sudo.
+- Boundaries :: *No shell profile, font cache, browser setting, old installation,
+  or personal script is changed*. Fonts and preview assets remain embedded.
+  Existing release archives and explicit prefix installations keep their
+  checkout-independent contract. Moving the source checkout requires moving
+  the old link aside and reinstalling from its stable location.
+- Design :: *Keep installation orchestration in Go*. Remove the Makefile's
+  default =PREFIX= assignment. Resolve the home directory through Go's existing
+  OS interface, validate the staging root before building, and create links
+  without replacement. Reuse the existing explicit-prefix path.
+- Regression :: Extend [[#rt-001-14][RT001.14 - Installation outside the checkout]]
+  through =make install= with a temporary =DESTDIR=. Cover unset and empty
+  =PREFIX=, exact link type/target, repeated install, invocation through the
+  installed link from another directory, and all four conflict types with
+  unchanged sentinels. Retain existing explicit-prefix rendering and release
+  coverage. Observe RED before production changes, then GREEN.
+- Documentation verification :: One-time review checks README, Vision and
+  Architecture for both installation modes, checkout lifetime, conflict
+  recovery, embedded assets and Pandoc prerequisites; process edited documents
+  with =sanitize= and parse the amended Org specification with Pandoc. Record
+  evidence in =validation.org=. No new browser test is required for this
+  installer-only correction; earlier platform/browser qualification stays open.
+- Security :: *No privilege escalation, new dependency, network operation or
+  source-document access is introduced*. Temporary staged tests avoid writes
+  to a real home installation. Default installation's exclusive symlink
+  creation protects pre-existing destinations, including concurrent creation.
 
 ** Unresolved blockers
 
@@ -480,6 +533,10 @@
   from an unrelated directory. Fonts require no system installation. The
   macOS Homebrew formula *declares Pandoc as a runtime dependency*; prefix
   installations document the same separately provisioned dependency.
+- Source installation :: With no non-empty =PREFIX=, *make install creates
+  =~/.local/bin/htmlpreview= as a symlink to the checkout's built executable*,
+  following the default-installation correction above. This development mode
+  needs the checkout's binary to remain present; packaged use remains independent.
 - Proven by :: [[#rt-001-14][RT001.14 - Installation outside the checkout]],
   [[#ot-001-1][OT001.1 - Local Homebrew package validation]].
 
@@ -995,6 +1052,13 @@
   packaged assets/notices, and requires no private helpers or installed fonts.
   Installation writes only managed prefix files and leaves font directories
   and caches untouched. Homebrew execution is the bounded one-off test.
+- Default installation :: *Stage unset and empty PREFIX installs*, assert an
+  absolute symlink to the checkout binary, reinstall and invoke it from an
+  unrelated directory. Test regular-file, directory, live-link and dangling-link
+  conflicts; each fails with a diagnostic and preserves the destination and
+  any target sentinel. Invalid relative PREFIX or DESTDIR fails before install.
+  A copied-prefix install presented with an existing executable symlink fails
+  and preserves both the link and its target contents.
 - Retention :: *Persistent regression* under =make test=; observe the expected
   *RED before implementation*, then GREEN.
 
@@ -1874,13 +1938,16 @@ yaml_metadata_block
   settings. The limits do not bound browser memory, original image sizes, or
   total process RSS. Pandoc receives its documented 512 MiB RTS heap limit.
 - Operability :: *Provide make build, lint, test, install, sync, vulncheck, and
-  release*. Build produces the binary; install uses PREFIX (default /usr/local)
-  and DESTDIR for staged installs; repeat installation replaces only managed
-  binary/licence files. Build/install default to the host OS/CPU. Release uses
+  release*. Build produces the binary; install defaults to a user-local symlink
+  and uses non-empty PREFIX for copied installation. DESTDIR stages either mode;
+  repeated link installation preserves the matching link, while explicit-prefix
+  installation replaces managed binary/licence files. Build/install default to
+  the host OS/CPU. Release uses
   =CGO_ENABLED=0= to produce versioned *darwin-amd64, darwin-arm64, linux-amd64,
   and linux-arm64* archives with SHA-256 checksums. WSL uses the Linux archive.
-  Install embeds the fonts in the binary and copies notices under the prefix;
-  it does not register fonts, update font caches, or download dependencies.
+  Fonts are embedded in the binary. Explicit-prefix installation copies notices;
+  default links retain access to the checkout's notices. Neither mode registers
+  fonts, updates font caches, or downloads dependencies.
 - Packaging :: *Maintain packaging/htmlpreview.rb.tmpl and the release generator*.
   For example, ~make release VERSION=0.1.0~ produces the binary
   archives named =htmlpreview-VERSION-OS-ARCH.tar.gz=, their SHA-256 manifest,
@@ -1897,9 +1964,10 @@ yaml_metadata_block
   the same formula class/name, dependency, checksum, and install recipe; only the
   archive transport differs. Publication is outside this change's authority.
 - Installation boundary :: *Do not alter shell profiles or an existing personal
-  preview script*. Document PREFIX/bin on PATH and detect/report command
-  shadowing during package validation. The default install prefix may require
-  operator permissions; no automatic sudo or permission widening is permitted.
+  preview script*. Document =~/.local/bin=, or explicit PREFIX/bin, on PATH and
+  detect/report command shadowing during package validation. Default symlink
+  installation refuses conflicting destinations. No automatic sudo or permission
+  widening is permitted.
   Document installing a compatible Pandoc separately for prefix installs and
   xdg-utils for Linux desktops. WSL requires its existing wslpath, built-in
   Windows PowerShell, enabled executable interoperation, and Windows access to

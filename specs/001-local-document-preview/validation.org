@@ -339,3 +339,31 @@
   and clipboard interaction checks display, successful copying, keyboard use,
   rejected/unavailable access, no-JavaScript selection, and clipboard isolation.
   Its results remain PENDING; template inspection is not browser validation.
+
+* Default installation correction - 8 September 2026
+
+** RT001.14 - Default link and conflict regression
+
+- Category :: Automated regression; installation amendment to
+  [[file:spec.org::#rt-001-14][RT001.14 - Installation outside the checkout]].
+- RED :: The default-link case fails because the user-local link is absent;
+  all four conflicting-destination cases incorrectly succeed. The explicit
+  prefix case also incorrectly succeeds when its binary destination is a
+  symlink. Logs: =red.log= and =red-prefix.log= in the temporary correction
+  evidence directory reported with the handback.
+- Environment :: macOS/arm64, Go 1.26.8; every installation destination is
+  staged beneath a test-owned temporary directory. No global install runs.
+- GREEN :: PENDING.
+
+** Installation documentation review
+
+- Category :: One-off technical review.
+- Requirement :: AC001.29 - Independent packaging and default source link;
+  the default-installation amendment's documentation verification.
+- Procedure :: Review README, Vision and Architecture for default versus
+  explicit-prefix behaviour, checkout lifetime, conflict recovery, embedded
+  assets and Pandoc prerequisites. Run =sanitize= on edited documents and
+  parse the amended specification with Pandoc's Org reader.
+- Expected :: Documentation agrees with the verified installer and preserves
+  the superseded default in change history. Org parsing succeeds.
+- Result :: PENDING until after implementation audit.

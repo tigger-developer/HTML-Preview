@@ -773,3 +773,28 @@ Both component audits were applied: audit-test-code and audit-code.
 - Effective gate :: *Implementation PASS*. Final available verification follows
   this review. Required native qualification, user and Homebrew results remain
   pending and operator closure has not been requested or inferred.
+
+* Default installation correction - 8 September 2026
+
+** Local definition review
+
+- Gate :: Definition; =audit-spec=, =audit-design= and
+  =audit-test-definitions= together, scoped to the default installation amendment.
+- Revision :: Specification SHA-256
+  =a86a219ed97bbe6ad9a489b0328a8721bf9282ec110424f07b5516edf849a379=.
+- Verdict :: PASS after checking the requested link layout, preserved explicit
+  prefix packaging, conflict ownership, staging, checkout lifetime and traced
+  extension of RT001.14 - Installation outside the checkout.
+- Authority :: The operator's "so fix it pls" accepts the immediately preceding
+  concrete user-local symlink proposal. No emergency token is used for this
+  correction. Existing delivery continues on the operator-selected checkout.
+
+** Definition runner incident
+
+- First input revision :: Specification SHA-256
+  =46fc3d6aef4f8e2941c6f5d2fcc949d54a1c3446bb69b42fe4c360d77b17235c=.
+- Result :: No usable verdict or context identifier was returned. The harness
+  rejected its input because =docs/VISION.md= changed while the call ran.
+  This is not PASS and is not counted as an auditor finding.
+- Receipt :: The document change was part of the installation correction.
+  The second submission keeps all supplied inputs stable for the call.
