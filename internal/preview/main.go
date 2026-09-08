@@ -86,7 +86,7 @@ Use -- before a filename beginning with -. Open the system default browser.
   --version        Show build identity without preview side effects
 
 Environment settings (empty values use defaults):
-  HTMLPREVIEW_TOC                     1; 0 or 1 for the table of contents
+  HTMLPREVIEW_TOC                     Markdown: 1, Org: 0; override with 0 or 1
   HTMLPREVIEW_TOC_DEPTH               3; source heading levels 1 to 6
   HTMLPREVIEW_LINKS                   0; 0 or 1 for bounded linked browsing
   HTMLPREVIEW_MODE                    quick; read when LINKS=1

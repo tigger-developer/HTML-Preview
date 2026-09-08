@@ -41,6 +41,11 @@
 - Next step :: *Review the implemented examples and record browser validation*.
   The implementation gate reports PASS; browser results and operator closure
   remain separate human evidence.
+- Subsequent amendment :: [[file:../003-format-contents-defaults/spec.org][W003 - Format-specific contents defaults]]
+  *supersedes this record's all-format default-on choice*. Markdown retains TOC
+  on at depth 3; Org defaults to off. Explicit overrides remain available.
+  Default-on statements below document the originally approved W002 contract;
+  the linked emergency amendment is the current authority for format defaults.
 
 -----
 

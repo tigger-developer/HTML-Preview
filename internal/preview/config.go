@@ -12,6 +12,7 @@ import (
 type config struct {
 	links                                bool
 	toc                                  bool
+	tocSet                               bool
 	tocDepth                             int
 	mode, root                           string
 	grace, deadline                      time.Duration
@@ -63,6 +64,7 @@ func settings(env []string) (config, error) {
 				return c, fmt.Errorf("%s must be 0 or 1", key)
 			}
 			c.toc = value != "0"
+			c.tocSet = value != ""
 		case "HTMLPREVIEW_TOC_DEPTH":
 			if value == "" {
 				continue

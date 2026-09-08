@@ -64,6 +64,10 @@
 :CATEGORY: USER
 :END:
 
+- Default amendment :: [[file:../003-format-contents-defaults/spec.org][W003 - Format-specific contents defaults]]
+  changes Org's default to off. Explicitly enable TOC for the Org-specific
+  contents-navigation procedures; Markdown still defaults to on at depth 3.
+  Earlier observations below remain candidate-specific history.
 - Requirements :: [[file:spec.org::#ut-002-1][Presentation procedure and traced criteria]].
 - Procedure :: Use the installed candidate and synthetic examples under the
   exact viewing conditions in the linked test definition.

@@ -102,6 +102,18 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/002-code-and-outline/audits.org][W002 - Definition and implementation audit evidence]].
 - User validation :: [[file:../specs/002-code-and-outline/validation.org][W002 - Browser validation]].
 
+** ACTIVE W003 - Format-specific contents defaults :maintenance:
+:PROPERTIES:
+:CUSTOM_ID: w-003
+:PRIORITY: P1
+:SOURCE: operator BYPASS-GATE-7
+:CREATED: 2026-09-08
+:END:
+
+- Specification :: [[file:../specs/003-format-contents-defaults/spec.org][W003 - Format-specific contents defaults]].
+- Audit evidence :: [[file:../specs/003-format-contents-defaults/audits.org][W003 - Implementation audit]].
+- Validation :: [[file:../specs/003-format-contents-defaults/validation.org][W003 - Defaults and documentation evidence]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

@@ -41,9 +41,10 @@ The reader should receive:
   languages receive local syntax highlighting while literal text remains intact.
 - **Org fidelity:** recognizable task states, tags, priorities, timestamps,
   planning information, drawers, and an outline that can be folded.
-- **Direct document navigation:** complete styled pages with contents enabled
-  by default through source heading level three. Contents can be disabled or
-  given another depth. Clickable margin bars open and close sections.
+- **Direct document navigation:** complete styled pages with Markdown contents
+  enabled by default through source heading level three and Org contents off
+  by default. Contents can be enabled, disabled or given another depth.
+  Clickable margin bars open and close sections.
 - **Code copying:** inline code, Org verbatim and code blocks offer explicit
   copying with keyboard controls, honest feedback and manual fallback. Selection
   and links retain their normal actions. Code is never executed.
@@ -63,6 +64,9 @@ promise a full Emacs implementation or execution of Org source blocks.
 The code-copying, margin-bar and contents direction was approved through
 [W002 - Code and document navigation](../specs/002-code-and-outline/spec.org)
 on 8 September 2026. Standalone output is always enabled.
+The operator's later [W003 - Format-specific contents defaults](../specs/003-format-contents-defaults/spec.org)
+changes the Org default to off, superseding W002's default-on setting for both
+formats while retaining explicit overrides.
 
 ## Temporary output
 

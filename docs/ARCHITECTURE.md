@@ -206,10 +206,18 @@ the owned `page.html5` template. This intermediate wrapper includes only the
 generated body and optional contents; the final Go template adds the original
 source header, fonts, policy and browser script once.
 
-`HTMLPREVIEW_TOC` defaults to `1`, accepting `0` or `1`.
+`HTMLPREVIEW_TOC` defaults to `1` for Markdown and `0` for Org, accepting an
+explicit `0` or `1` for all documents in the invocation, including linked pages.
 `HTMLPREVIEW_TOC_DEPTH` defaults to `3`, accepting source levels `1` through `6`.
-Empty values select defaults. Validation precedes session allocation, including
-depth when contents are disabled. No standalone setting is exposed.
+Empty values select defaults. Configuration retains whether TOC was explicitly
+set; rendering selects the effective default per document using the same format
+decision as Pandoc input. The shared configuration is never changed by rendering
+an Org file, so mixed inputs and linked targets remain independent. Depth alone
+does not enable Org contents. Validation precedes session allocation, including
+depth when contents are disabled. Source TOC metadata does not override these
+application choices. No standalone setting is exposed.
+This follows [W003 - Format-specific contents defaults](../specs/003-format-contents-defaults/spec.org),
+which supersedes W002's original default-on choice for both formats.
 
 The Org pre-pass preserves source-block bodies in string-only JSON records in
 an unpredictable per-document raw format. Lua validates the records and makes

@@ -1,0 +1,183 @@
+#+TITLE: W003 - Format-specific contents defaults
+#+SUBTITLE: Unified emergency change specification
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+DEFINITION_GATE: BYPASSED - operator BYPASS-GATE-7
+#+OPERATOR_SIGNOFF: Taḋg, 2026-09-08; bounded emergency implementation authorized
+
+* Format-specific contents defaults
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+- Outcome :: *Markdown defaults to contents on; Org defaults to contents off*.
+- Before :: *Both formats defaulted to contents on* through heading level 3.
+- After :: *Markdown keeps depth 3*. Explicit TOC settings override either
+  format's default across the invocation, including linked documents.
+- Changes :: *Resolve the default separately for each document* and update help.
+- Unchanged :: *Standalone stays true*, depth remains configurable from 1 to 6,
+  and application choices override source TOC metadata.
+- Edge cases :: *Empty TOC selects format defaults*. Depth alone leaves Org
+  contents off; invalid depth still fails before preview allocation.
+- Decisions :: *The operator authorized this bounded change with BYPASS-GATE-7*.
+  This document records the result after implementation, not an earlier definition.
+- Next step :: *Implementation audit and final verification*, then operator closure.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Request and scope
+
+- Temporary authority :: On 8 September 2026, Taḋg requested: "md files default
+  to toc: true toc level 3, org files default to toc:false BYPASS-GATE-7".
+- Included :: *Change the hardcoded Org default only*, using the existing
+  supported Markdown/Org format selection and configuration interface.
+- Preserved :: *Explicit overrides, source protection, navigation and output
+  remain governed by W001/W002*. No new browser interaction, dependency,
+  configuration source, installation target or release is introduced.
+- Delivery location :: *Continue on the existing implementation branch*,
+  =002-code-and-outline-implementation=, at baseline =bd6f9c9=, the folding
+  validation checkpoint. The original checkout's operator edits remain separate.
+
+** Authorities and starting point
+
+- Profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product :: [[file:../../docs/VISION.md][Vision - Reading experience]].
+- Design :: [[file:../../docs/ARCHITECTURE.md][Architecture - Code, contents and browser controls]].
+- Baseline :: [[file:../002-code-and-outline/spec.org::#ac-002-12][AC002.12 - Contents and heading depth]]
+  and [[file:../002-code-and-outline/spec.org::#rt-002-3][RT002.3 - Contents settings]].
+  *Only the all-format default-on choice is superseded*; other contracts remain.
+- Implementation :: [[file:../../internal/preview/config.go][Configuration]],
+  [[file:../../internal/preview/render.go][Per-document rendering]],
+  [[file:../../internal/preview/code_outline_test.go][Maintained contents regressions]]
+  and [[file:../../integration/cli_test.go][Installed-command regressions]].
+- Constraints :: *Retain the current Go/Pandoc baseline and existing harness*.
+  File suffix matching remains case-insensitive; =.md= and =.markdown= select
+  Markdown, while =.org= selects Org.
+- Blockers :: *None* within the authorized change.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:CUSTOM_ID: hands-off-mode-decision-log
+:END:
+
+- Mode :: *Attended emergency delivery*. No hands-off invocation applies.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC003.1 - Each format selects its default
+:PROPERTIES:
+:CUSTOM_ID: ac-003-1
+:END:
+
+- Criterion :: With unset/empty TOC, *each Markdown page has contents through
+  source level 3 by default; each Org page has no contents navigation*.
+  This holds for explicit inputs and linked pages, independently of input order.
+  Documents with no eligible headings continue to omit empty navigation.
+- Proven by :: [[#rt-003-1][RT003.1 - Per-document defaults]] and
+  [[#ot-003-1][OT003.1 - Documentation reconciliation]].
+
+** AC003.2 - Explicit settings retain their meaning
+:PROPERTIES:
+:CUSTOM_ID: ac-003-2
+:END:
+
+- Criterion :: *Explicit TOC 0/1 disables/enables contents for all documents*.
+  Depth defaults to 3 and accepts 1 to 6. Depth alone does not enable Org TOC.
+  Application defaults/settings override source metadata; invalid settings
+  retain status 2 before allocation. *Output remains standalone*.
+- Proven by :: [[#rt-003-1][RT003.1 - Per-document defaults]] and
+  [[#ot-003-1][OT003.1 - Documentation reconciliation]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT003.1 - Per-document defaults
+:PROPERTIES:
+:CUSTOM_ID: rt-003-1
+:END:
+
+- Covers :: [[#ac-003-1][AC003.1 - Format defaults]] and
+  [[#ac-003-2][AC003.2 - Explicit settings]].
+- Boundary :: *Existing CLI subprocess with real Pandoc and published HTML*,
+  plus the installed executable through the existing desktop capture adapter.
+- Cases :: *Mixed Markdown/Org entries in both orders and linked conversion
+  starting from either format*. Include =.MD=, =.markdown= and =.ORG=;
+  unset/empty TOC, explicit 0/1 and depth-only configuration; conflicting source
+  metadata; headings above depth 3; invalid depth with Org's default-off state.
+- Expected :: *Inspect each original source header and its actual TOC links*.
+  Enabled contents contain exactly the selected heading levels and reach final
+  headings; disabled contents have no navigation element. Existing regressions
+  cover depths 1 to 6, empty documents, standalone wrappers and invalid settings.
+- Retention :: *Persistent under make test*. Amend stale default assertions;
+  explicitly enable TOC in the existing Org destination test to retain coverage.
+
+** OT003.1 - Documentation reconciliation
+:PROPERTIES:
+:CUSTOM_ID: ot-003-1
+:END:
+
+- Covers :: [[#ac-003-1][AC003.1 - Format defaults]] and
+  [[#ac-003-2][AC003.2 - Explicit settings]].
+- Procedure :: *Review affected help and documentation once*, run sanitize and
+  parse Org artefacts with Pandoc. Verify links and the canonical section order.
+- Expected :: *Current guidance agrees with the two defaults and overrides*;
+  W002's earlier contract is explicitly marked as superseded in this scope.
+- Bounds :: *Local review only*, with scratch output under OS-temporary storage.
+- Record :: [[file:validation.org][W003 - Validation evidence]]. No new user test
+  is required: this change selects existing output without changing browser
+  behaviour. W001/W002 user qualification remains pending independently.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+- Mixed graphs :: *Defaults follow each page's format*, including after an Org
+  input, rather than adopting the first entry's choice.
+- Empty settings :: *Empty TOC is absence of an override*; empty depth uses 3.
+- Inactive depth :: *Org stays off when only depth is set*; malformed depth fails.
+- Source metadata :: *Source TOC directives cannot replace application choices*.
+- Coverage :: [[#rt-003-1][RT003.1 - Per-document defaults]] protects these cases.
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+- Configuration :: *Retain whether a nonempty TOC override was supplied* beside
+  its validated Boolean value. Keep the existing depth validation/default.
+- Rendering :: *Select the effective TOC locally for each document*. Use the
+  same case-insensitive Org detection as the Pandoc input format. Org chooses
+  false only when no override exists; never mutate invocation configuration.
+- Converter :: *Pass the effective Boolean and depth explicitly to Pandoc*.
+  Standalone defaults, templates, transport and browser controls are unchanged.
+- Security :: *No trust or access boundary changes*. Source metadata remains
+  subordinate to application settings; no new file, network or execution path.
+- Other qualities :: *No platform-specific branch, persistent state or added
+  dependency*. The extra per-document choice is constant work. Existing
+  navigation accessibility and install/rollback mechanisms remain applicable.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Route :: *Emergency reconciliation after RED/GREEN*, with no retrospective
+  definition gate. The operator's exact request authorized implementation.
+- Evidence :: [[file:audits.org][W003 - Implementation gate]] and
+  [[file:validation.org][W003 - Validation evidence]].
+- Documentation :: *README, CLI help, Vision and Architecture now describe
+  per-format defaults*. W002's specification and validation carry amendment
+  notices; its original evidence and pending browser work are retained.
+- Closure :: *Operator decision after the implementation gate and final checks*.
+  Merge, global installation and release are outside this change.

@@ -36,8 +36,10 @@ highlighting, inline code, duplicate headings and long lines:
 HTMLPREVIEW_LINKS=1 htmlpreview examples/work.org examples/code.md
 ```
 
-Every preview is a complete styled HTML document. Its table of contents is
-enabled by default through source heading level three. A thick accent margin
+Every preview is a complete styled HTML document. Markdown's table of contents
+defaults to on through source heading level three; Org's defaults to off.
+An explicit `HTMLPREVIEW_TOC=0` or `1` overrides the default for every document
+in that invocation, including linked pages. A thick accent margin
 bar with a bottom plus opens a folded section; the thin bar closes it. The
 global Overview, Contents and Show all buttons select the outline view.
 Without JavaScript, the full document remains open and code stays selectable.
@@ -132,7 +134,7 @@ interface. Use `--` before a filename beginning with `-`.
 
 | Setting | Default | Accepted values |
 | --- | --- | --- |
-| `HTMLPREVIEW_TOC` | `1` | `0` or `1`; show the table of contents |
+| `HTMLPREVIEW_TOC` | Markdown: `1`; Org: `0` | `0` or `1`; override the table of contents for all documents |
 | `HTMLPREVIEW_TOC_DEPTH` | `3` | Integer, 1 to 6; maximum source heading level |
 | `HTMLPREVIEW_LINKS` | `0` | `0` or `1` |
 | `HTMLPREVIEW_MODE` | `quick`; `read` with links | `quick` or `read`; links require `read` |
@@ -152,8 +154,10 @@ transactional: a publication failure opens no entry. Help and version requests
 have no preview side effects and bypass environment validation.
 
 Standalone output is always enabled. `HTMLPREVIEW_STANDALONE` is unsupported
-and rejected as an unknown setting. TOC settings override source TOC metadata;
-depth is validated even when the TOC is disabled. A document with no eligible
+and rejected as an unknown setting. Unset/empty TOC selects each document's
+format default. Depth alone does not enable Org contents. Application defaults
+and explicit settings override source TOC metadata; depth is validated even
+when the TOC is disabled. A document with no eligible
 headings has no empty contents navigation.
 
 ## Development and packaging

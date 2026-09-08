@@ -15,7 +15,11 @@
   The amended existing Org-default and installed-symlink cases also fail.
   Explicit on/off settings continue to pass. Runtime 12.967 s; integration
   1.818 s. The expected diagnostic is "empty/disabled TOC published".
-- GREEN :: PENDING.
+- Test checkpoint :: =af2504a=, the per-document-default regression checkpoint,
+  precedes the production changes.
+- GREEN :: The new cases, all W002 contents regressions and installed-entry
+  checks pass after the per-document choice: runtime 15.334 s and integration
+  1.743 s. Final verification follows the implementation gate.
 - User tests :: No new user test is selected: TOC presence, depth and per-file
   selection are observable in generated HTML, with no browser-control change.
   Existing W001/W002 browser qualification remains separate and pending.
