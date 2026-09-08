@@ -560,6 +560,56 @@ VERDICT: PASS
   preserved and unstaged. The retained reviewer remains =/root/definition_audit=
   with its eight-minute timeout.
 
+** External review - Round 4: source-header definition PASS
+:PROPERTIES:
+:CUSTOM_ID: definition-external-4
+:ROUND: 4
+:DATE: 2026-09-08
+:CONTEXT: /root/definition_audit
+:END:
+
+- Gate :: Definition.
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =e2db66f35261830c34c1fa64f97cb1a618f67de960b8fa7d82cc7290dc98fe1b=,
+  committed as =70f7e77=.
+- Context :: *The same retained Codex gpt-5.6-luna reviewer*, applying
+  audit-spec, audit-design, and audit-test-definitions together. The reviewer
+  received the current specification, authorities, applicable standards, and
+  permission to inspect the operator-named baseline template/stylesheet/command;
+  no drafting conversation or local verdict rationale was supplied.
+- Start :: 2026-09-08 00:39:51 UTC; verdict returned within the configured
+  eight-minute timeout.
+- Verdict :: *PASS with one new visual-test advisory*. No required correction
+  remains for the source-header amendment.
+
+#+begin_example
+GATE: definition
+REVISION: e2db66f35261830c34c1fa64f97cb1a618f67de960b8fa7d82cc7290dc98fe1b
+VERDICT: PASS
+
+All three component audits were applied: audit-spec, audit-design, and audit-test-definitions.
+
+1. [audit-test-definitions] [ADVISORY] HEADER-VISUAL-DETAILS - The authority specifies a compact right-aligned header and separator above the document body, but UT001.5 does not name those two visual observations explicitly (docs/ARCHITECTURE.md:149-158; spec.org:1129-1148). This does not require correction for the source-path behavior gate.
+#+end_example
+
+- Review scope :: The reviewer confirmed *reciprocal source-identity and
+  clipboard coverage*, the distinction between original paths and handoff URLs,
+  native activation, clipboard isolation, accurate feedback, and manual/no-JS/
+  print alternatives. Application and browser results remain unexecuted.
+- Advisory disposition :: *The compact alignment and separator observations
+  remain a visible test-detail advisory*. The prior file-mode, timing-tolerance,
+  and target-availability advisories remain in their earlier records; no
+  unrelated remediation or material post-verdict specification change occurs.
+- Effective gate :: *Definition PASS is restored*. Operator sign-off remains
+  PENDING and the ledger remains REVIEW. Only gate metadata changes after the
+  audited specification hash.
+- Asset boundary :: *The unexpected empty working-tree bold-italic font remains
+  preserved*. This review makes no working-tree asset-integrity claim.
+- Presentation :: *sdlc-preview returned 0 and reported opening the specification*.
+  Its adjacent generated HTML remained after handoff and was moved into this
+  amendment's unique OS-temporary scratch directory. This does not establish
+  human inspection or a clipboard-test result.
+
 * Implementation gate
 
 - Status :: Not run. Implementation is outside this definition workflow.
