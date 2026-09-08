@@ -707,3 +707,35 @@ VERDICT: FAIL
   The specification explicitly calls for linked stylesheet placeholders;
   correct the misleading inactive-link diagnostic without removing the specified
   clickable original-resource destination. Resubmit both components together.
+
+** Local implementation review - round 2
+:PROPERTIES:
+:CUSTOM_ID: implementation-local-2
+:ROUND: 2
+:DATE: 2026-09-08
+:CONTEXT: /root
+:END:
+
+- Gate :: Implementation; audit-test-code and audit-code together.
+- Revision :: =78389a6=, stable desktop test binding and original resource links.
+- Verdict :: *PASS*. Reviewed the correction delta and adjacent entry-point,
+  packaging, discovery, cloning and resolution paths.
+- TEST-SOURCE-OVERLAY receipt :: The installed regression no longer reads or
+  rewrites production source. A build-selected internal desktop adapter shares
+  the same main function; the ordinary build remains bound to NativeHost.
+- RESOURCE-LINK-REWRITES receipt :: The added real-Pandoc case failed before the
+  correction and passed after it. Resource provenance survives DOM cloning;
+  both discovery and generated-page substitution are excluded. Original resource
+  URLs remain clickable under the signed-off linked-placeholder contract.
+- Checks :: Focused staged-install, stylesheet/resource, partial-output and WSL
+  tests passed; =make lint= passed; the desktop test build also passed =go vet=.
+  Required browser and Homebrew results remain PENDING.
+
+#+begin_src text
+GATE: implementation
+REVISION: 78389a6
+VERDICT: PASS
+
+Both component audits applied: audit-test-code and audit-code.
+No required local correction remains for the reviewed delta.
+#+end_src
