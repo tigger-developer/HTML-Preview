@@ -154,7 +154,8 @@
 
 ** External review
 
-- Status :: Not started.
+- Definition-time status :: Not started. The delivery reviews below record the
+  subsequent retained implementation audit.
 
 ** Local implementation review - semantic scope
 :PROPERTIES:
@@ -290,3 +291,27 @@
   the retained auditor's review of this correction.
 - Supersession :: The round-two external PASS remains historical for its exact
   revision. Return this correction to the same external context.
+
+** External implementation review - folded notices and writer links
+:PROPERTIES:
+:ROUND: 3
+:CONTEXT: /root/code_outline_implementation_audit
+:END:
+
+- Revision :: =a51ab7664e686d775af0f2dda52084e9514bbdc7=, live-feedback evidence checkpoint;
+  production code is =204e1281d39d9ad16007bb5cabce5ab20a795829=.
+- Audits :: =audit-test-code= and =audit-code=, configured gpt-5.6-luna.
+- Verdict :: PASS, returned within the eight-minute invocation bound.
+  The retained reviewer reported the exact current revision.
+- Findings :: No required correction remains in the reviewed delta. The
+  reviewer examined direct-text wrapping and restoration during teardown,
+  and empty writer-link removal inside validated code transport.
+- Advisories :: W002-TEST-BROWSER-QUALIFICATION and
+  W002-CODE-BROWSER-QUALIFICATION retain browser interaction, geometry,
+  clipboard policy, print restoration and accessibility as pending human tests.
+- Evidence boundary :: Automated regressions cover quoted/list headings and
+  empty writer links. The review also cited shared-pre targets; those have a
+  synthetic example and source review, not an executed browser regression.
+  That distinction was returned to the retained reviewer and remains explicit.
+- Supersedes :: External round 2 for its recorded revision. Final verification
+  and a rebuilt browser candidate follow this PASS; operator closure is pending.

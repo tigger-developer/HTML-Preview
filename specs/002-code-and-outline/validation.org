@@ -14,7 +14,7 @@
 - GREEN :: The focused subprocess and installed-entry checks pass. The full
   make test race suite passed: integration 8.687 s, runtime 134.630 s.
   Later browser-only scope corrections received current generated-output and
-  static checks; final verification follows the independent implementation gate.
+  static checks; the final current-candidate results are recorded below.
 - Compatibility correction :: An existing nested-list assertion inspected the
   first page list, now the TOC. It now inspects the source document body and
   retains its original nested-list and table expectations.
@@ -26,8 +26,9 @@
   correctness check excluded its Qwik-only closure rule because this project
   has no Qwik runtime. Its initial Qwik diagnostic was not a product defect.
   These tools/configuration were not added to build targets or dependencies.
-- Coverage :: The runtime package reports 87.8% statement coverage. This is
-  structural evidence, not browser behaviour or a whole-project coverage claim.
+- Coverage :: The earlier runtime-package run reported 87.8% statement coverage,
+  before the later transport corrections. This is historical structural
+  evidence, not current browser behaviour or a whole-project coverage claim.
 - Palette :: Calculation against both page and panel backgrounds gives code
   token minima of 6.08:1 in light mode and 7.65:1 in dark mode. The folding
   accent gives at least 6.47:1 and 7.89:1 respectively. Actual font rendering,
@@ -35,6 +36,26 @@
 - Environment :: macOS arm64, Go 1.26.8, Pandoc 3.9.0.2 with Lua 5.4.
   Test fixtures are synthetic; the local request counter observed no conversion
   requests. No browser or Linux/WSL qualification is inferred.
+
+** Final verification after the implementation gate
+
+- Revision :: =a51ab7664e686d775af0f2dda52084e9514bbdc7=, the audited candidate;
+  subsequent changes record evidence only.
+- Regression :: =go test -race -count=1 ./...= passed, including uncached
+  integration in 9.568 s and runtime tests in 139.525 s. This executes the
+  make test suite with its cache disabled, covering the later transport changes.
+- Static and dependencies :: =make lint= passed. =make vulncheck= reported
+  "No vulnerabilities found". Native oxlint and the scoped Biome correctness
+  checks passed for the browser source. No new runtime or dependency was added.
+- Runner receipt :: One output-serialization error obscured the initial final
+  lint/vulnerability exit receipts. Both checks were rerun and their status 0
+  receipts collected; the error is not a product finding or inferred PASS.
+- Installation :: =make install= into the temporary review prefix passed.
+  The symlink reports =htmlpreview review-w002 (a51ab7664e68)= and generated the
+  revised examples described below from an unrelated working directory.
+- Limits :: These results establish automated and inspected-output evidence.
+  The operator's reported folding failure is retained below; revised browser
+  confirmation, the remaining user-test matrix and closure remain PENDING.
 
 * UT002.1 - Reading and outline presentation
 :PROPERTIES:
@@ -52,8 +73,9 @@
 - Matrix :: macOS 26/Safari 26 arm64; Ubuntu 24.04/Firefox amd64;
   Windows 11/Edge with Ubuntu 24.04 WSL1; Windows 11/Edge with Ubuntu 24.04 WSL2.
   Each environment is PENDING; record its exact versions and candidate revision.
-- Evidence :: None yet. The pre-definition example opened on 8 September 2026
-  used W001 behaviour; the separate Pandoc study was not the W002 application.
+- Evidence :: The folding observation below is the first recorded W002 browser
+  feedback. The pre-definition example opened on 8 September 2026 used W001
+  behaviour; the separate Pandoc study was not the W002 application.
 
 ** Folded removal notices - operator observation
 :PROPERTIES:
@@ -74,6 +96,28 @@
   sanitization. Browser confirmation of the revised candidate is PENDING.
 - Scope :: This is a failed folding observation, not a complete matrix result.
   Earlier pending browser checks remain pending; no PASS is inferred.
+
+** Revised candidate - browser handoff
+:PROPERTIES:
+:RESULT: PENDING
+:CATEGORY: USER
+:END:
+
+- Candidate :: =htmlpreview review-w002 (a51ab7664e68)=, built after the
+  retained implementation gate passed for the folded-notice correction.
+- Setup :: =make install= into an OS-temporary prefix, then invoke a symlink
+  from an unrelated working directory with =HTMLPREVIEW_LINKS=1=.
+  The command handed the Org example, Markdown example and synthetic passive
+  fixture to the native macOS opener and remains in reading mode.
+- Pages :: Session =htmlpreview-2892153253=, pages =0001.html= (Org),
+  =0002.html= (Markdown) and =0003.html= (passive fixture). The previous
+  session was terminated through its exact process ID and removed its previews.
+- Inspected output :: Example headers carry their original absolute source
+  paths. Highlighted code contains no empty writer anchors, and the generated
+  page embeds the revised direct-text folding lifecycle.
+- Boundary :: These are build, handoff and generated-output observations.
+  Browser identity, visible folding, clipboard interaction and the full
+  qualification procedures remain PENDING until observed and recorded.
 
 * UT002.2 - Clipboard interaction and fallback
 :PROPERTIES:
