@@ -1,0 +1,43 @@
+#+TITLE: W003 - Format-specific contents audit evidence
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Definition route
+
+- Authority :: The operator's 8 September 2026 request supplied =BYPASS-GATE-7=
+  with the exact format defaults. The temporary request governed implementation;
+  spec.org was reconciled after RED/GREEN. No retrospective definition gate ran.
+
+* Implementation gate
+
+** Local composite review
+:PROPERTIES:
+:ROUND: 1
+:END:
+
+- Revision :: =f1bc87950986cf05605afeb57a7795ca65c861a2=, per-format defaults implementation.
+- Context :: Delivery author; =audit-test-code= and =audit-code= together.
+- Verdict :: PASS.
+- Test review :: Tests preceded production changes at =af2504a=, the regression
+  checkpoint. Observed RED identifies unwanted Org TOC output. GREEN covers
+  mixed orders, linked pages, suffix variants, explicit/empty settings and
+  inactive depth validation. Existing Org destination tests now explicitly
+  enable TOC, preserving their earlier navigation coverage.
+- Code review :: A validated override-presence flag distinguishes absence from
+  explicit false. Each render selects a local effective value using its existing
+  Org format decision; shared configuration is not mutated. No new parser,
+  dependency, persistent state, browser code or trust boundary is introduced.
+- Structure :: The new regression keeps one fixture graph and a table of
+  invocation/setting cases; its length reflects the real CLI setup and output
+  checks. Production changes stay within the existing configuration/rendering
+  responsibilities and add no new cross-component abstraction.
+- Evidence :: Focused runtime 15.334 s and installed-entry 1.743 s pass;
+  make lint passes. Documentation and CLI help pass sanitize unchanged.
+  Final verification and the one-off documentation check follow external PASS.
+- Findings :: No required local correction. W001/W002 browser qualification is
+  still pending and is not established by this objective defaults regression.
+
+** External composite review
+
+- Status :: PENDING in the retained =/root/code_outline_implementation_audit=
+  context, configured gpt-5.6-luna with an eight-minute invocation bound.
