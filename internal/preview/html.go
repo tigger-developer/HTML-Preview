@@ -47,7 +47,7 @@ func (s *session) scrub(root *html.Node, p *page) {
 				body := element(root, "body")
 				body.InsertBefore(n, body.FirstChild)
 			}
-			s.log.notice("%q: stylesheet/resource retained as an inactive resource link", p.source.logical)
+			s.log.notice("%q: stylesheet/resource retained as a link without automatic loading", p.source.logical)
 		case "script", "style", "iframe", "frame", "frameset", "object", "embed", "form", "svg", "math", "base", "audio", "video", "canvas":
 			if n.Parent != nil {
 				placeholder := nodeText("[Unsupported " + n.Data + " content]")

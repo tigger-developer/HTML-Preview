@@ -677,3 +677,33 @@ Both component audits applied: audit-test-code and audit-code.
 1. [audit-test-code] [ADVISORY] PLATFORM-QUALIFICATION - Native execution on the other release targets and all operator browser/Homebrew results remain pending and block closure.
 2. [audit-code] [ADVISORY] REVIEW-TRIPWIRES - The ordered Org pre-pass and session coordinator exceed the function-size tripwire; their scoped state and phase ownership are reviewed and documented.
 #+end_example
+
+** Independent implementation review - round 1
+:PROPERTIES:
+:CUSTOM_ID: implementation-external-1
+:ROUND: 1
+:DATE: 2026-09-08
+:CONTEXT: /root/implementation_audit
+:END:
+
+- Gate :: Implementation; audit-test-code and audit-code together.
+- Revision :: =bcbb7f9=, complete implementation after =8353c84=.
+- Reviewer :: Retained Codex gpt-5.6-luna context, started at 01:41:16 UTC;
+  verdict returned within the configured eight-minute timeout.
+- Verdict :: *FAIL*. Both required findings are retained below.
+
+#+begin_src text
+GATE: implementation
+REVISION: bcbb7f9
+VERDICT: FAIL
+
+1. [audit-test-code] [BLOCKING] TEST-SOURCE-OVERLAY - The installed-entry-point regression reads/introspects production source, asserts preview.NativeHost(), rewrites main.go with strings.Replace, and compiles that rewritten source through a Go overlay (integration/cli_test.go:109-143). The installed executable test depends on source text rather than a stable public seam. RT001.14 - Installation outside the checkout.
+2. [audit-code] [BLOCKING] RESOURCE-LINK-REWRITES - link elements become anchors and are recorded as resource links (html.go:37-50), but resolve does not exclude that provenance (links.go:95-159). An unsupported resource reference can become generated document navigation. The regression checks discovery only, not the retained resource destination. AC001.40 and RT001.13 - Passive source and resource policy.
+#+end_src
+
+- Remediation direction :: Replace source rewriting with a build-selected
+  internal desktop adapter. Preserve resource provenance through DOM cloning
+  and retain original-resource URLs even when their files also have previews.
+  The specification explicitly calls for linked stylesheet placeholders;
+  correct the misleading inactive-link diagnostic without removing the specified
+  clickable original-resource destination. Resubmit both components together.

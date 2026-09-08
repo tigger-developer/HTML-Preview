@@ -138,7 +138,11 @@ func (s *session) resolve(ctx context.Context, p *page) error {
 			}
 			continue
 		}
-		target, fragment := s.target(p, r)
+		var target *page
+		fragment := ""
+		if !p.resourceLinks[n] {
+			target, fragment = s.target(p, r)
+		}
 		if r.id != "" && target == nil {
 			s.inactive(p, n, key, "unknown or ambiguous Org ID")
 			continue

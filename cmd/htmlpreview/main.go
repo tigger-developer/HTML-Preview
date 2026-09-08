@@ -11,5 +11,5 @@ var version = "dev"
 var revision = "unknown"
 
 func main() {
-	os.Exit(preview.Main(os.Args[1:], os.Environ(), os.Stdout, os.Stderr, version, revision, preview.NativeHost()))
+	os.Exit(preview.Main(os.Args[1:], os.Environ(), os.Stdout, os.Stderr, version, revision, hostForCommand()))
 }

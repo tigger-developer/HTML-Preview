@@ -96,6 +96,22 @@
   remain PENDING. Source review, generated HTML, and opener doubles are not
   browser typography, clipboard, print, or Windows filesystem evidence.
 
+** Implementation audit corrections - 8 September 2026
+
+- Test adapter :: The first independent review rejected the source-overlay
+  setup. A build-selected internal desktop adapter now replaces only browser
+  handoff, with no production-source reads or rewriting in the installed test.
+  The ordinary executable binds to NativeHost; the selected test binary uses
+  the same main function, command handling, rendering and embedded assets.
+- Resource provenance :: A new real-Pandoc regression failed because a stylesheet
+  placeholder pointing to another explicit source acquired its generated page
+  URL. The correction preserves provenance through publication's DOM clones and
+  retains the original-resource URL. The placeholder stays clickable as required
+  by the specification, without automatic resource loading.
+- Supersession :: Earlier overlay evidence remains historical. Current focused
+  installation, resource, output-budget and WSL regression results are recorded
+  with the revised gate receipt; unchanged browser/one-off results remain PENDING.
+
 * User tests
 
 ** UT001.1 - Document typography and readability

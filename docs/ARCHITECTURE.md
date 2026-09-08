@@ -419,15 +419,19 @@ defaults govern the implementation; the initial proposals remain in Git history.
 
 The regression suite uses real Pandoc and synthetic documents. Most command
 cases run the same command coordinator in a subprocess with controlled OS
-boundaries. An additional staged-install regression uses Go's file overlay to
-replace only the native desktop adapter at the actual executable entry point;
-it then installs and invokes that executable through a symlink from an unrelated
-directory. Ordinary builds include no overlay or public browser override.
+boundaries. An additional staged-install regression selects a desktop capture
+adapter with the `htmlpreview_test_desktop` Go build tag, then installs and invokes
+the same executable entry point through a symlink from an unrelated directory.
+Ordinary builds bind that entry point to NativeHost and include no public browser
+override. This replaces the initial source-overlay approach after audit.
 Actual browser handoff, clipboard permission, typography, and Linux/WSL host
 qualification remain distinct user tests.
 
 Source-controlled warnings have a 64 KiB allowance with an omission message;
 lifecycle failures and the retained-session path use separate diagnostics.
+Stylesheet placeholders retain their original-resource URLs, including when a
+resource is also an explicit preview input. Go-side provenance survives DOM
+cloning and prevents discovery or rewriting to generated document navigation.
 Long functions in the Org pre-pass and session coordinator retain one ordered
 state transition per phase. Their size is a review concern, not a reason to
 split context-sensitive preservation or cleanup ownership across hidden globals.

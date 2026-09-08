@@ -57,6 +57,22 @@ func TestRT001_10_ResourceLinksDoNotDiscover(t *testing.T) {
 	success(t, r, 1)
 }
 
+func TestRT001_13_ResourceLinksKeepOriginalDestinations(t *testing.T) {
+	root := t.TempDir()
+	a := source(t, root, "a.md", "<link rel=\"stylesheet\" href=\"b.org\">\n")
+	b := source(t, root, "b.org", "* Explicit document\n")
+	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, a, b)
+	success(t, r, 2)
+	links := nodes(r.pages[0], "a")
+	if len(links) != 1 {
+		t.Fatal("resource placeholder missing")
+	}
+	u, err := url.Parse(attr(links[0], "href"))
+	if err != nil || u.Scheme != "file" || u.Path != b {
+		t.Fatalf("resource became document navigation: %s", attr(links[0], "href"))
+	}
+}
+
 func TestRT001_13_BoundedSourceWarnings(t *testing.T) {
 	root := t.TempDir()
 	p := source(t, root, "doc.md", strings.Repeat("<span onclick=\"alert(1)\">text</span>\n", 1600))

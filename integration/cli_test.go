@@ -4,7 +4,6 @@ package integration
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"golang.org/x/net/html"
 	"os"
@@ -59,11 +58,10 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 		}
 	}
 	t.Run("render from installed entry point", func(t *testing.T) {
-		overlay := desktopOverlay(t)
-		// #nosec G204 -- Installs under the same test-owned prefix with only the desktop boundary overlaid.
+		// #nosec G204 -- Installs under the same test-owned prefix with only the desktop test adapter selected.
 		cmd := exec.Command("make", "install", "PREFIX=/htmlpreview-test", "DESTDIR="+stage)
 		cmd.Dir = ".."
-		cmd.Env = append(os.Environ(), "GOFLAGS=-overlay="+overlay)
+		cmd.Env = append(os.Environ(), "GOFLAGS=-tags=htmlpreview_test_desktop")
 		if out, err := cmd.CombinedOutput(); err != nil {
 			t.Fatalf("instrumented install: %v %s", err, out)
 		}
@@ -104,44 +102,4 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 			}
 		}
 	})
-}
-
-// Go's file overlay replaces only NativeHost at the public entry point. All
-// argument handling, rendering, packaging, and asset reads remain production code.
-func desktopOverlay(t *testing.T) string {
-	t.Helper()
-	mainPath, err := filepath.Abs("../cmd/htmlpreview/main.go")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// #nosec G304 -- This exact repository entry point is the subject of the integration test.
-	data, err := os.ReadFile(mainPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if strings.Count(string(data), "preview.NativeHost()") != 1 {
-		t.Fatal("entry-point seam changed; review the overlay")
-	}
-	fixture, err := os.ReadFile("testdata/desktop.go.txt")
-	if err != nil {
-		t.Fatal(err)
-	}
-	root := t.TempDir()
-	replacement := filepath.Join(root, "main.go")
-	adapter := filepath.Join(root, "desktop.go")
-	if err := os.WriteFile(replacement, []byte(strings.Replace(string(data), "preview.NativeHost()", "testDesktopHost()", 1)), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(adapter, fixture, 0600); err != nil {
-		t.Fatal(err)
-	}
-	mapping, err := json.Marshal(map[string]any{"Replace": map[string]string{mainPath: replacement, filepath.Join(filepath.Dir(mainPath), "desktop_integration.go"): adapter}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	path := filepath.Join(root, "overlay.json")
-	if err := os.WriteFile(path, mapping, 0600); err != nil {
-		t.Fatal(err)
-	}
-	return path
 }

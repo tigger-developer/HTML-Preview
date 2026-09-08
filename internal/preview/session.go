@@ -288,9 +288,11 @@ func (s *session) publish(ctx context.Context) error {
 
 func (s *session) planOutput(ctx context.Context) (map[*page][]byte, error) {
 	original := make(map[*page]*html.Node)
+	resources := make(map[*page]map[*html.Node]bool)
 	for _, p := range s.pages {
 		if p.ready {
 			original[p] = p.dom
+			resources[p] = p.resourceLinks
 		}
 	}
 	for {
@@ -304,7 +306,8 @@ func (s *session) planOutput(ctx context.Context) (map[*page][]byte, error) {
 			if err := ctx.Err(); err != nil {
 				return nil, err
 			}
-			p.dom = cloneTree(original[p])
+			p.resourceLinks = make(map[*html.Node]bool)
+			p.dom = cloneTree(original[p], resources[p], p.resourceLinks)
 			if err := s.resolve(ctx, p); err != nil {
 				return nil, err
 			}
@@ -334,10 +337,13 @@ func (s *session) planOutput(ctx context.Context) (map[*page][]byte, error) {
 	}
 }
 
-func cloneTree(n *html.Node) *html.Node {
+func cloneTree(n *html.Node, originalResources, copiedResources map[*html.Node]bool) *html.Node {
 	copy := &html.Node{Type: n.Type, DataAtom: n.DataAtom, Data: n.Data, Namespace: n.Namespace, Attr: append([]html.Attribute(nil), n.Attr...)}
+	if originalResources[n] {
+		copiedResources[copy] = true
+	}
 	for child := n.FirstChild; child != nil; child = child.NextSibling {
-		copy.AppendChild(cloneTree(child))
+		copy.AppendChild(cloneTree(child, originalResources, copiedResources))
 	}
 	return copy
 }
