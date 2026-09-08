@@ -21,4 +21,5 @@ standards:
         - JAVASCRIPT
         - SHELL
         - WEB
+        - LUA
 version: 3
