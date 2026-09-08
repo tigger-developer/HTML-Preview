@@ -18,8 +18,23 @@
 - Definition :: [[file:spec.org::#ut-001-1][UT001.1 - Document typography and readability]].
 - Criteria :: [[spec.org::#ac-001-4][AC001.4 - Markdown structure survives conversion]], [[spec.org::#ac-001-5][AC001.5 - Org information survives conversion]], [[spec.org::#ac-001-18][AC001.18 - Proportional text uses the appropriate Asap face]], [[spec.org::#ac-001-19][AC001.19 - Fixed-width text uses Iosevka Custom]], [[spec.org::#ac-001-43][AC001.43 - Application text meets contrast requirements]].
 - Reviewer :: Taḋg or an explicitly named operator.
-- Procedure :: *Inspect representative Markdown and Org* at wide and narrow window sizes, in light and dark modes. Include regular, italic, bold, code, tables, images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use Safari 26 on macOS 26 arm64 and record exact versions and viewport sizes. Confirm the rendered font faces in the browser inspector, not just their CSS declarations. Inspect *inline code, code blocks, preformatted text, keyboard/sample text, and fixed-width Org metadata*; include regular, italic, bold, and bold italic examples. Verify equal-width character columns and the actual packaged Iosevka Custom face selected for each style, including Irish glyphs within code. Measure the application text colours against their backgrounds in both themes; record the lowest body and large-text contrast ratios.
-- Expected :: *Text remains readable without clipping or missing glyphs*; headings, metadata, and code remain distinguishable. *Asap uses the appropriate face* for proportional text; *fixed-width text uses the matching Iosevka Custom face and aligned character columns*. *Contrast meets 4.5:1 for body text and 3:1 for large text* across both themes.
+- Procedure :: *Inspect representative Markdown and Org* at wide and narrow window
+  sizes, in light and dark modes. Include regular, italic, bold, code, tables,
+  images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use every browser environment in the
+  qualification matrix and record exact versions and viewport sizes.
+  Confirm the rendered font faces in the
+  browser inspector, not just their CSS declarations. Inspect *inline code,
+  code blocks, preformatted text, keyboard/sample text, and fixed-width Org
+  metadata*; include regular, italic, bold, and bold italic examples. Verify
+  equal-width character columns and the actual packaged Iosevka Custom face
+  selected for each style, including Irish glyphs within code.
+  Measure the application text colours against their backgrounds in both themes;
+  record the lowest body and large-text contrast ratios.
+- Expected :: *Text remains readable without clipping or missing glyphs*;
+  headings, metadata, and code remain distinguishable. *Asap uses the appropriate
+  face* for proportional text; *fixed-width text uses the matching Iosevka Custom
+  face and aligned character columns*. *Contrast meets 4.5:1 for body text and
+  3:1 for large text* across both themes.
 - Result :: PENDING.
 - Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
 
@@ -32,8 +47,18 @@
 - Definition :: [[file:spec.org::#ut-001-2][UT001.2 - Browser navigation and outline controls]].
 - Criteria :: [[spec.org::#ac-001-9][AC001.9 - Local references use the source directory]], [[spec.org::#ac-001-10][AC001.10 - Org IDs remain usable]], [[spec.org::#ac-001-11][AC001.11 - Reading works without JavaScript]], [[spec.org::#ac-001-21][AC001.21 - Same-page fragments stay on the preview]], [[spec.org::#ac-001-23][AC001.23 - Heading links use actual generated destinations]], [[spec.org::#ac-001-24][AC001.24 - Keyboard focus traversal remains available]], [[spec.org::#ac-001-25][AC001.25 - Fragment navigation reveals folded ancestors]], [[spec.org::#ac-001-26][AC001.26 - Printing includes every fold state]], [[spec.org::#ac-001-34][AC001.34 - Reading sessions retain their whole preview set]], [[spec.org::#ac-001-35][AC001.35 - Quick previews expire after their grace period]], [[spec.org::#ac-001-41][AC001.41 - Org outline state is deterministic]].
 - Reviewer :: Taḋg or an explicitly named operator.
-- Procedure :: *Navigate local links and fragments*, including targets with folded ancestors. Use controls with the keyboard, disable JavaScript, and inspect print preview from every fold state, including closed drawers. Use Safari 26 on macOS 26 arm64 and record exact versions. In reading mode, reload and follow generated pages before ending the session; in quick mode, note the declared expiry and try a deliberately delayed browser launch.
-- Expected :: *Links reach their destinations*; normal focus traversal and visible focus remain available; *fragment navigation reveals hidden targets*. Reading works without JavaScript, and *printing includes all content*. *Reading-mode pages remain available until termination*. Quick mode's slow-browser race is reported as a documented limitation, never as proof that the browser loaded before expiry.
+- Procedure :: *Navigate local links and fragments*, including targets with folded
+  ancestors. Use controls with the keyboard, disable JavaScript, and inspect print
+  preview from every fold state, including closed drawers. Use every browser
+  environment in the qualification matrix and record exact versions. In reading mode, reload
+  and follow generated pages before ending the session; in quick mode, note the
+  declared expiry and try a deliberately delayed browser launch.
+- Expected :: *Links reach their destinations*; normal focus traversal and visible
+  focus remain available; *fragment navigation reveals hidden targets*. Reading
+  works without JavaScript, and *printing includes all content*. *Reading-mode
+  pages remain available until termination*. Quick mode's slow-browser race is
+  reported as a documented limitation, never as proof that the browser loaded
+  before expiry.
 - Result :: PENDING.
 - Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
 
@@ -46,10 +71,51 @@
 - Definition :: [[file:spec.org::#ut-001-3][UT001.3 - Passive-document browser checks]].
 - Criteria :: [[spec.org::#ac-001-37][AC001.37 - Source content cannot supply executable browser code]], [[spec.org::#ac-001-39][AC001.39 - Preview generation and loading do not fetch remote resources]], [[spec.org::#ac-001-40][AC001.40 - Unsupported raw reference forms are reported]].
 - Reviewer :: Taḋg or an explicitly named operator.
-- Procedure :: *Open synthetic passive and hostile previews* with developer tools recording console execution and network requests. Include source scripts/events, encoded active links, remote images, raw CSS/srcset/SVG, and the same strings in code. Use Safari 26 on macOS 26 arm64. Use only synthetic data and loopback endpoints; verify normal packaged folding and local images.
-- Expected :: *Source code never executes and initial loading fetches no source-directed network URLs*. Packaged controls and local images work; neutralized content has an explanation, and literal code remains readable. Record Safari/macOS versions, requests, and console observations.
+- Procedure :: *Open synthetic passive and hostile previews* with developer tools
+  recording console execution and network requests. Include source scripts/events,
+  encoded active links, remote images, raw CSS/srcset/SVG, and the same strings in
+  code. Use every browser environment in the qualification matrix. Use only
+  synthetic data and loopback endpoints; verify normal packaged
+  folding and local images.
+- Expected :: *Source code never executes and initial loading fetches no
+  source-directed network URLs*. Packaged controls and local images work; neutralized content has an
+  explanation, and literal code remains readable. Record browser/OS versions,
+  requests, and console observations.
 - Result :: PENDING.
 - Evidence :: *Not run*. Record the revision, environment, dated result, and named authority or execution owner. Include archive hash and cleanup for the packaging test.
+
+** UT001.4 - Installed previews across desktop platforms
+:PROPERTIES:
+:CUSTOM_ID: ut-001-4-result
+:END:
+
+- Category :: User test.
+- Definition :: [[file:spec.org::#ut-001-4][UT001.4 - Installed previews across desktop platforms]].
+- Criteria :: [[file:spec.org::#ac-001-45][AC001.45 - Each platform opens its system default browser]],
+  [[file:spec.org::#ac-001-46][AC001.46 - WSL previews retain Windows-readable local references]].
+- Reviewer :: Taḋg or an explicitly named operator.
+- Procedure :: *Install into an OS-temporary prefix and invoke through a symlink
+  from an unrelated directory* in each qualification environment, without
+  installed Asap/Iosevka fonts or a checkout beside the executable. Confirm the
+  OS default browser before invocation, then observe the actual application
+  opened. In WSL, use separate fixture trees on the Linux filesystem and a
+  mounted Windows drive; include Unicode/spaced paths, relative images, linked
+  Markdown/Org, original-file links, and folded fragment targets. Keep WSLg
+  available for one WSL2 run and confirm Windows still receives the handoff.
+  Reload and navigate in reading mode, then end the session and inspect cleanup.
+  Run the same typography, navigation, and passive-content procedures defined
+  by the other user tests and record their results separately.
+- Expected :: *The configured default browser displays the finished preview*
+  on macOS and Linux; *the Windows default browser does so from WSL*. Local
+  images and all supported links reach the intended content. Embedded fonts
+  render without system installation. Original sources and permissions remain
+  unchanged, generated output stays in the private temporary directory, and
+  cleanup removes only that invocation's output. Process exit alone is not PASS.
+- Result :: PENDING for macOS, Linux desktop, WSL1, and WSL2.
+- Evidence :: *Not run*. Record revision, OS/CPU, browser identity/version, WSL
+  version/distribution, Pandoc, paths, and dated human observations separately
+  for each qualification environment. Cross-compilation and opener doubles are
+  not browser evidence.
 
 * One-off tests
 
@@ -71,3 +137,10 @@
 
 - Definition history :: The initial draft selected UT001.1 - Typography and UT001.2 - Navigation. Their pending procedures were refined; UT001.3 - Passive browser behaviour and OT001.1 - Homebrew packaging were added. No executed result was removed.
 - Font amendment :: On 8 September 2026, UT001.1 - Document typography and readability was refined to check the selected Iosevka Custom faces. Its result remains PENDING; asset inspection does not establish browser rendering.
+
+- Platform amendment :: On 8 September 2026, the operator required macOS, Linux,
+  and WSL with system default-browser opening. The three existing browser tests
+  now run across the specification's qualification matrix; UT001.4 - Installed
+  previews across desktop platforms adds actual handoff and WSL filesystem
+  evidence. All results remain PENDING. The earlier Safari-only scope remains
+  historical through Git and the prior audit records.

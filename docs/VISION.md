@@ -87,6 +87,16 @@ The distribution should install `htmlpreview` on `PATH` and declare Pandoc as
 a runtime dependency. Normal use should not require a Go toolchain, a source
 checkout, personal shell functions, or a user's existing Pandoc configuration.
 
+Support macOS, Linux desktops, and WSL. Open the system default browser;
+from WSL this means the Windows default browser, including when WSLg is
+available. Translate local references for that browser without changing system
+associations, file permissions, or WSL configuration.
+
+Fonts belong to the application and each generated page. Installation copies
+the executable and licence notices; it does not install system fonts. Running
+through a symlink on `PATH`, or from another directory, must retain the same
+fonts and presentation.
+
 The selected stack is Go, Pandoc, Lua where useful for Pandoc transformations,
 HTML/CSS, and limited JavaScript running only in the browser. Command-line
 JavaScript runtimes are excluded. Bash may support build or packaging tasks;

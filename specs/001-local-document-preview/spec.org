@@ -2,7 +2,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PASS
+#+DEFINITION_GATE: PENDING
 #+OPERATOR_SIGNOFF: PENDING
 
 * Installable Markdown and Org previews with linked browsing
@@ -14,13 +14,15 @@
   leaving *source files unchanged*.
 - Before :: The *repository contains prototypes and licensed fonts*, with no
   packaged application or maintained application regression suite.
-- After :: A *Go binary for macOS 26 arm64* uses Pandoc 3.9.0.2 through 3.9.x and
-  opens source-labelled pages from an *owner-private temporary directory*.
-  Safari 26 is the browser target; installation is staged for Homebrew.
+- After :: A *Go binary for macOS, Linux, and WSL* uses Pandoc 3.9.0.2 through
+  3.9.x and opens source-labelled pages in the *system default browser* from an
+  *owner-private temporary directory*. WSL opens the Windows default browser
+  using translated file URLs. Install by prefix or the macOS Homebrew recipe.
 - Changes :: The candidate defines four connected capabilities:
   - *Rendering preserves Org metadata, literal blocks, and identifiers*, embeds
     both Asap faces and four Iosevka Custom faces with their notices, and retains
-    accessible outline controls and printing.
+    accessible outline controls and printing. *Fonts need no system installation*,
+    including when invoked through a symlink from another directory.
   - *Local references resolve from their source directories*. Opt-in traversal
     defaults to 50 contexts, depth 3, 10 MiB per source, 50 MiB total source,
     100 MiB output, and 60 seconds of conversion.
@@ -35,15 +37,17 @@
   labels; encoded paths and fragments retain their destinations. *Failed inputs
   and handoffs are diagnosed*; aliases and ambiguous IDs have explicit rules.
   Partial publication aborts opening. *Cleanup affects only the owned session*;
-  forced termination may leave its directory behind.
+  forced termination may leave its directory behind. *WSL translation failures
+  are diagnosed*; unrepresentable original links become inactive.
 - Decisions :: *Go and temporary-directory output are selected*. *Asap is the
   proportional default*; *Iosevka Custom is the fixed-width and code default*.
   *Project code uses Apache 2.0* and both font families retain OFL 1.1.
-  Platform, browsing, retention, and passive-source
+  macOS/Linux/WSL and default-browser opening are *operator requirements*.
+  Qualification baselines, browsing, retention, and passive-source
   defaults are *candidate choices for approval*. CSS/JS use source and browser
   review; no CLI JavaScript lint runtime is introduced.
 - Next step :: *Audit this candidate, then obtain operator sign-off*. Linked
-  browsing, lifetimes, macOS packaging, and passive-source policy are explicit
+  browsing, lifetimes, platform packaging, and passive-source policy are explicit
   proposals for approval; no implementation is authorized.
 
 -----
@@ -82,8 +86,9 @@
 - *Revision of project-owned Org code*, including pre-processing, Lua, CSS, and
   browser JavaScript.
 - *Build, lint, test, installation, and dependency-check entry points*.
-- *Opt-in linked browsing, quick/read lifetimes, macOS installation, and passive
-  source handling*, with the contracts below.
+- *macOS, Linux, and WSL installation and system default-browser handoff*.
+- *Opt-in linked browsing, quick/read lifetimes, and passive source handling*,
+  with the contracts below.
 
 *** Out of scope
 
@@ -151,6 +156,11 @@
 - Font amendment :: On 8 September 2026, the operator selected *Iosevka Custom
   from the local font archive*. This specifies the earlier generic monospace
   requirement; the prior audit remains historical evidence for its revision.
+- Platform amendment :: On 8 September 2026, the operator required *macOS,
+  Linux, and WSL* and confirmed *system default-browser opening*, including the
+  Windows default browser from WSL. This supersedes the earlier macOS-arm64-only
+  candidate. The font-installation suggestion is addressed through embedded
+  assets, with no system font installation or runtime font discovery.
 - Ownership :: *Reused Org fidelity code is maintained project code*, subject to
   normal design, build, and verification.
 - Licensing :: *Project code and documentation use Apache 2.0*; both Asap and
@@ -158,8 +168,9 @@
 
 - Definition choices :: The following *candidate defaults require sign-off*:
   linked browsing is opt-in; quick retention is three seconds; linked sessions
-  remain foreground until signalled; the first supported platform is macOS on
-  arm64 with Homebrew packaging; source rendering is passive.
+  remain foreground until signalled; the qualification matrix and four release
+  targets below use prefix installation plus a macOS Homebrew recipe; source
+  rendering is passive.
 - Authority boundary :: These *authoring proposals are not recorded as operator
   approval*. Signing off this specification adopts their exact contracts.
   Earlier unanswered clarification questions are preserved in audit history.
@@ -453,8 +464,10 @@
 :END:
 
 - Criterion :: The *binary installs on PATH without a checkout, Go toolchain, or
-  personal configuration*. The Homebrew formula *declares Pandoc as a runtime
-  dependency*.
+  personal configuration*, including invocation through an executable symlink
+  from an unrelated directory. Fonts require no system installation. The
+  macOS Homebrew formula *declares Pandoc as a runtime dependency*; prefix
+  installations document the same separately provisioned dependency.
 - Proven by :: [[#rt-001-14][RT001.14 - Installation outside the checkout]],
   [[#ot-001-1][OT001.1 - Local Homebrew package validation]].
 
@@ -496,8 +509,11 @@
 - Criterion :: A *failed, excluded, or over-limit linked document retains its
   original file destination* with a diagnostic. *Only successful outputs enter the
   preview mapping*; linked failures alone do not fail a successful entry preview.
+  The WSL translation exception in AC001.46 - Windows-readable local references
+  makes an unrepresentable original destination inactive and explains why.
 - Proven by :: [[#rt-001-10][RT001.10 - Bounded local link browsing]],
-  [[#rt-001-11][RT001.11 - Budget and filesystem boundaries]].
+  [[#rt-001-11][RT001.11 - Budget and filesystem boundaries]],
+  [[#rt-001-17][RT001.17 - Platform handoff and Windows file URLs]].
 
 ** AC001.34 - Reading sessions retain their whole preview set
 :PROPERTIES:
@@ -614,6 +630,31 @@
   depending on installed fonts or network font access.
 - Proven by :: [[#rt-001-5][RT001.5 - Embedded assets and licence payload]].
 
+** AC001.45 - Each platform opens its system default browser
+:PROPERTIES:
+:CUSTOM_ID: ac-001-45
+:END:
+
+- Criterion :: *macOS, Linux, and WSL hand off every successful explicit preview
+  to the system default browser*. WSL uses the Windows default browser, even
+  when WSLg is present. The command does not change browser associations;
+  missing or failed platform tools return a diagnosed operational failure.
+- Proven by :: [[#rt-001-17][RT001.17 - Platform handoff and Windows file URLs]],
+  [[#ut-001-4][UT001.4 - Installed previews across desktop platforms]].
+
+** AC001.46 - WSL previews retain Windows-readable local references
+:PROPERTIES:
+:CUSTOM_ID: ac-001-46
+:END:
+
+- Criterion :: In WSL, *generated pages, local images, original-file links, and
+  linked previews use Windows-readable file URLs* while preserving source
+  origins, queries, fragments, traversal boundaries, and private Linux output.
+  Unrepresentable original references become explained inactive labels;
+  an unrepresentable generated page aborts publication before opening.
+- Proven by :: [[#rt-001-17][RT001.17 - Platform handoff and Windows file URLs]],
+  [[#ut-001-4][UT001.4 - Installed previews across desktop platforms]].
+
 * Test Definitions
 :PROPERTIES:
 :CUSTOM_ID: test-definitions
@@ -706,7 +747,8 @@
   [[#ac-001-44][AC001.44 - Iosevka Custom faces are embedded]].
 - Boundary :: Inspect the *built distribution and generated output*.
 - Setup :: Place the *executable outside its checkout*, without personal Pandoc
-  data or installed Asap or Iosevka Custom fonts.
+  data or installed Asap or Iosevka Custom fonts. Invoke through a symlink on
+  PATH from an unrelated directory, with no adjacent presentation assets.
 - Action :: *Generate Markdown and Org previews* and extract their font bytes, CSS
   declarations, and notices.
 - Expected :: *All six font hashes match the recorded assets*. Asap's variation
@@ -900,12 +942,17 @@
 - Boundary :: Exercise *make build, make install, the installed executable, and
   package contents*.
 - Setup :: Use an *OS-temporary installation prefix* and synthetic documents
-  outside the checkout.
+  outside the checkout. Run natively on all four release OS/CPU targets, with
+  platform opener doubles; cross-compilation alone is not execution evidence.
 - Action :: *Build, install twice, and invoke the installed binary* from an
-  unrelated directory; inspect the release archive.
+  unrelated directory through a symlink on PATH; inspect all four release
+  archives and their checksums. Verify binary format/architecture and notices,
+  and inspect both architecture branches of the generated macOS formula.
 - Expected :: *Repeated installation preserves the managed result*; the binary
-  runs with only supported Pandoc, retains packaged assets/notices, and requires
-  no private helpers. Homebrew execution is the bounded one-off test.
+  runs with supported Pandoc and the stated OS opener prerequisites, retains
+  packaged assets/notices, and requires no private helpers or installed fonts.
+  Installation writes only managed prefix files and leaves font directories
+  and caches untouched. Homebrew execution is the bounded one-off test.
 - Retention :: *Persistent regression* under =make test=; observe the expected
   *RED before implementation*, then GREEN.
 
@@ -948,6 +995,44 @@
 - Retention :: *Persistent regression* under =make test=; observe the expected
   *RED before implementation*, then GREEN.
 
+** RT001.17 - Platform handoff and Windows file URLs
+:PROPERTIES:
+:CUSTOM_ID: rt-001-17
+:END:
+
+- Covers :: [[#ac-001-33][AC001.33 - Skipped links never point to missing previews]],
+  [[#ac-001-45][AC001.45 - Each platform opens its system default browser]],
+  [[#ac-001-46][AC001.46 - WSL previews retain Windows-readable local references]].
+- Boundary :: Exercise *platform selection, the public CLI, and emitted URLs*.
+  Platform detection and process doubles are injected only through internal
+  test seams; no public browser-command override is introduced.
+- Setup :: Supply macOS, native Linux, WSL1, WSL2, and WSLg-present cases.
+  Use controlled openers and wslpath responses for Linux distribution paths,
+  Windows drives with non-default mount roots, spaces, Unicode, percent signs,
+  query/fragment delimiters, shell metacharacters, and missing local references.
+  Include translation to another distribution or UNC host, drive-relative
+  output, malformed output, unrepresentable Windows path components, a stalled
+  tool, a Windows-mounted temporary location, and disabled interoperation.
+- Action :: *Preview a linked Markdown/Org set with local images and original
+  file links*, capturing process argv/stdin and final URLs. Force each failure,
+  a publication translation failure, and cancellation. Include an unsupported
+  source file authority and a generated current-distribution file authority.
+- Expected :: *Platform selection uses the declared adapter*. WSL never invokes
+  a Linux browser. Every tool receives bounded input/output and an enforced
+  deadline. PowerShell command text stays constant; document data appears only
+  on stdin, and no injection sentinel executes. URL paths round-trip to the
+  expected originals; queries/fragments survive once-only encoding. Generated
+  WSL authorities are narrowly admitted, hostile source authorities rejected,
+  and graph root/device checks remain in Linux. Failed original translations
+  are inactive and diagnosed without failing an otherwise successful preview;
+  failed page translation opens nothing. Dependency/handoff failure returns 1,
+  with the selected retention and cleanup behaviour. Windows-mounted output
+  is rejected without changing permissions or allocating elsewhere.
+- Retention :: *Persistent regression* under =make test=; observe the expected
+  *RED before implementation*, then GREEN. Doubles prove adapter policy;
+  [[#ut-001-4][UT001.4 - Installed previews across desktop platforms]] proves
+  actual desktop and Windows filesystem interoperation.
+
 ** UT001.1 - Document typography and readability
 :PROPERTIES:
 :CUSTOM_ID: ut-001-1
@@ -961,8 +1046,9 @@
 - Reviewer :: Taḋg or an explicitly named operator.
 - Procedure :: *Inspect representative Markdown and Org* at wide and narrow window
   sizes, in light and dark modes. Include regular, italic, bold, code, tables,
-  images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use Safari 26 on macOS 26 arm64 and record
-  exact versions and viewport sizes. Confirm the rendered font faces in the
+  images, and =Taḋg ÁÉÍÓÚ áéíóú=. Use every browser environment in the
+  qualification matrix and record exact versions and viewport sizes.
+  Confirm the rendered font faces in the
   browser inspector, not just their CSS declarations. Inspect *inline code,
   code blocks, preformatted text, keyboard/sample text, and fixed-width Org
   metadata*; include regular, italic, bold, and bold italic examples. Verify
@@ -997,8 +1083,8 @@
 - Reviewer :: Taḋg or an explicitly named operator.
 - Procedure :: *Navigate local links and fragments*, including targets with folded
   ancestors. Use controls with the keyboard, disable JavaScript, and inspect print
-  preview from every fold state, including closed drawers. Use Safari 26 on
-  macOS 26 arm64 and record exact versions. In reading mode, reload
+  preview from every fold state, including closed drawers. Use every browser
+  environment in the qualification matrix and record exact versions. In reading mode, reload
   and follow generated pages before ending the session; in quick mode, note the
   declared expiry and try a deliberately delayed browser launch.
 - Expected :: *Links reach their destinations*; normal focus traversal and visible
@@ -1022,14 +1108,44 @@
 - Procedure :: *Open synthetic passive and hostile previews* with developer tools
   recording console execution and network requests. Include source scripts/events,
   encoded active links, remote images, raw CSS/srcset/SVG, and the same strings in
-  code. Use Safari 26 on macOS 26 arm64. Use only synthetic data and loopback endpoints; verify normal packaged
+  code. Use every browser environment in the qualification matrix. Use only
+  synthetic data and loopback endpoints; verify normal packaged
   folding and local images.
 - Expected :: *Source code never executes and initial loading fetches no
   source-directed network URLs*. Packaged controls and local images work; neutralized content has an
-  explanation, and literal code remains readable. Record Safari/macOS versions,
+  explanation, and literal code remains readable. Record browser/OS versions,
   requests, and console observations.
 - Record :: Record the *dated human result, revision, and viewing conditions* in
   =validation.org=; currently PENDING.
+
+** UT001.4 - Installed previews across desktop platforms
+:PROPERTIES:
+:CUSTOM_ID: ut-001-4
+:END:
+
+- Covers :: [[#ac-001-45][AC001.45 - Each platform opens its system default browser]],
+  [[#ac-001-46][AC001.46 - WSL previews retain Windows-readable local references]].
+- Reviewer :: Taḋg or an explicitly named operator.
+- Procedure :: *Install into an OS-temporary prefix and invoke through a symlink
+  from an unrelated directory* in each qualification environment, without
+  installed Asap/Iosevka fonts or a checkout beside the executable. Confirm the
+  OS default browser before invocation, then observe the actual application
+  opened. In WSL, use separate fixture trees on the Linux filesystem and a
+  mounted Windows drive; include Unicode/spaced paths, relative images, linked
+  Markdown/Org, original-file links, and folded fragment targets. Keep WSLg
+  available for one WSL2 run and confirm Windows still receives the handoff.
+  Reload and navigate in reading mode, then end the session and inspect cleanup.
+  Run the same typography, navigation, and passive-content procedures defined
+  by the other user tests and record their results separately.
+- Expected :: *The configured default browser displays the finished preview*
+  on macOS and Linux; *the Windows default browser does so from WSL*. Local
+  images and all supported links reach the intended content. Embedded fonts
+  render without system installation. Original sources and permissions remain
+  unchanged, generated output stays in the private temporary directory, and
+  cleanup removes only that invocation's output. Process exit alone is not PASS.
+- Record :: Record *revision, OS/CPU, WSL version/distribution where applicable,
+  default-browser identity/version, Pandoc, paths, and dated human observations*
+  in =validation.org=. Each qualification environment remains PENDING until run.
 
 ** OT001.1 - Local Homebrew package validation
 :PROPERTIES:
@@ -1166,6 +1282,20 @@
   [[#ac-001-36][AC001.36 - Cleanup ownership]], and
   [[#rt-001-12][RT001.12 - Retention cancellation and cleanup ownership]].
 
+** WSL translation and desktop availability
+
+- Condition :: *WSL cannot translate a path*, its interoperation is disabled,
+  temporary output is Windows-mounted, or a desktop opener is unavailable.
+- Required behaviour :: *Diagnose the failed boundary*. Keep unrepresentable
+  original references inactive; abort publication if a generated page cannot
+  be represented. Reject unsuitable temporary output without changing access.
+  Handoff failures retain published URLs for the chosen lifetime; never change
+  associations, use a Linux browser from WSL, or start a server as fallback.
+- Covered by :: [[#ac-001-45][AC001.45 - Each platform opens its system default browser]],
+  [[#ac-001-46][AC001.46 - WSL previews retain Windows-readable local references]],
+  [[#rt-001-17][RT001.17 - Platform handoff and Windows file URLs]], and
+  [[#ut-001-4][UT001.4 - Installed previews across desktop platforms]].
+
 * Solution Design
 :PROPERTIES:
 :CUSTOM_ID: solution-design
@@ -1193,6 +1323,11 @@
   [[https://pkg.go.dev/golang.org/x/net/html][HTML5 parsing]],
   [[https://github.com/microcosm-cc/bluemonday][bluemonday sanitization policy]], and
   [[https://docs.brew.sh/Formula-Cookbook#specifying-other-formulae-as-dependencies][Homebrew dependency declarations]].
+- Platform sources :: [[https://pkg.go.dev/embed][Go compile-time asset embedding]],
+  [[https://portland.freedesktop.org/doc/xdg-open.html][Linux desktop opening]],
+  [[https://learn.microsoft.com/en-us/windows/dev-environment/wsl-interop][WSL path translation and Windows interoperation]], and
+  [[https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process?view=powershell-5.1][Built-in Windows PowerShell process handoff]].
+  These support the proposed mechanisms; they are not application validation.
 
 ** High-level design
 
@@ -1206,7 +1341,7 @@
    within their permitted root, device, depth, and budgets.
 5. *Finalize successful pages and target identifiers*, rewrite supported URLs,
    sanitize document HTML, and insert the packaged presentation.
-6. *Publish finished entry pages before opening any*, then invoke the macOS
+6. *Publish finished entry pages before opening any*, then invoke the platform
    opener once per distinct successful explicit context.
 7. *Retain the whole session* for the selected lifetime and clean up its owned
    directory when that lifetime ends.
@@ -1225,10 +1360,12 @@
 - Input failure :: *Unreadable, unsupported, or malformed source files fail
   individually* with status 1 while other inputs may succeed. Missing arguments,
   unknown options, and invalid settings fail before output with status 2.
-- Compatibility :: The initial *supported platform is macOS 26 on arm64*, using
-  Safari 26 as the browser validation target. Other platforms/browsers may work
-  but have no release claim. The build baseline is Go 1.26.3; a later reviewed compatible
-  patch may be pinned during delivery. Go is not a binary runtime dependency.
+- Compatibility :: *Release macOS and Linux binaries for amd64 and arm64*;
+  WSL1/WSL2 use the matching Linux binary. Native Windows executables are outside
+  scope. The build baseline is Go 1.26.3; a later reviewed compatible patch may
+  be pinned during delivery. Go is not a binary runtime dependency. The matrix
+  below defines initial qualification; other OS releases and browser engines
+  remain unverified until recorded, rather than being assumed compatible.
 - Pandoc :: Require *Pandoc 3.9.0.2 or a later 3.9 patch release*, with its bundled
   Lua 5.4. Reject other release series with status 1 before session allocation.
   Real conversion tests run against the declared minimum and the packaging
@@ -1294,13 +1431,61 @@ yaml_metadata_block
   config file or arbitrary Pandoc flags are accepted. Empty values use defaults
   except an explicitly empty root, which selects the per-entry root. Unknown
   =HTMLPREVIEW_= variables are invalid to expose misspelled controls.
-- Desktop handoff :: Invoke */usr/bin/open with argument arrays* and absolute
-  generated file paths. Resolve Pandoc from PATH once; no shell interpolation.
-  Each version check and opener invocation has a five-second deadline;
-  preflight output is capped at 64 KiB before session allocation.
+- Platform selection :: *Select macOS by GOOS; distinguish WSL before ordinary
+  Linux*. On Linux, a non-empty WSL_DISTRO_NAME or a case-insensitive Microsoft
+  marker in /proc/sys/kernel/osrelease selects WSL, including WSLg sessions.
+  Read only that bounded kernel identifier, not arbitrary proc entries. A WSL
+  candidate with unavailable interoperation fails visibly; never silently choose
+  a Linux browser. Unsupported GOOS fails before allocation.
+- Desktop handoff :: Use */usr/bin/open on macOS* and *xdg-open on Linux*, with
+  an absolute generated file URL as one argument. Resolve external tools from
+  PATH once, except the fixed macOS opener. Use the *configured default HTML/URL
+  association*; the environment must associate local HTML with its default
+  browser. Do not choose a named browser or modify associations. Linux requires
+  an active desktop session and xdg-utils; headless/SSH-only environments receive
+  the ordinary diagnosed opener failure, not a terminal browser or server.
+- WSL handoff :: Invoke the built-in *powershell.exe* with =-NoLogo=,
+  =-NoProfile=, =-NonInteractive=, and =-Command= followed by *fixed owned command
+  text*. Read one ASCII percent-encoded generated file URL from child stdin
+  using =[Console]::In.ReadToEnd()=, then pass it as the sole =-FilePath= value
+  to =Start-Process= with =-ErrorAction Stop=, without =-Wait=. Catch errors and
+  return 1; return 0 after a successful handoff. Close child stdin after writing;
+  the application never reads the user's stdin. Document paths never enter
+  PowerShell source, an argument-list command string, or cmd.exe. This small
+  reviewed OS bridge requires no additional PowerShell installation or profile.
+- Tool bounds :: *Each version query, path translation, and opener call has a
+  five-second deadline and 64 KiB combined output cap*. Translation also stays
+  within the current conversion/publication phase deadline. Cancel and reap
+  helper processes on failure or signal, without terminating the launched
+  browser. Missing WSL tools are dependency failures before session allocation;
+  runtime bridge failures follow handoff/publication failure policy. Never
+  enable interoperation, change PATH globally, or change the desktop settings.
 - Output :: *Diagnostics go to stderr*; stdout lists each successfully published
-  explicit preview's absolute file URL. Reading mode also reports its session
+  explicit preview's absolute browser-facing file URL, translated on WSL.
+  Reading mode also reports its Linux/native session
   path and termination instruction on stderr. No document content is logged.
+
+*** Qualification matrix
+:PROPERTIES:
+:CUSTOM_ID: qualification-matrix
+:END:
+
+| Environment | Initial browser evidence | Installation evidence |
+|-------------+--------------------------+-----------------------|
+| macOS 26 | Safari 26, arm64 | Native regression on amd64 and arm64; bounded Homebrew trial on arm64 |
+| Ubuntu 24.04 LTS desktop | Firefox stable at validation, amd64 | Native regression on amd64 and arm64 |
+| Windows 11, Ubuntu 24.04 under WSL1 | Windows Edge stable at validation, amd64 | Linux binary through a temporary prefix and actual WSL bridge |
+| Windows 11, Ubuntu 24.04 under WSL2 | Windows Edge stable at validation, amd64 | Linux binary through a temporary prefix, including WSLg-present handoff |
+
+- Evidence boundary :: *Record exact installed OS, browser, WSL, and Pandoc
+  versions in each result*. Stable identifies the channel, not an invented
+  future version. Configure the named browser as the system default for its
+  validation run. These are representative browser environments, not a promise
+  that every browser/OS/CPU combination has been exercised. Every required
+  matrix result must be recorded before release qualification; missing access
+  leaves it PENDING and cannot be replaced by cross-compilation or doubles.
+
+*** Environment settings
 
 | Environment setting | Default | Valid values and meaning |
 |---------------------+---------+--------------------------|
@@ -1333,6 +1518,10 @@ yaml_metadata_block
 - Session ownership :: Use *os.MkdirTemp with the OS-selected location* and
   mode 0700; generated files are mode 0600. Paths are session-local, independent
   of source basenames. No cache, database, source write, or shared session exists.
+  Verify owner-only modes. In WSL, require a private Linux-filesystem temporary
+  location; reject Windows-mounted temporary output rather than changing ACLs
+  or relocating to a Windows shared directory. Existing WSL access uses the
+  user's existing permissions and the distribution must remain available.
 - Budget accounting :: *Count admitted source bytes per context*, even if bytes
   are reused from a snapshot. Count all generated session bytes, including
   extracted assets, staging files, font expansion, and final HTML, before writes.
@@ -1340,7 +1529,7 @@ yaml_metadata_block
 - Source snapshots :: *Read each admitted context once*. Source edits during
   a run do not update its preview; no cross-document atomic snapshot is promised.
   Regular-file and size checks apply to the opened handle, not only path metadata.
-  The macOS adapter opens candidates non-blockingly before the type check so a
+  The macOS and Linux adapters open candidates non-blockingly before the type check so a
   path swapped to a FIFO cannot stall admission; non-regular handles are closed
   without reading document content.
 - Identity :: A *source context is canonical file path plus logical source
@@ -1379,6 +1568,25 @@ yaml_metadata_block
   output and permitted literal HTML. Same-page fragments stay on generated pages.
   Unconverted local documents/assets use absolute original-file URLs. Remote
   HTTP/HTTPS/mailto anchors remain unchanged.
+- WSL file URLs :: *Resolve and admit paths in Linux first*. Convert each
+  required absolute local path using =wslpath -w= as a direct argument array;
+  cache translations per session. Construct Windows drive file URLs or UNC file
+  URLs structurally, encoding each path component once and preserving the
+  separate query/fragment. Never hard-code a drive mount. Accept absolute drive
+  paths or the current distribution's share on =wsl.localhost= or =wsl$= only;
+  derive that distribution/share from the translation of the owned session and
+  require any supplied WSL_DISTRO_NAME to agree. Reject other UNC authorities,
+  other distributions, device/extended path namespaces, malformed translations,
+  and drive-relative paths. Reject Windows-reserved path components, control
+  characters, and trailing dot/space components; allow a colon only in the
+  drive prefix. Require a =wslpath -u= round trip to the original cleaned Linux
+  absolute path, preserving case, to catch ambiguous separator conversion.
+  Generated pages use these URLs too; a translation
+  failure aborts publication before any page is opened. A failed original-file
+  translation produces an inactive labelled reference and warning, never a
+  guessed Windows URL. Missing originals retain URLs only if translation
+  succeeds. A mapped URL is not proof of Windows/browser read permission;
+  actual availability is covered by the platform user test.
 - Org file searches :: *Resolve Org file searches* =::#custom-id= and =::*Heading=
   against the actual
   target catalogue. Heading matching is case-sensitive after trimming/collapsing
@@ -1429,6 +1637,12 @@ yaml_metadata_block
   families*. For Asap, use regular/italic @font-face rules, weight 100 to 900,
   width 75% to 125%. Include both families' full copyright/OFL text in HTML
   comments and all applicable notices in release archives.
+- Asset lookup :: *Resolve embed patterns relative to a Go package at build
+  time*. Keep the asset package and its files inside the module; no embed path
+  crosses the module or follows an external symlink. Runtime reads embed.FS,
+  extracts only conversion assets to its session, and emits all six fonts as
+  inline WOFF2 data URLs. Do not derive asset paths from cwd, argv[0], executable
+  symlink targets, an installation prefix, or system font directories.
 - Fixed-width font :: *Use Iosevka Custom for every fixed-width style*, including
   =pre=, =code=, =kbd=, =samp=, and fixed-width Org metadata. Embed the four WOFF2
   files named by the asset authority in the executable and each preview's CSS
@@ -1496,8 +1710,13 @@ yaml_metadata_block
   Remote images and stylesheet URLs become explanatory linked placeholders;
   inline SVG/CSS URLs/srcset are unsupported. This is an explicit subset, not
   a claim that every raw reference can be rewritten.
-- File authorities :: *Accept file URLs only with an empty or localhost host*.
-  Reject other file authorities. Ordinary OS access to mounted/cloud-backed
+- File authorities :: *Accept source file URLs only with an empty or localhost
+  host*. Reject other source file authorities. After source resolution, the
+  final allowlist may retain *application-generated current-distribution WSL
+  file URLs* according to the translation contract above. Keep provenance in
+  Go state, not a forgeable source attribute. This exception does not admit
+  source-authored UNC links or expand traversal roots/devices.
+  Ordinary OS access to mounted/cloud-backed
   filesystems is outside the no-network-URL promise; graph device limits still
   apply to document admission.
 - Browser policy :: *Emit an application-owned Content Security Policy* before
@@ -1526,15 +1745,22 @@ yaml_metadata_block
 - Operability :: *Provide make build, lint, test, install, sync, vulncheck, and
   release*. Build produces the binary; install uses PREFIX (default /usr/local)
   and DESTDIR for staged installs; repeat installation replaces only managed
-  binary/licence files. Release produces a versioned darwin-arm64 archive,
-  SHA-256, and Homebrew formula declaring Pandoc.
+  binary/licence files. Build/install default to the host OS/CPU. Release uses
+  =CGO_ENABLED=0= to produce versioned *darwin-amd64, darwin-arm64, linux-amd64,
+  and linux-arm64* archives with SHA-256 checksums. WSL uses the Linux archive.
+  Install embeds the fonts in the binary and copies notices under the prefix;
+  it does not register fonts, update font caches, or download dependencies.
 - Packaging :: *Maintain packaging/htmlpreview.rb.tmpl and the release generator*.
   For example, ~make release VERSION=0.1.0~ produces the binary
-  archive, SHA-256, and =dist/Formula/htmlpreview.rb=. VERSION is required for
+  archives named =htmlpreview-VERSION-OS-ARCH.tar.gz=, their SHA-256 manifest,
+  and =dist/Formula/htmlpreview.rb=. VERSION is required for
   release and consists of three non-negative decimal components separated by
   dots, with no prefix or suffix; invalid or absent values fail before packaging.
   With no release URL,
-  the generated formula points to the actual local archive's file URL. A supplied
+  the generated macOS formula selects each architecture's actual local archive
+  file URL and checksum, using separate arm64/amd64 branches. It declares Pandoc
+  and is macOS-only; Linux/WSL use prefix installation and the documented Pandoc
+  prerequisite. Unsupported formula platforms fail clearly. A supplied
   RELEASE_BASE_URL selects an existing operator-provided asset location; verify
   it and its checksum before generating a public formula. Local validation keeps
   the same formula class/name, dependency, checksum, and install recipe; only the
@@ -1543,14 +1769,23 @@ yaml_metadata_block
   preview script*. Document PREFIX/bin on PATH and detect/report command
   shadowing during package validation. The default install prefix may require
   operator permissions; no automatic sudo or permission widening is permitted.
+  Document installing a compatible Pandoc separately for prefix installs and
+  xdg-utils for Linux desktops. WSL requires its existing wslpath, built-in
+  Windows PowerShell, enabled executable interoperation, and Windows access to
+  the active distribution. Do not imply a distribution package automatically
+  meets the pinned Pandoc series; the runtime compatibility check is authoritative.
 - Versioning :: *Embed version and source revision at build time*; this is build
   identity, not runtime configuration. Documentation marks unsupported platforms
   and the supported Pandoc series explicitly.
-- Accessibility :: *Human review checks Safari 26 on macOS 26 arm64*, including
-  both themes, narrow/wide layouts, focus, fragments, print, Irish glyphs, no-JS
-  reading, and passive-source browser behaviour.
-- Portability :: *Desktop and device operations stay in macOS adapters*. Linux,
-  Windows, and amd64 support are excluded from this first validation claim.
+- Accessibility :: *Human review checks every qualification browser environment*,
+  including both themes, narrow/wide layouts, focus, fragments, print, Irish
+  glyphs, no-JS reading, and passive-source browser behaviour.
+- Portability :: *Desktop, browser-facing URL, and filesystem operations have
+  small macOS/Linux/WSL adapters*. WSL retains Linux filesystem identity and
+  signal semantics while opening Windows-readable URLs. The earlier macOS-only
+  scope is superseded by the operator's platform amendment. No native Windows
+  executable, Linux-browser selector in WSL, registry editor, or local server
+  is added.
 - Maintainability :: *Use Go's testing package and small interfaces*. x/net/html
   supplies HTML5 parsing; bluemonday supplies a reviewed sanitizer policy engine.
   The standard library has no equivalent HTML parser/sanitizer. Review and pin

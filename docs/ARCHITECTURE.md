@@ -125,6 +125,14 @@ the document-count limit. Include both families' copyright notices and full
 OFL text in readable HTML source and release packages. Font embedding is
 specified here; no renderer has yet been implemented.
 
+Embedding resolves repository assets at build time. At runtime the renderer
+reads those embedded bytes and emits inline `@font-face` data URLs. Neither
+the executable's location nor the invocation directory participates in font
+lookup. An executable symlink therefore needs no adjacent font directory.
+`make install` installs the binary and notices, without modifying system font
+directories or caches. The prototype's sibling-file wrapper and system font
+stacks do not yet implement this contract.
+
 For Org, preserve planning information and logbooks before Pandoc parses the
 source, then apply the adapted Lua filter. Pre-processing must recognize literal
 source and example blocks so that text inside them is not transformed. Keep
@@ -248,6 +256,38 @@ preview. Report the affected links and retain original-file destinations.
 Failure of an explicitly requested input produces a non-zero exit status even
 if another requested preview can be opened.
 
+## Platform browser handoff
+
+The operator selected macOS, Linux, and WSL support on 8 September 2026 and
+confirmed the system default browser. This supersedes the earlier macOS-first
+proposal. Keep browser handoff and browser-facing path conversion separate
+from Go's filesystem admission and source-relative resolution.
+
+Use the platform's default HTML/URL association: `open` on macOS, `xdg-open`
+on a Linux desktop, and Windows shell association through the built-in Windows
+PowerShell `Start-Process` command from WSL. These mechanisms use configured
+associations; a usable default browser must be configured for local HTML.
+Do not select a named browser, alter associations, or fall back to a WSLg
+browser. The short PowerShell bridge is owned platform glue, with a fixed
+command and the generated URL passed as data through child stdin.
+[Linux desktop opening](https://portland.freedesktop.org/doc/xdg-open.html),
+[Windows shell associations](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process?view=powershell-5.1).
+
+WSL runs the Linux binary, but Windows must read its generated pages and original
+assets. Use `wslpath` to translate resolved local paths before constructing file
+URLs, including distribution paths and mounted Windows drives. Keep output in
+the private Linux temporary directory; use the existing WSL filesystem bridge
+to reach it. Never guess a drive mount or copy output to a more permissive
+location. Source URLs cannot supply arbitrary UNC hosts; only application
+translations to the current distribution's WSL share are allowed in output.
+[WSL path translation and filesystem access](https://learn.microsoft.com/en-us/windows/dev-environment/wsl-interop).
+
+Missing desktop tools, disabled interoperation, inaccessible paths, and failed
+handoff require actionable diagnostics. A successful process exit does not
+prove browser loading. Validate actual Windows-browser access to temporary
+pages, images, linked previews, and fonts before claiming WSL compatibility.
+The specification defines the platform matrix and bounded failure behaviour.
+
 ## Browser lifetime and cleanup
 
 The existing three-second delay is a compatibility reference, not evidence that
@@ -287,17 +327,19 @@ Pandoc is a separately managed runtime dependency; the Go
 toolchain is needed only to build from source. Check compatibility before
 creating output and give an actionable dependency error.
 
-A Homebrew formula declaring Pandoc is the proposed first packaging route.
+A macOS Homebrew formula declaring Pandoc is the proposed package-manager route.
 This provides dependency installation through the package manager rather than
 download or installation during previewing. A prefix-based binary installation
-can be documented separately. No published package name, release URL, minimum
-Pandoc version, or operating-system support range is established yet.
+serves macOS, Linux, and WSL, with Pandoc provisioned separately and checked by
+the command. The current specification defines release targets and qualification
+baselines; it establishes no published package name or release URL.
 [Homebrew dependency declaration](https://docs.brew.sh/Formula-Cookbook#specifying-other-formulae-as-dependencies).
 
-The proposed initial platform is macOS, with the browser adapter and filesystem
-operations kept separable for Linux support. Use direct executable invocation
-with argument arrays for Pandoc and browser opening. Never interpolate document
-names into shell commands.
+Release candidates contain macOS and Linux executables for amd64 and arm64;
+WSL uses the matching Linux executable. Use direct executable invocation with
+argument arrays for Pandoc and platform tools. Never interpolate document names
+into shell commands. Go remains a build dependency; neither standalone Lua nor
+an additional PowerShell distribution is installed for normal use.
 
 The tool does not publish documents or widen file permissions. Temporary-directory
 isolation protects generated-file placement; it does not sanitize source HTML

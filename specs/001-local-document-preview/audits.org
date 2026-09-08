@@ -380,6 +380,64 @@ All three component audits were applied: audit-spec, audit-design, and audit-tes
   reviewer explicitly excluded this working-tree state from the committed-asset
   integrity PASS. All other authorized documentation and asset work continues.
 
+** Local review - Round 5: desktop platforms and embedded asset lookup
+:PROPERTIES:
+:CUSTOM_ID: definition-local-5
+:ROUND: 5
+:DATE: 2026-09-08
+:END:
+
+- Gate :: Definition.
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =bdd95bb5bd2d08d418a958bccf0a2d82a9d3c6454d8b24072c33a0e22d7186c7=.
+- Authority :: The operator required *macOS, Linux, and WSL support* and confirmed
+  *system default-browser opening*, including Windows from WSL. Embedded font
+  lookup addresses the installation/symlink question without system font writes.
+- Supersession :: *The previous PASS remains revision-specific history*. The
+  platform amendment resets the gate to PENDING; operator sign-off remains
+  PENDING and the ledger remains REVIEW. No implementation is authorized.
+- Context :: Authoring context, applying *audit-spec, audit-design, and
+  audit-test-definitions* to the changed scope and adjacent lifecycle, security,
+  URL, asset, packaging, and validation contracts.
+- Verdict :: *Local PASS*; resume the same retained external context.
+
+#+begin_example
+GATE: definition
+REVISION: bdd95bb5bd2d08d418a958bccf0a2d82a9d3c6454d8b24072c33a0e22d7186c7
+VERDICT: PASS
+#+end_example
+
+- Specification review :: *The summary, authorities, and detailed contracts
+  reflect the required platforms and default browser*. The qualification matrix
+  and packaging recipe remain explicit authoring proposals for sign-off.
+  AC001.45 - Default-browser opening and AC001.46 - Windows-readable references
+  use new identifiers; prior identifiers and audit history are retained.
+- Design review :: *Font lookup occurs at build time and uses embedded data at
+  runtime*. WSL translates browser-facing paths after Linux admission; source
+  file authorities cannot claim the generated WSL exception. Fixed PowerShell
+  command text receives URL data through child stdin, with bounded helper calls.
+  The design diagnoses unrepresentable paths and preserves private output,
+  root/device boundaries, selected retention, and existing system configuration.
+- Test-definition review :: *Installation tests cover symlink invocation and
+  all four native release targets*. RT001.17 - Platform handoff and Windows file
+  URLs covers adapter policy, failures, encoding, and trust boundaries;
+  UT001.4 - Installed previews across desktop platforms requires real desktop
+  and WSL observations. All typography/navigation/passive-content user tests
+  now require the qualification environments. Mocks and cross-compilation do
+  not establish browser compatibility; all runtime results remain PENDING.
+- Documentation evidence :: *sanitize processed the four authored documents*.
+  Pandoc parsed them with unique heading IDs; one-off checks verified the seven
+  ordered template sections, eight summary fields, 46 criteria, 22 reciprocal
+  test definitions, and matching procedures/expectations for all four user-test
+  records. =git diff --check= passed. Git history contains no earlier allocation
+  of the new criterion/test identifiers.
+- Asset boundary :: *No font bytes were changed in this amendment*. The existing
+  unattributed empty working-tree bold-italic file and operator profile edit
+  remain untouched and excluded from staging; their preservation boundary from
+  the earlier audit remains applicable.
+- Retained context :: =/root/definition_audit=, with the configured eight-minute
+  timeout. Review only this amendment and enough adjacent material to assess it.
+
 * Implementation gate
 
 - Status :: Not run. Implementation is outside this definition workflow.
