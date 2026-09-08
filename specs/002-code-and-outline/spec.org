@@ -1,0 +1,588 @@
+#+TITLE: W002 - Highlighted code, copying and compact fold controls
+#+SUBTITLE: Unified change specification
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+DEFINITION_GATE: PENDING
+#+OPERATOR_SIGNOFF: PENDING
+
+* Highlighted code, copying and compact fold controls
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+- Outcome :: *Code is coloured and copyable*, and *local fold controls use
+  triangles* in the existing Markdown and Org preview.
+- Before :: *Source blocks are plain*. The header alone offers clipboard
+  copying; local outline buttons display Fold or Expand.
+- After :: *Declared code languages receive local syntax highlighting*.
+  Clicking inline code, Org verbatim or a code block copies its text;
+  keyboard users have native copy buttons. *Triangles replace local button
+  words* while preserving the current outline states.
+- Changes :: *Examples demonstrate TODO states, tags, drawers and code*.
+  Pandoc handles highlighting; the owned theme supplies light/dark colours.
+  *Copying excludes delimiters and controls* and preserves literal whitespace.
+- Unchanged :: *The header identifies and copies the original source path*.
+  Fonts, CLI settings, source protection, link resolution, private sessions,
+  platform handoff and W001 qualification requirements continue to apply.
+- Edge cases :: *Unknown languages remain plain*; empty code is not copied.
+  *Selection and hyperlink activation remain available*. Clipboard refusal
+  offers a manual-copy field. No-JavaScript reading and full printing remain
+  available. Org literal lookalikes and trailing newlines remain literal.
+- Decisions :: *Go, Pandoc and browser-only JavaScript remain the stack*.
+  Proposed details below select triangles, copy affordances and built-in
+  highlighting; *operator sign-off adopts these choices*.
+- Next step :: *Audit the definition, then obtain operator sign-off* before
+  implementation. Browser results remain separate human evidence.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+- The operator requested *an Org work-ledger example*, including TODO markers,
+  tags, drawers and source blocks, on 8 September 2026.
+- The operator requested *syntax highlighting, glyph fold controls and copying
+  inline/block code*, including Org =~code~= and ==verbatim==.
+- The current *Org preservation stage emits plain HTML code*, so enabling a
+  Pandoc option alone cannot highlight those source blocks.
+
+** Outcome
+
+- *Readable highlighted code retains its text*, while copying and folding are
+  accessible without changing source documents or system configuration.
+
+** Scope
+
+*** In scope
+
+- *Highlight language-labelled Markdown fenced blocks and Org source blocks*.
+- *Copy semantic inline code and pre/code blocks*, including Org verbatim,
+  Org example blocks and Markdown indented blocks.
+- *Replace local heading button words with glyphs*; retain the global toolbar.
+- *Provide synthetic Org and Markdown examples* and browser validation.
+
+*** Out of scope
+
+- *No code execution, language guessing or user-supplied highlighter plugins*.
+- *No editing, live reload, new CLI settings or browser automation framework*.
+- *No copy action for ordinary prose, drawers or planning metadata*.
+
+*** Unchanged
+
+- *W001 remains the baseline* except for the explicit clipboard-scope extension.
+  Syntax colouring refines presentation; it does not relax literal fidelity.
+- *Header copying still uses the original absolute logical source path*,
+  including the Linux path in WSL. Temporary names never supply that value.
+- *Embedded Asap and Iosevka Custom remain the defaults*; installation does not
+  depend on system fonts or paths adjacent to the executable.
+
+** Authority and starting point
+
+- Project profile :: [[file:../../.sdlc/project.yaml][Project standards and authorities]].
+- Product authority :: [[file:../../docs/VISION.md][Vision: reading experience and boundaries]].
+- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture: rendering and presentation]].
+- Baseline specification :: [[file:../001-local-document-preview/spec.org][W001 - Installable Markdown and Org previews]],
+  particularly literal fidelity, source header, folding, passive content and
+  the qualification matrix.
+- Historical evidence :: [[file:../001-local-document-preview/audits.org][W001 - Definition and implementation audits]];
+  [[file:../../docs/ORG-FIDELITY-REVIEW.md][Org fidelity assessment]].
+  W001 implementation gate passed for code at =78389a6=; browser/platform
+  qualification is still recorded separately in its validation record.
+- Current implementation :: [[file:../../internal/preview/org.go][Org pre-pass]],
+  [[file:../../internal/preview/render.go][Rendering and restoration]],
+  [[file:../../internal/preview/html.go][Sanitization and template]],
+  [[file:../../assets/pandoc/fidelity.lua][Pandoc filter]],
+  [[file:../../assets/pandoc/defaults.yaml][Packaged defaults]],
+  [[file:../../assets/web/preview.js][Browser controls]].
+  Baseline checkout revision is =be42416=, the implementation evidence checkpoint.
+- Maintained regressions :: [[file:../../internal/preview/preview_test.go][Markdown, literal Org and source-header tests]],
+  [[file:../../internal/preview/adversarial_test.go][Literal block boundaries and hostile inputs]],
+  [[file:../../internal/preview/contracts_test.go][Source paths and platform contracts]],
+  [[file:../../integration/cli_test.go][Installed executable tests]].
+- External contract :: [[https://pandoc.org/MANUAL.html#syntax-highlighting][Pandoc built-in syntax highlighting]]
+  and [[https://pandoc.org/lua-filters.html#module-pandoc.json][Pandoc JSON API]].
+  Local Pandoc 3.9.0.2 probes confirmed language colouring, JSON-to-CodeBlock
+  conversion through an owned Lua filter, tabs retained and a final LF omitted
+  by the highlighted HTML writer.
+
+** Constraints and dependencies
+
+- *Pandoc 3.9.0.2 through 3.9.x and its Lua 5.4 host remain supported*.
+  Use the current Go build baseline and existing module dependencies.
+- *No CLI JavaScript, standalone Lua, new package or network highlighter*.
+- *Source HTML remains passive*. Highlighting never enables source scripts,
+  styles, filters, includes, language-definition paths or code execution.
+- *Existing source, output, process and time budgets still apply*.
+  Highlighted markup and all intermediate data consume the relevant budgets.
+
+** Decisions
+
+- Operator direction :: *Use glyphs for local folding and add code copying*.
+  The request includes Org source blocks, Markdown fenced blocks, Org inline
+  code and verbatim, and Markdown inline code.
+- Proposed display :: *Use right triangle =▸= when folded, outline down triangle
+  =▿= for children, and solid down triangle =▾= for all*. Provide an action
+  label and tooltip naming the heading and next state.
+- Proposed copy scope :: *All rendered semantic code is eligible*, including
+  raw HTML code admitted by the passive policy. Classes and IDs alone do not
+  create a copy target. This extends W001's header-only binding deliberately.
+- Proposed activation :: *Click code directly unless it is inside a link*.
+  Every nonempty target also has a small native copy-glyph button. Link code
+  uses that adjacent control, leaving the link's own click unchanged.
+- Proposed highlighting :: *Use Pandoc's internal highlighter and owned theme
+  CSS*. Missing/unknown languages and examples remain plain.
+- Authority :: These are *reviewable definition choices awaiting sign-off*,
+  not a claim of prior human approval.
+
+** Unresolved blockers
+
+- *No additional operator decision is required to review this proposal*.
+  Implementation remains gated by explicit sign-off.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:CUSTOM_ID: hands-off-mode-decision-log
+:VISIBILITY: folded
+:END:
+
+- Invocation :: *None*. Definition is attended; no delivery has started.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC002.1 - Declared languages receive highlighting
+:PROPERTIES:
+:CUSTOM_ID: ac-002-1
+:END:
+
+- Criterion :: Given a *supported language on a Markdown fence or Org source
+  block*, its preview displays language-sensitive token colouring locally.
+  At minimum Go, Lua, Bash and JSON have visible token distinctions.
+- Proven by :: [[#rt-002-1][RT002.1 - Highlighted output and literal fidelity]],
+  [[#ut-002-1][UT002.1 - Reading and outline presentation]].
+
+** AC002.2 - Literal content survives highlighting
+:PROPERTIES:
+:CUSTOM_ID: ac-002-2
+:END:
+
+- Criterion :: *Code text retains its literal value*, including tabs, Unicode,
+  blank lines, indentation and terminal newlines. Org uses the preserved body
+  with CRLF normalized to LF; Markdown uses Pandoc's parsed code value.
+  No language declaration or code delimiter appears in that value.
+- Proven by :: [[#rt-002-1][RT002.1 - Highlighted output and literal fidelity]],
+  [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
+
+** AC002.3 - Unknown or absent languages remain readable
+:PROPERTIES:
+:CUSTOM_ID: ac-002-3
+:END:
+
+- Criterion :: *Unknown/absent languages and Org example blocks remain plain,
+  faithful code*, without guessed highlighting or a failed preview.
+- Proven by :: [[#rt-002-1][RT002.1 - Highlighted output and literal fidelity]],
+  [[#ut-002-1][UT002.1 - Reading and outline presentation]].
+
+** AC002.4 - Explicit activation copies code text
+:PROPERTIES:
+:CUSTOM_ID: ac-002-4
+:END:
+
+- Criterion :: *Clicking eligible code or activating its copy button copies only
+  that target's literal value*. This covers Org inline code/verbatim, Markdown
+  inline code, and pre/code blocks. Empty code offers no enabled copy action.
+  Buttons support pointer, Enter and Space activation.
+- Proven by :: [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
+
+** AC002.5 - Selection and links retain their actions
+:PROPERTIES:
+:CUSTOM_ID: ac-002-5
+:END:
+
+- Criterion :: *Selecting text or clicking a hyperlink does not copy code*.
+  A noncollapsed selection suppresses direct-code copying. Code within a link
+  retains navigation and has a separate copy control outside the link.
+- Proven by :: [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
+
+** AC002.6 - Clipboard feedback reports the actual result
+:PROPERTIES:
+:CUSTOM_ID: ac-002-6
+:END:
+
+- Criterion :: *Copy success is shown and announced only after a successful
+  clipboard write*. Unavailable/denied access exposes the exact value in a
+  selectable readonly field with an instruction; it never reports success.
+  Loading, focusing, folding and navigation perform no automatic copy.
+- Proven by :: [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
+
+** AC002.7 - Local fold controls use accessible glyphs
+:PROPERTIES:
+:CUSTOM_ID: ac-002-7
+:END:
+
+- Criterion :: *Local heading controls display only the defined triangle glyph*,
+  without a permanent boxed text label. They retain native keyboard activation,
+  visible focus, correct expanded state and an accessible next-action name.
+  The all/folded/children cycle and global toolbar retain W001 semantics.
+- Proven by :: [[#ut-002-1][UT002.1 - Reading and outline presentation]].
+
+** AC002.8 - Reading and printing remain accessible
+:PROPERTIES:
+:CUSTOM_ID: ac-002-8
+:END:
+
+- Criterion :: *Both themes retain legible code in Iosevka Custom*, with text
+  contrast at least 4.5:1. Without JavaScript, code remains coloured/selectable
+  and the document open. Printing includes all content and source identity,
+  with copy/fold controls and status fields hidden.
+- Proven by :: [[#ut-002-1][UT002.1 - Reading and outline presentation]].
+
+** AC002.9 - Code remains passive and session-bounded
+:PROPERTIES:
+:CUSTOM_ID: ac-002-9
+:END:
+
+- Criterion :: *Highlighting and copying never execute source code or fetch
+  resources*. Source-supplied control lookalikes cannot alter clipboard payloads,
+  escape the passive-content policy or bypass existing conversion/output limits.
+- Proven by :: [[#rt-002-2][RT002.2 - Passive rendering and resource limits]],
+  [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
+
+** AC002.10 - Examples expose the intended reading experience
+:PROPERTIES:
+:CUSTOM_ID: ac-002-10
+:END:
+
+- Criterion :: *Repository examples demonstrate TODO states, priorities, tags,
+  cookies, planning, properties and logbook drawers*, together with nested
+  headings, inline code/verbatim, and labelled source blocks. A Markdown
+  companion demonstrates equivalent code-copy cases.
+- Proven by :: [[#ut-002-1][UT002.1 - Reading and outline presentation]],
+  [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT002.1 - Highlighted output and literal fidelity
+:PROPERTIES:
+:CUSTOM_ID: rt-002-1
+:END:
+
+- Covers :: [[#ac-002-1][AC002.1 - Declared languages]],
+  [[#ac-002-2][AC002.2 - Literal fidelity]],
+  [[#ac-002-3][AC002.3 - Plain fallback]].
+- Boundary :: *Existing command subprocess harness with real supported Pandoc*;
+  parse published HTML using the maintained HTML5 test helpers.
+- Setup :: *Paired Markdown/Org synthetic fixtures* for Go, Lua, Bash, JSON,
+  unknown/absent language, mixed-case Org directives and Org example blocks.
+  Include inline code/verbatim, repeated blocks, empty bodies, tabs, CRLF,
+  Unicode, HTML metacharacters, leading/trailing blank lines and EOF without LF.
+  Include literal headings, drawers, includes, export terminators and current
+  preservation-marker lookalikes; exercise an unterminated Org source block.
+- Action :: *Invoke preview on both formats* with the existing desktop capture
+  boundary, including linked Org/Markdown pages and unrelated cwd.
+- Expected :: *Known tokens receive distinct semantic span classes* and each
+  rendered code value equals its independent expected literal string.
+  Unknown/absent-language blocks stay plain. Every original final LF is present
+  for Org; Markdown matches its parsed-code fixture oracle. No transport JSON,
+  marker ID, delimiter or synthetic label leaks into the visible/copied value.
+  Existing TODO/drawer/ID assertions continue to pass.
+- Retention :: *Persistent under make test*. Write the highlighted-output case
+  first and observe its missing-token RED before implementation. Do not weaken
+  existing literal-preservation assertions to accept the writer's lost newline.
+
+** RT002.2 - Passive rendering and resource limits
+:PROPERTIES:
+:CUSTOM_ID: rt-002-2
+:END:
+
+- Covers :: [[#ac-002-9][AC002.9 - Passive rendering and resource limits]].
+- Boundary :: *Same command subprocess and published HTML*, with existing
+  process-fault/budget helpers and a local HTTP request counter.
+- Setup :: *Hostile-looking code and metadata*: script closing tags, event/style
+  attributes, clipboard classes/IDs, attempted transport metadata overrides,
+  fake internal records, language labels resembling paths/URLs, and include/
+  source-execution sentinels. Include large token-dense code within source caps.
+- Action :: *Render normally and with exhausted output/deadline budgets*.
+- Expected :: *Code stays inert text*, source files/sentinels remain unchanged,
+  no HTTP request occurs, only owned hashed CSS/JS are active, and resource
+  failures follow W001 partial-output/publication and cleanup rules. Source
+  metadata cannot select the private transport channel or a syntax file.
+- Retention :: *Persistent under make test*. Extend the existing boundary
+  fixtures rather than introducing a browser mock or a new test-only interface.
+
+** UT002.1 - Reading and outline presentation
+:PROPERTIES:
+:CUSTOM_ID: ut-002-1
+:END:
+
+- Covers :: [[#ac-002-1][AC002.1 - Declared languages]],
+  [[#ac-002-3][AC002.3 - Plain fallback]],
+  [[#ac-002-7][AC002.7 - Glyph folding]],
+  [[#ac-002-8][AC002.8 - Accessible reading and printing]],
+  [[#ac-002-10][AC002.10 - Representative examples]].
+- Reviewer :: *Operator*, on each browser environment in the
+  [[file:../001-local-document-preview/spec.org::#qualification-matrix][W001 qualification matrix]].
+- Procedure :: *Use the installed candidate through a symlink from another
+  directory* to open both repository examples in reading mode. Inspect light
+  and dark themes at 100% and 200% zoom, wide and 320-CSS-pixel narrow layouts.
+  Cycle local states on parent and leaf headings, activate all global modes,
+  follow a link into a folded section and inspect drawers. Use pointer and
+  keyboard traversal, accessibility names and an available screen reader.
+  Disable JS; inspect printing from every fold state and restoration afterwards.
+- Expected :: *Tokens, TODO states, tags and drawers remain readable*; code uses
+  the bundled Iosevka family, no icon appears as a missing glyph, and focus is
+  visible. Verify rendered foreground/background pairs meet 4.5:1.
+  Controls neither obscure code nor overflow the page; long code scrolls within
+  its block. Glyphs identify state and accessible names identify next action.
+  No-JS and print behaviour meet the stated criteria.
+- Record :: *Record revision, OS/browser/Pandoc versions and observations* in
+  =validation.org=. Missing environments remain PENDING.
+
+** UT002.2 - Clipboard interaction and fallback
+:PROPERTIES:
+:CUSTOM_ID: ut-002-2
+:END:
+
+- Covers :: [[#ac-002-2][AC002.2 - Literal fidelity]],
+  [[#ac-002-4][AC002.4 - Code copying]],
+  [[#ac-002-5][AC002.5 - Selection and links]],
+  [[#ac-002-6][AC002.6 - Honest clipboard feedback]],
+  [[#ac-002-9][AC002.9 - Passive rendering]],
+  [[#ac-002-10][AC002.10 - Representative examples]].
+- Reviewer :: *Operator*, in the same browser matrix as the presentation test.
+- Procedure :: *Activate every eligible form by pointer and keyboard*, including
+  highlighted/plain/empty/multiline code, Org verbatim, code in a heading and
+  link, special characters, tabs and final newlines. Paste into a plain-text
+  editor that can expose whitespace and compare with the fixture oracle.
+  Select/drag text, navigate links, and make repeated rapid attempts on the
+  same and different targets. Test real clipboard success, then denial or
+  unavailable API; a bounded browser-devtools stub may expose the fallback but
+  must be recorded as a stub rather than real permission evidence.
+  Navigate away/back, print, disable JS, and exercise original-header copying.
+- Expected :: *Each explicit attempt copies only its intended value once*,
+  excluding language labels, line numbers and button/status text. Link clicks
+  navigate and selection gestures do not copy. Pending writes cannot be
+  duplicated; feedback cannot migrate to another target or survive teardown.
+  Refusal leaves the exact value manually copyable. No focus stealing,
+  clipboard reads, automatic writes, new permissions or active source content.
+  Header copying still returns the original source path.
+- Record :: *Record each matrix environment, activation, pasted-value comparison
+  and failure-path observation* in =validation.org=. A fallback-only result
+  cannot pass the successful clipboard case.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** Literal boundaries and unsupported languages
+
+- Condition :: *Code contains metadata, transport lookalikes or terminal blank
+  lines*, or has an unknown language.
+- Required behaviour :: *Preserve literal text and use plain fallback* where
+  highlighting is unsupported; never interpret code as an include or filter.
+- Covered by :: [[#ac-002-2][AC002.2 - Literal fidelity]],
+  [[#ac-002-3][AC002.3 - Plain fallback]],
+  [[#rt-002-1][RT002.1 - Highlighted output and literal fidelity]],
+  [[#rt-002-2][RT002.2 - Passive rendering and resource limits]].
+
+** Interactive nesting and clipboard refusal
+
+- Condition :: *Code appears within a heading, table, link or folded section*,
+  a selection is active, or clipboard permission is unavailable.
+- Required behaviour :: *Preserve navigation and selection*, use separately
+  associated native controls and retain a manual-copy path on failure.
+- Covered by :: [[#ac-002-4][AC002.4 - Code copying]],
+  [[#ac-002-5][AC002.5 - Selection and links]],
+  [[#ac-002-6][AC002.6 - Honest clipboard feedback]],
+  [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
+
+** Repeated initialization, printing and large pages
+
+- Condition :: *Navigation restores a cached page*, printing changes visibility,
+  or the source contains many code targets.
+- Required behaviour :: *One owner manages each control and pending write*.
+  Teardown cancels handlers/timers; restoration creates no duplicates.
+  Initialization yields in bounded batches, preserving static reading.
+- Covered by :: [[#ac-002-6][AC002.6 - Honest clipboard feedback]],
+  [[#ac-002-8][AC002.8 - Accessible reading and printing]],
+  [[#ac-002-9][AC002.9 - Passive rendering and resource limits]],
+  [[#ut-002-1][UT002.1 - Reading and outline presentation]],
+  [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Relevant components :: *Go preserves lost Org values and owns sessions*;
+  Pandoc/Lua transform document structure; the HTML pipeline sanitizes and
+  publishes; owned CSS/JS provide presentation.
+- Ownership boundary :: *Pandoc owns tokenization, browser policy owns clipboard
+  permission*. The project owns text fidelity, controls and graceful failure.
+- Existing pattern :: *Retain one Pandoc conversion per document*. Replace only
+  opaque source-block HTML preservation with typed code transfer; keep drawers,
+  planning and identifier restoration in their current responsibility.
+- Rejected alternatives :: *A browser highlighter adds an unnecessary library*.
+  Per-block Pandoc processes multiply cost; a whole-document JSON round trip
+  introduces another conversion stage. Private inline data preserves the
+  existing single-converter boundary and adds no filter filesystem access.
+
+** High-level design
+
+*** Flow
+
+1. *Capture Org source text and its language* in the literal-aware pre-pass.
+   Retain the current CRLF-to-LF contract and end-of-input handling.
+2. *Serialize each source block as JSON data in an internal raw export block*.
+   Use a format name derived from the existing collision-free source prefix,
+   lowercase and absent from the entire source under case-insensitive matching.
+   Pass that exact format through an application-owned Pandoc command metadata
+   argument; source metadata must not override it. JSON encoding escapes all
+   embedded newlines, so source export terminators cannot terminate the wrapper.
+3. *Decode only that format in the owned Lua filter*, validate string text,
+   language and generated identifier fields, then create a Pandoc CodeBlock.
+   Use =pandoc.json.decode= with Pandoc-type coercion disabled. Do not read a
+   sidecar, call a process, evaluate Lua or reparse the code body. Walk the
+   document explicitly before display metadata is cleared.
+4. *Highlight with the built-in engine* using =syntax-highlighting: pygments=.
+   Capture Markdown CodeBlock values before writing as well, so the final
+   literal comparison is independent of the highlighter's emitted text.
+   Carry values through escaped, collision-free markers, not user-selected
+   clipboard attributes. Keep this transient preservation data bounded.
+5. *Restore exact code text after parsing the HTML*. Associate generated blocks
+   with their retained values before internal identifiers are removed.
+   If the only difference is one missing terminal LF, append that LF inside
+   code. If another difference occurs, retain a plain code block with the
+   original value and a bounded diagnostic; never silently corrupt it.
+   Retain token spans for successfully matched output. Exclude generated line
+   numbers from copy values; no numbering is requested by this change.
+6. *Apply the existing passive policy and publish with owned theme CSS*.
+   Then browser enhancement registers code targets and glyph controls using
+   safe DOM methods, with no new dynamic HTML sink.
+
+*** Interfaces and configuration
+
+- CLI :: *No public interface changes*. Language is the first Org source-block
+  language token or the Markdown code language class. Retain Pandoc-supported
+  language names; explicitly map =sh= and =shell= to =bash=.
+- Plain cases :: *Empty/unknown language and example blocks remain plain*.
+  Do not interpret language labels as files, URLs, commands or plugins.
+- Syntax CSS :: *Own the token palette in assets/web/preview.css*, scoped to
+  code under the document container. Set light/dark theme variables for every
+  emitted token class with a readable fallback. The existing font rules and
+  exact CSS CSP hash cover the added stylesheet. Do not load runtime theme files.
+- Copy scope :: *Enhance semantic code descendants of the owned document only*.
+  A pre/code pair is one target, not a second inline target. Copy the code
+  node's restored text content captured before controls are inserted.
+  Empty values have no enabled control; whitespace-only values remain copyable.
+- Copy affordance :: *Use a native button with a small copy glyph* and an
+  accessible name, visible focus and minimum 24 by 24 CSS-pixel target.
+  Place block controls beside the block, not inside its copied code.
+  Inline controls are adjacent; if code is inside an anchor, place the copy
+  control immediately after that anchor. Associate multiple code spans in one
+  link with separately named controls in source order.
+- Pointer handling :: *Direct code clicks copy only without a noncollapsed
+  selection and outside an interactive descendant/ancestor*. Ignore drag,
+  multi-click selection, modified clicks and empty code. The explicit copy
+  button remains an intentional copy action even with a selection elsewhere.
+- Feedback :: *Share the existing clipboard service with the source header*,
+  retaining a distinct payload and target label per activation. Allow one
+  pending write for the page; ignore further activation until it settles.
+  Call writeText synchronously during activation, announce success for two
+  seconds, and expose a readonly selectable field on rejection/unavailability.
+  Feedback is outside the copied value, labelled for the target and does not
+  move focus. Do not log or persist copied content.
+- Fold presentation :: *Keep native buttons and the existing three-state cycle*.
+  Render =▸=, =▿= and =▾= for folded, children and all, with glyph content hidden
+  from assistive naming. Names/tooltips describe the next action and heading.
+  Leaves skip children. Retain 24-pixel targets, transparent resting appearance
+  and clear hover/focus treatment. Do not replace drawer disclosure controls
+  or the global Overview/Contents/Show all toolbar.
+
+*** Data and state
+
+- Preservation :: *Keep typed code records separate from raw HTML fragments*.
+  Every record carries its literal value, language and unique association.
+  Allocate/serialize under the existing byte ceilings; no unbounded duplicate
+  document or per-block subprocess collection is introduced.
+- Browser ownership :: *One enhancement lifecycle owns controls, status,
+  listeners and timers*. Preserve pre-enhancement heading text for accessible
+  fold names so inserted copy controls cannot contaminate it.
+  Pagehide tears down all enhancements; bfcache restoration rebuilds once.
+- Static and print :: *Plain semantic code remains in generated HTML*.
+  JS only adds controls. Print hides all interactive copy/fold chrome and
+  manual fields, expands content, then restores prior outline/drawer state.
+
+*** Failure behaviour
+
+- Conversion :: *Invalid internal transport is a diagnosed conversion failure*.
+  A writer text mismatch has the exact plain-text fallback described above.
+  Unknown language alone is not an error.
+- Limits :: *Existing cancellation, publication and cleanup contracts apply*.
+  No partial page is opened. Increased token markup may consume the output
+  budget sooner; the command reports the same bounded operational failure.
+- Clipboard :: *No fallback bypasses browser policy*. Keep manual copying
+  available, never read clipboard contents and never change browser settings.
+
+** Architecture impact
+
+*** Security impact
+
+- Threat boundary :: *Source code remains untrusted text*. Private transport
+  creates CodeBlocks only; it cannot introduce executable filters, HTML or
+  filenames. Escape JSON and verify the collision-free association.
+- Data and secrets :: *Clipboard receives only an explicitly activated value*.
+  That value already appears in the preview; no clipboard reads, telemetry,
+  logging or shared cache is added.
+- Access :: *No filesystem or network authority is added*. Lua retains its
+  no-file/no-process contract; the highlighter uses installed Pandoc syntax
+  definitions. Browser activation grants only the requested clipboard write.
+- Conclusion :: *The deliberate new boundary is semantic-code copying*,
+  superseding W001's header-only handler scope while retaining passive HTML,
+  reserved chrome, exact CSP hashes and source-controlled attribute stripping.
+
+*** Other relevant qualities
+
+- Reliability :: *Literal comparisons prevent coloured-but-altered code*.
+  Existing Org metadata and link regressions protect neighbouring behaviour.
+- Performance :: *One converter remains sufficient per document*. Budget
+  transient code records and generated spans; enhance large pages in batches.
+- Operability :: *Install and rollback remain binary replacement*.
+  Documentation explains code language labels, copying, glyphs and fallback.
+- Accessibility :: *Native controls, selection and no-JS reading remain*.
+  Real-browser validation is required for clipboard policy and legibility.
+- Portability :: *The existing macOS/Linux/WSL browser matrix applies*.
+  No new runtime or browser-specific permission workaround is introduced.
+- Maintainability :: *Separate clipboard, outline and code-preservation
+  responsibilities*, using small functions and explicit state. Source CSS/JS
+  review and user tests follow W001's no-CLI-JavaScript tooling decision.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: *Read the baseline links in Authority and starting point*,
+  including W001's exact qualification matrix, literal and passive-content
+  contracts. Apply GO, LUA, JAVASCRIPT and WEB standards selected by this scope.
+- First implementation step :: *Write the known-language failure in*
+  [[#rt-002-1][RT002.1 - Highlighted output and literal fidelity]] and observe
+  missing token spans before changing production assets.
+- Definition evidence :: [[file:audits.org][W002 - Composite definition evidence]].
+- Validation evidence :: [[file:validation.org][W002 - Browser validation record]].
+- Documentation impact :: *Update README.md and docs/ARCHITECTURE.md* for code
+  copying, colouring and glyphs at delivery; add =examples/work.org= and
+  =examples/code.md= with synthetic data and no executable test hooks.
+  Preserve the earlier W001 records and its remaining qualification work.

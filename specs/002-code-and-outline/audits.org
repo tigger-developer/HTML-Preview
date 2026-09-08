@@ -1,0 +1,37 @@
+#+TITLE: W002 - Audit Evidence
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+
+* Definition gate
+
+** Local review
+:PROPERTIES:
+:ROUND: 1
+:END:
+
+- Artefact :: [[file:spec.org][W002 - Highlighted code, copying and compact fold controls]].
+- Revision :: Initial draft; checksum to be recorded before the next round.
+- Audits :: =audit-spec=, =audit-design= and =audit-test-definitions=.
+- Verdict :: FAIL.
+- Findings :: The Markdown literal-value return channel is underspecified;
+  private transport provenance needs an explicit collision-resistant boundary.
+  Direct-code double-click selection can conflict with immediate copying.
+- Steering :: During drafting, the operator replaced the triangle proposal with
+  a clickable left margin bar: thicker/bright with a bottom plus when folded,
+  normal when open, click again to close.
+- Remediation :: Specify typed return records and activation semantics; adopt
+  the operator's bar design before repeating the full local gate.
+
+** External review
+
+- Status :: Not started. One retained independent context follows local PASS.
+
+* Implementation gate
+
+** Local review
+
+- Status :: Not started. No W002 implementation is authorized by this record.
+
+** External review
+
+- Status :: Not started.
