@@ -630,4 +630,50 @@ All three component audits were applied: audit-spec, audit-design, and audit-tes
 
 * Implementation gate
 
-- Status :: Not run. Implementation is outside this definition workflow.
+- Definition-phase status :: The implementation gate was not run during
+  definition. The operator's subsequent approval admitted delivery.
+
+** Local implementation review - round 1
+:PROPERTIES:
+:CUSTOM_ID: implementation-local-1
+:ROUND: 1
+:DATE: 2026-09-08
+:CONTEXT: /root
+:END:
+
+- Gate :: Implementation, applying audit-test-code and audit-code together.
+- Revision :: =bcbb7f9=, linked previews, desktop adapters, and release packaging;
+  the complete implementation delta starts after the approved =8353c84= baseline.
+- Verdict :: *PASS*. No required correction remains in the local review.
+- Test review :: Reviewed the seventeen regression definitions against generated
+  HTML/process/filesystem assertions, retained RED/GREEN evidence, exact limits,
+  source/permission ownership, controlled WSL/process faults, staged executable
+  invocation, and the current race/static/coverage evidence. Real Pandoc handles
+  normal conversions. User tests and Homebrew remain explicitly PENDING.
+- Code review :: Reviewed input validation, rooted snapshots, direct bounded
+  child execution, publication before handoff, output retention/cleanup,
+  source URL authority and WSL translation, post-transform sanitization, owned
+  CSP/clipboard controls, Org preservation and identifier allocation, embedded
+  font/licence lookup, and packaging. Go dependencies and licences are pinned;
+  the authorized Go patch resolved the observed vulnerability results.
+- Structure review :: The ordered Org state machine and session coordinator
+  exceed the fifty-line tripwire. Their state and ownership are local and
+  phase boundaries explicit; no hidden global lifecycle is introduced. Browser
+  code scopes state/listeners to one enhancement and restores print/page state.
+- Advisory :: Actual typography, clipboard permission, print behaviour, and
+  macOS/Linux/WSL browser interoperability still require the named user tests.
+  Cross-compilation does not qualify another runtime platform. The default
+  Go coverage run misses separately invoked build processes; the recorded
+  instrumented install/release supplement provides the combined 83.4% result.
+- Evidence :: [[file:validation.org][W001 - Implementation validation evidence]].
+
+#+begin_example
+GATE: implementation
+REVISION: bcbb7f9
+VERDICT: PASS
+
+Both component audits applied: audit-test-code and audit-code.
+
+1. [audit-test-code] [ADVISORY] PLATFORM-QUALIFICATION - Native execution on the other release targets and all operator browser/Homebrew results remain pending and block closure.
+2. [audit-code] [ADVISORY] REVIEW-TRIPWIRES - The ordered Org pre-pass and session coordinator exceed the function-size tripwire; their scoped state and phase ownership are reviewed and documented.
+#+end_example
