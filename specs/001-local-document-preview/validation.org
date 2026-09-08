@@ -358,7 +358,8 @@
   integration pack passed with the race detector in 11.607 seconds; it includes
   explicit-prefix rendering, embedded assets and all four release archives.
   =make lint= passed after adding a narrow explanation for test-owned sentinel
-  reads. The full application suite remains in progress at this checkpoint.
+  reads. The full application suite was still in progress at that checkpoint;
+  the final result is recorded below.
 
 ** Installation documentation review
 
@@ -371,4 +372,36 @@
   parse the amended specification with Pandoc's Org reader.
 - Expected :: Documentation agrees with the verified installer and preserves
   the superseded default in change history. Org parsing succeeds.
-- Result :: PENDING until after implementation audit.
+- Result :: PASS after implementation audit of =a9ca66c=, user-local default link.
+- Observations :: README, Vision and Architecture distinguish the default
+  development link from explicit-prefix copying, state the checkout lifetime
+  and conflict recovery, retain Pandoc as a prerequisite, and retain embedded
+  fonts/assets. The old =/usr/local= default is explicitly superseded. The
+  README explains moving an existing link aside before copied installation.
+  =sanitize= returned identical text for all three documents and the amended
+  specification. Pandoc parsed the specification into non-empty Org-derived
+  JSON successfully. These are technical checks, not browser qualification.
+
+** Final checks after implementation PASS
+
+- Revision :: =a9ca66c9189d331a39f89a6c24228f4583efaea0=, user-local default link;
+  final records change documentation only.
+- Environment :: macOS/arm64; Go 1.26.8; tool caches and staged installations
+  use OS-temporary directories.
+- Regression :: PASS. Final =make test= runs the race-enabled suite; integration
+  passed in 12.238 seconds and the unchanged preview package reused its passing
+  182.090-second result. The explicit-prefix rendering test retained all six
+  embedded font payloads and its original-source header.
+- Static/security :: =make lint= PASS; =make vulncheck= reports no vulnerabilities.
+- Staged default installation :: PASS. Plain =make install= with only =DESTDIR=
+  creates the expected user-local symlink beneath the temporary staging root.
+  =readlink= identifies =/Users/tigger/code/tigoss/html-preview/bin/htmlpreview=;
+  invoking it from the unrelated temporary directory reports
+  =htmlpreview dev (a9ca66c9189d)=. No real home or system installation was run.
+- Evidence directory ::
+  =/var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/tmp.lDwm4K1o0Y= contains
+  =red.log=, =red-prefix.log=, =integration-final.log=, =tests-final.log=,
+  =lint-final.log=, =vulncheck.log=, =install-final.log= and the two gate results.
+- Remaining qualification :: Previously pending browser, native Linux/WSL and
+  Homebrew user/one-off checks retain their status. This installer correction
+  does not establish those results or operator closure.

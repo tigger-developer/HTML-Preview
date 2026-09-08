@@ -824,3 +824,44 @@ Both component audits were applied: audit-test-code and audit-code.
 - Operator authority :: The accepted concrete link proposal and "so fix it pls"
   remain the implementation authority; no second approval of that action is
   inferred or requested. Operator closure remains separate.
+
+** Local implementation review
+
+- Gate :: Implementation; =audit-test-code= and =audit-code= together.
+- Revision :: =a9ca66c9189d331a39f89a6c24228f4583efaea0=, user-local default link.
+- Verdict :: PASS for the installation correction.
+- Test review :: RT001.14 - Installation outside the checkout exercises the
+  public Make target, stages actual output, checks link destination and identity,
+  invokes the installed executable from an unrelated directory, and preserves
+  all four conflict types and their targets. RED/GREEN evidence is recorded.
+  Existing prefix rendering and release tests remain passing. The conflict
+  table keeps each fixture and its preservation assertions together; its
+  length is justified by those distinct filesystem object types.
+- Code review :: Default installation uses exclusive symlink creation and only
+  accepts an existing exact target. Copy installation refuses symlink files.
+  Paths remain separate Go arguments, prerequisites and assets are unchanged,
+  and no new dependency or global installation is introduced by verification.
+- Checks :: Latest full integration pack with race detection and =make lint=
+  pass. Full application tests are still running and are not reported as PASS.
+- Required corrections :: None remaining in this scoped local review.
+
+** Independent implementation review
+
+- Gate :: Implementation; =audit-test-code= and =audit-code= together.
+- Context :: =01a080a8-796f-7682-8940-22fac287b003=, configured Codex audit harness.
+- Revision :: =a9ca66c9189d331a39f89a6c24228f4583efaea0=, user-local default link.
+- Verdict :: PASS. No classified findings.
+
+#+begin_example
+GATE: implementation
+REVISION: a9ca66c9189d331a39f89a6c24228f4583efaea0
+VERDICT: PASS
+
+No classified findings.
+#+end_example
+
+- Final evidence :: The complete =make test= target passed after this verdict,
+  as did the staged default install and document review recorded in
+  [[file:validation.org][W001 - Installation and validation evidence]]. Code and
+  test files remain unchanged from the audited revision. Earlier browser and
+  native-platform qualification results remain pending; no closure is inferred.
