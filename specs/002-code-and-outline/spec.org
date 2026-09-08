@@ -2,7 +2,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PENDING
+#+DEFINITION_GATE: PASS
 #+OPERATOR_SIGNOFF: PENDING
 
 * Code highlighting, copying and document navigation
@@ -38,7 +38,7 @@
   *TOC and depth are configurable* through =HTMLPREVIEW_TOC= (default =1=)
   and =HTMLPREVIEW_TOC_DEPTH= (default =3=, valid =1= to =6=).
   *Standalone is hardcoded true*, following the operator's correction.
-- Next step :: *Audit the definition, then obtain operator sign-off* before
+- Next step :: *Definition gate passed; obtain operator sign-off* before
   implementation. Browser results remain separate human evidence.
 
 -----

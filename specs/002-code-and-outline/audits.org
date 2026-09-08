@@ -126,6 +126,25 @@
 - Remediation :: Return the exact expectation and baseline rationale to the
   retained auditor; do not adopt its suggested silent-ignore behaviour.
 
+** External review - standalone rejection accepted
+:PROPERTIES:
+:ROUND: 3
+:CONTEXT: /root/code_outline_definition_audit
+:END:
+
+- Artefact :: [[file:spec.org][W002 - Code highlighting, copying and document navigation]].
+- Revision :: SHA-256 =ee7d917fbffb02b7776020b9d8999972656b7eeffcc2ea2867dfa07ebac83cc3=,
+  at =2ca95b7=, the standalone-rejection clarification checkpoint.
+- Audits :: =audit-spec=, =audit-design= and =audit-test-definitions=, in the
+  retained =gpt-5.6-luna= context.
+- Verdict :: PASS.
+- Findings :: No required correction reported.
+- Supersedes :: External round 2 for its recorded revision. W001's
+  unknown-setting rejection remains the selected contract.
+- Recording :: Only definition-gate/summary status and the ledger lifecycle
+  changed after this verdict. Operator sign-off and browser validation remain
+  PENDING; no implementation result is inferred.
+
 * Implementation gate
 
 ** Local review
