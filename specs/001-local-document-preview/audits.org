@@ -438,6 +438,60 @@ VERDICT: PASS
 - Retained context :: =/root/definition_audit=, with the configured eight-minute
   timeout. Review only this amendment and enough adjacent material to assess it.
 
+** External review - Round 3: desktop platform definition PASS
+:PROPERTIES:
+:CUSTOM_ID: definition-external-3
+:ROUND: 3
+:DATE: 2026-09-08
+:CONTEXT: /root/definition_audit
+:END:
+
+- Gate :: Definition.
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =bdd95bb5bd2d08d418a958bccf0a2d82a9d3c6454d8b24072c33a0e22d7186c7=,
+  committed as =7e3d2a5=.
+- Context :: *The same retained Codex gpt-5.6-luna reviewer*, applying
+  audit-spec, audit-design, and audit-test-definitions together. No drafting
+  conversation or local verdict rationale was supplied.
+- Start :: 2026-09-08 00:21:40 UTC; the verdict returned within the configured
+  eight-minute timeout.
+- Verdict :: *PASS with one new operational advisory*. No required correction
+  remains for this amendment.
+
+#+begin_example
+GATE: definition
+REVISION: bdd95bb5bd2d08d418a958bccf0a2d82a9d3c6454d8b24072c33a0e22d7186c7
+VERDICT: PASS
+
+All three component audits were applied: audit-spec, audit-design, and audit-test-definitions.
+
+1. [audit-test-definitions] [ADVISORY] PLATFORM-MATRIX-EXECUTION - RT001.14 requires native regression on all four release targets while the specification does not define how unavailable target environments are scheduled or recorded beyond the separate pending UT matrix (spec.org:936-959, 1468-1486). This is an operational planning advisory and does not block definition sign-off.
+#+end_example
+
+- Review scope :: The reviewer confirmed *traceability through the authorities,
+  criteria, regression definitions, and pending user tests*. Linux admission
+  remains separate from WSL URL conversion; helper calls are bounded; unsafe
+  paths are rejected; private output and the four release targets are explicit.
+  No implementation or platform execution evidence was inferred.
+- Advisory disposition :: *Plan native target availability during delivery*;
+  unavailable environments cannot be reported as executed. The earlier file-mode
+  assertion and timing-tolerance advisories remain visible in their original
+  records. No material specification correction followed this verdict.
+- Effective gate :: *Definition PASS is recorded*; operator sign-off remains
+  PENDING and the work item remains REVIEW. Only the gate field changes after
+  the audited revision. Browser, installation, and application tests remain
+  unexecuted.
+- Documentation receipt :: *249 local links resolve* across the five changed
+  documents. Template, reciprocal traceability, parsing, and sanitizer checks
+  are document evidence, not application validation.
+- Asset boundary :: *The unexpected empty working-tree bold-italic file remains
+  preserved and unresolved*. This audit makes no working-tree font-integrity
+  claim and does not amend the earlier committed-asset evidence.
+- Presentation :: *sdlc-preview reported opening the updated specification*.
+  Its adjacent generated HTML remained after handoff and was moved to this
+  amendment's unique OS-temporary scratch directory. This is presentation
+  evidence, not human inspection or application browser validation.
+
 * Implementation gate
 
 - Status :: Not run. Implementation is outside this definition workflow.
