@@ -51,8 +51,9 @@ from the project's Apache 2.0 licence. The licence does not impose OFL on the
 documents displayed with these fonts. Consult the retained licence for its
 full terms, including modification and standalone-sale conditions.
 
-The intended build embeds both files and their notice in the executable. The
-renderer should include the font bytes as WOFF2 data URLs in its CSS and the
-full copyright/licence text in readable generated HTML source. Release packages
-must also carry the notice and licence. No runtime font download is required
-by this design; renderer integration remains to be implemented.
+The build embeds both files and their notice in the executable. The renderer
+includes the font bytes as WOFF2 data URLs in CSS and the full copyright/licence
+text in readable generated HTML source. Release archives carry the notice and
+licence. The initial import preceded renderer integration; the current regression
+checks verify payload hashes and declarations. Browser face selection remains
+a separate pending user test.

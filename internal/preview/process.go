@@ -93,6 +93,7 @@ func runProcess(ctx context.Context, request Command) ([]byte, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	output := processOutput{remaining: request.Limit, cancel: cancel}
+	// #nosec G204 -- Executables are resolved during preflight; source data stays in direct argv or stdin.
 	cmd := exec.CommandContext(ctx, request.Path, request.Args...)
 	cmd.Dir = request.Dir
 	cmd.Stdin = bytes.NewReader(request.Input)

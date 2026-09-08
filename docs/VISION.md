@@ -1,8 +1,10 @@
 # Vision
 
-**Status:** Initial product direction. Go is selected; linked-document browsing
-remains a proposed extension. This document describes intended behaviour, not
-an implemented release.
+**Status:** Product direction approved on 8 September 2026 through
+[the local-preview specification](../specs/001-local-document-preview/spec.org).
+That approval includes opt-in linked browsing. Implementation and verification
+are in progress; the proposal wording below records the design's development
+and does not establish release qualification.
 
 ## Purpose
 

@@ -1,11 +1,34 @@
 # Architecture
 
-**Status:** Initial design. Go and temporary-directory output are selected.
-Detailed interfaces, cleanup defaults, traversal limits, and release packaging
-below are proposals for the implementation specification. No implementation or
-browser compatibility is established by this document.
+**Status:** Design adopted through
+[the approved local-preview specification](../specs/001-local-document-preview/spec.org)
+on 8 September 2026. Implementation and verification are in progress. Earlier
+proposal wording below is retained as design history; the specification supplies
+the exact adopted contracts. Browser and release qualification require the
+separate validation record.
 
 ## System shape
+
+The implementation uses `cmd/htmlpreview`, `internal/preview`, a root Go asset
+bundle, and `internal/buildtool` for build/package tasks. Editable presentation
+sources live under `assets/web`; owned Pandoc defaults and Lua live under
+`assets/pandoc`. The prototype remains an assessment reference and is not a
+runtime dependency.
+
+The reviewed delivery toolchain is Go 1.26.8. This uses the specification's
+permission to select a compatible patch after the initial 1.26.3 baseline.
+The first vulnerability scan reported standard-library findings involving
+`os.Root`, `html/template`, and network packages; the scan with 1.26.8 reported
+no vulnerabilities. The [Go release history](https://go.dev/doc/devel/release)
+records the relevant security and correctness updates. This selection changes
+the build baseline, not the runtime dependency contract.
+
+Direct dependencies are `golang.org/x/net` 0.58.0 for HTML5 parsing and
+`github.com/microcosm-cc/bluemonday` 1.0.27 for allowlist sanitization. The
+standard library has no equivalent parser/sanitizer. Their module checksums are
+tracked; the two transitive CSS-parser dependencies and their licences are
+recorded in [the notices](../THIRD_PARTY_NOTICES.md). No source CSS is enabled
+merely because the sanitizer contains a CSS parser.
 
 `htmlpreview` is a local Go command-line application that uses Pandoc to render
 Markdown and Org as HTML, repairs references for temporary output, and opens
@@ -351,7 +374,7 @@ Pandoc is a separately managed runtime dependency; the Go
 toolchain is needed only to build from source. Check compatibility before
 creating output and give an actionable dependency error.
 
-A macOS Homebrew formula declaring Pandoc is the proposed package-manager route.
+A macOS Homebrew formula declaring Pandoc is the selected package-manager route.
 This provides dependency installation through the package manager rather than
 download or installation during previewing. A prefix-based binary installation
 serves macOS, Linux, and WSL, with Pandoc provisioned separately and checked by
@@ -368,8 +391,8 @@ an additional PowerShell distribution is installed for normal use.
 The tool does not publish documents or widen file permissions. Temporary-directory
 isolation protects generated-file placement; it does not sanitize source HTML
 or sandbox Pandoc. Raw HTML, Org includes, document metadata that names external
-resources, and source-supplied scripts need an explicit trust policy before
-implementation. Graph limits must not be presented as limits on those separate
+resources, and source-supplied scripts follow the signed-off passive-content
+policy. Graph limits must not be presented as limits on those separate
 mechanisms. The template itself needs no network resources.
 
 ## Verification and remaining decisions
@@ -389,8 +412,22 @@ navigation, fragments inside folded sections, keyboard use, both themes, print
 layout, and a deliberately slow browser launch. No browser harness is selected
 by this document.
 
-Before implementation, specify the public settings and help, input dialects,
-supported Pandoc and platform versions, cleanup interaction, raw HTML/CSS and
-include policy, symlink semantics, and whether linked browsing is in the first
-release. The numeric limits above and Homebrew packaging remain proposals;
-the selected Go stack and temporary-directory direction do not depend on them.
+The initial architecture left public settings, dialects, supported versions,
+cleanup, passive content, aliases, traversal limits, and packaging for definition.
+The signed-off W001 specification now defines these contracts. Its approved
+defaults govern the implementation; the initial proposals remain in Git history.
+
+The regression suite uses real Pandoc and synthetic documents. Most command
+cases run the same command coordinator in a subprocess with controlled OS
+boundaries. An additional staged-install regression uses Go's file overlay to
+replace only the native desktop adapter at the actual executable entry point;
+it then installs and invokes that executable through a symlink from an unrelated
+directory. Ordinary builds include no overlay or public browser override.
+Actual browser handoff, clipboard permission, typography, and Linux/WSL host
+qualification remain distinct user tests.
+
+Source-controlled warnings have a 64 KiB allowance with an omission message;
+lifecycle failures and the retained-session path use separate diagnostics.
+Long functions in the Org pre-pass and session coordinator retain one ordered
+state transition per phase. Their size is a review concern, not a reason to
+split context-sensitive preservation or cleanup ownership across hidden globals.

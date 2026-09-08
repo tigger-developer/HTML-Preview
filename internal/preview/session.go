@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/net/html"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -71,20 +72,25 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 		log.warn("session is not owner-private: %q", path)
 		return 1
 	}
-	if desktop.wsl {
-		log.warn("WSL temporary-directory validation is not implemented")
+	conversion, cancel := context.WithTimeout(ctx, cfg.deadline)
+	defer cancel()
+	if err := desktop.prepare(conversion, path); err != nil {
+		log.warn("temporary-directory translation: %v", err)
 		return 1
 	}
 	if err := s.extract(); err != nil {
 		log.warn("prepare session: %v", err)
 		return 1
 	}
-	conversion, cancel := context.WithTimeout(ctx, cfg.deadline)
 	for _, src := range sources {
 		s.admit(src)
 	}
-	for _, p := range s.pages {
+	for i := 0; i < len(s.pages); i++ {
+		p := s.pages[i]
 		s.convert(conversion, p)
+		if cfg.links && p.ready && conversion.Err() == nil {
+			s.discover(p)
+		}
 	}
 	cancel()
 	if ctx.Err() != nil {
@@ -228,6 +234,13 @@ func (s *session) admit(src sourceContext) *page {
 }
 
 func (s *session) convert(ctx context.Context, p *page) {
+	if err := ctx.Err(); err != nil {
+		s.log.warn("source %q: conversion deadline or cancellation", p.source.logical)
+		if p.source.explicit {
+			s.status = 1
+		}
+		return
+	}
 	limit := min(s.cfg.sourceBytes, s.cfg.totalBytes-s.sourceUsed)
 	data, err := snapshot(p.source, limit)
 	if err == nil {
@@ -255,6 +268,10 @@ func (s *session) publish(ctx context.Context) error {
 			return err
 		}
 	}
+	outputs, err := s.planOutput(ctx)
+	if err != nil {
+		return err
+	}
 	for _, p := range s.pages {
 		if !p.ready {
 			continue
@@ -262,16 +279,65 @@ func (s *session) publish(ctx context.Context) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		if err := s.resolve(ctx, p); err != nil {
-			return err
-		}
-		data, err := s.document(p)
-		if err != nil {
-			return err
-		}
-		if err := s.write(p.name, data); err != nil {
+		if err := s.write(p.name, outputs[p]); err != nil {
 			return err
 		}
 	}
 	return ctx.Err()
+}
+
+func (s *session) planOutput(ctx context.Context) (map[*page][]byte, error) {
+	original := make(map[*page]*html.Node)
+	for _, p := range s.pages {
+		if p.ready {
+			original[p] = p.dom
+		}
+	}
+	for {
+		outputs := make(map[*page][]byte)
+		remaining := s.cfg.outputBytes - s.used
+		retry := false
+		for i, p := range s.pages {
+			if !p.ready {
+				continue
+			}
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+			p.dom = cloneTree(original[p])
+			if err := s.resolve(ctx, p); err != nil {
+				return nil, err
+			}
+			data, err := s.document(p)
+			if err != nil {
+				return nil, err
+			}
+			if int64(len(data)) > remaining {
+				for _, skipped := range s.pages[i:] {
+					if skipped.ready {
+						skipped.ready = false
+						s.log.warn("source %q: HTMLPREVIEW_MAX_OUTPUT_BYTES exhausted", skipped.source.logical)
+						if skipped.source.explicit {
+							s.status = 1
+						}
+					}
+				}
+				retry = true
+				break
+			}
+			outputs[p] = data
+			remaining -= int64(len(data))
+		}
+		if !retry {
+			return outputs, nil
+		}
+	}
+}
+
+func cloneTree(n *html.Node) *html.Node {
+	copy := &html.Node{Type: n.Type, DataAtom: n.DataAtom, Data: n.Data, Namespace: n.Namespace, Attr: append([]html.Attribute(nil), n.Attr...)}
+	for child := n.FirstChild; child != nil; child = child.NextSibling {
+		copy.AppendChild(cloneTree(child))
+	}
+	return copy
 }

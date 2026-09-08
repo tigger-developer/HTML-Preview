@@ -1,0 +1,17 @@
+# ABOUTME: Applies the selected Go correctness and security analysis rules.
+# ABOUTME: Findings remain failures unless a specific reviewed exception applies.
+run:
+  timeout: 5m
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - staticcheck
+    - govet
+    - bodyclose
+    - gosec
+    - unused
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

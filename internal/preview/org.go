@@ -42,9 +42,21 @@ func preserveOrg(data []byte) preservation {
 		line := lines[i]
 		trim := strings.TrimSpace(line)
 		upper := strings.ToUpper(trim)
-		if strings.HasPrefix(upper, "#+BEGIN_SRC") || strings.HasPrefix(upper, "#+BEGIN_EXAMPLE") {
+		if block != "" {
+			out.WriteString(line)
+			if strings.EqualFold(trim, "#+END_"+block) {
+				block = ""
+			}
+			continue
+		}
+		fields := strings.Fields(upper)
+		directive := ""
+		if len(fields) > 0 {
+			directive = fields[0]
+		}
+		if directive == "#+BEGIN_SRC" || directive == "#+BEGIN_EXAMPLE" {
 			kind := "SRC"
-			if strings.HasPrefix(upper, "#+BEGIN_EXAMPLE") {
+			if directive == "#+BEGIN_EXAMPLE" {
 				kind = "EXAMPLE"
 			}
 			var literal strings.Builder
@@ -57,18 +69,8 @@ func preserveOrg(data []byte) preservation {
 			out.WriteString(marker("<pre><code>" + html.EscapeString(literal.String()) + "</code></pre>"))
 			continue
 		}
-		if block != "" {
-			out.WriteString(line)
-			if strings.EqualFold(trim, "#+END_"+block) {
-				block = ""
-			}
-			continue
-		}
-		if strings.HasPrefix(upper, "#+BEGIN_") {
-			fields := strings.Fields(strings.TrimPrefix(upper, "#+BEGIN_"))
-			if len(fields) > 0 {
-				block = fields[0]
-			}
+		if directive == "#+BEGIN_COMMENT" || directive == "#+BEGIN_EXPORT" {
+			block = strings.TrimPrefix(directive, "#+BEGIN_")
 			out.WriteString(line)
 			continue
 		}
@@ -143,7 +145,8 @@ func preserveOrg(data []byte) preservation {
 		}
 		out.WriteString(line)
 	}
-	p.text = out.String()
+	// Pandoc's Org reader otherwise turns headings beyond its H limit into lists.
+	p.text = out.String() + "\n#+OPTIONS: H:100000\n"
 	return p
 }
 

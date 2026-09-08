@@ -7,7 +7,9 @@ local function mark_inlines(inlines)
     local item = inlines[i]
     if item.t == "Str" and item.text:match("^%[#%w%]$") then
       out:insert(pandoc.Span({ item }, pandoc.Attr("", { "priority" })))
-    elseif item.t == "Str" and (item.text:match("^%[%d*/%d*%]") or item.text:match("^%[%d+%%%]")) then
+    elseif
+      item.t == "Str" and (item.text:match("^%[%d*/%d*%]") or item.text:match("^%[%d+%%%]"))
+    then
       out:insert(pandoc.Span({ item }, pandoc.Attr("", { "cookie" })))
     elseif item.t == "Str" and item.text:match("^[<%[]%d%d%d%d%-%d%d%-%d%d") then
       local close = item.text:sub(1, 1) == "<" and ">" or "]"
@@ -16,16 +18,25 @@ local function mark_inlines(inlines)
       local found = false
       while last <= #inlines do
         local part = inlines[last]
-        if part.t ~= "Str" and part.t ~= "Space" then break end
+        if part.t ~= "Str" and part.t ~= "Space" then
+          break
+        end
         parts:insert(part)
-        if part.t == "Str" and part.text:find(close, 1, true) then found = true; break end
+        if part.t == "Str" and part.text:find(close, 1, true) then
+          found = true
+          break
+        end
         last = last + 1
       end
       if found then
         out:insert(pandoc.Span(parts, pandoc.Attr("", { "timestamp" })))
         i = last
-      else out:insert(item) end
-    else out:insert(item) end
+      else
+        out:insert(item)
+      end
+    else
+      out:insert(item)
+    end
     i = i + 1
   end
   return out

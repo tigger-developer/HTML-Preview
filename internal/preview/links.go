@@ -19,6 +19,36 @@ type reference struct {
 	local            bool
 }
 
+func (s *session) discover(p *page) {
+	for n := range p.dom.Descendants() {
+		if n.Type != html.ElementNode || n.Data != "a" || p.resourceLinks[n] {
+			continue
+		}
+		r, err := parseReference(attribute(n, "href"), filepath.Dir(p.source.logical))
+		if err != nil || !r.local || !supported(r.path) {
+			continue
+		}
+		src, err := identify(r.path, p.source.root)
+		if err != nil {
+			s.log.notice("%q: linked target skipped %q: %v", p.source.logical, r.path, err)
+			continue
+		}
+		if _, exists := s.byKey[src.key]; exists {
+			continue
+		}
+		if src.device != p.source.device {
+			s.log.notice("%q: linked target is on another filesystem %q", p.source.logical, r.path)
+			continue
+		}
+		if p.source.depth >= s.cfg.depth || int64(len(s.pages)) >= s.cfg.files {
+			s.log.notice("%q: linked target exceeds depth/count limit %q", p.source.logical, r.path)
+			continue
+		}
+		src.depth = p.source.depth + 1
+		s.admit(src)
+	}
+}
+
 func parseReference(value, parent string) (reference, error) {
 	r := reference{}
 	if strings.HasPrefix(value, "id:") {
@@ -96,7 +126,7 @@ func (s *session) resolve(ctx context.Context, p *page) error {
 				removeAttribute(n, "src")
 				setAttribute(n, "href", value)
 				n.AppendChild(nodeText("[Remote image: " + attribute(n, "alt") + "]"))
-				s.log.warn("%q: remote image retained as a link", p.source.logical)
+				s.log.notice("%q: remote image retained as a link", p.source.logical)
 			} else {
 				s.inactive(p, n, key, "unsupported image reference")
 			}
@@ -123,7 +153,7 @@ func (s *session) resolve(ctx context.Context, p *page) error {
 				continue
 			}
 			if _, err := os.Stat(r.path); err != nil {
-				s.log.warn("%q: missing or unavailable target %q", p.source.logical, r.path)
+				s.log.notice("%q: missing or unavailable target %q", p.source.logical, r.path)
 			}
 		}
 		u, err := url.Parse(destination)
@@ -211,5 +241,9 @@ func (s *session) explain(p *page, n *html.Node, reason string) {
 	if n.Parent != nil {
 		n.Parent.InsertBefore(label, n.NextSibling)
 	}
-	s.log.warn("%q: %s", p.source.logical, reason)
+	diagnostic := reason
+	if strings.HasPrefix(reason, "Org search not resolved:") {
+		diagnostic = "Org search not resolved"
+	}
+	s.log.notice("%q: %s", p.source.logical, diagnostic)
 }

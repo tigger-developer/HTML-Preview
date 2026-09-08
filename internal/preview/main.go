@@ -40,6 +40,25 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 type console struct {
 	out, diagnostics io.Writer
 	failed           bool
+	warningBytes     int
+	warningsOmitted  bool
+}
+
+// Source-controlled warnings have a separate allowance so lifecycle failures
+// and the retained-session path always remain visible.
+func (c *console) notice(format string, args ...any) {
+	const allowance = 64 * 1024
+	if c.warningsOmitted {
+		return
+	}
+	message := fmt.Sprintf(format, args...)
+	if c.warningBytes+len(message)+14 > allowance {
+		c.warningsOmitted = true
+		c.warn("further source warnings omitted")
+		return
+	}
+	c.warningBytes += len(message) + 14
+	c.warn("%s", message)
 }
 
 func (c *console) warn(format string, args ...any) {

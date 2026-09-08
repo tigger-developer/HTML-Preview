@@ -15,8 +15,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -25,34 +27,145 @@ type handoff struct {
 	URL                     string
 	Path                    string
 	DirectoryMode, FileMode uint32
+	Tool                    string
+	CompletedAt             int64
 }
 
 func TestMain(m *testing.M) {
+	if len(os.Args) > 1 && os.Args[1] == "--process-blocker" {
+		for {
+			time.Sleep(time.Hour)
+		}
+	}
+	if len(os.Args) > 1 && os.Args[1] == "--process-flood" {
+		for {
+			if _, err := os.Stdout.Write(bytes.Repeat([]byte("x"), 4096)); err != nil {
+				os.Exit(1)
+			}
+		}
+	}
 	if os.Getenv("PREVIEW_TEST_CHILD") != "1" {
 		os.Exit(m.Run())
 	}
 	host := NativeHost()
+	wsl := os.Getenv("PREVIEW_TEST_PLATFORM") == "wsl"
+	if wsl {
+		host.OS = "linux"
+		host.Kernel = func() (string, error) { return "microsoft-standard-WSL2", nil }
+		look := host.LookPath
+		host.LookPath = func(name string) (string, error) {
+			if name == "wslpath" || name == "powershell.exe" {
+				return "/tools/" + name, nil
+			}
+			return look(name)
+		}
+	}
+	fault := os.Getenv("PREVIEW_TEST_FAULT")
+	remove := host.Remove
+	host.Remove = func(path string) error {
+		if err := os.WriteFile(filepath.Join(os.Getenv("PREVIEW_TEST_CAPTURE"), "cleanup-time"), []byte(strconv.FormatInt(time.Now().UnixNano(), 10)), 0600); err != nil {
+			return err
+		}
+		return remove(path)
+	}
+	if fault == "cleanup" {
+		host.Remove = func(string) error { return fmt.Errorf("forced cleanup failure") }
+	}
+	write := host.Write
+	host.Write = func(path string, data []byte) error {
+		if fault == "publication-timeout" && strings.HasSuffix(path, "0001.html") {
+			time.Sleep(5100 * time.Millisecond)
+		}
+		if fault == "publication" && strings.HasSuffix(path, "0002.html") {
+			return fmt.Errorf("forced publication failure")
+		}
+		return write(path, data)
+	}
 	actual := host.Execute
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
-		if filepath.Base(cmd.Path) != "open" && filepath.Base(cmd.Path) != "xdg-open" {
+		if filepath.Base(cmd.Path) == "wslpath" {
+			if len(cmd.Args) != 2 {
+				return nil, fmt.Errorf("translation needs one path")
+			}
+			if fault == "page-translation" && strings.HasSuffix(cmd.Args[1], "0002.html") {
+				return nil, fmt.Errorf("forced page translation failure")
+			}
+			if cmd.Args[0] == "-w" {
+				return []byte(`\\wsl.localhost\Ubuntu` + strings.ReplaceAll(cmd.Args[1], "/", `\`)), nil
+			}
+			return []byte(strings.ReplaceAll(strings.TrimPrefix(cmd.Args[1], `\\wsl.localhost\Ubuntu`), `\`, "/")), nil
+		}
+		if filepath.Base(cmd.Path) == "pandoc" {
+			if len(cmd.Args) == 1 && cmd.Args[0] == "--version" {
+				if fault == "preflight-stall" || fault == "preflight-flood" {
+					exe, err := os.Executable()
+					if err != nil {
+						return nil, err
+					}
+					cmd.Path = exe
+					cmd.Args = []string{"--process-blocker"}
+					if fault == "preflight-flood" {
+						cmd.Args = []string{"--process-flood"}
+					}
+				}
+				if version := os.Getenv("PREVIEW_TEST_PANDOC_VERSION"); version != "" {
+					return []byte("pandoc " + version + "\nScripting engine: Lua 5.4\n"), nil
+				}
+			} else if fault == "converter-stall" || fault == "converter-flood" || fault == "converter-signal" {
+				exe, err := os.Executable()
+				if err != nil {
+					return nil, err
+				}
+				cmd.Path = exe
+				cmd.Input = nil
+				cmd.Args = []string{"--process-blocker"}
+				if fault == "converter-flood" {
+					cmd.Args = []string{"--process-flood"}
+				}
+				if fault == "converter-signal" {
+					go func() {
+						time.Sleep(100 * time.Millisecond)
+						p, err := os.FindProcess(os.Getpid())
+						if err == nil {
+							if err = p.Signal(os.Interrupt); err != nil {
+								os.Exit(99)
+							}
+						} else {
+							os.Exit(99)
+						}
+					}()
+				}
+			}
+		}
+		if filepath.Base(cmd.Path) != "open" && filepath.Base(cmd.Path) != "xdg-open" && filepath.Base(cmd.Path) != "powershell.exe" {
 			return actual(ctx, cmd)
 		}
-		if len(cmd.Args) != 1 {
+		if !wsl && len(cmd.Args) != 1 {
 			return nil, fmt.Errorf("opener must receive one URL")
 		}
-		u, err := url.Parse(cmd.Args[0])
+		value := ""
+		if wsl {
+			value = string(cmd.Input)
+		} else {
+			value = cmd.Args[0]
+		}
+		u, err := url.Parse(value)
 		if err != nil {
 			return nil, err
 		}
-		st, err := os.Stat(u.Path)
+		path := u.Path
+		if wsl {
+			path = strings.TrimPrefix(path, "/Ubuntu")
+		}
+		st, err := os.Stat(path)
 		if err != nil {
 			return nil, err
 		}
-		dir, err := os.Stat(filepath.Dir(u.Path))
+		dir, err := os.Stat(filepath.Dir(path))
 		if err != nil {
 			return nil, err
 		}
-		entries, err := os.ReadDir(filepath.Dir(u.Path))
+		entries, err := os.ReadDir(filepath.Dir(path))
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +173,7 @@ func TestMain(m *testing.M) {
 			if filepath.Ext(entry.Name()) != ".html" {
 				continue
 			}
-			data, err := os.ReadFile(filepath.Join(filepath.Dir(u.Path), entry.Name()))
+			data, err := os.ReadFile(filepath.Join(filepath.Dir(path), entry.Name()))
 			if err != nil {
 				return nil, err
 			}
@@ -72,7 +185,7 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			return nil, err
 		}
-		err = json.NewEncoder(f).Encode(handoff{cmd.Args[0], u.Path, uint32(dir.Mode().Perm()), uint32(st.Mode().Perm())})
+		err = json.NewEncoder(f).Encode(handoff{URL: value, Path: path, DirectoryMode: uint32(dir.Mode().Perm()), FileMode: uint32(st.Mode().Perm()), Tool: cmd.Path, CompletedAt: time.Now().UnixNano()})
 		closeErr := f.Close()
 		if err != nil {
 			return nil, err
@@ -94,6 +207,47 @@ type result struct {
 	pages          []*html.Node
 	raw            []string
 	opens          []handoff
+	cleanedAt      int64
+	liveRead       bool
+}
+
+type retentionWriter struct {
+	output   io.Writer
+	process  **os.Process
+	observed *bool
+}
+
+func (w retentionWriter) Write(p []byte) (int, error) {
+	n, err := w.output.Write(p)
+	if strings.Contains(string(p), "reading session") {
+		value := strings.TrimPrefix(string(p), "htmlpreview: reading session ")
+		quoted, _, _ := strings.Cut(value, "; press")
+		path, parseErr := strconv.Unquote(quoted)
+		if parseErr != nil {
+			return n, parseErr
+		}
+		time.Sleep(250 * time.Millisecond)
+		entries, readErr := os.ReadDir(path)
+		if readErr != nil {
+			return n, readErr
+		}
+		for _, entry := range entries {
+			if filepath.Ext(entry.Name()) == ".html" {
+				// #nosec G304 -- Path is emitted by this test's owned preview session.
+				data, readErr := os.ReadFile(filepath.Join(path, entry.Name()))
+				if readErr != nil {
+					return n, readErr
+				}
+				if len(data) > 0 {
+					*w.observed = true
+				}
+			}
+		}
+		if signalErr := (*w.process).Signal(os.Interrupt); signalErr != nil {
+			return n, signalErr
+		}
+	}
+	return n, err
 }
 
 func source(t *testing.T, root, name, content string) string {
@@ -115,6 +269,7 @@ func run(t *testing.T, root string, settings []string, args ...string) result {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// #nosec G204 -- Executes this test binary with synthetic CLI fixture arguments.
 	cmd := exec.Command(exe, args...)
 	cmd.Dir = root
 	for _, v := range os.Environ() {
@@ -122,12 +277,24 @@ func run(t *testing.T, root string, settings []string, args ...string) result {
 			cmd.Env = append(cmd.Env, v)
 		}
 	}
-	cmd.Env = append(cmd.Env, "PWD="+root, "PREVIEW_TEST_CHILD=1", "PREVIEW_TEST_CAPTURE="+capture, "HTMLPREVIEW_GRACE=100ms")
+	cmd.Env = append(cmd.Env, "TMPDIR="+t.TempDir(), "PWD="+root, "PREVIEW_TEST_CHILD=1", "PREVIEW_TEST_CAPTURE="+capture, "HTMLPREVIEW_GRACE=100ms")
 	cmd.Env = append(cmd.Env, settings...)
 	var stdout, stderr bytes.Buffer
-	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	liveRead := false
+	cmd.Stdout, cmd.Stderr = &stdout, retentionWriter{&stderr, &cmd.Process, &liveRead}
+	cmd.WaitDelay = time.Second
 	err = cmd.Run()
-	r := result{stdout: stdout.String(), stderr: stderr.String()}
+	r := result{stdout: stdout.String(), stderr: stderr.String(), liveRead: liveRead}
+	// #nosec G304 -- Timestamp is written by the test-owned cleanup observer.
+	stamp, stampErr := os.ReadFile(filepath.Join(capture, "cleanup-time"))
+	if stampErr == nil {
+		r.cleanedAt, stampErr = strconv.ParseInt(string(stamp), 10, 64)
+		if stampErr != nil {
+			t.Fatal(stampErr)
+		}
+	} else if !os.IsNotExist(stampErr) {
+		t.Fatal(stampErr)
+	}
 	if err != nil {
 		if exit, ok := err.(*exec.ExitError); ok {
 			r.code = exit.ExitCode()
@@ -135,6 +302,7 @@ func run(t *testing.T, root string, settings []string, args ...string) result {
 			t.Fatal(err)
 		}
 	}
+	// #nosec G304 -- Capture is allocated by t.TempDir and contains only this subprocess evidence.
 	f, err := os.Open(filepath.Join(capture, "opens.jsonl"))
 	if err == nil {
 		decoder := json.NewDecoder(f)
@@ -161,6 +329,7 @@ func run(t *testing.T, root string, settings []string, args ...string) result {
 	}
 	for _, entry := range entries {
 		if filepath.Ext(entry.Name()) == ".html" {
+			// #nosec G304 -- Entry names come from the test-owned capture directory.
 			data, err := os.ReadFile(filepath.Join(capture, entry.Name()))
 			if err != nil {
 				t.Fatal(err)
@@ -248,10 +417,12 @@ func TestRT001_2_Ownership(t *testing.T) {
 	root := t.TempDir()
 	path := source(t, root, "readonly/doc.md", "unchanged")
 	sentinel := source(t, root, "sentinel/keep.txt", "keep")
+	// #nosec G302 -- This is a directory; owner traversal is required for the read-only fixture.
 	if err := os.Chmod(filepath.Dir(path), 0500); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
+		// #nosec G302 -- Restores owner traversal/write on the test-owned directory for cleanup.
 		if err := os.Chmod(filepath.Dir(path), 0700); err != nil {
 			t.Error(err)
 		}
@@ -267,9 +438,16 @@ func TestRT001_2_Ownership(t *testing.T) {
 		}
 	}
 	for p, want := range map[string]string{path: "unchanged", sentinel: "keep"} {
+		// #nosec G304 -- Paths are the fixed source and sentinel created by this test.
 		got, err := os.ReadFile(p)
 		if err != nil || string(got) != want {
 			t.Fatalf("source changed: %s", p)
+		}
+	}
+	for path, mode := range map[string]os.FileMode{path: 0600, filepath.Dir(path): 0500} {
+		st, err := os.Stat(path)
+		if err != nil || st.Mode().Perm() != mode {
+			t.Fatalf("source permissions changed: %s", path)
 		}
 	}
 }
@@ -289,6 +467,25 @@ func TestRT001_3_Markdown(t *testing.T) {
 	}
 	if !strings.Contains(textOf(nodes(r.pages[0], "pre")[0]), "\ttabbed") {
 		t.Fatal("literal tab changed")
+	}
+	if textOf(nodes(r.pages[0], "blockquote")[0]) != "\nQuote\n" || textOf(nodes(r.pages[0], "em")[0]) != "emphasis" {
+		t.Fatal("quotation or emphasis text changed")
+	}
+	if len(nodes(nodes(r.pages[0], "ul")[0], "ul")) != 1 || len(nodes(nodes(r.pages[0], "table")[0], "tr")) != 2 {
+		t.Fatal("nested list or table relationships changed")
+	}
+	footnote := false
+	for _, a := range nodes(r.pages[0], "a") {
+		if attr(a, "href") == "#fn1" {
+			for n := range r.pages[0].Descendants() {
+				if attr(n, "id") == "fn1" && strings.Contains(textOf(n), "Note") {
+					footnote = true
+				}
+			}
+		}
+	}
+	if !footnote {
+		t.Fatal("footnote reference lost its local destination and text")
 	}
 }
 
@@ -321,6 +518,23 @@ func TestRT001_5_FontPayloads(t *testing.T) {
 	r := run(t, root, nil, p)
 	success(t, r, 1)
 	fonts := regexp.MustCompile(`data:font/woff2;base64,([A-Za-z0-9+/=]+)`).FindAllStringSubmatch(r.raw[0], -1)
+	declarations := regexp.MustCompile(`@font-face\{([^}]+)\}`).FindAllStringSubmatch(r.raw[0], -1)
+	wantDeclarations := []string{
+		`font-family:"Asap";font-style:normal;font-weight:100 900;font-stretch:75% 125%`,
+		`font-family:"Asap";font-style:italic;font-weight:100 900;font-stretch:75% 125%`,
+		`font-family:"Iosevka Custom";font-style:normal;font-weight:400;font-stretch:normal`,
+		`font-family:"Iosevka Custom";font-style:italic;font-weight:400;font-stretch:normal`,
+		`font-family:"Iosevka Custom";font-style:normal;font-weight:700;font-stretch:normal`,
+		`font-family:"Iosevka Custom";font-style:italic;font-weight:700;font-stretch:normal`,
+	}
+	if len(declarations) != 6 {
+		t.Fatal("font declarations missing")
+	}
+	for i, want := range wantDeclarations {
+		if !strings.HasPrefix(declarations[i][1], want) || strings.Contains(declarations[i][1], "local(") {
+			t.Fatalf("font selection differs for face %d", i)
+		}
+	}
 	want := map[string]bool{"2a03eab9fff645ef7ffcb6f9c81065a7cbd2d76d87873a8cc5bf4f23d97fdf7a": true, "346d8f2e0c37b3cb777dbe9b759a5b042b1b459db28c0f285760678241ef3f17": true, "974f9d6cf94f8c8c55a279ffd7cbe5aab00c9df63bdeffe7c2450b8820cf756e": true, "ef85723a68f371f853604a8580de306dffc6c6c8d46822a2e1d8f9e474ed7b40": true, "9ab02901db66ac603ca9f08cc99a33199a632f176cdfb76d0cdc8bbb4f58d87b": true, "226bd10650c64a3cd576d358391a4eb6522948a96b169b89b1deb6353c838134": true}
 	if len(fonts) != 6 {
 		t.Fatalf("font faces=%d", len(fonts))
@@ -337,6 +551,7 @@ func TestRT001_5_FontPayloads(t *testing.T) {
 		delete(want, hash)
 	}
 	for _, file := range []string{"../../LICENSE", "../../assets/fonts/asap/OFL.txt", "../../assets/fonts/iosevka-custom/OFL.md"} {
+		// #nosec G304 -- The table contains only the three committed licence authorities.
 		data, err := os.ReadFile(file)
 		if err != nil {
 			t.Fatal(err)

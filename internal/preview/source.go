@@ -15,7 +15,7 @@ import (
 
 type sourceContext struct {
 	logical, canonical, key, root string
-	device                        uint64
+	device                        string
 	explicit                      bool
 	depth                         int64
 }
@@ -57,7 +57,7 @@ func identify(path, root string) (sourceContext, error) {
 	if !st.Mode().IsRegular() {
 		return s, errors.New("source must be a regular file")
 	}
-	s.device = uint64(st.Sys().(*syscall.Stat_t).Dev)
+	s.device = fmt.Sprint(st.Sys().(*syscall.Stat_t).Dev)
 	s.key = s.canonical + "\x00" + filepath.Dir(s.logical)
 	s.root = root
 	if s.root == "" {
@@ -69,12 +69,12 @@ func identify(path, root string) (sourceContext, error) {
 	return s, nil
 }
 
-func snapshot(s sourceContext, limit int64) ([]byte, error) {
+func snapshot(s sourceContext, limit int64) (data []byte, err error) {
 	root, err := os.OpenRoot(s.root)
 	if err != nil {
 		return nil, err
 	}
-	defer root.Close()
+	defer func() { err = errors.Join(err, root.Close()) }()
 	rel, err := filepath.Rel(s.root, s.canonical)
 	if err != nil {
 		return nil, err
@@ -83,18 +83,18 @@ func snapshot(s sourceContext, limit int64) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { err = errors.Join(err, f.Close()) }()
 	st, err := f.Stat()
 	if err != nil {
 		return nil, err
 	}
-	if !st.Mode().IsRegular() || uint64(st.Sys().(*syscall.Stat_t).Dev) != s.device {
+	if !st.Mode().IsRegular() || fmt.Sprint(st.Sys().(*syscall.Stat_t).Dev) != s.device {
 		return nil, errors.New("source handle changed type or filesystem")
 	}
 	if st.Size() > limit {
 		return nil, fmt.Errorf("source exceeds remaining byte limit %d", limit)
 	}
-	data := make([]byte, st.Size())
+	data = make([]byte, st.Size())
 	if _, err := io.ReadFull(f, data); err != nil {
 		return nil, err
 	}

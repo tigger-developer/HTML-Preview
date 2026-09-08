@@ -6,5 +6,5 @@ import "embed"
 
 // Assets is the immutable build-time asset bundle.
 //
-//go:embed assets/fonts assets/web assets/pandoc LICENSE THIRD_PARTY_NOTICES.md
+//go:embed assets/fonts assets/web assets/pandoc assets/platform assets/licenses LICENSE THIRD_PARTY_NOTICES.md
 var Assets embed.FS

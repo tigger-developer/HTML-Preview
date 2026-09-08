@@ -33,6 +33,69 @@
   inspection found it matches the 385,208-byte committed asset. Its cause remains
   unidentified; no attribution is inferred.
 
+** Expanded implementation checkpoint - 8 September 2026
+
+- Scope :: The command now includes linked browsing, resource and deadline
+  handling, native desktop adapters and the WSL bridge, publication/retention,
+  embedded presentation, prefix installation, and four-target release packaging.
+  This checkpoint precedes the independent implementation gate.
+- Native environment :: macOS 26.6 build 25G5065a, arm64; Go 1.26.8;
+  Pandoc 3.9.0.2 with Lua 5.4. No Linux or WSL runtime result is inferred from
+  this host or from cross-compilation.
+- Test boundaries :: The command subprocess exercises the production coordinator
+  with real Pandoc. A staged-install test additionally compiles the actual entry
+  point with a Go overlay replacing only NativeHost, installs twice, invokes via
+  a symlink outside the checkout, and inspects Markdown/Org output and embedded
+  fonts. This controlled handoff does not establish browser readiness.
+- Regression evidence :: Coverage execution passed the maintained suite and
+  measured 88.7% of runtime-package statements. Normal =go test= coverage does not
+  include the separately invoked build tool; its measurement is recorded below.
+  Focused added checks passed WSL CLI graph translation, symlink origins and
+  containment, settings endpoints, FIFO rejection, zero conversion HTTP requests,
+  different-device rejection, and helper output bounds.
+- Full suite :: =make test= passed with the race detector: integration 7.823 s,
+  runtime 92.602 s. The tests include deliberately stalled helper/publication
+  boundaries and race-instrumented subprocess exit delays.
+- Coverage receipt :: A separate coverage-instrumented staged install, installed
+  version invocation, and four-target release supplied the build/entry-point
+  counters. Their union with the regression profile reports 83.4% of all Go
+  statements, including build code. No package is excluded. Unexecuted remote
+  release verification, Git synchronization, and error branches remain visible;
+  the percentage is not evidence of browser or native cross-platform behaviour.
+- Additional RED/GREEN :: Tests exposed disappearing raw-heading IDs, formatted
+  Org heading searches falling back, stylesheet placeholders admitting extra
+  documents, and unbounded source warnings. Each failed before its corresponding
+  correction and passed afterwards. Earlier graph, deep-heading, WSL, packaging,
+  and partial-output tests likewise failed at their unimplemented boundaries
+  before the implementations; later coverage assertions strengthen those cases.
+- Lifetime evidence :: A cleanup observer measures from the last handoff to
+  cleanup, accepting 225 ms to 2 s for a 250 ms grace. Reading tests read live
+  output before signalling. Additional command cases verify actual publication
+  deadline expiry, converter cancellation by SIGINT, preflight timeout/output
+  rejection before allocation, and exact source/aggregate/write-byte limits.
+- Packaging evidence :: Regression inspection verifies all four archive formats
+  and CPU targets, checksums, application/font/dependency notices, and both
+  macOS formula branches. Native execution on other release targets and actual
+  Homebrew installation remain pending.
+- Toolchain receipt :: Go 1.26.3 vulnerability checking reported nine reachable
+  standard-library advisories. The specification already permits a reviewed
+  compatible patch; Go 1.26.8 is now pinned and its =make vulncheck= returned
+  "No vulnerabilities found". The global Go installation was not changed.
+  =golang.org/x/net v0.58.0= and =bluemonday v1.0.27= are pinned with their
+  transitive checksums and full licence notices.
+- Static evidence :: =make lint= passed gofmt, go vet, the configured six Go
+  linters, StyLua 2.5.2, and a Lua syntax check inside Pandoc. CSS/JS receive
+  source review; no command-line JavaScript runtime is used.
+- StyLua provenance :: The official macOS aarch64 2.5.2 release archive was
+  provisioned only in this delivery's OS-temporary tool directory; SHA-256
+  =92ff0889e16324801bc072692974bb67f8161e62010fc90f96c62a17f81f32c7=.
+- Specification receipt :: Post-approval edits record lifecycle status and the
+  explicitly permitted Go patch. They do not change approved runtime behaviour.
+  Original definition verdicts remain revision-specific history.
+- Remaining evidence :: Every user test and the operator-run Homebrew one-off
+  remain PENDING. Source review, generated HTML, and opener doubles are not
+  browser typography, clipboard, print, or Windows filesystem evidence.
+
 * User tests
 
 ** UT001.1 - Document typography and readability

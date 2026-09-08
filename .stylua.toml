@@ -1,0 +1,6 @@
+# ABOUTME: Formats maintained Pandoc Lua without a standalone Lua interpreter.
+# ABOUTME: Uses spaces and a readable line length for small semantic filters.
+syntax = "Lua54"
+column_width = 100
+indent_type = "Spaces"
+indent_width = 2

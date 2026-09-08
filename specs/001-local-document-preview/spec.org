@@ -18,7 +18,7 @@
   3.9.x and opens source-labelled pages in the *system default browser* from an
   *owner-private temporary directory*. WSL opens the Windows default browser
   using translated file URLs. Install by prefix or the macOS Homebrew recipe.
-- Changes :: The candidate defines four connected capabilities:
+- Changes :: The approved change defines four connected capabilities:
   - *Rendering preserves Org metadata, literal blocks, and identifiers*, embeds
     both Asap faces and four Iosevka Custom faces with their notices, and retains
     accessible outline controls and printing. *The original filename header
@@ -47,11 +47,11 @@
   *Project code uses Apache 2.0* and both font families retain OFL 1.1.
   macOS/Linux/WSL and default-browser opening are *operator requirements*.
   Qualification baselines, browsing, retention, and passive-source
-  defaults are *candidate choices for approval*. CSS/JS use source and browser
+  defaults are *approved choices*. CSS/JS use source and browser
   review; no CLI JavaScript lint runtime is introduced.
-- Next step :: *Audit this candidate, then obtain operator sign-off*. Linked
-  browsing, lifetimes, platform packaging, and passive-source policy are explicit
-  proposals for approval; no implementation is authorized.
+- Next step :: *Deliver the approved change and record its validation*. Operator
+  sign-off authorizes implementation; implementation audit, platform qualification,
+  user tests, and operator closure remain separate requirements.
 
 -----
 
@@ -175,19 +175,19 @@
 - Licensing :: *Project code and documentation use Apache 2.0*; both Asap and
   Iosevka Custom retain SIL OFL 1.1 and their respective copyright notices.
 
-- Definition choices :: The following *candidate defaults require sign-off*:
+- Definition choices :: Sign-off adopts the following *approved defaults*:
   linked browsing is opt-in; quick retention is three seconds; linked sessions
   remain foreground until signalled; the qualification matrix and four release
   targets below use prefix installation plus a macOS Homebrew recipe; source
   rendering is passive.
-- Authority boundary :: These *authoring proposals are not recorded as operator
-  approval*. Signing off this specification adopts their exact contracts.
+- Authority boundary :: These *authoring proposals received explicit operator
+  approval on 8 September 2026*. Their exact contracts now govern delivery.
   Earlier unanswered clarification questions are preserved in audit history.
 
 ** Unresolved blockers
 
 - *No implementation choice is left for the delivery agent to guess*. Operator
-  approval of the candidate remains PENDING. Release publication is a separate
+  approval is recorded above. Release publication is a separate
   human action and is not needed for local package validation.
 
 * Acceptance Criteria
@@ -1458,6 +1458,10 @@
   be pinned during delivery. Go is not a binary runtime dependency. The matrix
   below defines initial qualification; other OS releases and browser engines
   remain unverified until recorded, rather than being assumed compatible.
+- Delivery toolchain :: *Go 1.26.8 is the reviewed compatible patch*, selected
+  after the initial 1.26.3 scan reported standard-library vulnerabilities. This
+  follows the patch-selection authority above; the runtime contract is unchanged.
+  [[file:validation.org][Delivery validation]] retains both scan outcomes.
 - Pandoc :: Require *Pandoc 3.9.0.2 or a later 3.9 patch release*, with its bundled
   Lua 5.4. Reject other release series with status 1 before session allocation.
   Real conversion tests run against the declared minimum and the packaging

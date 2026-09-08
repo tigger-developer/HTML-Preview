@@ -44,7 +44,7 @@ for all conditions.
 
 ## Rendering contract and inspection
 
-The renderer will embed these exact WOFF2 bytes in the executable and as data
+The renderer embeds these exact WOFF2 bytes in the executable and as data
 URLs in generated CSS. Use four `@font-face` declarations with the style and
 weight above, normal stretch, and an `Iosevka Custom` family followed by a
 generic `monospace` fallback. Use packaged data rather than a `local()` source
@@ -54,4 +54,5 @@ A bounded inspection decompressed temporary copies for OpenType metadata and
 HarfBuzz shaping. All faces shaped `Taḋg ÁÉÍÓÚ áéíóú 0O1Il WMi -> != ===`
 without missing glyphs; sampled letters, digits, and spaces had equal advances.
 The imported WOFF2 files remain unchanged. This is asset evidence, not browser
-or application validation; renderer integration is still to be implemented.
+or application validation. Renderer integration now has regression checks for
+payload hashes and declarations; actual browser face selection remains pending.

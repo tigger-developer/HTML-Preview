@@ -16,7 +16,10 @@ import (
 	"golang.org/x/net/html"
 )
 
+// #nosec G101 -- These are HTML element names in the passive-content allowlist.
 const passiveElements = "a abbr b blockquote br caption code col colgroup dd del details div dl dt em figcaption figure h1 h2 h3 h4 h5 h6 hr i img ins kbd li mark ol p pre q s samp section small span strong sub summary sup table tbody td tfoot th thead time tr u ul var wbr"
+
+// #nosec G101 -- These are HTML attribute names, not credentials.
 const passiveAttrs = "id class title lang dir alt width height colspan rowspan scope start value type href src"
 
 func (s *session) scrub(root *html.Node, p *page) {
@@ -31,12 +34,32 @@ func (s *session) scrub(root *html.Node, p *page) {
 			return
 		}
 		switch n.Data {
-		case "script", "style", "iframe", "frame", "frameset", "object", "embed", "form", "svg", "math", "base", "link", "audio", "video", "canvas":
+		case "link":
+			if p.resourceLinks == nil {
+				p.resourceLinks = make(map[*html.Node]bool)
+			}
+			p.resourceLinks[n] = true
+			n.Data = "a"
+			n.DataAtom = 0
+			n.AppendChild(nodeText("[Unsupported stylesheet/resource link]"))
+			if n.Parent != nil && n.Parent.Data == "head" {
+				n.Parent.RemoveChild(n)
+				body := element(root, "body")
+				body.InsertBefore(n, body.FirstChild)
+			}
+			s.log.notice("%q: stylesheet/resource retained as an inactive resource link", p.source.logical)
+		case "script", "style", "iframe", "frame", "frameset", "object", "embed", "form", "svg", "math", "base", "audio", "video", "canvas":
 			if n.Parent != nil {
-				n.Parent.InsertBefore(nodeText("[Unsupported "+n.Data+" content]"), n)
+				placeholder := nodeText("[Unsupported " + n.Data + " content]")
+				if n.Parent.Data == "head" {
+					body := element(root, "body")
+					body.InsertBefore(placeholder, body.FirstChild)
+				} else {
+					n.Parent.InsertBefore(placeholder, n)
+				}
 				n.Parent.RemoveChild(n)
 			}
-			s.log.warn("%q: unsupported %s content removed", p.source.logical, n.Data)
+			s.log.notice("%q: unsupported %s content removed", p.source.logical, n.Data)
 			return
 		case "input":
 			label := "[Unsupported input]"
@@ -57,11 +80,11 @@ func (s *session) scrub(root *html.Node, p *page) {
 		attrs := n.Attr[:0]
 		for _, a := range n.Attr {
 			if !strings.Contains(" "+passiveAttrs+" ", " "+a.Key+" ") || a.Namespace != "" {
-				s.log.warn("%q: unsupported attribute %s removed", p.source.logical, a.Key)
+				s.log.notice("%q: unsupported attribute %s removed", p.source.logical, a.Key)
 				continue
 			}
 			if len(a.Val) > 65536 {
-				s.log.warn("%q: oversized attribute removed", p.source.logical)
+				s.log.notice("%q: oversized attribute removed", p.source.logical)
 				continue
 			}
 			if a.Key == "id" && strings.HasPrefix(a.Val, "hp-") {
@@ -132,7 +155,8 @@ func (s *session) document(p *page) ([]byte, error) {
 		Script                                   template.JS
 		Body, Notices                            template.HTML
 	}{
-		Policy: policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: filepath.Dir(p.source.logical) + string(filepath.Separator), Startup: p.startup,
+		Policy: policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: strings.TrimSuffix(p.source.logical, filepath.Base(p.source.logical)), Startup: p.startup,
+		// #nosec G203 -- CSS, script, and notices come only from embed.FS; body has passed the passive allowlist.
 		CSS: template.CSS(css), Script: template.JS(script), Body: template.HTML(body), Notices: template.HTML(notices), // Only embedded assets and allowlisted HTML cross these trusted boundaries.
 	}
 	t, err := template.New("page").Parse(string(layout))
@@ -176,7 +200,7 @@ func presentationCSS() (string, error) {
 }
 func embeddedNotices() (string, error) {
 	var out strings.Builder
-	for _, file := range []string{"LICENSE", "THIRD_PARTY_NOTICES.md", "assets/fonts/asap/OFL.txt", "assets/fonts/iosevka-custom/OFL.md"} {
+	for _, file := range []string{"LICENSE", "THIRD_PARTY_NOTICES.md", "assets/fonts/asap/OFL.txt", "assets/fonts/iosevka-custom/OFL.md", "assets/licenses/golang-x-net-LICENSE", "assets/licenses/bluemonday-LICENSE.md", "assets/licenses/douceur-LICENSE", "assets/licenses/gorilla-css-LICENSE"} {
 		data, err := bundle.Assets.ReadFile(file)
 		if err != nil {
 			return "", err
