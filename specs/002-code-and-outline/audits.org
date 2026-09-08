@@ -10,7 +10,9 @@
 :END:
 
 - Artefact :: [[file:spec.org][W002 - Highlighted code, copying and compact fold controls]].
-- Revision :: Initial draft; checksum to be recorded before the next round.
+- Revision :: Initial draft SHA-256
+  =bb6580770596a2c1e4487d1063dbae04dde2b8686e72dceca405f432ec58e8a7=;
+  retained in =7861849=, the initial code/outline definition checkpoint.
 - Audits :: =audit-spec=, =audit-design= and =audit-test-definitions=.
 - Verdict :: FAIL.
 - Findings :: The Markdown literal-value return channel is underspecified;
@@ -21,6 +23,28 @@
   normal when open, click again to close.
 - Remediation :: Specify typed return records and activation semantics; adopt
   the operator's bar design before repeating the full local gate.
+
+** Local review - margin bars and explicit code transport
+:PROPERTIES:
+:ROUND: 2
+:END:
+
+- Artefact :: [[file:spec.org][W002 - Highlighted code, copying and compact fold controls]].
+- Revision :: SHA-256 =e122ffa42c8184fb66957fc1257e217d255fa154096b84fcbf74079c8e503cd0=.
+- Audits :: =audit-spec=, =audit-design= and =audit-test-definitions=.
+- Verdict :: PASS.
+- Findings :: No blocking findings. The proposed bar interaction explicitly
+  replaces local three-state cycling; global modes and visibility remain.
+  Code records have a private per-document token and a bounded, passive
+  return channel. Selection guarantees distinguish drag/active selection from
+  the initial click in a double-click sequence.
+- Evidence :: Current template level-one heading sequence matches. Pandoc
+  parsed the specification; no duplicate heading IDs or broken internal
+  fragments were found. Requirements, design, baseline regressions and
+  implementation boundaries were reviewed together.
+- Advisory :: Narrow/nested bar geometry and real clipboard behaviour need
+  the declared user tests; static HTML assertions cannot establish them.
+- Remediation :: Round-one findings addressed. Independent gate not yet run.
 
 ** External review
 

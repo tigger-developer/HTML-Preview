@@ -10,14 +10,14 @@
 :CUSTOM_ID: summary
 :END:
 
-- Outcome :: *Code is coloured and copyable*, and *local fold controls use
-  triangles* in the existing Markdown and Org preview.
+- Outcome :: *Code is coloured and copyable*, and *clickable margin bars fold
+  sections* in the existing Markdown and Org preview.
 - Before :: *Source blocks are plain*. The header alone offers clipboard
   copying; local outline buttons display Fold or Expand.
 - After :: *Declared code languages receive local syntax highlighting*.
   Clicking inline code, Org verbatim or a code block copies its text;
-  keyboard users have native copy buttons. *Triangles replace local button
-  words* while preserving the current outline states.
+  keyboard users have native copy buttons. *A thick, bright bar with a bottom
+  plus opens hidden content; a normal bar closes expanded content*.
 - Changes :: *Examples demonstrate TODO states, tags, drawers and code*.
   Pandoc handles highlighting; the owned theme supplies light/dark colours.
   *Copying excludes delimiters and controls* and preserves literal whitespace.
@@ -28,8 +28,9 @@
   *Selection and hyperlink activation remain available*. Clipboard refusal
   offers a manual-copy field. No-JavaScript reading and full printing remain
   available. Org literal lookalikes and trailing newlines remain literal.
+  The first click of a double-click selection may copy before the word is selected.
 - Decisions :: *Go, Pandoc and browser-only JavaScript remain the stack*.
-  Proposed details below select triangles, copy affordances and built-in
+  The operator selected margin bars; proposed details select copy affordances and built-in
   highlighting; *operator sign-off adopts these choices*.
 - Next step :: *Audit the definition, then obtain operator sign-off* before
   implementation. Browser results remain separate human evidence.
@@ -62,7 +63,8 @@
 - *Highlight language-labelled Markdown fenced blocks and Org source blocks*.
 - *Copy semantic inline code and pre/code blocks*, including Org verbatim,
   Org example blocks and Markdown indented blocks.
-- *Replace local heading button words with glyphs*; retain the global toolbar.
+- *Replace local heading buttons with clickable left margin bars*; retain the
+  global toolbar and initial visibility metadata.
 - *Provide synthetic Org and Markdown examples* and browser validation.
 
 *** Out of scope
@@ -124,9 +126,13 @@
 - Operator direction :: *Use glyphs for local folding and add code copying*.
   The request includes Org source blocks, Markdown fenced blocks, Org inline
   code and verbatim, and Markdown inline code.
-- Proposed display :: *Use right triangle =▸= when folded, outline down triangle
-  =▿= for children, and solid down triangle =▾= for all*. Provide an action
-  label and tooltip naming the heading and next state.
+- Operator display direction :: *Use a thicker, bright left margin bar with a
+  bottom =+= when collapsed; a normal thin bar when expanded*. Clicking the
+  bar opens or closes the section. This direction supersedes the initial
+  triangle proposal, retained in the first draft's Git history.
+- Local action :: *The bar toggles between fully open and closed*. The global
+  Contents mode and initial children visibility still exist; a section whose
+  body is hidden uses the thick-plus bar and opens fully on activation.
 - Proposed copy scope :: *All rendered semantic code is eligible*, including
   raw HTML code admitted by the passive policy. Classes and IDs alone do not
   create a copy target. This extends W001's header-only binding deliberately.
@@ -205,8 +211,8 @@
 :CUSTOM_ID: ac-002-5
 :END:
 
-- Criterion :: *Selecting text or clicking a hyperlink does not copy code*.
-  A noncollapsed selection suppresses direct-code copying. Code within a link
+- Criterion :: *Dragging a selection or clicking a hyperlink does not copy code*.
+  An existing noncollapsed selection suppresses direct-code copying. Code within a link
   retains navigation and has a separate copy control outside the link.
 - Proven by :: [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
 
@@ -221,15 +227,17 @@
   Loading, focusing, folding and navigation perform no automatic copy.
 - Proven by :: [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
 
-** AC002.7 - Local fold controls use accessible glyphs
+** AC002.7 - Clickable margin bars open and close sections
 :PROPERTIES:
 :CUSTOM_ID: ac-002-7
 :END:
 
-- Criterion :: *Local heading controls display only the defined triangle glyph*,
-  without a permanent boxed text label. They retain native keyboard activation,
-  visible focus, correct expanded state and an accessible next-action name.
-  The all/folded/children cycle and global toolbar retain W001 semantics.
+- Criterion :: *Each foldable section has a clickable left margin bar*.
+  When its body is hidden, the bar is thicker, bright and has a bottom =+=;
+  activation fully opens its subtree. When its own body is visible, its normal thin bar
+  closes the subtree on activation. The bar has native keyboard activation,
+  visible focus, an accessible next-action name and a correct expanded state.
+  Global modes and initial visibility retain W001 semantics.
 - Proven by :: [[#ut-002-1][UT002.1 - Reading and outline presentation]].
 
 ** AC002.8 - Reading and printing remain accessible
@@ -326,7 +334,7 @@
 
 - Covers :: [[#ac-002-1][AC002.1 - Declared languages]],
   [[#ac-002-3][AC002.3 - Plain fallback]],
-  [[#ac-002-7][AC002.7 - Glyph folding]],
+  [[#ac-002-7][AC002.7 - Margin-bar folding]],
   [[#ac-002-8][AC002.8 - Accessible reading and printing]],
   [[#ac-002-10][AC002.10 - Representative examples]].
 - Reviewer :: *Operator*, on each browser environment in the
@@ -334,15 +342,19 @@
 - Procedure :: *Use the installed candidate through a symlink from another
   directory* to open both repository examples in reading mode. Inspect light
   and dark themes at 100% and 200% zoom, wide and 320-CSS-pixel narrow layouts.
-  Cycle local states on parent and leaf headings, activate all global modes,
+  Toggle parent and leaf bars, activate all global modes,
   follow a link into a folded section and inspect drawers. Use pointer and
   keyboard traversal, accessibility names and an available screen reader.
   Disable JS; inspect printing from every fold state and restoration afterwards.
 - Expected :: *Tokens, TODO states, tags and drawers remain readable*; code uses
   the bundled Iosevka family, no icon appears as a missing glyph, and focus is
   visible. Verify rendered foreground/background pairs meet 4.5:1.
+  Bars span their own visible section gutter, without covering text or neighbouring
+  bars. Test the top, middle and bottom of an expanded bar and the folded plus.
+  The closed bar is visibly thicker and bright; the open bar is thin, with no
+  plus. Bar/plus contrast is at least 3:1 against the adjacent background.
   Controls neither obscure code nor overflow the page; long code scrolls within
-  its block. Glyphs identify state and accessible names identify next action.
+  its block. State and next action are understandable without colour alone.
   No-JS and print behaviour meet the stated criteria.
 - Record :: *Record revision, OS/browser/Pandoc versions and observations* in
   =validation.org=. Missing environments remain PENDING.
@@ -363,14 +375,16 @@
   highlighted/plain/empty/multiline code, Org verbatim, code in a heading and
   link, special characters, tabs and final newlines. Paste into a plain-text
   editor that can expose whitespace and compare with the fixture oracle.
-  Select/drag text, navigate links, and make repeated rapid attempts on the
+  Select/drag text, double-click to select a word, navigate links, and make repeated rapid attempts on the
   same and different targets. Test real clipboard success, then denial or
   unavailable API; a bounded browser-devtools stub may expose the fallback but
   must be recorded as a stub rather than real permission evidence.
   Navigate away/back, print, disable JS, and exercise original-header copying.
 - Expected :: *Each explicit attempt copies only its intended value once*,
   excluding language labels, line numbers and button/status text. Link clicks
-  navigate and selection gestures do not copy. Pending writes cannot be
+  navigate; drag or an existing selection suppresses direct copying. A double
+  click's first ordinary click may copy, but subsequent selection is not blocked.
+  Pending writes cannot be
   duplicated; feedback cannot migrate to another target or survive teardown.
   Refusal leaves the exact value manually copyable. No focus stealing,
   clipboard reads, automatic writes, new permissions or active source content.
@@ -446,8 +460,8 @@
 1. *Capture Org source text and its language* in the literal-aware pre-pass.
    Retain the current CRLF-to-LF contract and end-of-input handling.
 2. *Serialize each source block as JSON data in an internal raw export block*.
-   Use a format name derived from the existing collision-free source prefix,
-   lowercase and absent from the entire source under case-insensitive matching.
+   Use a fresh cryptographically random 128-bit document token with a lowercase
+   format name absent from the source under case-insensitive matching.
    Pass that exact format through an application-owned Pandoc command metadata
    argument; source metadata must not override it. JSON encoding escapes all
    embedded newlines, so source export terminators cannot terminate the wrapper.
@@ -456,11 +470,16 @@
    Use =pandoc.json.decode= with Pandoc-type coercion disabled. Do not read a
    sidecar, call a process, evaluate Lua or reparse the code body. Walk the
    document explicitly before display metadata is cleared.
-4. *Highlight with the built-in engine* using =syntax-highlighting: pygments=.
-   Capture Markdown CodeBlock values before writing as well, so the final
-   literal comparison is independent of the highlighter's emitted text.
-   Carry values through escaped, collision-free markers, not user-selected
-   clipboard attributes. Keep this transient preservation data bounded.
+4. *Capture every CodeBlock's text before highlighting*, for both formats.
+   Wrap each block with an internal Div association using that document token
+   and a sequence number, preserving its original attributes/identifier.
+   Emit an adjacent internal raw-HTML pre element containing an HTML-escaped
+   JSON record of association and literal text. This is data, never a script.
+   These transient records return through the same bounded Pandoc output pipe.
+   Go consumes and removes them before source sanitization and publication;
+   verify unique associations, exact fields and one record per marked block.
+   Source metadata/classes cannot choose the private token.
+   *Highlight with the built-in engine* using =syntax-highlighting: pygments=.
 5. *Restore exact code text after parsing the HTML*. Associate generated blocks
    with their retained values before internal identifiers are removed.
    If the only difference is one missing terminal LF, append that LF inside
@@ -469,7 +488,7 @@
    Retain token spans for successfully matched output. Exclude generated line
    numbers from copy values; no numbering is requested by this change.
 6. *Apply the existing passive policy and publish with owned theme CSS*.
-   Then browser enhancement registers code targets and glyph controls using
+   Then browser enhancement registers code targets and margin-bar controls using
    safe DOM methods, with no new dynamic HTML sink.
 
 *** Interfaces and configuration
@@ -495,7 +514,10 @@
   link with separately named controls in source order.
 - Pointer handling :: *Direct code clicks copy only without a noncollapsed
   selection and outside an interactive descendant/ancestor*. Ignore drag,
-  multi-click selection, modified clicks and empty code. The explicit copy
+  later clicks in a multi-click sequence, modified clicks and empty code.
+  Do not prevent browser selection. A double click's first ordinary click may
+  copy: retaining immediate user-activated clipboard access has this trade-off.
+  The explicit copy
   button remains an intentional copy action even with a selection elsewhere.
 - Feedback :: *Share the existing clipboard service with the source header*,
   retaining a distinct payload and target label per activation. Allow one
@@ -504,12 +526,21 @@
   seconds, and expose a readonly selectable field on rejection/unavailability.
   Feedback is outside the copied value, labelled for the target and does not
   move focus. Do not log or persist copied content.
-- Fold presentation :: *Keep native buttons and the existing three-state cycle*.
-  Render =▸=, =▿= and =▾= for folded, children and all, with glyph content hidden
-  from assistive naming. Names/tooltips describe the next action and heading.
-  Leaves skip children. Retain 24-pixel targets, transparent resting appearance
-  and clear hover/focus treatment. Do not replace drawer disclosure controls
-  or the global Overview/Contents/Show all toolbar.
+- Fold presentation :: *Replace local heading buttons with native bar buttons*
+  in a dedicated left gutter for each section, including root sections.
+  Their hit area spans the visible section height and is at least 24 CSS pixels
+  wide/high; draw the normal bar at 1 pixel and the folded bar at 4 pixels.
+  A folded/children section uses the theme's bright accent and a small bottom
+  =+=. An all-open section uses a normal thin bar without a plus.
+  Keep each hit area separate from its text and adjacent/nested section bars.
+  Names/tooltips describe Expand or Collapse and the original heading text.
+  =aria-expanded= is false when the section body is hidden, true when its own
+  body is visible. Folding a child does not change the parent body's visibility.
+  Click, Enter and Space apply the existing subtree operation: non-all to all,
+  all to folded. The plus is part of the same button, not another nested control.
+  Preserve visible focus, normal Tab/Shift+Tab order and independent parent/
+  child targets. Do not add folding to source code, blockquotes or drawers;
+  existing drawer disclosure and Overview/Contents/Show all remain.
 
 *** Data and state
 
@@ -560,7 +591,7 @@
 - Performance :: *One converter remains sufficient per document*. Budget
   transient code records and generated spans; enhance large pages in batches.
 - Operability :: *Install and rollback remain binary replacement*.
-  Documentation explains code language labels, copying, glyphs and fallback.
+  Documentation explains code language labels, copying, bars and fallback.
 - Accessibility :: *Native controls, selection and no-JS reading remain*.
   Real-browser validation is required for clipboard policy and legibility.
 - Portability :: *The existing macOS/Linux/WSL browser matrix applies*.
@@ -583,6 +614,6 @@
 - Definition evidence :: [[file:audits.org][W002 - Composite definition evidence]].
 - Validation evidence :: [[file:validation.org][W002 - Browser validation record]].
 - Documentation impact :: *Update README.md and docs/ARCHITECTURE.md* for code
-  copying, colouring and glyphs at delivery; add =examples/work.org= and
+  copying, colouring and margin bars at delivery; add =examples/work.org= and
   =examples/code.md= with synthetic data and no executable test hooks.
   Preserve the earlier W001 records and its remaining qualification work.
