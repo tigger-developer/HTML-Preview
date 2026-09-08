@@ -1,6 +1,6 @@
 # ABOUTME: Exposes build, validation, installation, and synchronization targets.
 # ABOUTME: Runtime dependencies and scanners are provisioned separately.
-PREFIX ?= /usr/local
+# Empty PREFIX selects the user-local checkout symlink; an explicit prefix copies.
 COMMIT_MESSAGE ?= chore: sync
 export PREFIX DESTDIR VERSION RELEASE_BASE_URL COMMIT_MESSAGE
 

@@ -353,7 +353,12 @@
   evidence directory reported with the handback.
 - Environment :: macOS/arm64, Go 1.26.8; every installation destination is
   staged beneath a test-owned temporary directory. No global install runs.
-- GREEN :: PENDING.
+- GREEN :: PASS. Focused installation cases passed in 5.696 seconds. After
+  strengthening matching-link identity and staging-path checks, the full
+  integration pack passed with the race detector in 11.607 seconds; it includes
+  explicit-prefix rendering, embedded assets and all four release archives.
+  =make lint= passed after adding a narrow explanation for test-owned sentinel
+  reads. The full application suite remains in progress at this checkpoint.
 
 ** Installation documentation review
 

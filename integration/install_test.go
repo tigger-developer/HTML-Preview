@@ -14,12 +14,13 @@ import (
 
 // RT001.14 - Installation outside the checkout, default-link amendment.
 func TestRT001_14_DefaultInstall(t *testing.T) {
-	stage := t.TempDir()
+	stage := filepath.Join(t.TempDir(), "stage with spaces & punctuation")
 	link := stagedDefaultLink(t, stage)
 	target, err := filepath.Abs("../bin/htmlpreview")
 	if err != nil {
 		t.Fatal(err)
 	}
+	var firstLink os.FileInfo
 	for _, args := range [][]string{nil, {"PREFIX="}} {
 		out, err := stagedInstall(t, stage, args...)
 		if err != nil {
@@ -33,6 +34,14 @@ func TestRT001_14_DefaultInstall(t *testing.T) {
 		if err != nil || got != resolved {
 			t.Fatalf("expected default link %s -> %s; got %q, %v", link, resolved, got, err)
 		}
+		info, err := os.Lstat(link)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if firstLink != nil && !os.SameFile(firstLink, info) {
+			t.Fatal("reinstallation replaced the matching symlink")
+		}
+		firstLink = info
 	}
 	if _, err := os.Lstat(filepath.Join(stage, "usr/local/bin/htmlpreview")); !os.IsNotExist(err) {
 		t.Fatalf("default installation must not create /usr/local binary: %v", err)
@@ -98,8 +107,8 @@ func TestRT001_14_DefaultInstallPreservesConflicts(t *testing.T) {
 				if _, err := os.Lstat(target); !os.IsNotExist(err) {
 					t.Fatalf("dangling target was created: %v", err)
 				}
-			} else if got, err := os.ReadFile(target); err != nil || string(got) != string(sentinel) {
-				t.Fatalf("conflicting content changed: %q, %v", got, err)
+			} else {
+				assertInstallSentinel(t, target, string(sentinel))
 			}
 		})
 	}
@@ -136,8 +145,15 @@ func TestRT001_14_PrefixInstallPreservesSymlinkTarget(t *testing.T) {
 	if got, err := os.Readlink(link); err != nil || got != target {
 		t.Fatalf("prefix symlink changed: %q, %v", got, err)
 	}
-	if got, err := os.ReadFile(target); err != nil || string(got) != sentinel {
-		t.Fatalf("prefix copy changed personal executable: %v", err)
+	assertInstallSentinel(t, target, sentinel)
+}
+
+func assertInstallSentinel(t *testing.T, path, want string) {
+	t.Helper()
+	// #nosec G304 -- The caller created this sentinel beneath t.TempDir; no external input is accepted.
+	got, err := os.ReadFile(path)
+	if err != nil || string(got) != want {
+		t.Fatalf("installation changed sentinel %s: %q, %v", path, got, err)
 	}
 }
 

@@ -2,7 +2,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PENDING
+#+DEFINITION_GATE: PASS
 #+OPERATOR_SIGNOFF: Taḋg, 2026-09-08; explicit approval in the project conversation
 
 * Installable Markdown and Org previews with linked browsing
@@ -202,6 +202,10 @@
   and stages either mode beneath that directory. No default write targets
   =/usr/local=. Staged default links still point to the source checkout; they
   are development links, not relocatable release packages.
+  Precisely, the staged link is
+  =DESTDIR/<absolute-home-without-leading-separator>/.local/bin/htmlpreview=;
+  its target remains the resolved absolute checkout executable outside that
+  staging root. Unset and empty =PREFIX= are both verified.
   Switching from a default link to copied installation requires moving the
   link aside first; *copy installation refuses symlink destinations* to avoid
   writing through them or falsely claiming an independent copy.
@@ -528,7 +532,7 @@
 :CUSTOM_ID: ac-001-29
 :END:
 
-- Criterion :: The *binary installs on PATH without a checkout, Go toolchain, or
+- Criterion :: The *packaged or explicit-prefix binary installs on PATH without a checkout, Go toolchain, or
   personal configuration*, including invocation through an executable symlink
   from an unrelated directory. Fonts require no system installation. The
   macOS Homebrew formula *declares Pandoc as a runtime dependency*; prefix
@@ -537,6 +541,8 @@
   =~/.local/bin/htmlpreview= as a symlink to the checkout's built executable*,
   following the default-installation correction above. This development mode
   needs the checkout's binary to remain present; packaged use remains independent.
+  This default symlink is *development-only*: the independent-installation
+  criterion applies to packages and non-empty =PREFIX= installations.
 - Proven by :: [[#rt-001-14][RT001.14 - Installation outside the checkout]],
   [[#ot-001-1][OT001.1 - Local Homebrew package validation]].
 
@@ -1057,6 +1063,9 @@
   unrelated directory. Test regular-file, directory, live-link and dangling-link
   conflicts; each fails with a diagnostic and preserves the destination and
   any target sentinel. Invalid relative PREFIX or DESTDIR fails before install.
+  Verify that the development symlink resolves to the absolute checkout binary;
+  moving or removing that checkout invalidates this link. Document that lifetime
+  explicitly and make no checkout-independence claim for default installation.
   A copied-prefix install presented with an existing executable symlink fails
   and preserves both the link and its target contents.
 - Retention :: *Persistent regression* under =make test=; observe the expected

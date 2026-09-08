@@ -1,4 +1,4 @@
-// ABOUTME: Implements reproducible build and prefix-install tasks in Go.
+// ABOUTME: Implements reproducible builds, user-local linking and prefix installation.
 // ABOUTME: Keeps operator values out of generated shell command strings.
 package main
 
@@ -84,6 +84,11 @@ func licenceFiles() map[string]string {
 	return map[string]string{"LICENSE": "LICENSE", "THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md", "asap-OFL.txt": "assets/fonts/asap/OFL.txt", "iosevka-custom-OFL.md": "assets/fonts/iosevka-custom/OFL.md", "golang-x-net-LICENSE": "assets/licenses/golang-x-net-LICENSE", "bluemonday-LICENSE.md": "assets/licenses/bluemonday-LICENSE.md", "douceur-LICENSE": "assets/licenses/douceur-LICENSE", "gorilla-css-LICENSE": "assets/licenses/gorilla-css-LICENSE"}
 }
 func copyFile(from, to string, mode fs.FileMode) error {
+	if info, err := os.Lstat(to); err == nil && info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("refusing to copy through symlink %q; move it aside and retry", to)
+	} else if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("inspect copy destination %q: %w", to, err)
+	}
 	// #nosec G304 -- Callers select repository licence files or the binary just built.
 	data, err := os.ReadFile(from)
 	if err != nil {
@@ -100,15 +105,15 @@ func copyFile(from, to string, mode fs.FileMode) error {
 }
 func install() error {
 	prefix := os.Getenv("PREFIX")
-	if prefix == "" {
-		prefix = "/usr/local"
-	}
-	if !filepath.IsAbs(prefix) {
+	if prefix != "" && !filepath.IsAbs(prefix) {
 		return errors.New("PREFIX must be absolute")
 	}
 	stage := os.Getenv("DESTDIR")
 	if stage != "" && !filepath.IsAbs(stage) {
 		return errors.New("DESTDIR must be absolute")
+	}
+	if prefix == "" {
+		return installLink(stage)
 	}
 	if err := build("bin/htmlpreview", runtime.GOOS, runtime.GOARCH, version()); err != nil {
 		return err
@@ -123,6 +128,43 @@ func install() error {
 		}
 	}
 	return nil
+}
+
+func installLink(stage string) error {
+	userHome, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("resolve home for user-local installation: %w", err)
+	}
+	if !filepath.IsAbs(userHome) {
+		return errors.New("home directory must be absolute for user-local installation")
+	}
+	if err := build("bin/htmlpreview", runtime.GOOS, runtime.GOARCH, version()); err != nil {
+		return err
+	}
+	target, err := filepath.Abs("bin/htmlpreview")
+	if err != nil {
+		return err
+	}
+	target, err = filepath.EvalSymlinks(target)
+	if err != nil {
+		return fmt.Errorf("resolve built executable: %w", err)
+	}
+	link := filepath.Join(stage, userHome, ".local/bin/htmlpreview")
+	// #nosec G301 -- The directory holds a public executable link, not document data.
+	if err := os.MkdirAll(filepath.Dir(link), 0755); err != nil {
+		return fmt.Errorf("create installation directory: %w", err)
+	}
+	if err := os.Symlink(target, link); err != nil {
+		if !errors.Is(err, fs.ErrExist) {
+			return fmt.Errorf("install symlink %q: %w", link, err)
+		}
+		existing, readErr := os.Readlink(link)
+		if readErr != nil || existing != target {
+			return fmt.Errorf("installation destination %q already exists; move it aside and retry: %w", link, err)
+		}
+	}
+	_, err = fmt.Fprintf(os.Stdout, "%s -> %s\n", link, target)
+	return err
 }
 
 func synchronize() error {

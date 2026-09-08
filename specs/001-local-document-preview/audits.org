@@ -798,3 +798,29 @@ Both component audits were applied: audit-test-code and audit-code.
   This is not PASS and is not counted as an auditor finding.
 - Receipt :: The document change was part of the installation correction.
   The second submission keeps all supplied inputs stable for the call.
+
+** Independent definition review and condition receipt
+
+- Context :: =01a080a5-10d6-7843-b030-9a018a3a77d4=, configured Codex audit harness.
+- Revision :: Specification SHA-256
+  =a86a219ed97bbe6ad9a489b0328a8721bf9282ec110424f07b5516edf849a379=.
+- Components :: =audit-spec=, =audit-design= and =audit-test-definitions=.
+- Verdict :: PROVISIONAL PASS with three mechanical conditions.
+- Condition 1 :: Clarify that AC001.29 - Independent installation applies to
+  packages and explicit prefixes; default symlink installation is development-only.
+  Receipt: the criterion now names those modes and states the distinction.
+- Condition 2 :: State the absolute-target and checkout-lifetime assertions in
+  RT001.14 - Installation outside the checkout. Receipt: the definition explicitly
+  verifies resolution to the checkout binary, records that moving/removing the
+  checkout invalidates the link, and disclaims independence for that mode.
+- Condition 3 :: State the precise staged destination and target and cover unset
+  and empty PREFIX. Receipt: the compatibility paragraph gives both paths and
+  the two input cases explicitly.
+- Advisory :: The documentation review should record observable outcomes for
+  both modes, Pandoc, checkout lifetime, conflict recovery and embedded assets.
+  These observations will be recorded in the planned one-off validation entry.
+- Effective verdict :: PASS after the exact three wording corrections and direct
+  review of their stated checks. No other material definition change was made.
+- Operator authority :: The accepted concrete link proposal and "so fix it pls"
+  remain the implementation authority; no second approval of that action is
+  inferred or requested. Operator closure remains separate.
