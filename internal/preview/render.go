@@ -5,9 +5,12 @@ package preview
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	bundle "github.com/tigger-developer/HTML-Preview"
@@ -18,6 +21,7 @@ type page struct {
 	source             sourceContext
 	name, url, startup string
 	dom                *html.Node
+	toc                *html.Node
 	ready              bool
 	ids, headings      map[string][]string
 	orgIDs             map[string][]string
@@ -25,6 +29,10 @@ type page struct {
 }
 
 func (s *session) render(ctx context.Context, p *page, data []byte) error {
+	token, err := transportToken(data)
+	if err != nil {
+		return err
+	}
 	dialect, err := bundle.Assets.ReadFile("assets/pandoc/markdown.txt")
 	if err != nil {
 		return err
@@ -33,14 +41,21 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	preserved := preservation{startup: "showall"}
 	if strings.EqualFold(filepath.Ext(p.source.logical), ".org") {
 		format = "org"
-		preserved = preserveOrg(data)
+		preserved = preserveOrg(data, token)
 		data = []byte(preserved.text)
 	}
 	p.startup = preserved.startup
 	for _, warning := range preserved.warnings {
 		s.log.notice("%q: %s", p.source.logical, warning)
 	}
-	args := []string{"--defaults=" + filepath.Join(s.path, "defaults.yaml"), "--data-dir=" + s.path, "--from=" + format, "--lua-filter=" + filepath.Join(s.path, "fidelity.lua"), "+RTS", "-M512M", "-RTS"}
+	if int64(len(data)) > s.cfg.outputBytes-s.used {
+		return errors.New("HTMLPREVIEW_MAX_OUTPUT_BYTES exhausted by conversion input")
+	}
+	s.used += int64(len(data))
+	args := []string{"--defaults=" + filepath.Join(s.path, "defaults.yaml"), "--data-dir=" + s.path, "--from=" + format,
+		"--lua-filter=" + filepath.Join(s.path, "fidelity.lua"), "--template=" + filepath.Join(s.path, "page.html5"),
+		"--metadata=htmlpreview-code-token:" + token, "--variable=htmlpreview-toc-token:" + token,
+		"--toc=" + strconv.FormatBool(s.cfg.toc), "--toc-depth=" + strconv.Itoa(s.cfg.tocDepth), "+RTS", "-M512M", "-RTS"}
 	output, err := s.host.Execute(ctx, Command{Path: s.pandoc, Args: args, Input: data, Dir: s.path, Limit: s.cfg.outputBytes - s.used})
 	if err != nil {
 		return fmt.Errorf("Pandoc conversion: %w", err)
@@ -56,6 +71,10 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	if err != nil {
 		return err
 	}
+	headings, err := s.restoreTransport(doc, p, token)
+	if err != nil {
+		return err
+	}
 	s.scrub(doc, p)
 	p.dom = element(doc, "body")
 	if p.dom == nil {
@@ -68,7 +87,24 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		return err
 	}
 	catalogue(p, s.log)
+	if err := restoreContents(p, headings); err != nil {
+		return err
+	}
 	return nil
+}
+
+func transportToken(data []byte) (string, error) {
+	lower := strings.ToLower(string(data))
+	for {
+		var random [16]byte
+		if _, err := rand.Read(random[:]); err != nil {
+			return "", fmt.Errorf("allocate private transport: %w", err)
+		}
+		token := hex.EncodeToString(random[:])
+		if !strings.Contains(lower, "htmlpreview-code-"+token) && !strings.Contains(lower, "htmlpreview-heading-"+token) && !strings.Contains(lower, "htmlpreview-toc-"+token) {
+			return token, nil
+		}
+	}
 }
 
 func element(root *html.Node, name string) *html.Node {

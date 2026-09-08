@@ -10,6 +10,7 @@
 </head>
 <body>
 <header id="hp-header"><h1 data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1></header>
+{{if .TOC}}<nav id="hp-toc" aria-label="Table of contents">{{.TOC}}</nav>{{end}}
 <main id="hp-document" data-hp-startup="{{.Startup}}">{{.Body}}</main>
 <script type="module">{{.Script}}</script>
 </body>

@@ -98,7 +98,7 @@ it does not need a separate installed interpreter. Pandoc provides that runtime.
 | Reference resolver | Source-relative URLs, filesystem identity, document graph, and output mapping |
 | HTML processor | Structured discovery and rewriting of rendered links and resource references |
 | Browser adapter | Open the finished entry pages using the platform's desktop mechanism |
-| HTML/CSS and browser JavaScript | Presentation, accessible folding, and source-path copying |
+| HTML/CSS and browser JavaScript | Presentation, accessible folding, and source-path/code copying |
 
 These are responsibilities, not a requirement for one package per row. A small
 `cmd/htmlpreview` entry point, private implementation under `internal/`, and
@@ -145,8 +145,9 @@ faces and all four Iosevka Custom faces, including base64 expansion, in the
 output budget. Iosevka adds 1,923,456 bytes of base64 payload per page before
 CSS and notices; the existing byte budget may therefore stop traversal before
 the document-count limit. Include both families' copyright notices and full
-OFL text in readable HTML source and release packages. Font embedding is
-specified here; no renderer has yet been implemented.
+OFL text in readable HTML source and release packages. The initial architecture
+specified this before implementation; the renderer now supplies the embedded
+payloads, with browser qualification tracked separately.
 
 Embedding resolves repository assets at build time. At runtime the renderer
 reads those embedded bytes and emits inline `@font-face` data URLs. Neither
@@ -196,6 +197,55 @@ their original files unless a later requirement explicitly adds embedding.
 Pandoc's `--embed-resources` also incorporates document resources and can fetch
 remote assets, so it is not the default mechanism for packaging only the theme.
 [Pandoc resource options](https://pandoc.org/MANUAL.html#option--embed-resources).
+
+### Code, contents and browser controls
+
+[W002 - Code and document navigation](../specs/002-code-and-outline/spec.org)
+extends the approved renderer. Pandoc always runs with standalone output and
+the owned `page.html5` template. This intermediate wrapper includes only the
+generated body and optional contents; the final Go template adds the original
+source header, fonts, policy and browser script once.
+
+`HTMLPREVIEW_TOC` defaults to `1`, accepting `0` or `1`.
+`HTMLPREVIEW_TOC_DEPTH` defaults to `3`, accepting source levels `1` through `6`.
+Empty values select defaults. Validation precedes session allocation, including
+depth when contents are disabled. No standalone setting is exposed.
+
+The Org pre-pass preserves source-block bodies in string-only JSON records in
+an unpredictable per-document raw format. Lua validates the records and makes
+real Pandoc code blocks. Every AST code block receives an owned association
+and literal-value record. Pandoc's built-in highlighter supplies semantic spans;
+the owned stylesheet supplies the light/dark palette. Shell aliases `sh` and
+`shell` use Bash. Unknown languages and examples remain plain.
+
+Go validates and removes only its transport records before source sanitization.
+It retains writer text when exact, restores a single omitted final newline,
+or falls back to the exact plain value with a bounded diagnostic. Source and
+output limits cover conversion input, transport output and final pages.
+No language label selects an external syntax definition or executes code.
+
+Temporary heading identities bind Pandoc's contents to concrete heading nodes.
+Go restores source identifiers, applies Org properties and allocates unique
+final IDs before retargeting those links. Contents are separated before source
+graph discovery and receive their own passive sanitization. Heading images use
+alternative text in contents labels; document images keep normal resolution.
+Empty contents are omitted. The filename header never enters Pandoc's outline.
+
+The browser module owns one clipboard service for the source header and code.
+It captures literal text before inserting native copy buttons and permits one
+pending write per page. Code within links keeps navigation; its copy button is
+outside the link. Direct copying respects active selections, dragging and
+modifier clicks. Success follows the resolved write; failure exposes a labelled
+readonly field without reading the clipboard or moving focus.
+
+Each enhanced section reserves a separate gutter for its native folding button.
+The hit target fills its visible height and is at least 24 CSS pixels wide.
+A hidden body uses a four-pixel accent bar and bottom plus; a visible body uses
+a one-pixel bar. Local activation switches between fully open and folded.
+Global modes, initial Org visibility, fragment reveal and print restoration
+retain their existing roles. Control names capture heading text before code
+buttons are inserted. Lifecycle teardown removes listeners, controls and timers;
+page restoration enhances the passive document once.
 
 ## Temporary files and reference resolution
 

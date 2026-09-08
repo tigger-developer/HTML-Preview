@@ -33,13 +33,40 @@ button { font:inherit; color:var(--fg); background:var(--panel); border:1px soli
 .hp-print-source { display:none; }
 .hp-status { display:block; font-size:.9rem; color:var(--muted); } .hp-manual { width:100%; font-family:var(--mono); font-size:.85rem; }
 .hp-toolbar { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem; }
-.hp-toggle { font-size:.8rem; margin-right:.5rem; }
+.hp-code-copy { font-family:var(--mono); min-width:1.5rem; min-height:1.5rem; padding:0 .2rem; margin-left:.15rem; font-size:.95rem; vertical-align:baseline; color:var(--muted); }
+.hp-code-block { position:relative; }
+.hp-code-block > .hp-code-copy { display:block; margin:0 0 -.25rem auto; }
+.hp-feedback { font-weight:400; white-space:normal; }
+#hp-toc { border-bottom:1px solid var(--rule); margin:0 0 1.5rem; padding:0 0 1rem; }
+#hp-toc ul { margin:.25rem 0; }
 section[data-hp-level] section[data-hp-level] { margin-left:.6rem; padding-left:.7rem; border-left:1px solid var(--rule); }
+.hp-outline-section,section[data-hp-level] .hp-outline-section { position:relative; display:flow-root; border-left:0; margin-left:0; padding-left:1.8rem; min-height:1.5rem; }
+.hp-outline-section > :is(h2,h3,h4,h5,h6,[role=heading]) { margin-top:.8rem; }
+.hp-toggle { position:absolute; top:0; bottom:0; left:0; width:1.5rem; min-height:1.5rem; padding:0; border:0; border-radius:0; background:transparent; color:var(--accent); }
+.hp-toggle::before { content:""; position:absolute; top:0; bottom:0; left:calc(50% - 1px); width:1px; background:var(--muted); }
+.hp-toggle[aria-expanded=false]::before { width:4px; left:calc(50% - 2px); bottom:1.2rem; background:var(--accent); }
+.hp-toggle-plus { position:absolute; bottom:0; left:0; width:100%; line-height:1.2rem; font-family:var(--mono); font-size:1.2rem; font-weight:700; }
+.hp-toggle[aria-expanded=true] .hp-toggle-plus { display:none; }
+.hp-toggle:hover::before { background:var(--accent); }
+.hp-outline-section[hidden],section[data-hp-level] .hp-outline-section[hidden] { display:none; }
+/* Built-in Pandoc token classes use an owned palette; no writer CSS is loaded. */
+:root { --syntax-keyword:#65369a; --syntax-string:#176438; --syntax-number:#924318; --syntax-comment:#535c69; --syntax-function:#20599b; --syntax-error:#a52132; }
+@media (prefers-color-scheme:dark) { :root { --syntax-keyword:#d3b4ff; --syntax-string:#96d8a6; --syntax-number:#f6b785; --syntax-comment:#b2bac6; --syntax-function:#94c4fc; --syntax-error:#ffadb5; } }
+code .kw,code .cf,code .dt,code .bu,code .ex { color:var(--syntax-keyword); font-weight:700; }
+code .st,code .vs,code .ch,code .sc,code .ss,code .im { color:var(--syntax-string); }
+code .dv,code .bn,code .fl,code .cn { color:var(--syntax-number); }
+code .co,code .cv,code .do,code .an,code .wa { color:var(--syntax-comment); font-style:italic; }
+code .fu,code .at,code .pp { color:var(--syntax-function); }
+code .er,code .al { color:var(--syntax-error); font-weight:700; }
+code .op,code .ot,code .va,code .in { color:var(--fg); }
 @media (max-width:35rem) { body { padding:1rem .9rem 3rem; } section[data-hp-level] section[data-hp-level] { margin-left:.2rem; padding-left:.4rem; } }
+@media (max-width:35rem) { .hp-outline-section,section[data-hp-level] .hp-outline-section { margin-left:0; padding-left:1.6rem; } }
 @media print {
   :root { --bg:#fff; --fg:#000; --muted:#333; --rule:#aaa; --panel:#fff; --link:#000; --accent:#333; }
   body { max-width:none; padding:0; font-size:11pt; }
-  .hp-toolbar,.hp-toggle,.hp-status,.hp-manual { display:none !important; }
+  .hp-toolbar,.hp-toggle,.hp-code-copy,.hp-feedback,.hp-status,.hp-manual { display:none !important; }
+  .hp-outline-section,section[data-hp-level] .hp-outline-section { padding-left:.5rem; }
+  code span { color:var(--fg) !important; }
   .hp-copy { display:none; }
   .hp-print-source { display:inline; }
   main [hidden] { display:revert !important; }

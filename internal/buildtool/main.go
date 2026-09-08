@@ -166,5 +166,5 @@ func lint() error {
 	if err := command(nil, "stylua", "--check", "assets/pandoc"); err != nil {
 		return err
 	}
-	return command(nil, "pandoc", "--from=markdown", "--to=html5", "--sandbox", "--lua-filter=assets/pandoc/fidelity.lua", "--output="+os.DevNull, "assets/pandoc/empty.md")
+	return command(nil, "pandoc", "--from=markdown", "--to=html5", "--sandbox", "--metadata=htmlpreview-code-token:0123456789abcdef0123456789abcdef", "--lua-filter=assets/pandoc/fidelity.lua", "--output="+os.DevNull, "assets/pandoc/empty.md")
 }

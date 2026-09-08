@@ -86,6 +86,8 @@ Use -- before a filename beginning with -. Open the system default browser.
   --version        Show build identity without preview side effects
 
 Environment settings (empty values use defaults):
+  HTMLPREVIEW_TOC                     1; 0 or 1 for the table of contents
+  HTMLPREVIEW_TOC_DEPTH               3; source heading levels 1 to 6
   HTMLPREVIEW_LINKS                   0; 0 or 1 for bounded linked browsing
   HTMLPREVIEW_MODE                    quick; read when LINKS=1
   HTMLPREVIEW_ROOT                    Each entry's canonical parent directory
@@ -98,6 +100,7 @@ Environment settings (empty values use defaults):
   HTMLPREVIEW_DEADLINE                60s; 100ms to 10m for conversion
 
 LINKS=1 requires read mode. Read mode retains pages until Ctrl+C or SIGTERM.
+Standalone styled output is always enabled; there is no fragment setting.
 Quick mode removes its private temporary directory after the grace period;
 the delay does not guarantee browser readiness. SIGKILL can leave that directory.
 Source files are never modified. Local assets remain dependent on their originals.

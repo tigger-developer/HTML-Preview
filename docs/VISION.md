@@ -37,9 +37,16 @@ The reader should receive:
 - **Readable presentation:** embedded Asap variable fonts, considered spacing,
   tables, code, quotations, lists, images, footnotes, and light and dark
   appearances. Asap provides adjustable weight and width; code blocks, inline
-  code, and other fixed-width text use embedded Iosevka Custom.
+  code, and other fixed-width text use embedded Iosevka Custom. Declared code
+  languages receive local syntax highlighting while literal text remains intact.
 - **Org fidelity:** recognizable task states, tags, priorities, timestamps,
   planning information, drawers, and an outline that can be folded.
+- **Direct document navigation:** complete styled pages with contents enabled
+  by default through source heading level three. Contents can be disabled or
+  given another depth. Clickable margin bars open and close sections.
+- **Code copying:** inline code, Org verbatim and code blocks offer explicit
+  copying with keyboard controls, honest feedback and manual fallback. Selection
+  and links retain their normal actions. Code is never executed.
 - **Source context:** a visible filename and location, without allowing a long
   path to dominate the document. Keep the original directory-and-filename
   header, with the filename emphasized; activating it copies the full original
@@ -52,6 +59,10 @@ The reader should receive:
 
 Fidelity means preserving useful document structure and meaning. It does not
 promise a full Emacs implementation or execution of Org source blocks.
+
+The code-copying, margin-bar and contents direction was approved through
+[W002 - Code and document navigation](../specs/002-code-and-outline/spec.org)
+on 8 September 2026. Standalone output is always enabled.
 
 ## Temporary output
 

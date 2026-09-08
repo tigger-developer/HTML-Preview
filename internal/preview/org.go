@@ -4,6 +4,7 @@ package preview
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"html"
 	"regexp"
@@ -21,7 +22,7 @@ type preservation struct {
 	warnings      []string
 }
 
-func preserveOrg(data []byte) preservation {
+func preserveOrg(data []byte, token string) preservation {
 	source := strings.ReplaceAll(string(data), "\r\n", "\n")
 	prefix := fmt.Sprintf("HTMLPREVIEW_%x", sha256.Sum256(data))
 	for strings.Contains(source, prefix) {
@@ -38,6 +39,7 @@ func preserveOrg(data []byte) preservation {
 	var current *orgHeading
 	keywords := map[string]bool{"TODO": true, "DONE": true}
 	block := ""
+	codeCount := 0
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]
 		trim := strings.TrimSpace(line)
@@ -66,7 +68,25 @@ func preserveOrg(data []byte) preservation {
 				}
 				literal.WriteString(lines[i])
 			}
-			out.WriteString(marker("<pre><code>" + html.EscapeString(literal.String()) + "</code></pre>"))
+			if kind == "SRC" {
+				codeCount++
+				language := ""
+				if parts := strings.Fields(trim); len(parts) > 1 {
+					language = parts[1]
+				}
+				// A string-only record cannot fail JSON encoding. Newlines and export
+				// terminators are escaped within its single transport line.
+				record, _ := json.Marshal(struct {
+					ID       string `json:"id"`
+					Text     string `json:"text"`
+					Language string `json:"language"`
+				}{
+					ID: fmt.Sprintf("htmlpreview-code-%s-%d", token, codeCount), Text: literal.String(), Language: language,
+				})
+				out.WriteString("\n#+begin_export htmlpreview-code-" + token + "\n" + string(record) + "\n#+end_export\n")
+			} else {
+				out.WriteString(marker("<pre><code>" + html.EscapeString(literal.String()) + "</code></pre>"))
+			}
 			continue
 		}
 		if directive == "#+BEGIN_COMMENT" || directive == "#+BEGIN_EXPORT" {

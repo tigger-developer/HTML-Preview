@@ -8,6 +8,11 @@ embedded Asap and Iosevka Custom fonts, and a private temporary directory.
 Browser qualification and the Homebrew installation trial remain pending in
 [the validation record](specs/001-local-document-preview/validation.org).
 
+[The approved code and navigation change](specs/002-code-and-outline/spec.org)
+adds highlighting, code copying, margin bars and configurable contents.
+Its implementation audit and browser checks are tracked in the
+[change evidence](specs/002-code-and-outline/validation.org).
+
 ```sh
 htmlpreview README.md docs/notes.org
 ```
@@ -15,6 +20,28 @@ htmlpreview README.md docs/notes.org
 Each distinct source context receives a separate preview. The header identifies
 the original source; activating it copies its full logical path. When browser
 clipboard access is unavailable, the header offers manual copying.
+
+Code uses local syntax highlighting and the embedded Iosevka Custom font.
+Click inline code, Org verbatim or a code block to copy its literal text, or
+activate its copy glyph with the keyboard. Existing selections and dragging
+retain normal selection behaviour. Code inside a link uses a separate copy
+button so the link keeps its navigation action. Clipboard refusal offers a
+readonly field for manual copying; empty code has no enabled copy action.
+
+The [Org ledger](examples/work.org) demonstrates TODO markers, tags, drawers,
+planning and source blocks. The [Markdown companion](examples/code.md) includes
+highlighting, inline code, duplicate headings and long lines:
+
+```sh
+HTMLPREVIEW_LINKS=1 htmlpreview examples/work.org examples/code.md
+```
+
+Every preview is a complete styled HTML document. Its table of contents is
+enabled by default through source heading level three. A thick accent margin
+bar with a bottom plus opens a folded section; the thin bar closes it. The
+global Overview, Contents and Show all buttons select the outline view.
+Without JavaScript, the full document remains open and code stays selectable.
+Printing includes all content and hides the interactive controls.
 
 ## Reading and navigation
 
@@ -105,6 +132,8 @@ interface. Use `--` before a filename beginning with `-`.
 
 | Setting | Default | Accepted values |
 | --- | --- | --- |
+| `HTMLPREVIEW_TOC` | `1` | `0` or `1`; show the table of contents |
+| `HTMLPREVIEW_TOC_DEPTH` | `3` | Integer, 1 to 6; maximum source heading level |
 | `HTMLPREVIEW_LINKS` | `0` | `0` or `1` |
 | `HTMLPREVIEW_MODE` | `quick`; `read` with links | `quick` or `read`; links require `read` |
 | `HTMLPREVIEW_ROOT` | Each entry's canonical parent | Existing directory containing every explicit canonical source |
@@ -121,6 +150,11 @@ for success, 1 for an operational failure, and 2 for an invalid invocation.
 Successful entries may still open when another input fails. Publication is
 transactional: a publication failure opens no entry. Help and version requests
 have no preview side effects and bypass environment validation.
+
+Standalone output is always enabled. `HTMLPREVIEW_STANDALONE` is unsupported
+and rejected as an unknown setting. TOC settings override source TOC metadata;
+depth is validated even when the TOC is disabled. A document with no eligible
+headings has no empty contents navigation.
 
 ## Development and packaging
 

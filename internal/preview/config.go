@@ -11,6 +11,8 @@ import (
 
 type config struct {
 	links                                bool
+	toc                                  bool
+	tocDepth                             int
 	mode, root                           string
 	grace, deadline                      time.Duration
 	files, depth                         int64
@@ -46,7 +48,7 @@ func arguments(args []string) ([]string, string, error) {
 }
 
 func settings(env []string) (config, error) {
-	c := config{mode: "quick", grace: 3 * time.Second, deadline: time.Minute, files: 50, depth: 3, sourceBytes: 10485760, totalBytes: 52428800, outputBytes: 104857600}
+	c := config{toc: true, tocDepth: 3, mode: "quick", grace: 3 * time.Second, deadline: time.Minute, files: 50, depth: 3, sourceBytes: 10485760, totalBytes: 52428800, outputBytes: 104857600}
 	values := make(map[string]string)
 	for _, entry := range env {
 		key, value, _ := strings.Cut(entry, "=")
@@ -56,6 +58,20 @@ func settings(env []string) (config, error) {
 	}
 	for key, value := range values {
 		switch key {
+		case "HTMLPREVIEW_TOC":
+			if value != "" && value != "0" && value != "1" {
+				return c, fmt.Errorf("%s must be 0 or 1", key)
+			}
+			c.toc = value != "0"
+		case "HTMLPREVIEW_TOC_DEPTH":
+			if value == "" {
+				continue
+			}
+			n, err := strconv.Atoi(value)
+			if err != nil || n < 1 || n > 6 {
+				return c, fmt.Errorf("%s must be an integer from 1 to 6", key)
+			}
+			c.tocDepth = n
 		case "HTMLPREVIEW_LINKS":
 			if value != "" && value != "0" && value != "1" {
 				return c, fmt.Errorf("%s must be 0 or 1", key)

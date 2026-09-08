@@ -471,7 +471,8 @@ func TestRT001_3_Markdown(t *testing.T) {
 	if textOf(nodes(r.pages[0], "blockquote")[0]) != "\nQuote\n" || textOf(nodes(r.pages[0], "em")[0]) != "emphasis" {
 		t.Fatal("quotation or emphasis text changed")
 	}
-	if len(nodes(nodes(r.pages[0], "ul")[0], "ul")) != 1 || len(nodes(nodes(r.pages[0], "table")[0], "tr")) != 2 {
+	main := documentNode(t, r.pages[0], "hp-document")
+	if len(nodes(nodes(main, "ul")[0], "ul")) != 1 || len(nodes(nodes(main, "table")[0], "tr")) != 2 {
 		t.Fatal("nested list or table relationships changed")
 	}
 	footnote := false

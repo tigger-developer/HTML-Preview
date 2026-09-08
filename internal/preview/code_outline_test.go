@@ -316,14 +316,29 @@ func TestRT002_3_ContentsSettings(t *testing.T) {
 
 func TestRT002_3_ContentsDestinations(t *testing.T) {
 	root := t.TempDir()
-	a := source(t, root, "a.md", "# Same {#duplicate}\nFirst\n\n### Gap *formatted*\nBody\n\n# Same {#duplicate}\nSecond\n\n[next](b.org)\n")
-	b := source(t, root, "b.org", "* Same\n:PROPERTIES:\n:ID: alias\n:CUSTOM_ID: duplicate\n:END:\n*** Gap /formatted/\nBody\n* Same\n:PROPERTIES:\n:CUSTOM_ID: duplicate\n:END:\n")
+	a := source(t, root, "a.md", "# Same {#duplicate}\nFirst\n\n### Gap *formatted*\nBody\n\n# Same {#duplicate}\nSecond\n\n[next](b.org)\n\n```go\npackage main\n```\n")
+	b := source(t, root, "b.org", "* Same\n:PROPERTIES:\n:ID: alias\n:CUSTOM_ID: duplicate\n:END:\n*** Gap /formatted/\nBody\n* Same\n:PROPERTIES:\n:CUSTOM_ID: duplicate\n:END:\n#+BEGIN_SRC go\npackage main\n#+END_SRC\n")
 	empty := source(t, root, "empty.md", "No headings.\n")
 	r := run(t, t.TempDir(), []string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_ROOT=" + root}, a, empty)
 	success(t, r, 3)
 	checkContents(t, r.pages[0], []string{"Same", "Gap formatted", "Same"})
 	checkContents(t, r.pages[1], nil)
 	checkContents(t, r.pages[2], []string{"Same", "Gap formatted", "Same"})
+	for _, item := range []struct {
+		index   int
+		literal string
+	}{{0, "package main"}, {2, "package main\n"}} {
+		blocks := nodes(documentNode(t, r.pages[item.index], "hp-document"), "pre")
+		found := false
+		for _, block := range blocks {
+			if textOf(block) == item.literal && len(nodes(block, "span")) > 0 {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("linked session lost highlighted literal on page %d", item.index)
+		}
+	}
 	if attr(nodes(r.pages[2], "h1")[0], "data-hp-source") != b {
 		t.Fatal("linked source identity")
 	}

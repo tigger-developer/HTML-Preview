@@ -132,6 +132,13 @@ func (s *session) document(p *page) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	toc := ""
+	if p.toc != nil {
+		toc, err = sanitizeDocument(p.toc)
+		if err != nil {
+			return nil, err
+		}
+	}
 	css, err := presentationCSS()
 	if err != nil {
 		return nil, err
@@ -153,11 +160,11 @@ func (s *session) document(p *page) ([]byte, error) {
 		Policy, Name, Source, Directory, Startup string
 		CSS                                      template.CSS
 		Script                                   template.JS
-		Body, Notices                            template.HTML
+		Body, Notices, TOC                       template.HTML
 	}{
 		Policy: policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: strings.TrimSuffix(p.source.logical, filepath.Base(p.source.logical)), Startup: p.startup,
 		// #nosec G203 -- CSS, script, and notices come only from embed.FS; body has passed the passive allowlist.
-		CSS: template.CSS(css), Script: template.JS(script), Body: template.HTML(body), Notices: template.HTML(notices), // Only embedded assets and allowlisted HTML cross these trusted boundaries.
+		CSS: template.CSS(css), Script: template.JS(script), Body: template.HTML(body), Notices: template.HTML(notices), TOC: template.HTML(toc), // Only embedded assets and allowlisted HTML cross these trusted boundaries.
 	}
 	t, err := template.New("page").Parse(string(layout))
 	if err != nil {

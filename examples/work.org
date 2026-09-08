@@ -1,0 +1,133 @@
+#+TITLE: Preview work ledger
+#+SUBTITLE: Synthetic examples, not project delivery status
+#+TODO: TODO(t) ACTIVE(a) BLOCKED(b) REVIEW(r) | DONE(d)
+#+STARTUP: content
+
+* ACTIVE [#A] Readable local previews [2/4] :preview:ux:
+SCHEDULED: <2026-09-08 Tue 09:00-10:00 +1w -2d>
+DEADLINE: <2026-09-11 Fri>
+:PROPERTIES:
+:CUSTOM_ID: reading
+:ID: preview-reading
+:OWNER: Example reader
+:VISIBILITY: all
+:END:
+:LOGBOOK:
+- State "ACTIVE" from "TODO" [2026-09-08 Tue 09:15]
+CLOCK: [2026-09-08 Tue 09:15]--[2026-09-08 Tue 09:45] => 0:30
+:END:
+
+This ledger demonstrates preserved TODO states, priorities, tags, statistics,
+planning and drawers. The values are displayed without recalculation.
+
+- [X] Preserve the original filename header.
+- [X] Package Asap and Iosevka Custom.
+- [ ] Review the folding bars with the keyboard.
+- [ ] Review code copying in the default browser.
+
+Click ~htmlpreview~ or =literal <text> & spaces= to copy its literal value.
+The small copy glyph is also a keyboard button. Dragging still selects text.
+
+** REVIEW Syntax and literal text :code:
+:PROPERTIES:
+:CUSTOM_ID: syntax
+:END:
+
+The following blocks use Pandoc's built-in highlighter. Their contents are
+displayed as text; none is executed. Tabs and final line endings are retained.
+
+*** Go :go:
+#+BEGIN_SRC go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Taḋg: á é í ó ú <&>")
+}
+#+END_SRC
+
+*** Lua :lua:
+#+BEGIN_SRC lua
+local tasks = { "read", "copy", "fold" }
+for number, task in ipairs(tasks) do
+  print(number, task)
+end
+#+END_SRC
+
+*** Shell :bash:
+#+BEGIN_SRC sh
+if test -f "notes.org"; then
+  printf '%s\n' "A local preview"
+fi
+#+END_SRC
+
+*** JSON :json:
+#+BEGIN_SRC json
+{
+  "font": "Asap",
+  "codeFont": "Iosevka Custom",
+  "toc": true,
+  "tocDepth": 3
+}
+#+END_SRC
+
+** BLOCKED A folded section with nested content :interaction:
+:PROPERTIES:
+:CUSTOM_ID: folded-parent
+:VISIBILITY: folded
+:END:
+
+The thick accent bar and its bottom plus open this whole subtree. Clicking the
+thin bar closes it. Its full height is clickable, including beside the text.
+
+*** TODO A child with inline ~code~
+:PROPERTIES:
+:CUSTOM_ID: folded-child
+:END:
+
+The contents link to this heading opens its ancestors. The copy glyph belongs
+to the inline code and does not become part of the folding button's name.
+
+:NOTES:
+This drawer is ordinary metadata. It does not become a code-copy target.
+:END:
+
+#+BEGIN_EXAMPLE
+* This is literal text, not a heading.
+:LOGBOOK:
+#+INCLUDE: example-only.org
+	An actual tab begins this line.
+#+END_EXAMPLE
+
+** TODO Plain code fallback :code:
+A missing or unknown language keeps plain code selectable and copyable.
+
+#+BEGIN_SRC not-a-language
+literal <text> & "quotes"
+#+END_SRC
+
+#+BEGIN_SRC
+Unlabelled source text.
+#+END_SRC
+
+* DONE [#B] Original identity and links [100%] :navigation:
+CLOSED: [2026-09-08 Tue 10:00]
+:PROPERTIES:
+:CUSTOM_ID: navigation
+:END:
+
+The filename above the page identifies the original source and copies its full
+logical path. It does not identify the temporary HTML output.
+
+- [[file:code.md][Markdown companion]]
+- [[#folded-child][Jump into the folded child]]
+- [[https://pandoc.org][Pandoc documentation, opened only by following this link]]
+
+The global Overview, Contents and Show all controls retain their distinct
+outline views. The table of contents above them is enabled by default through
+source heading level three.
+
+:LOGBOOK_:
+A drawer whose name ends in an underscore is retained.
+:END:

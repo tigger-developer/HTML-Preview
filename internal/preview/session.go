@@ -215,7 +215,7 @@ func (s *session) write(name string, data []byte) error {
 }
 
 func (s *session) extract() error {
-	for _, name := range []string{"defaults.yaml", "fidelity.lua"} {
+	for _, name := range []string{"defaults.yaml", "fidelity.lua", "page.html5"} {
 		data, err := bundle.Assets.ReadFile("assets/pandoc/" + name)
 		if err != nil {
 			return err
