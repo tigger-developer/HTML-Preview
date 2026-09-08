@@ -55,6 +55,26 @@
 - Evidence :: None yet. The pre-definition example opened on 8 September 2026
   used W001 behaviour; the separate Pandoc study was not the W002 application.
 
+** Folded removal notices - operator observation
+:PROPERTIES:
+:RESULT: FAIL
+:CATEGORY: USER
+:END:
+
+- Candidate :: =htmlpreview review-w002 (fb390c8b229f)=; native macOS handoff
+  opened the synthetic passive-content fixture alongside the two examples.
+  The exact browser/version was not recorded.
+- Reporter :: Taḋg, 8 September 2026: "when folded, i see
+  [Unsupported script content] [Unsupported style content]".
+- Diagnosis :: Generated HTML retained the removal notices as direct text
+  children. The fold handler hid element children only, leaving that text shown.
+- Remediation :: =204e128=, the folding and writer-link correction, gives visible
+  direct text a temporary element wrapper during enhancement and unwraps it
+  during teardown. It also removes unrequested empty highlighter links before
+  sanitization. Browser confirmation of the revised candidate is PENDING.
+- Scope :: This is a failed folding observation, not a complete matrix result.
+  Earlier pending browser checks remain pending; no PASS is inferred.
+
 * UT002.2 - Clipboard interaction and fallback
 :PROPERTIES:
 :CUSTOM_ID: ut-002-2

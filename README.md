@@ -10,8 +10,8 @@ Browser qualification and the Homebrew installation trial remain pending in
 
 [The approved code and navigation change](specs/002-code-and-outline/spec.org)
 adds highlighting, code copying, margin bars and configurable contents.
-Its implementation audit and browser checks are tracked in the
-[change evidence](specs/002-code-and-outline/validation.org).
+Its implementation audit reports PASS; browser qualification remains pending
+in the [change evidence](specs/002-code-and-outline/validation.org).
 
 ```sh
 htmlpreview README.md docs/notes.org

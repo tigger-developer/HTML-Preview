@@ -237,3 +237,56 @@
   interface or new runtime was introduced.
 - Remediation :: Resubmit to the same external context. Browser evidence
   remains PENDING; no operator closure is inferred.
+
+** External implementation review - corrected candidate
+:PROPERTIES:
+:ROUND: 2
+:CONTEXT: /root/code_outline_implementation_audit
+:END:
+
+- Revision :: =fb390c8b229fcd829faeb08f28378421206cf6fa=, remediation evidence checkpoint;
+  production code is =8f5312569903564ef4308df7689e438c60d8dd7e=.
+- Audits :: =audit-test-code= and =audit-code=, configured gpt-5.6-luna.
+- Verdict :: PASS, returned within the eight-minute invocation bound.
+  The retained reviewer reported the exact current revision.
+- Findings :: No required correction remains in the reviewed delta.
+- Advisories :: W002-TEST-BROWSER-QUALIFICATION and
+  W002-CODE-BROWSER-QUALIFICATION retain actual browser interaction, geometry,
+  clipboard policy, printing and accessibility as pending human evidence.
+- Evidence boundary :: Quoted/list headings have an automated regression.
+  Multiple raw code values sharing a preformatted block have an example and
+  source review; their browser activation is not claimed as automated coverage.
+- Supersedes :: External round 1 for its recorded revision. Final checks and
+  the staged browser example follow this PASS; closure remains the operator's.
+
+** Local implementation review - live-preview corrections
+:PROPERTIES:
+:ROUND: 4
+:END:
+
+- Revision :: =204e1281d39d9ad16007bb5cabce5ab20a795829=, folding and writer-link correction.
+- Audits :: =audit-test-code= and =audit-code= in the delivery context.
+- Verdict :: PASS after the corrections below.
+- Observation :: The published candidate contained empty per-line highlighter
+  anchors after source sanitization stripped their tabindex and aria-hidden
+  attributes. This introduced unrequested empty links into keyboard navigation.
+- Regression :: RT002.1 - Literal code now rejects those writer links. It failed
+  for highlighted Markdown and Org before correction, then passed alongside all
+  W002 cases, CSP checks and installed-prefix checks: runtime 8.427 s and
+  integration 1.821 s. Only validated writer-owned code loses the empty links;
+  ordinary source anchors retain the source policy.
+- Operator finding :: The user reported that unsupported script/style notices
+  remained visible when folded. Published HTML showed bare text children while
+  outline refresh handled element children only. Enhancement now wraps visible
+  direct section text for folding, and teardown restores those text nodes.
+- Test boundary :: The reported browser failure and its correction are tracked
+  in UT002.1 - Reading and outline presentation. Native source checks pass;
+  no browser-execution claim is inferred from them.
+- Presentation input :: The intermediate template no longer supplies an unused
+  charset attribute that the source scrubber diagnosed. Final HTML retains its
+  owned UTF-8 metadata and complete wrapper.
+- Evidence :: make lint, oxlint and scoped Biome checks pass. The earlier full
+  race suite passed at the prior candidate; final affected checks will follow
+  the retained auditor's review of this correction.
+- Supersession :: The round-two external PASS remains historical for its exact
+  revision. Return this correction to the same external context.

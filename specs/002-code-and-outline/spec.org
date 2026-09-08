@@ -38,8 +38,9 @@
   *TOC and depth are configurable* through =HTMLPREVIEW_TOC= (default =1=)
   and =HTMLPREVIEW_TOC_DEPTH= (default =3=, valid =1= to =6=).
   *Standalone is hardcoded true*, following the operator's correction.
-- Next step :: *Deliver the approved change and record its validation*.
-  Browser results remain separate human evidence.
+- Next step :: *Review the implemented examples and record browser validation*.
+  The implementation gate reports PASS; browser results and operator closure
+  remain separate human evidence.
 
 -----
 
@@ -206,6 +207,15 @@
   contents do not create a second resource/discovery path.
 - Effect :: This is a reversible implementation detail within the specified
   separate contents/body and passive-resource boundaries.
+
+*** D002.3 - Continue attended after browser feedback
+:PROPERTIES:
+:CUSTOM_ID: d-002-3
+:END:
+
+- Mode :: *The operator's folded-notice report changes delivery to attended*.
+  The existing specification covers hiding the section body, so correction,
+  audit and validation continue without a new product decision.
 
 * Acceptance Criteria
 :PROPERTIES:
