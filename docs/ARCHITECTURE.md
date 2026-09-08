@@ -75,7 +75,7 @@ it does not need a separate installed interpreter. Pandoc provides that runtime.
 | Reference resolver | Source-relative URLs, filesystem identity, document graph, and output mapping |
 | HTML processor | Structured discovery and rewriting of rendered links and resource references |
 | Browser adapter | Open the finished entry pages using the platform's desktop mechanism |
-| HTML/CSS and browser JavaScript | Presentation, accessible folding, and optional copy interaction |
+| HTML/CSS and browser JavaScript | Presentation, accessible folding, and source-path copying |
 
 These are responsibilities, not a requirement for one package per row. A small
 `cmd/htmlpreview` entry point, private implementation under `internal/`, and
@@ -142,7 +142,31 @@ do not recompute task statistics or execute source blocks.
 The browser script should remain a small enhancement. Ordinary reading and
 navigation must work without it. Folding must preserve keyboard navigation,
 visible focus, and fragment destinations, including revealing folded ancestors
-when a link targets their contents. Clipboard support is optional.
+when a link targets their contents.
+
+The original filename header is required, including copying its full source
+path. Preserve the personal template's directory followed by an emphasized
+filename, compact right alignment, and separator above the document body.
+Use Iosevka Custom at 400 for the directory and 700 for the filename, with
+accessible contrast and wrapping for long paths. The browser tab title uses
+the original filename. This requirement, confirmed on 8 September 2026,
+supersedes the earlier optional-copy proposal.
+
+Display and copy the absolute logical source path used for that preview,
+including the Linux path when viewed from WSL. Do not copy the temporary HTML
+name, a Windows handoff URL, or a shell-quoted string. Preserve spaces and
+special characters by keeping the copy value separate from formatted text;
+the personal template's whitespace trimming is not a path-serialization rule.
+
+Enhance the header with a native button supporting click, Enter, and Space.
+Call `navigator.clipboard.writeText` directly from that user activation, with
+no clipboard reads or automatic copying. Show and announce success only after
+the write succeeds. If the API is unavailable or denied, keep the complete path
+selectable and show a manual-copy instruction. Without JavaScript, retain a
+plain selectable header; printing retains source identity without controls.
+Clipboard access depends on browser policy and must be checked in the actual
+file previews across the qualification matrix.
+[Clipboard API working draft](https://www.w3.org/TR/clipboard-apis/#dom-clipboard-writetext).
 
 Application styling is included locally. Source images remain references to
 their original files unless a later requirement explicitly adds embedding.

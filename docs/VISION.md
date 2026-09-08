@@ -39,7 +39,10 @@ The reader should receive:
 - **Org fidelity:** recognizable task states, tags, priorities, timestamps,
   planning information, drawers, and an outline that can be folded.
 - **Source context:** a visible filename and location, without allowing a long
-  path to dominate the document.
+  path to dominate the document. Keep the original directory-and-filename
+  header, with the filename emphasized; activating it copies the full original
+  source path. Keyboard activation and clear success/failure feedback are part
+  of this interaction. The path remains selectable without JavaScript.
 - **Working local references:** images and ordinary file links continue to
   resolve relative to the document that contains them.
 - **Predictable lifetime:** a preview remains available for the reading mode

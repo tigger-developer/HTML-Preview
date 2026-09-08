@@ -492,6 +492,74 @@ All three component audits were applied: audit-spec, audit-design, and audit-tes
   amendment's unique OS-temporary scratch directory. This is presentation
   evidence, not human inspection or application browser validation.
 
+** Source-header amendment - Local review 1
+:PROPERTIES:
+:CUSTOM_ID: definition-local-6
+:ROUND: 1
+:DATE: 2026-09-08
+:END:
+
+- Gate :: Definition.
+- Artefact :: [[file:spec.org][W001 - Installable previews with linked browsing]].
+- Revision :: =e2db66f35261830c34c1fa64f97cb1a618f67de960b8fa7d82cc7290dc98fe1b=.
+- Authority :: After the platform amendment passed, the operator required *the
+  original filename header and clicking it to copy*. This is the first local
+  review of that new amendment, not a retry of an earlier failed candidate.
+  Evidence identifiers remain monotonic; all earlier rounds are preserved.
+- Baseline inspection :: *The personal template and its inline JavaScript were
+  read in full*, together with the current preview command, HTML defaults, and
+  stylesheet. The source template is
+  =~/.local/share/pandoc/htmlpreview-template.html=; its source h1 contains
+  source_dirname, a slash, and strong source_filename. The inline handler
+  copies textContent after replacing line breaks and trimming, applies the
+  copied class for 600 milliseconds on success, and logs failure only to the
+  console. The stylesheet uses a compact right-aligned monospace header and
+  separator, with stronger filename weight and blanket opacity.
+- Prior gap :: *Source identity was required but copying remained optional*
+  in the architecture; there was no criterion or user-test definition for it.
+  The revised authorities preserve the interaction and add keyboard support,
+  explicit failure feedback, accessible contrast, and a distinct full-path value.
+- Supersession :: *The earlier PASS remains historical for its revision*.
+  The gate resets to PENDING; sign-off remains PENDING and the ledger remains
+  REVIEW. No renderer, browser script, or private configuration is changed.
+- Context :: Authoring context, applying *audit-spec, audit-design, and
+  audit-test-definitions* to the header amendment and adjacent source identity,
+  typography, clipboard security, accessibility, and platform contracts.
+- Verdict :: *Local PASS*; resume the existing independent reviewer.
+
+#+begin_example
+GATE: definition
+REVISION: e2db66f35261830c34c1fa64f97cb1a618f67de960b8fa7d82cc7290dc98fe1b
+VERDICT: PASS
+#+end_example
+
+- Specification review :: *Summary, authorities, and criteria require the source
+  header and copying interaction*. AC001.15 - Source identity is refined;
+  AC001.47 - Header activation copies the original path and AC001.48 - Manual
+  copying when unavailable use new identifiers confirmed against Git history.
+- Design review :: *The copy value is the original absolute logical source
+  path*, including in WSL. Safe HTML data carries it separately from formatted
+  text. Only the owned native control invokes writeText on user activation;
+  it never reads the clipboard or trusts source-body copyable classes. Success
+  awaits the API result, failure exposes manual copying, and no-JavaScript/print
+  output retains plain source identity. Private helpers are not dependencies.
+- Test-definition review :: *RT001.1 - Explicit inputs and source identity*
+  verifies the emitted header, title, escaped path, and source-context value.
+  *UT001.5 - Source header and clipboard interaction* verifies actual pasted
+  values across the platform matrix, keyboard activation, failure feedback,
+  manual copying, no-JavaScript/print behaviour, and clipboard isolation.
+  Forced API failures test fallback handling; they do not substitute for actual
+  successful writes. No browser harness or CLI clipboard dependency is added.
+- Document evidence :: *sanitize leaves all four authored documents unchanged*.
+  Pandoc parses each with unique heading IDs; 251 local links resolve. The
+  canonical seven-section/eight-field shape, 48 criteria, 23 reciprocal test
+  definitions, and matching procedures/expectations for all five user tests
+  pass one-off checks. =git diff --check= passes.
+- Evidence boundary :: *No application or browser result is claimed*. The
+  unattributed empty working-tree font and operator profile edits remain
+  preserved and unstaged. The retained reviewer remains =/root/definition_audit=
+  with its eight-minute timeout.
+
 * Implementation gate
 
 - Status :: Not run. Implementation is outside this definition workflow.

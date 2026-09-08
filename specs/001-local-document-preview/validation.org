@@ -117,6 +117,49 @@
   for each qualification environment. Cross-compilation and opener doubles are
   not browser evidence.
 
+** UT001.5 - Source header and clipboard interaction
+:PROPERTIES:
+:CUSTOM_ID: ut-001-5-result
+:END:
+
+- Category :: User test.
+- Definition :: [[file:spec.org::#ut-001-5][UT001.5 - Source header and clipboard interaction]].
+- Criteria :: [[file:spec.org::#ac-001-15][AC001.15 - Previews identify their source]],
+  [[file:spec.org::#ac-001-47][AC001.47 - Activating the source header copies its original path]],
+  [[file:spec.org::#ac-001-48][AC001.48 - Unavailable clipboard access retains manual copying]].
+- Reviewer :: Taḋg or an explicitly named operator.
+- Procedure :: *Use actual file previews in every qualification environment*,
+  in reading mode. Inspect Markdown and Org headers at narrow/wide widths in
+  both themes, including empty documents, long paths, relative inputs, symlink
+  aliases, Unicode, repeated spaces, quotes, ampersands, and percent/hash signs.
+  Seed the clipboard with known synthetic text, load the page, and paste into
+  a plain-text editor to confirm loading did not change it. Click the filename,
+  paste, and compare with the full original source path; repeat with focused
+  Enter and Space activation. In WSL verify the copied Linux path, not the
+  Windows navigation URL. Check visible focus and the announced result using
+  the browser accessibility inspector and an available screen reader.
+  On a disposable preview, use developer tools to make writeText reject with
+  NotAllowedError, then test a missing clipboard API; reload to restore the
+  real API after each case. Re-seed the sentinel and verify neither case claims
+  success or changes it. Follow the manual-copy instruction and compare the
+  pasted value. Disable JavaScript and manually select/copy the header. Inspect
+  print preview and try source-body copyable-class lookalikes.
+- Expected :: *The header retains directory context and emphasizes the filename*
+  without clipping or losing contrast; its tab title identifies the source.
+  *Click, Enter, and Space each copy the same original full path* with all
+  tested characters preserved. Success feedback follows the successful write.
+  *Rejected/unavailable access gives a readable, announced failure and a
+  selectable manual-copy value*. No-JavaScript reading offers plain selectable
+  source text; printing shows the source without copy controls/status. Loading
+  and source-body lookalikes never write to the clipboard. Forced API failures
+  prove fallback UI, not real browser permission behaviour; successful copying
+  must use the actual API in each environment.
+- Result :: PENDING for every qualification environment.
+- Evidence :: *Not run*. Record the revision, OS/browser/WSL versions, fixture
+  paths, activation methods, pasted comparisons, accessibility observations,
+  and dated human result. Keep actual clipboard success distinct from forced
+  API-failure evidence.
+
 * One-off tests
 
 ** OT001.1 - Local Homebrew package validation
@@ -144,3 +187,9 @@
   previews across desktop platforms adds actual handoff and WSL filesystem
   evidence. All results remain PENDING. The earlier Safari-only scope remains
   historical through Git and the prior audit records.
+
+- Source-header amendment :: On 8 September 2026, the operator required the
+  original filename header and copying interaction. UT001.5 - Source header
+  and clipboard interaction checks display, successful copying, keyboard use,
+  rejected/unavailable access, no-JavaScript selection, and clipboard isolation.
+  Its results remain PENDING; template inspection is not browser validation.

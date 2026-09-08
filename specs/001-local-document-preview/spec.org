@@ -2,7 +2,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PASS
+#+DEFINITION_GATE: PENDING
 #+OPERATOR_SIGNOFF: PENDING
 
 * Installable Markdown and Org previews with linked browsing
@@ -21,7 +21,9 @@
 - Changes :: The candidate defines four connected capabilities:
   - *Rendering preserves Org metadata, literal blocks, and identifiers*, embeds
     both Asap faces and four Iosevka Custom faces with their notices, and retains
-    accessible outline controls and printing. *Fonts need no system installation*,
+    accessible outline controls and printing. *The original filename header
+    copies its full source path* with mouse or keyboard activation.
+    *Fonts need no system installation*,
     including when invoked through a symlink from another directory.
   - *Local references resolve from their source directories*. Opt-in traversal
     defaults to 50 contexts, depth 3, 10 MiB per source, 50 MiB total source,
@@ -38,7 +40,8 @@
   and handoffs are diagnosed*; aliases and ambiguous IDs have explicit rules.
   Partial publication aborts opening. *Cleanup affects only the owned session*;
   forced termination may leave its directory behind. *WSL translation failures
-  are diagnosed*; unrepresentable original links become inactive.
+  are diagnosed*; unrepresentable original links become inactive. *Denied clipboard
+  access offers manual copying*; without JavaScript the path remains selectable.
 - Decisions :: *Go and temporary-directory output are selected*. *Asap is the
   proportional default*; *Iosevka Custom is the fixed-width and code default*.
   *Project code uses Apache 2.0* and both font families retain OFL 1.1.
@@ -161,6 +164,12 @@
   Windows default browser from WSL. This supersedes the earlier macOS-arm64-only
   candidate. The font-installation suggestion is addressed through embedded
   assets, with no system font installation or runtime font discovery.
+- Source-header amendment :: On 8 September 2026, the operator required *the
+  original filename header and click-to-copy interaction*. Inspection of the
+  personal Pandoc template found directory text followed by a bold filename;
+  its inline JavaScript copies the header text and briefly marks success. This
+  supersedes the earlier optional-copy architecture. The contract below adds
+  keyboard access, explicit failure feedback, and an unambiguous full-path value.
 - Ownership :: *Reused Org fidelity code is maintained project code*, subject to
   normal design, build, and verification.
 - Licensing :: *Project code and documentation use Apache 2.0*; both Asap and
@@ -332,9 +341,12 @@
 :CUSTOM_ID: ac-001-15
 :END:
 
-- Criterion :: Each *preview displays its source filename and location*, including
-  for an empty readable document.
-- Proven by :: [[#rt-001-1][RT001.1 - Explicit inputs and source identity]].
+- Criterion :: Each *preview begins with its original directory-and-filename
+  header*, including for an empty readable document. *The filename is emphasized*
+  within its full source path and used as the browser tab title. Long paths
+  remain readable in narrow windows.
+- Proven by :: [[#rt-001-1][RT001.1 - Explicit inputs and source identity]],
+  [[#ut-001-5][UT001.5 - Source header and clipboard interaction]].
 
 ** AC001.16 - Concurrent invocations remain isolated
 :PROPERTIES:
@@ -655,6 +667,29 @@
 - Proven by :: [[#rt-001-17][RT001.17 - Platform handoff and Windows file URLs]],
   [[#ut-001-4][UT001.4 - Installed previews across desktop platforms]].
 
+** AC001.47 - Activating the source header copies its original path
+:PROPERTIES:
+:CUSTOM_ID: ac-001-47
+:END:
+
+- Criterion :: With JavaScript and clipboard writing available, *clicking the
+  filename header or activating it with Enter/Space copies the full original
+  source path*. The value preserves source-context identity and path characters;
+  it is not the preview URL or temporary filename. *Success is visibly and
+  accessibly announced only after the write succeeds*.
+- Proven by :: [[#ut-001-5][UT001.5 - Source header and clipboard interaction]].
+
+** AC001.48 - Unavailable clipboard access retains manual copying
+:PROPERTIES:
+:CUSTOM_ID: ac-001-48
+:END:
+
+- Criterion :: If clipboard writing is denied or unavailable, *the header
+  provides a visible manual-copy instruction and its full selectable path*,
+  without claiming success. *Without JavaScript the path stays selectable*
+  without an inert copy control. No clipboard read or unsolicited write occurs.
+- Proven by :: [[#ut-001-5][UT001.5 - Source header and clipboard interaction]].
+
 * Test Definitions
 :PROPERTIES:
 :CUSTOM_ID: test-definitions
@@ -670,11 +705,18 @@
 - Boundary :: Exercise the *public executable and generated HTML*.
 - Setup :: Create *synthetic Markdown and Org inputs*: duplicate arguments,
   identical basenames in different directories, and an empty readable file.
+  Include relative input arguments, a symlink alias, Unicode, repeated spaces,
+  and HTML-sensitive characters in source names.
 - Action :: *Invoke the executable* with those inputs and a controlled
   desktop-opening boundary.
 - Expected :: *Distinct inputs produce separate, source-labelled previews*;
   duplicate arguments reuse one preview. *Open requests retain input order*; the
-  empty document still identifies its source.
+  empty document still identifies its source. The leading source h1 contains
+  the original directory and emphasized basename; the tab title is the basename.
+  Visible source text and the owned copy value preserve the expected absolute
+  logical path after HTML decoding. Escaping prevents path characters from
+  becoming markup; no temporary path or Windows handoff URL replaces the source
+  identity. Browser activation and actual clipboard contents are human-tested.
 - Retention :: *Persistent regression* under =make test=; observe the expected
   *RED before implementation*, then GREEN.
 
@@ -1147,6 +1189,46 @@
   default-browser identity/version, Pandoc, paths, and dated human observations*
   in =validation.org=. Each qualification environment remains PENDING until run.
 
+** UT001.5 - Source header and clipboard interaction
+:PROPERTIES:
+:CUSTOM_ID: ut-001-5
+:END:
+
+- Covers :: [[#ac-001-15][AC001.15 - Previews identify their source]],
+  [[#ac-001-47][AC001.47 - Activating the source header copies its original path]],
+  [[#ac-001-48][AC001.48 - Unavailable clipboard access retains manual copying]].
+- Reviewer :: Taḋg or an explicitly named operator.
+- Procedure :: *Use actual file previews in every qualification environment*,
+  in reading mode. Inspect Markdown and Org headers at narrow/wide widths in
+  both themes, including empty documents, long paths, relative inputs, symlink
+  aliases, Unicode, repeated spaces, quotes, ampersands, and percent/hash signs.
+  Seed the clipboard with known synthetic text, load the page, and paste into
+  a plain-text editor to confirm loading did not change it. Click the filename,
+  paste, and compare with the full original source path; repeat with focused
+  Enter and Space activation. In WSL verify the copied Linux path, not the
+  Windows navigation URL. Check visible focus and the announced result using
+  the browser accessibility inspector and an available screen reader.
+  On a disposable preview, use developer tools to make writeText reject with
+  NotAllowedError, then test a missing clipboard API; reload to restore the
+  real API after each case. Re-seed the sentinel and verify neither case claims
+  success or changes it. Follow the manual-copy instruction and compare the
+  pasted value. Disable JavaScript and manually select/copy the header. Inspect
+  print preview and try source-body copyable-class lookalikes.
+- Expected :: *The header retains directory context and emphasizes the filename*
+  without clipping or losing contrast; its tab title identifies the source.
+  *Click, Enter, and Space each copy the same original full path* with all
+  tested characters preserved. Success feedback follows the successful write.
+  *Rejected/unavailable access gives a readable, announced failure and a
+  selectable manual-copy value*. No-JavaScript reading offers plain selectable
+  source text; printing shows the source without copy controls/status. Loading
+  and source-body lookalikes never write to the clipboard. Forced API failures
+  prove fallback UI, not real browser permission behaviour; successful copying
+  must use the actual API in each environment.
+- Record :: Record *revision, OS/browser/WSL versions, fixture paths, activation
+  method, pasted comparisons, accessibility observations, and dated result* in
+  =validation.org=. All environments remain PENDING until observed; fallback
+  alone does not pass the ordinary successful-copy case.
+
 ** OT001.1 - Local Homebrew package validation
 :PROPERTIES:
 :CUSTOM_ID: ot-001-1
@@ -1281,6 +1363,16 @@
   [[#ac-001-35][AC001.35 - Quick lifetime]],
   [[#ac-001-36][AC001.36 - Cleanup ownership]], and
   [[#rt-001-12][RT001.12 - Retention cancellation and cleanup ownership]].
+
+** Clipboard access is unavailable
+
+- Condition :: *Clipboard writing is denied, missing, or JavaScript is disabled*.
+- Required behaviour :: *Retain the original source path for manual copying*;
+  failures are explained without a success claim. JavaScript-free output has
+  readable source text without a non-functional button. No clipboard read or
+  automatic write is introduced to work around browser policy.
+- Covered by :: [[#ac-001-48][AC001.48 - Unavailable clipboard access retains manual copying]],
+  [[#ut-001-5][UT001.5 - Source header and clipboard interaction]].
 
 ** WSL translation and desktop availability
 
@@ -1628,6 +1720,33 @@ yaml_metadata_block
   enhancement applies their initial folding. Before print, expand all sections
   and drawers; restore prior state afterwards. Print styling shows all content.
   Dark/light palettes meet WCAG AA body/large-text contrast requirements.
+- Source header :: *Display the full absolute logical source path in the leading
+  h1*, with its basename in strong emphasis and as the document title. Match the
+  original compact right-aligned header and separator; use Iosevka Custom 400
+  for the directory and 700 for the filename, with wrapping and accessible
+  contrast rather than the original blanket opacity. Preserve visible path
+  whitespace and do not abbreviate or truncate the copy value.
+- Copy value :: *Derive the path from the source context*, equivalent to the
+  cleaned absolute input path before symlink canonicalization. Linked pages use
+  their own context. In WSL it remains a Linux path, even for mounted Windows
+  sources. Store the exact escaped value on the owned header, separate from
+  formatted text; do not trim it, URL-encode it, shell-quote it, or derive it
+  from the temporary page. The original private path-formatting helper is not
+  a dependency and its displayed-text normalization is not retained.
+- Copy interaction :: *Enhance the plain selectable header with a native button*
+  named to indicate copying the source path. Bind only the owned header element;
+  source content cannot opt into clipboard handling through classes or IDs.
+  Use the native click event for pointer, Enter, and Space activation. Call
+  navigator.clipboard.writeText directly in that activation, without an earlier
+  asynchronous step that loses user activation. Never read the clipboard.
+- Copy feedback :: *Announce success only after writeText resolves*, using visible
+  text and a polite live region outside the copy value. Retain success text
+  for two seconds. Permit only one pending attempt; clear prior feedback timers
+  before a new attempt and on teardown. A rejected or missing API restores the
+  button and announces a manual-copy instruction with a readonly selectable
+  full-path field. Do not steal focus or claim success from selection alone.
+  Without JavaScript, leave the original header as plain selectable text;
+  printing hides the button/status/field and retains the full source identity.
 - Browser script :: *Use a small inline ES2020 module without imports* or global
   mutable state. Scope listeners and DOM queries to application-owned controls;
   use safe DOM APIs and register teardown for listeners/print-state changes.
@@ -1727,6 +1846,14 @@ yaml_metadata_block
 - Data and secrets :: *Keep source content and paths in owner-private output*;
   minimize diagnostics, and add no telemetry or publication. Local images remain
   dependent on the original files and OS/browser permissions.
+- Clipboard boundary :: *Only explicit activation copies the original source
+  path*. No load-time writes, clipboard reads, permission bypass, or source-body
+  clipboard handlers are allowed. Treat the browser's clipboard API as a
+  permission-controlled boundary; no CLI clipboard helper, network service,
+  or browser security-setting change is introduced. The
+  [[https://www.w3.org/TR/clipboard-apis/#dom-clipboard-writetext][Clipboard API working draft]]
+  describes writeText and rejection; actual file-page behaviour requires the
+  selected browser tests.
 - Access :: *Traversal cannot widen its root or device boundary implicitly*.
   Resource links outside that boundary remain original browser references, not
   graph inputs. Following an external hyperlink is an explicit browser action.
