@@ -1,11 +1,11 @@
-#+TITLE: W002 - Highlighted code, copying and compact fold controls
+#+TITLE: W002 - Code highlighting, copying and document navigation
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 #+DEFINITION_GATE: PENDING
 #+OPERATOR_SIGNOFF: PENDING
 
-* Highlighted code, copying and compact fold controls
+* Code highlighting, copying and document navigation
 :PROPERTIES:
 :CUSTOM_ID: summary
 :END:
@@ -18,20 +18,26 @@
   Clicking inline code, Org verbatim or a code block copies its text;
   keyboard users have native copy buttons. *A thick, bright bar with a bottom
   plus opens hidden content; a normal bar closes expanded content*.
+  *Standalone output is mandatory*. A table of contents is enabled by default,
+  including source heading levels 1 to 3.
 - Changes :: *Examples demonstrate TODO states, tags, drawers and code*.
   Pandoc handles highlighting; the owned theme supplies light/dark colours.
   *Copying excludes delimiters and controls* and preserves literal whitespace.
 - Unchanged :: *The header identifies and copies the original source path*.
-  Fonts, CLI settings, source protection, link resolution, private sessions,
+  Fonts, existing CLI settings, source protection, link resolution, private sessions,
   platform handoff and W001 qualification requirements continue to apply.
 - Edge cases :: *Unknown languages remain plain*; empty code is not copied.
   *Selection and hyperlink activation remain available*. Clipboard refusal
   offers a manual-copy field. No-JavaScript reading and full printing remain
   available. Org literal lookalikes and trailing newlines remain literal.
   The first click of a double-click selection may copy before the word is selected.
+  *TOC links use final heading IDs*; empty outlines omit the contents navigation.
 - Decisions :: *Go, Pandoc and browser-only JavaScript remain the stack*.
   The operator selected margin bars; proposed details select copy affordances and built-in
   highlighting; *operator sign-off adopts these choices*.
+  *TOC and depth are configurable* through =HTMLPREVIEW_TOC= (default =1=)
+  and =HTMLPREVIEW_TOC_DEPTH= (default =3=, valid =1= to =6=).
+  *Standalone is hardcoded true*, following the operator's correction.
 - Next step :: *Audit the definition, then obtain operator sign-off* before
   implementation. Browser results remain separate human evidence.
 
@@ -50,6 +56,8 @@
   inline/block code*, including Org =~code~= and ==verbatim==.
 - The current *Org preservation stage emits plain HTML code*, so enabling a
   Pandoc option alone cannot highlight those source blocks.
+- The operator also requested *configurable contents and maximum levels*,
+  then clarified that *standalone must always be true*.
 
 ** Outcome
 
@@ -66,11 +74,13 @@
 - *Replace local heading buttons with clickable left margin bars*; retain the
   global toolbar and initial visibility metadata.
 - *Provide synthetic Org and Markdown examples* and browser validation.
+- *Always enable Pandoc standalone conversion* and provide a default-on TOC
+  with configurable depth, retaining the application-owned final page.
 
 *** Out of scope
 
 - *No code execution, language guessing or user-supplied highlighter plugins*.
-- *No editing, live reload, new CLI settings or browser automation framework*.
+- *No editing, live reload, fragment-output mode or browser automation framework*.
 - *No copy action for ordinary prose, drawers or planning metadata*.
 
 *** Unchanged
@@ -141,6 +151,9 @@
   uses that adjacent control, leaving the link's own click unchanged.
 - Proposed highlighting :: *Use Pandoc's internal highlighter and owned theme
   CSS*. Missing/unknown languages and examples remain plain.
+- Operator configuration direction :: *Hardcode standalone=true*. Expose
+  *TOC=true and maximum levels=3* as defaults. The earlier suggestion of a
+  standalone switch was explicitly withdrawn before definition sign-off.
 - Authority :: These are *reviewable definition choices awaiting sign-off*,
   not a claim of prior human approval.
 
@@ -274,6 +287,39 @@
 - Proven by :: [[#ut-002-1][UT002.1 - Reading and outline presentation]],
   [[#ut-002-2][UT002.2 - Clipboard interaction and fallback]].
 
+** AC002.11 - Output is always a complete styled document
+:PROPERTIES:
+:CUSTOM_ID: ac-002-11
+:END:
+
+- Criterion :: *Every preview is a complete standalone HTML document* with
+  its original source header, embedded fonts and owned presentation.
+  No supported setting selects fragment output.
+- Proven by :: [[#rt-002-3][RT002.3 - Standalone output and contents settings]],
+  [[#ut-002-1][UT002.1 - Reading and outline presentation]].
+
+** AC002.12 - Contents reflect the selected heading depth
+:PROPERTIES:
+:CUSTOM_ID: ac-002-12
+:END:
+
+- Criterion :: *Contents are shown by default for source heading levels 1 to 3*.
+  The TOC can be disabled or limited to any maximum level from 1 to 6.
+  Each entry links to its actual final heading and reveals folded ancestors.
+  The filename header is excluded; no eligible headings means no empty TOC.
+- Proven by :: [[#rt-002-3][RT002.3 - Standalone output and contents settings]],
+  [[#ut-002-1][UT002.1 - Reading and outline presentation]].
+
+** AC002.13 - Invalid contents settings fail before rendering
+:PROPERTIES:
+:CUSTOM_ID: ac-002-13
+:END:
+
+- Criterion :: *Invalid TOC or depth values identify the field and return
+  invocation status 2 before output allocation or browser opening*.
+  The depth is validated even when the TOC is disabled.
+- Proven by :: [[#rt-002-3][RT002.3 - Standalone output and contents settings]].
+
 * Test Definitions
 :PROPERTIES:
 :CUSTOM_ID: test-definitions
@@ -295,6 +341,7 @@
   Unicode, HTML metacharacters, leading/trailing blank lines and EOF without LF.
   Include literal headings, drawers, includes, export terminators and current
   preservation-marker lookalikes; exercise an unterminated Org source block.
+  Exercise =sh= and =shell= with the same shell text as the =bash= case.
 - Action :: *Invoke preview on both formats* with the existing desktop capture
   boundary, including linked Org/Markdown pages and unrelated cwd.
 - Expected :: *Known tokens receive distinct semantic span classes* and each
@@ -303,6 +350,7 @@
   for Org; Markdown matches its parsed-code fixture oracle. No transport JSON,
   marker ID, delimiter or synthetic label leaks into the visible/copied value.
   Existing TODO/drawer/ID assertions continue to pass.
+  Both shell aliases produce the same highlighting and literal value as Bash.
 - Retention :: *Persistent under make test*. Write the highlighted-output case
   first and observe its missing-token RED before implementation. Do not weaken
   existing literal-preservation assertions to accept the writer's lost newline.
@@ -327,6 +375,34 @@
 - Retention :: *Persistent under make test*. Extend the existing boundary
   fixtures rather than introducing a browser mock or a new test-only interface.
 
+** RT002.3 - Standalone output and contents settings
+:PROPERTIES:
+:CUSTOM_ID: rt-002-3
+:END:
+
+- Covers :: [[#ac-002-11][AC002.11 - Standalone output]],
+  [[#ac-002-12][AC002.12 - Contents depth]],
+  [[#ac-002-13][AC002.13 - Invalid contents settings]].
+- Boundary :: *Installed/command subprocess output with real Pandoc* and
+  published HTML parsed through the maintained helpers.
+- Setup :: *Both source formats* with levels 1 through 6, level gaps, duplicate
+  heading text/IDs, Org ID/CUSTOM_ID, formatted headings, multiple explicit and
+  linked documents, a document without headings, and conflicting source TOC
+  metadata/options. Use the existing source-header and embedded-font assertions.
+- Action :: *Invoke with unset/empty settings, TOC 0/1, every depth 1 through 6*,
+  and invalid Boolean/depth values (including 0, 7, negative, noninteger and
+  malformed text). Include invalid depth with TOC disabled and an attempted
+  =HTMLPREVIEW_STANDALONE= setting, which remains unknown.
+- Expected :: *Exactly one complete page wrapper retains owned presentation*.
+  Default contents include levels 1 to 3 only; configured depths include the
+  corresponding source levels, excluding the application filename heading.
+  Every entry targets its intended unique final heading, including duplicates
+  and restored Org IDs. Disabled/empty TOCs are absent; no contents entry creates
+  a graph node or heading. Application settings override source TOC metadata.
+  Invalid invocation has no generated files or desktop calls and status 2.
+- Retention :: *Persistent under make test*. Observe missing default contents
+  and rejected valid settings as the expected RED before implementation.
+
 ** UT002.1 - Reading and outline presentation
 :PROPERTIES:
 :CUSTOM_ID: ut-002-1
@@ -336,7 +412,9 @@
   [[#ac-002-3][AC002.3 - Plain fallback]],
   [[#ac-002-7][AC002.7 - Margin-bar folding]],
   [[#ac-002-8][AC002.8 - Accessible reading and printing]],
-  [[#ac-002-10][AC002.10 - Representative examples]].
+  [[#ac-002-10][AC002.10 - Representative examples]],
+  [[#ac-002-11][AC002.11 - Standalone output]],
+  [[#ac-002-12][AC002.12 - Contents depth]].
 - Reviewer :: *Operator*, on each browser environment in the
   [[file:../001-local-document-preview/spec.org::#qualification-matrix][W001 qualification matrix]].
 - Procedure :: *Use the installed candidate through a symlink from another
@@ -346,6 +424,8 @@
   follow a link into a folded section and inspect drawers. Use pointer and
   keyboard traversal, accessibility names and an available screen reader.
   Disable JS; inspect printing from every fold state and restoration afterwards.
+  Inspect default contents, toggle them off, change depth to 1 and 6, and follow
+  TOC links into folded sections. Check that TOC links work without JavaScript.
 - Expected :: *Tokens, TODO states, tags and drawers remain readable*; code uses
   the bundled Iosevka family, no icon appears as a missing glyph, and focus is
   visible. Verify rendered foreground/background pairs meet 4.5:1.
@@ -356,6 +436,8 @@
   Controls neither obscure code nor overflow the page; long code scrolls within
   its block. State and next action are understandable without colour alone.
   No-JS and print behaviour meet the stated criteria.
+  Contents remain keyboard-accessible, identify the correct headings and stay
+  distinct from the global Contents outline-mode button.
 - Record :: *Record revision, OS/browser/Pandoc versions and observations* in
   =validation.org=. Missing environments remain PENDING.
 
@@ -380,6 +462,16 @@
   unavailable API; a bounded browser-devtools stub may expose the fallback but
   must be recorded as a stub rather than real permission evidence.
   Navigate away/back, print, disable JS, and exercise original-header copying.
+- Passive page-load check :: *Use the hostile fixtures from the passive-rendering
+  regression*, containing both executable-looking literal code and raw
+  script/style/event/resource attempts with unique sentinel values. In each
+  qualification browser, inspect developer-tools Network and Console from
+  before initial load through one reload and the clipboard/folding interactions.
+  Use synthetic data only. Do not follow external hyperlinks. Require zero
+  source-directed network requests, no sentinel execution and no source-owned
+  active script/style. Existing owned CSS/JS and data fonts may load.
+  Record CSP diagnostics separately from unexpected owned-script errors.
+  This is a bounded user check, with no live remote service or metered probe.
 - Expected :: *Each explicit attempt copies only its intended value once*,
   excluding language labels, line numbers and button/status text. Link clicks
   navigate; drag or an existing selection suppresses direct copying. A double
@@ -493,9 +585,65 @@
 
 *** Interfaces and configuration
 
-- CLI :: *No public interface changes*. Language is the first Org source-block
+- Language selection :: Language is the first Org source-block
   language token or the Markdown code language class. Retain Pandoc-supported
   language names; explicitly map =sh= and =shell= to =bash=.
+- Private transport :: *Go generates 16 random bytes and lowercase hex-encodes
+  them as a 32-character token*. Pass
+  =--metadata=htmlpreview-code-token:VALUE= directly as one Pandoc argument.
+  Lua reads =doc.meta["htmlpreview-code-token"]= at the start of its Pandoc
+  callback, requires a Lua string containing exactly 32 lowercase hexadecimal
+  characters and derives raw format =htmlpreview-code-VALUE=.
+  Command metadata takes precedence over source metadata; this was probed for
+  Markdown YAML and Org on Pandoc 3.9.0.2. Ignore source attempts to set the key,
+  clear it before display metadata handling and reject missing/malformed
+  effective values as a conversion failure.
+- Transport validation :: *Org input JSON contains exactly id, text and language
+  string fields*. IDs are =htmlpreview-code-VALUE-N= for positive sequence N.
+  Validate each input ID once; it is an internal association, not a user heading
+  or output code ID. Construct Org CodeBlocks with an empty source identifier.
+  Code return records contain exactly =id= and =text= strings, with association
+  IDs tied to that same token. Their wrappers use =htmlpreview-code-VALUE-N=;
+  adjacent record elements use =htmlpreview-code-record-VALUE-N=.
+  Heading return elements use =htmlpreview-heading-record-VALUE-N= with the
+  heading schema below. Encode records through JSON plus HTML text escaping.
+  Go requires each expected association exactly
+  once and removes only its own matching records. Missing, duplicate, malformed
+  or mismatched records fail conversion. Source lookalikes are never decoded
+  merely because they carry a similar class or metadata key.
+- Contents settings :: *Use the existing environment interface*:
+  =HTMLPREVIEW_TOC= accepts =0= or =1=, default =1=;
+  =HTMLPREVIEW_TOC_DEPTH= accepts decimal integers =1= through =6=, default =3=.
+  Unset/empty values select defaults. Validate both before any session
+  allocation, even if TOC is disabled. Add no standalone variable or CLI option.
+- Pandoc configuration :: *Hardcode standalone=true in packaged defaults*.
+  Pass the validated =--toc=true/false= and =--toc-depth=N= as explicit
+  application arguments, overriding source options. Use an embedded minimal
+  Pandoc HTML5 template for the intermediate complete document; it contains
+  the generated TOC and body but no default Pandoc styles/scripts.
+  The final Go template retains sole ownership of the visible source header,
+  embedded fonts, CSP and browser script. Do not nest whole HTML documents.
+- Contents identity :: *Keep generated contents separate from the source body*
+  before source sanitization/discovery. The owned Pandoc template gives its
+  TOC container a per-document token identifier supplied through the explicit
+  template variable =htmlpreview-toc-token=. It is not source-selectable.
+  Only the identified container becomes the owned final Contents navigation,
+  located below the source header and before the outline toolbar/document.
+- Contents targets :: *Assign temporary unique IDs to Pandoc Header nodes* in
+  the owned filter so its TOC uses unambiguous destinations. Use
+  =htmlpreview-heading-VALUE-N=, distinct from code associations. Emit a
+  separate heading record with exactly =id= and =originalID= strings, through
+  the same escaped/bounded data channel. Go restores each original ID before
+  existing Org restoration/cataloguing; retain the node association until
+  final IDs are allocated, then rewrite only owned TOC hrefs using that mapping.
+  Validate heading records as strictly as code records. Preserve source IDs
+  and ordinary link semantics; do not guess destinations from heading text.
+- Contents levels :: *Follow Pandoc's source heading levels*, before the Go
+  page-header offset; the maximum is 1 to 6. Raw-HTML headings outside Pandoc's
+  Header nodes do not gain TOC entries. Preserve Pandoc's unnumbered/unlisted
+  heading semantics. Omit empty contents containers. Sanitize its text/links
+  with the passive policy and add owned navigation semantics afterwards.
+  TOC anchors do not enter document discovery or the local folding index.
 - Plain cases :: *Empty/unknown language and example blocks remain plain*.
   Do not interpret language labels as files, URLs, commands or plugins.
 - Syntax CSS :: *Own the token palette in assets/web/preview.css*, scoped to
@@ -617,3 +765,6 @@
   copying, colouring and margin bars at delivery; add =examples/work.org= and
   =examples/code.md= with synthetic data and no executable test hooks.
   Preserve the earlier W001 records and its remaining qualification work.
+  Document the two contents settings in the existing CLI help in
+  =internal/preview/main.go= and README's Configuration section; keep standalone
+  a hardcoded fact.

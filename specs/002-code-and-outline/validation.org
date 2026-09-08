@@ -13,7 +13,8 @@
 - Procedure :: Use the installed candidate and synthetic examples under the
   exact viewing conditions in the linked test definition.
 - Expected :: Readable highlighted Iosevka code, faithful Org metadata,
-  accessible local folding, no-JS reading and full printing.
+  accessible margin-bar folding and contents navigation, standalone output,
+  no-JS reading and full printing.
 - Matrix :: macOS 26/Safari 26 arm64; Ubuntu 24.04/Firefox amd64;
   Windows 11/Edge with Ubuntu 24.04 WSL1; Windows 11/Edge with Ubuntu 24.04 WSL2.
   Each environment is PENDING; record its exact versions and candidate revision.
@@ -30,7 +31,10 @@
 - Requirements :: [[file:spec.org::#ut-002-2][Clipboard procedure and traced criteria]].
 - Procedure :: Use each matrix environment above and follow the linked
   activation, pasted-value, selection, navigation, denial and lifecycle checks.
+  Include its bounded passive page-load/reload check with the hostile synthetic
+  fixtures and developer-tools Network/Console observations.
 - Expected :: Exact explicitly selected code/path payloads, honest feedback,
-  manual fallback, retained keyboard/navigation behaviour and no source execution.
+  manual fallback, retained keyboard/navigation behaviour, no source execution
+  and no source-directed browser network requests.
 - Matrix :: All four browser environments are PENDING.
 - Evidence :: No W002 implementation or user-test result is claimed.

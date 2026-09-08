@@ -90,7 +90,7 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/001-local-document-preview/audits.org][W001 - Definition and implementation audit evidence]].
 - User validation :: [[file:../specs/001-local-document-preview/validation.org][W001 - Pending browser validation]].
 
-** TODO W002 - Highlighted code, copying and compact fold controls :feature:
+** TODO W002 - Code highlighting, copying and document navigation :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-002
 :PRIORITY: P1
@@ -98,7 +98,7 @@ classification; it is provenance, not current state.
 :CREATED: 2026-09-08
 :END:
 
-- Specification :: [[file:../specs/002-code-and-outline/spec.org][W002 - Highlighted code, copying and compact fold controls]].
+- Specification :: [[file:../specs/002-code-and-outline/spec.org][W002 - Code highlighting, copying and document navigation]].
 - Audit evidence :: [[file:../specs/002-code-and-outline/audits.org][W002 - Definition and implementation audit evidence]].
 - User validation :: [[file:../specs/002-code-and-outline/validation.org][W002 - Browser validation]].
 

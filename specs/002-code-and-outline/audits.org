@@ -47,8 +47,49 @@
 - Remediation :: Round-one findings addressed. Independent gate not yet run.
 
 ** External review
+:PROPERTIES:
+:ROUND: 1
+:CONTEXT: /root/code_outline_definition_audit
+:END:
 
-- Status :: Not started. One retained independent context follows local PASS.
+- Artefact :: [[file:spec.org][W002 - Code and navigation specification]].
+- Revision :: SHA-256 =e122ffa42c8184fb66957fc1257e217d255fa154096b84fcbf74079c8e503cd0=.
+- Audits :: =audit-spec=, =audit-design= and =audit-test-definitions=.
+- Verdict :: FAIL.
+- Findings ::
+  1. [audit-design] [BLOCKING] W002-DESIGN-TRANSPORT-CONTRACT - Name the private
+     metadata key, lookup, encoding, precedence and rejection behaviour.
+  2. [audit-test-definitions] [BLOCKING] W002-TEST-ALIASES - Cover sh and shell
+     aliases and compare their highlighting/fidelity with Bash.
+  3. [audit-test-definitions] [BLOCKING] W002-TEST-PASSIVE-BROWSER - Add a bounded
+     browser page-load check for source-directed requests and execution.
+- Remediation :: The next revision specifies the transport interface, alias
+  cases and browser Network/Console observations. During remediation the
+  operator also added default-on contents, depth 3 and hardcoded standalone.
+  The earlier standalone-switch suggestion was explicitly withdrawn.
+- Supersedes :: None.
+
+** Local review - contents settings and external remediation
+:PROPERTIES:
+:ROUND: 3
+:END:
+
+- Artefact :: [[file:spec.org][W002 - Code highlighting, copying and document navigation]].
+- Revision :: SHA-256 =74f384c113400136d327edcce9a890aa91f3f23040750e1cb71d1f981f887e58=.
+- Audits :: =audit-spec=, =audit-design= and =audit-test-definitions=.
+- Verdict :: PASS.
+- Findings :: No blocking findings. The exact private metadata and return
+  channels, shell alias cases and passive browser checks address the external
+  findings. Operator steering is reflected in the summary, settings contract,
+  criteria, tests, handoff and validation record.
+- Evidence :: Local Pandoc probes confirmed command metadata precedence and
+  its Lua string representation, and rejection of TOC depth outside 1 to 6.
+  The template's eight major sections match; Pandoc parsing found no duplicate
+  heading IDs or unresolved internal fragments. All criteria have reciprocal
+  test links. No production code or test implementation changed.
+- Advisory :: Retargeting generated contents after Org ID restoration is an
+  explicit design obligation, protected by generated-output tests.
+- Remediation :: Resubmit to the retained external auditor.
 
 * Implementation gate
 
