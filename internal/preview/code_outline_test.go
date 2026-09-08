@@ -84,6 +84,9 @@ func TestRT002_1_CodeFidelity(t *testing.T) {
 				if got := textOf(blocks[i]); got != want {
 					t.Errorf("block %d literal: got %q want %q", i, got, want)
 				}
+				if len(nodes(blocks[i], "a")) != 0 {
+					t.Errorf("block %d has unrequested writer links in its code", i)
+				}
 				tokens := []string{}
 				for _, span := range nodes(blocks[i], "span") {
 					if class := attr(span, "class"); class != "" {

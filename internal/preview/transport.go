@@ -191,6 +191,18 @@ func (s *session) restoreCode(owner *html.Node, original string, p *page) error 
 	if code == nil {
 		return errors.New("missing code payload")
 	}
+	// The highlighter adds empty per-line self-links. They are not requested
+	// navigation, and stripping their tabindex later would create empty tab stops.
+	// Only writer output inside a validated owned CodeBlock reaches this path.
+	var lineLinks []*html.Node
+	for n := range code.Descendants() {
+		if n.Data == "a" && contentText(n) == "" {
+			lineLinks = append(lineLinks, n)
+		}
+	}
+	for _, link := range lineLinks {
+		link.Parent.RemoveChild(link)
+	}
 	actual := contentText(code)
 	switch {
 	case actual == original:

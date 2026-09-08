@@ -193,7 +193,7 @@ async function enhanceOutline(main, controller, dispose) {
     if (node.tagName === 'SECTION' && node.hasAttribute('data-hp-level')) {
       const title = Array.from(node.children).find(child => child.matches('h2,h3,h4,h5,h6,[role=heading]'));
       if (title) {
-        owner = { node, title, label: title.textContent.trim(), parent, mode: 'all', visible: true, children: [] };
+        owner = { node, title, label: title.textContent.trim(), parent, mode: 'all', visible: true, children: [], textWrappers: [] };
         records.push(owner);
         if (parent) parent.children.push(owner);
       }
@@ -252,12 +252,25 @@ async function enhanceOutline(main, controller, dispose) {
       record.node.classList.remove('hp-outline-section');
       for (const part of record.node.children) part.hidden = false;
       if (record.button) record.button.remove();
+      for (const wrapper of record.textWrappers) {
+        while (wrapper.firstChild) wrapper.before(wrapper.firstChild);
+        wrapper.remove();
+      }
     }
     main.querySelectorAll('details').forEach(detail => { detail.open = true; });
   });
   for (let i = 0; i < records.length; i += 1) {
     if (controller.signal.aborted) return;
     const record = records[i];
+    // Removal notices and admitted raw HTML can leave direct text children.
+    // Give visible text an element to hide, preserving it for teardown/printing.
+    for (const part of Array.from(record.node.childNodes)) {
+      if (part.nodeType !== Node.TEXT_NODE || part.textContent.trim() === '') continue;
+      const wrapper = document.createElement('span');
+      part.before(wrapper);
+      wrapper.append(part);
+      record.textWrappers.push(wrapper);
+    }
     const button = document.createElement('button');
     button.type = 'button';
     button.disabled = true;
