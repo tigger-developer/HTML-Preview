@@ -68,7 +68,11 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 		root := t.TempDir()
 		capture := t.TempDir()
 		for _, name := range []string{"Taḋg  & <notes>.md", "notes.org"} {
-			if err := os.WriteFile(filepath.Join(root, name), []byte("Hello Taḋg"), 0600); err != nil {
+			fixture := "# Hello Taḋg\n\n```go\npackage main\n```\n"
+			if strings.HasSuffix(name, ".org") {
+				fixture = "* Hello Taḋg\n#+BEGIN_SRC go\npackage main\n#+END_SRC\n"
+			}
+			if err := os.WriteFile(filepath.Join(root, name), []byte(fixture), 0600); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -89,9 +93,15 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			found := false
+			found, contents, highlighted := false, false, false
 			for n := range doc.Descendants() {
 				for _, a := range n.Attr {
+					if n.Data == "nav" && a.Key == "id" && a.Val == "hp-toc" {
+						contents = true
+					}
+					if n.Data == "span" && a.Key == "class" && a.Val == "kw" {
+						highlighted = true
+					}
 					if a.Key == "data-hp-source" && a.Val == filepath.Join(root, name) {
 						found = true
 					}
@@ -99,6 +109,9 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 			}
 			if !found || strings.Count(string(data), "data:font/woff2;base64,") != 6 || !strings.Contains(string(data), "SIL OPEN FONT LICENSE") {
 				t.Fatal("installed renderer lost its source or embedded assets")
+			}
+			if !contents || !highlighted {
+				t.Fatal("RT002: installed symlink lost default contents or highlighting")
 			}
 		}
 	})
