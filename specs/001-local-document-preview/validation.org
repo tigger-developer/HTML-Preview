@@ -112,6 +112,47 @@
   installation, resource, output-budget and WSL regression results are recorded
   with the revised gate receipt; unchanged browser/one-off results remain PENDING.
 
+** Final verification after implementation PASS - 8 September 2026
+
+- Audited code :: =78389a6=; the retained independent reviewer reports PASS for
+  audit-test-code and audit-code. Later changes record evidence only.
+- Automated result :: *PASS*: =make test= with Go's race detector, integration
+  7.728 s and runtime 94.785 s; =make lint=; =make vulncheck= with no reported
+  vulnerabilities. Native execution is macOS 26.6 arm64, Pandoc 3.9.0.2/Lua 5.4,
+  Go 1.26.8. The original full-suite and coverage receipts remain historical.
+- Current coverage :: Final runtime measurement is 88.8%. Its union with current
+  command counters and the unchanged build-tool counters is 83.5% across all
+  production Go statements. The build-tool source was verified unchanged since
+  its instrumented install/release measurement. This remains structural coverage,
+  not proof of unexecuted browser or platform behaviour.
+- Candidate :: =htmlpreview 0.1.0 (4836d45ee97f)= is installed in an OS-temporary
+  prefix with an executable symlink outside the checkout. Its code is the audited
+  revision; the build revision includes the audit-correction receipt.
+- Native handoff smoke :: The ordinary binary rendered two synthetic sources
+  from an unrelated directory and returned 0 after two native macOS open
+  requests. The generated session directory was absent after quick retention.
+  This establishes successful dispatch and cleanup, not observed default-browser
+  identity, readiness, rendering, navigation or clipboard behaviour.
+- Palette calculation :: The declared text/background combinations have a
+  calculated minimum contrast of 5.92:1 in the light palette and 7.65:1 in the
+  dark palette. This source-colour calculation supplements, but does not replace,
+  the pending rendered-browser contrast and typography inspection.
+- Release result :: Four uninstrumented CGO-free archives were generated with
+  their checksums and macOS formula. No release was published and no global
+  package or personal preview command was replaced.
+- macOS amd64 archive :: =5e311165bbacd23daea486f78523f572b3a5ef4041c14548b1bdc2aa2153874c=.
+- macOS arm64 archive :: =b7bfdeeed0242dcf1fcd3b5fcda78338e57950e9aa8aa54b317f3976c16918b9=.
+- Linux amd64 archive :: =3a4debe5158653936379d4c7e41111e06a0b319cf0a585cdc5e5b5fa22320d85=.
+- Linux arm64 archive :: =1e4a74015a4fe650d3b768c42e80384159e7b0d53fd0a6a7e5804844ae40a2f8=.
+- Operator materials :: Synthetic Markdown/Org/browser fixtures, the staged
+  executable and a Git-backed local Homebrew tap are prepared under
+  =/var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-delivery.3OoeyE3SWl/review=.
+  Its README contains the browser-review and bounded operator-run Homebrew steps.
+  The tap formula is an unchanged copy of the generated local candidate recipe.
+- Closure boundary :: All five user-test groups, native qualification on other
+  release hosts, and the Homebrew one-off still require their stated execution
+  owners and environments. No human observation or closure is inferred.
+
 * User tests
 
 ** UT001.1 - Document typography and readability

@@ -3,7 +3,7 @@
 Preview local Markdown and Org in the system default browser, using Pandoc,
 embedded Asap and Iosevka Custom fonts, and a private temporary directory.
 
-**Status:** Implementation and automated verification are in progress under
+**Status:** The implementation audit reports PASS under
 [the approved specification](specs/001-local-document-preview/spec.org).
 Browser qualification and the Homebrew installation trial remain pending in
 [the validation record](specs/001-local-document-preview/validation.org).

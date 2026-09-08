@@ -78,7 +78,7 @@ classification; it is provenance, not current state.
 
 * Work items
 
-** ACTIVE W001 - Installable Markdown and Org previews with linked browsing :feature:
+** REVIEW W001 - Installable Markdown and Org previews with linked browsing :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-001
 :PRIORITY: P1
@@ -87,7 +87,7 @@ classification; it is provenance, not current state.
 :END:
 
 - Specification :: [[file:../specs/001-local-document-preview/spec.org][W001 - Installable Markdown and Org previews with linked browsing]].
-- Definition evidence :: [[file:../specs/001-local-document-preview/audits.org][W001 - Local document preview audit evidence]].
+- Audit evidence :: [[file:../specs/001-local-document-preview/audits.org][W001 - Definition and implementation audit evidence]].
 - User validation :: [[file:../specs/001-local-document-preview/validation.org][W001 - Pending browser validation]].
 
 * Migration record
