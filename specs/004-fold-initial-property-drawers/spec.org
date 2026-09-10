@@ -1,0 +1,308 @@
+#+TITLE: W004 - Fold initial Org property drawers
+#+SUBTITLE: Unified defect correction specification
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* Fold initial Org property drawers
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+- Outcome :: An enhanced Org preview *starts each heading's immediate PROPERTIES
+  drawer folded*.
+- Before :: *Every Org drawer starts open*, including a PROPERTIES drawer placed
+  immediately after a heading.
+- After :: JavaScript *folds only the initial heading PROPERTIES drawer* while
+  passive HTML remains fully readable.
+- Changes :: The renderer identifies the drawer; browser enhancement applies its
+  initial closed state and retains the existing reveal and print rules.
+- Unchanged :: Other drawers, drawers not immediately after headings, source
+  text, section controls, no-JavaScript output and document navigation remain
+  unchanged.
+- Edge cases :: A heading without a drawer, an empty drawer, a later PROPERTIES
+  drawer, nested headings, global modes, source marker-like HTML, printing and
+  page-lifecycle teardown retain defined behaviour.
+- Decisions :: The operator classified this as a *defect*. "Immediately after"
+  permits only whitespace between the heading and drawer.
+- Next step :: Definition gate, then operator sign-off.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+Org source conventionally places a PROPERTIES drawer directly beneath its
+heading. The current renderer emits every drawer open and the browser module
+does not distinguish them. That leaves the metadata expanded in an enhanced
+preview, contrary to the expected initial reading view.
+
+** Scope
+
+*** In scope
+
+- Detect an Org =PROPERTIES= drawer that follows its heading with only whitespace
+  between them.
+- Mark the generated drawer without trusting source-supplied HTML attributes.
+- Close that marked drawer during browser enhancement's initial state.
+- Preserve a marked drawer's normal native summary control, fragment revelation,
+  print expansion/restoration and page-lifecycle teardown.
+- Add regression and user validation evidence for the defect.
+
+*** Out of scope
+
+- Changing any source document.
+- Folding LOGBOOK or other named drawers.
+- Folding a PROPERTIES drawer elsewhere in a section.
+- Adding a user setting, a new browser harness or an Org parser dependency.
+
+*** Unchanged
+
+- Generated HTML with JavaScript disabled keeps every drawer open and readable.
+- Existing section visibility, global outline controls, copied code and contents
+  behaviour keep their current contracts.
+- Existing non-drawer fragment revelation remains governed by W001/W002. Drawer
+  text has no generated fragment mapping and is outside this defect correction.
+
+** Authority and starting point
+
+- Project profile :: [[file:../../.sdlc/project.yaml][=.sdlc/project.yaml=]].
+- Product authority :: [[file:../../docs/VISION.md][Vision]], Org fidelity and
+  direct document navigation.
+- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture]],
+  browser folding responsibility.
+- Historical requirement :: [[file:../001-local-document-preview/spec.org][W001 - Installable Markdown and Org previews]], which requires drawers to be
+  open without JavaScript and enhancement to apply initial folding.
+- Historical delivery :: [[file:../002-code-and-outline/spec.org][W002 - Code
+  highlighting, copying and document navigation]], which owns enhanced folding
+  and states its historical drawer-open rule. W004 *supersedes that rule only
+  for an immediate Org PROPERTIES drawer*; every other W002 drawer behaviour
+  remains current.
+- Current implementation :: =internal/preview/org.go= emits every drawer as
+  =details open=; =assets/web/preview.js= only opens drawer state.
+
+** Constraints and dependencies
+
+- Use existing Go Org pre-processing, owned browser JavaScript and native HTML
+  details elements; introduce no runtime dependency.
+- Treat source content as untrusted; only application-generated metadata may
+  select initial drawer folding.
+- Keep no-JavaScript content readable and preserve print accessibility.
+
+** Decisions
+
+- "Immediately after a heading" means the drawer is the first non-whitespace
+  content in that heading's section.
+- An initial PROPERTIES drawer begins closed only after JavaScript enhancement.
+- The native =summary= interaction and the existing global/section, fragment and
+  print paths remain valid ways to reveal drawers; no additional control is added.
+- The reserved application marker is =data-hp-initial-property-drawer=. It is
+  added only by the post-sanitization renderer from an Org pre-pass provenance
+  record. Source HTML cannot create, retain or select this marker.
+
+** Unresolved blockers
+
+- None.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC004.1 - Initial property drawer folds after enhancement
+:PROPERTIES:
+:CUSTOM_ID: ac-004-1
+:END:
+
+- Criterion :: Given an Org heading followed only by whitespace and a PROPERTIES
+  drawer, the *enhanced preview starts that drawer closed*.
+- Proven by :: [[#rt-004-1][RT004.1 - Marked initial property drawer]] and
+  [[#ut-004-1][UT004.1 - Browser drawer state]].
+
+** AC004.2 - Only the initial property drawer changes
+:PROPERTIES:
+:CUSTOM_ID: ac-004-2
+:END:
+
+- Criterion :: Given other drawer names, a later PROPERTIES drawer or a drawer
+  outside a headed section, the *enhanced preview leaves those drawers open*.
+- Proven by :: [[#rt-004-1][RT004.1 - Marked initial property drawer]] and
+  [[#ut-004-1][UT004.1 - Browser drawer state]].
+
+** AC004.3 - Passive reading remains available
+:PROPERTIES:
+:CUSTOM_ID: ac-004-3
+:END:
+
+- Criterion :: Generated HTML *keeps all drawers open before JavaScript runs*.
+- Proven by :: [[#rt-004-1][RT004.1 - Marked initial property drawer]] and
+  [[#ut-004-1][UT004.1 - Browser drawer state]].
+
+** AC004.4 - Existing reveal and print state remains coherent
+:PROPERTIES:
+:CUSTOM_ID: ac-004-4
+:END:
+
+- Criterion :: Existing global/section and native-summary controls may reveal a
+  marked drawer. Print *shows drawer content* and, afterwards, restores each
+  marked drawer to its own immediately preceding open or closed state. Existing
+  non-drawer fragment revelation remains unchanged; drawer-text fragments are
+  not a supported destination.
+- Proven by :: [[#ut-004-1][UT004.1 - Browser drawer state]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT004.1 - Marked initial property drawer
+:PROPERTIES:
+:CUSTOM_ID: rt-004-1
+:END:
+
+- Covers :: [[#ac-004-1][AC004.1 - Initial property drawer folds after
+  enhancement]], [[#ac-004-2][AC004.2 - Only the initial property drawer
+  changes]] and [[#ac-004-3][AC004.3 - Passive reading remains available]].
+- Boundary :: The Org input through the generated HTML document.
+- Setup :: Render one fixed Org fixture in this order: an unheaded PROPERTIES
+  drawer before the first heading; a heading with an immediate PROPERTIES drawer;
+  a heading plus blank lines then PROPERTIES; a heading plus body text then
+  PROPERTIES; a heading plus immediate LOGBOOK; a heading with no drawer; an
+  empty immediate PROPERTIES drawer; a nested heading with immediate PROPERTIES;
+  and raw HTML details carrying =data-hp-initial-property-drawer= and a
+  marker-like class. Render the same fixture with showall, overview and content
+  startup metadata. Include a generated body target under an initially folded
+  non-drawer heading for the existing fragment-revelation check.
+- Action :: Render the document through the existing test command and inspect the
+  generated DOM.
+- Expected :: The immediate root and nested PROPERTIES drawers, including the
+  whitespace-adjacent and empty cases, carry exactly the owned
+  =data-hp-initial-property-drawer= marker. Every later, unheaded, other-name
+  and source-supplied marker-like detail lacks it. Browser enhancement selects
+  only this owned marker, so source spoofing cannot close a drawer. Every drawer
+  retains =open= in passive HTML across startup variants, and drawer text and raw
+  source remain intact or pass through the established sanitization path. The
+  browser user test verifies enhanced open state for each unmarked fixture drawer.
+- Retention :: Persistent regression suite under =make test=. Observe RED before
+  production changes, then GREEN.
+
+** UT004.1 - Browser drawer state
+:PROPERTIES:
+:CUSTOM_ID: ut-004-1
+:END:
+
+- Covers :: [[#ac-004-1][AC004.1 - Initial property drawer folds after
+  enhancement]], [[#ac-004-2][AC004.2 - Only the initial property drawer
+  changes]], [[#ac-004-3][AC004.3 - Passive reading remains available]] and
+  [[#ac-004-4][AC004.4 - Existing reveal and print state remains coherent]].
+- Reviewer :: Operator.
+- Procedure :: Open the provided synthetic Org fixture in the default browser
+  with JavaScript enabled, then reload with JavaScript disabled. With JavaScript
+  enabled, tab to the native summary, inspect its visible focus, use Space or
+  Enter to open and close it, use existing section/global controls, print once
+  while closed and once while open, and return from each print preview. Navigate
+  to the fixture's generated non-drawer body target under its folded ancestor,
+  then navigate away and back through the browser history to exercise
+  pagehide/bfcache. Inspect the later PROPERTIES, unheaded PROPERTIES, LOGBOOK
+  and source-supplied drawers after enhancement. With JavaScript disabled,
+  inspect the drawer text and summary semantics.
+- Expected :: The marked drawer begins closed only when enhanced; summary remains
+  keyboard operable with visible focus; existing controls reveal it; print shows
+  its text and restores respectively closed and open pre-print states; history
+  restoration creates no duplicate controls and leaves passive drawers open.
+  The later, unheaded, LOGBOOK and source-supplied drawers remain open after
+  enhancement. The non-drawer fragment reveals its folded ancestor without
+  changing drawer scope. No-JavaScript output remains open and readable.
+- Record :: Write the dated result to =validation.org=.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** Heading and drawer placement
+
+- Condition :: A heading has whitespace then a PROPERTIES drawer, body text then
+  a drawer, another drawer name, nested immediate drawer, source marker-like
+  HTML, or no drawer.
+- Required behaviour :: Only whitespace-adjacent PROPERTIES is marked; all other
+  cases retain their open initial state.
+- Covered by :: [[#rt-004-1][RT004.1 - Marked initial property drawer]].
+
+** Nested, global and print state
+
+- Condition :: A marked drawer appears under a folded ancestor, global/section
+  controls reveal it, or the reader prints while it is closed or open.
+- Required behaviour :: Existing controls reveal content; print returns to the
+  actual pre-print state. Drawer-internal fragment targets are out of scope
+  because preserved drawer text has no generated fragment mapping.
+- Covered by :: [[#ut-004-1][UT004.1 - Browser drawer state]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Components :: Org pre-processing owns source-to-HTML drawer recognition;
+  browser enhancement owns interactive initial state.
+- Existing pattern :: All drawer HTML is application-generated and open in the
+  passive document. The browser module already preserves print state and opens
+  fragment ancestors.
+
+** High-level design
+
+*** Flow
+
+1. The Org pre-pass recognizes a PROPERTIES drawer immediately after a heading
+   and emits an owned marker on its details element.
+2. The generated document retains =open= on all drawers for passive reading.
+3. At enhancement start, browser JavaScript closes only owned marked drawers;
+   existing global/section, print and teardown logic continues to operate on
+   native details elements and preserves the pre-print state.
+
+*** Interfaces and configuration
+
+- Interface :: Internal =data-hp-initial-property-drawer= marker only; no CLI
+  option or public setting. The renderer adds it after sanitization from a
+  provenance record, and browser code selects this exact attribute only.
+- Compatibility :: Existing documents and non-marked drawers retain open initial
+  state. Markers are removed or ignored safely by non-enhanced reading.
+
+** Architecture impact
+
+*** Security impact
+
+- Threat boundary :: Source-derived drawer names and raw HTML stay untrusted;
+  only Go emits the marker.
+- Data and secrets :: No new data collection, storage or logging.
+- Access :: No access or permission change.
+- Conclusion :: Existing sanitization and browser-only execution boundary remain
+  sufficient.
+
+*** Other relevant qualities
+
+- Accessibility :: Native summary interaction remains keyboard accessible; the
+  no-JavaScript state stays readable.
+- Portability :: Uses existing browser-standard details behaviour on supported
+  macOS, Linux and WSL browsers.
+- Maintainability :: A semantic marker avoids positional browser heuristics and
+  keeps recognition alongside existing Org drawer handling.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: =internal/preview/org.go=, =assets/web/preview.js=,
+  =internal/preview/graph_test.go=, W001/W002 specifications and this document.
+- First implementation step :: Write [[#rt-004-1][RT004.1 - Marked initial
+  property drawer]] and observe the missing marker before production changes.
+- Definition evidence :: [[file:audits.yaml][W004 - Definition audit record]].
+- Validation evidence :: [[file:validation.org][W004 - Browser validation]].
+- Documentation impact :: Update README and Architecture only if their drawer
+  descriptions become inaccurate; otherwise record their review.

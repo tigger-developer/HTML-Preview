@@ -1,0 +1,22 @@
+#+TITLE: W004 - Browser validation
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* User tests
+
+** UT004.1 - Browser drawer state
+:PROPERTIES:
+:CUSTOM_ID: ut-004-1-result
+:RESULT: PENDING
+:CATEGORY: USER
+:END:
+
+- Definition :: [[file:spec.org::#ut-004-1][UT004.1 - Browser drawer state]].
+- Expected :: An immediate PROPERTIES drawer starts closed only with JavaScript;
+  native summary and existing global or section controls can reveal it; print
+  preserves its pre-print state; no-JavaScript remains open. Fragment handling
+  remains unchanged for a generated non-drawer target under a folded ancestor;
+  later, unheaded, LOGBOOK and source-supplied drawers remain open after
+  enhancement. Drawer-internal text has no generated fragment mapping.
+- Result :: PENDING.
+- Evidence :: Not run.
