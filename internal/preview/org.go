@@ -64,7 +64,7 @@ func preserveOrg(data []byte, token string) preservation {
 		if frontmatter {
 			p.frontmatter = append(p.frontmatter, metadataField{key, value})
 		}
-		if keyword {
+		if frontmatter {
 			switch key {
 			case "TITLE":
 				p.title = value
@@ -75,7 +75,7 @@ func preserveOrg(data []byte, token string) preservation {
 			case "DATE":
 				p.date = value
 			}
-		} else if trim != "" && !strings.HasPrefix(trim, "# ") && trim != "#" {
+		} else if !keyword && trim != "" && !strings.HasPrefix(trim, "# ") && trim != "#" {
 			preamble = false
 		}
 		if directive == "#+BEGIN_SRC" || directive == "#+BEGIN_EXAMPLE" {

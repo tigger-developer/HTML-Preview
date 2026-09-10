@@ -10,7 +10,7 @@
 </head>
 <body>
 <header id="hp-header">
-  <div id="hp-header-row"><h1 data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1></div>
+  <div id="hp-header-row">{{if .Title}}<div id="hp-source" data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></div>{{else}}<h1 id="hp-source" data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1>{{end}}</div>
   {{if .Frontmatter}}<details id="hp-frontmatter" open>
     <summary><span aria-hidden="true">⚙</span> Frontmatter</summary>
     <dl>{{range .Frontmatter}}<dt><span aria-hidden="true">⚙</span> {{.Name}}</dt><dd>{{.Value}}</dd>{{end}}</dl>

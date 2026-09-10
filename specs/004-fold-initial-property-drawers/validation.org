@@ -40,6 +40,34 @@
 - Extended coverage :: The current test asserts exact H1/H2/paragraph sibling
   order, each field independently with the other three absent, and the browser
   title fallback.
+
+** Emergency correction regression verification, 2026-09-10
+
+- Boundary RED :: Before changing production, the new body-before-keyword case
+  failed with =non-frontmatter keyword promoted to browser title=; the sole-H1
+  assertion failed because two H1 elements were present.
+- Remediation :: Capture title fields only inside the leading metadata region.
+  On titled Org pages, render the source identity as a non-heading label.
+- Drawer mutation RED :: A temporary Go build overlay removed only the generated
+  ownership marker. The ownership test and all eleven added startup matrix
+  subcases failed, each reporting =markers=0 open=1=. Production files were not
+  changed by this verification.
+- Independent-field mutation RED :: A second temporary overlay suppressed the
+  four captured title fields. All four independent-field subcases failed with
+  =missing document element "hp-document-title"=.
+- Timing :: These mutation checks were executed after adding the extended
+  coverage. They demonstrate regression sensitivity, not a claim that the
+  original drawer implementation followed retrospective TDD.
+- GREEN :: Without the overlays, =go test ./internal/preview -run TestRT004
+  -count=1= passed in 5.228 seconds, including exact field names and values.
+- Prior full suite :: =make test= passed at =c8981cd=; preview package 217.627
+  seconds and integration 11.882 seconds. The subsequent boundary and semantic
+  heading changes were checked again in the following combined run.
+- Current full suite :: =make test= passed after the boundary and single-H1
+  corrections: preview package 216.240 seconds; integration 11.956 seconds.
+  This includes the race detector. =make lint= also passed with StyLua 2.5.2.
+- Environment :: macOS 26.6, Pandoc 3.9.0.2 with Lua 5.4. The browser diagnostics
+  used native WebKit; normal-browser user tests remain pending.
 - Remaining user evidence :: Browser presentation, including typography and
   source-header interaction, remains subject to operator review.
 

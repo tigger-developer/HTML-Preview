@@ -117,7 +117,7 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 		t.Fatal("Org title is absent from the HTML title")
 	}
 	headings := nodes(r.pages[0], "h1")
-	if len(headings) != 2 || textOf(headings[1]) != "Document title" {
+	if len(headings) != 1 || textOf(headings[0]) != "Document title" {
 		t.Fatalf("Org title heading: %#v", headings)
 	}
 	subtitles := nodes(r.pages[0], "h2")
@@ -145,9 +145,13 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 		}
 		return nil
 	}
-	if nextElement(headings[1]) != subtitles[0] || nextElement(subtitles[0]) != paragraphs[0] || nextElement(paragraphs[0]) != paragraphs[1] {
+	if nextElement(headings[0]) != subtitles[0] || nextElement(subtitles[0]) != paragraphs[0] || nextElement(paragraphs[0]) != paragraphs[1] {
 		t.Fatal("Org author/date do not immediately follow the subtitle")
 	}
+}
+
+func TestRT004_2_IndependentFrontmatter(t *testing.T) {
+	root := t.TempDir()
 	for _, tc := range []struct {
 		field, tag string
 	}{

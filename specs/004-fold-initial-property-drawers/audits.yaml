@@ -1,0 +1,102 @@
+version: 1
+audits:
+    - work_item: W004-fold-initial-property-drawers
+      gate: implementation
+      session_id: 01a08996-f5d1-77a1-b5b6-07cb9693cba3
+      external_round: 1
+      status: active
+      updated: "2026-09-10T04:39:03Z"
+      revision: c8981cd1fe65cdeea6eebebf4685c9059178babb
+      verdict: FAIL
+      response: |-
+        GATE: implementation
+        REVISION: c8981cd1fe65cdeea6eebebf4685c9059178babb
+        VERDICT: FAIL
+
+        FINDINGS:
+
+        1. `internal/preview/org.go:62-77` promotes `#+TITLE`, `#+SUBTITLE`, `#+AUTHOR`, and `#+DATE` wherever they occur, including after body content. This violates the leading-field boundary. Remediation: gate title-field capture on `frontmatter` and add a body-before-keyword regression.
+
+        2. `assets/web/page.html:13,19` emits two semantic H1 elements on titled Org pages. This violates the inherited one-source-identity-H1 contract and the selected web standard. Remediation: retain exactly one semantic H1, keep the filename as non-outline source identity, and update `TestRT004_2_OrgFrontmatterHeadings`.
+
+        3. `assets/web/preview.css:53` removes the toolbar buttons’ borders, so the required coloured outline controls are rendered as filled controls. Remediation: restore a visible outline while retaining distinct accessible colours, then recheck both themes.
+
+        4. `internal/preview/presentation_test.go:15-24` counts metadata labels but never asserts their names. A regression could lose or corrupt field names while passing. Remediation: assert the exact ordered label and value pairs, including repeated and unknown fields.
+
+        5. The added or expanded automated cases have no demonstrated intended RED evidence. `validation.org:22-26` records GREEN for the new drawer matrix, while `graph_test.go:207-274` adds it; the expanded single-field cases at `graph_test.go:151-177` likewise have no RED record. The validation record also contains no completed current full-suite result. Remediation: rerun the affected tests and complete `make test` after remediation, recording distinct RED/GREEN and full-suite evidence.
+      history:
+        - evidence:
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 09f5de89a4d7b3788058ffbe7b4845cdbeee3df8709989059e5d915c1e00aa24
+              bytes: 11969
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: e96ac41133808bcb35fc307c12b073b0a8f10e1ace9c2474706f8bcb63507cef
+              bytes: 4828
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: c8307a38d5ff709dd1e7a8069778aab16bf35701d04a988ebc5eb381684a8e01
+              bytes: 1184
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: 1623c31f9decf8dcedb2f47a23f0560446003b1b72fc860715b0d14ec107d32a
+              bytes: 10815
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: 7c74c3abcfabde4e877a53b7d1c008f2d9632ae24c34aa5d1dbd9163e8a6dcb7
+              bytes: 16862
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 525dc394a60ab632ba32f29e72d934d11688fa0b09187f5110f9edbb9b532512
+              bytes: 33084
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 17620dbd6d342e51cc96ffa39f312a8435acb43c872d3f3bb4610809cc326e4e
+              bytes: 8207
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 2472a8aac4176c8a1634bbcdc80fa72dac5b37d0ee486b03cb90a7088fe6a172
+              bytes: 5767
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/graph_test.go
+              sha256: 5a23cbedcc70bbf1700c1170c04e5fa3391bee1e7d67b6846dd56ebe94c4257f
+              bytes: 9893
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: ba893572ec8fe875ebb2293d5043f7f150cedc873eebac978cc6138d2ebd0993
+              bytes: 8109
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/org.go
+              sha256: 4a9d1aa74acfc300d766be31c05fdd101c006b33b008a180340f72cdd5e1cf19
+              bytes: 8196
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/presentation_test.go
+              sha256: cdac3ac21e8f10a2f306832ccfa2f24a671a03479190e242686826dd6b747042
+              bytes: 3058
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/preview_test.go
+              sha256: 22a039cb7429d37966adb8157ed430e7a7f8e50e46985355bd761d32b20fd5ca
+              bytes: 18693
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/references_test.go
+              sha256: 9c3db99743fe663d5df46fcc81aae709238ac96b54296fbbf173619b4b9b5749
+              bytes: 5377
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 182ba2a4227e42498f22024d922be5c47d64971f176b2763170f0e1e5a63b78a
+              bytes: 12104
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/spec.org
+              sha256: 08ec9246b0bad5c830499a61278dd07f6490132646907ba647c3e4b50e06ffb5
+              bytes: 25923
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/validation.org
+              sha256: 15a8071d066828f23d409b0b63e8b41562f5345629dbee85b16d3cfb9f82cf1c
+              bytes: 4670
+          round: 1
+          revision: c8981cd1fe65cdeea6eebebf4685c9059178babb
+          verdict: FAIL
+          response: |-
+            GATE: implementation
+            REVISION: c8981cd1fe65cdeea6eebebf4685c9059178babb
+            VERDICT: FAIL
+
+            FINDINGS:
+
+            1. `internal/preview/org.go:62-77` promotes `#+TITLE`, `#+SUBTITLE`, `#+AUTHOR`, and `#+DATE` wherever they occur, including after body content. This violates the leading-field boundary. Remediation: gate title-field capture on `frontmatter` and add a body-before-keyword regression.
+
+            2. `assets/web/page.html:13,19` emits two semantic H1 elements on titled Org pages. This violates the inherited one-source-identity-H1 contract and the selected web standard. Remediation: retain exactly one semantic H1, keep the filename as non-outline source identity, and update `TestRT004_2_OrgFrontmatterHeadings`.
+
+            3. `assets/web/preview.css:53` removes the toolbar buttons’ borders, so the required coloured outline controls are rendered as filled controls. Remediation: restore a visible outline while retaining distinct accessible colours, then recheck both themes.
+
+            4. `internal/preview/presentation_test.go:15-24` counts metadata labels but never asserts their names. A regression could lose or corrupt field names while passing. Remediation: assert the exact ordered label and value pairs, including repeated and unknown fields.
+
+            5. The added or expanded automated cases have no demonstrated intended RED evidence. `validation.org:22-26` records GREEN for the new drawer matrix, while `graph_test.go:207-274` adds it; the expanded single-field cases at `graph_test.go:151-177` likewise have no RED record. The validation record also contains no completed current full-suite result. Remediation: rerun the affected tests and complete `make test` after remediation, recording distinct RED/GREEN and full-suite evidence.
+          updated: "2026-09-10T04:39:03Z"

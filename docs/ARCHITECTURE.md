@@ -194,6 +194,8 @@ accessible contrast and wrapping for long paths. The browser tab title uses
 the Org document title when supplied, falling back to the original filename.
 The 10 September 2026 emergency layout amendment supersedes the earlier
 filename-only tab title. The source path remains the dedicated copying target.
+On a titled Org page the document title is the sole semantic H1 and the filename
+is a non-heading source label. Without an Org title, retain the filename H1.
 
 Display and copy the absolute logical source path used for that preview,
 including the Linux path when viewed from WSL. Do not copy the temporary HTML
@@ -281,8 +283,9 @@ bar and Show more buttons share the toggle action. A separate heading listener
 ignores links, code, controls, selection and modified clicks; it cannot reject
 the bar's own events. Headings and buttons use a pointer cursor. There is one
 bar per section and no additional decorative nested border.
-Compact blue, green and amber outline buttons share the filename row in both
-formats. Frontmatter spans its own row beneath them.
+Compact blue, green and amber buttons for document outline actions share the
+filename row in both formats. They have filled backgrounds and no outline or
+gap, as requested by the operator. Frontmatter spans its own row beneath them.
 Global modes, initial Org visibility, fragment reveal and print restoration
 retain their existing roles. Control names capture heading text before code
 buttons are inserted. Lifecycle teardown removes listeners, controls and timers;

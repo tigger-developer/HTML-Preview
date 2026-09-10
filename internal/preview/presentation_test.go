@@ -15,10 +15,14 @@ func TestRT004_3_ConsolidatedFrontmatter(t *testing.T) {
 	front := documentNode(t, r.pages[0], "hp-frontmatter")
 	labels, values := nodes(front, "dt"), nodes(front, "dd")
 	want := []string{"A document", "Its subtitle", "A Writer", "2026-09-10", "overview", "WAIT | FINISHED", "toc:nil", "example", "<safe>"}
+	names := []string{"TITLE", "SUBTITLE", "AUTHOR", "DATE", "STARTUP", "TODO", "OPTIONS", "TAGS", "CUSTOM"}
 	if len(labels) != len(want) || len(values) != len(want) {
 		t.Fatalf("frontmatter fields: labels=%d values=%d, want %d", len(labels), len(values), len(want))
 	}
 	for i, value := range want {
+		if textOf(labels[i]) != "⚙ "+names[i] {
+			t.Errorf("field %d name: %q, want %q", i, textOf(labels[i]), names[i])
+		}
 		if textOf(values[i]) != value {
 			t.Errorf("field %d: %q, want %q", i, textOf(values[i]), value)
 		}
@@ -34,7 +38,7 @@ func TestRT004_3_ConsolidatedFrontmatter(t *testing.T) {
 	if front.Parent != header {
 		t.Fatal("frontmatter must span the header independently of the filename row")
 	}
-	sourceHeader := nodes(header, "h1")[0]
+	sourceHeader := documentNode(t, r.pages[0], "hp-source")
 	if sourceHeader.Parent == front || textOf(sourceHeader) != attr(sourceHeader, "data-hp-source") {
 		t.Fatal("filename copy target includes metadata")
 	}
@@ -50,6 +54,7 @@ func TestRT004_3_FrontmatterBoundaries(t *testing.T) {
 		{"repeat", "#+TITLE: First\n#+TITLE: Last\n* Body\n", 2},
 		{"literal-first", "#+BEGIN_EXAMPLE\n#+TITLE: literal\n#+END_EXAMPLE\n* Body\n", 0},
 		{"drawer-first", ":LOGBOOK:\n#+TITLE: literal\n:END:\n* Body\n", 0},
+		{"body-keywords", "Body first.\n#+TITLE: Too late\n#+SUBTITLE: Too late\n#+AUTHOR: Too late\n#+DATE: Too late\n", 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := t.TempDir()
@@ -62,6 +67,13 @@ func TestRT004_3_FrontmatterBoundaries(t *testing.T) {
 					if len(nodes(details, "dt")) != tc.fields {
 						t.Fatal("frontmatter field count")
 					}
+					if tc.name == "repeat" {
+						for i, value := range []string{"First", "Last"} {
+							if textOf(nodes(details, "dt")[i]) != "⚙ TITLE" || textOf(nodes(details, "dd")[i]) != value {
+								t.Fatal("repeated title label/value pair")
+							}
+						}
+					}
 				}
 			}
 			if (tc.fields == 0 && count != 0) || (tc.fields > 0 && count != 1) {
@@ -69,6 +81,16 @@ func TestRT004_3_FrontmatterBoundaries(t *testing.T) {
 			}
 			if tc.name == "repeat" && textOf(nodes(r.pages[0], "title")[0]) != "Last" {
 				t.Fatal("last title did not win")
+			}
+			if tc.fields == 0 {
+				if textOf(nodes(r.pages[0], "title")[0]) != "doc.org" {
+					t.Fatal("non-frontmatter keyword promoted to browser title")
+				}
+				for _, section := range nodes(r.pages[0], "section") {
+					if attr(section, "id") == "hp-document-title" {
+						t.Fatal("non-frontmatter keyword promoted to title block")
+					}
+				}
 			}
 		})
 	}

@@ -62,9 +62,15 @@ the initial use of Pandoc outline headings for title metadata.
   is independent; missing title does not hide a supplied subtitle or author.
   The browser title uses TITLE, otherwise the filename. The special filename
   header remains a separate source identity, not a document outline section.
+  On titled Org pages it is a non-heading label, leaving the document title as
+  the sole H1. Without an Org title, the filename remains the fallback H1.
 - Header row :: Overview, Contents and Show all appear on the left in adjoining
   subtle blue, green and amber buttons; only the filename text is right-aligned.
-  Both Org and Markdown receive these controls.
+  Both Org and Markdown receive these controls. Their backgrounds are filled,
+  with no border or outline and no gap between buttons. This follows the
+  operator's explicit request to remove the outline and use coloured mini-button
+  backgrounds. Outline actions refer to document folding,
+  not to a button-border style.
 - Copying :: Only filename text copies the original path. Neither metadata nor
   its fold control copies anything. Path, inline-code and block-code success
   messages overlay the copied surface for two seconds, then disappear. Success
@@ -242,6 +248,8 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   metadata, the preview presents title as H1 and subtitle as H2 below the header
   separator, followed by author and date paragraphs. Absent fields produce no
   blank element. TITLE supplies the browser tab title, with filename fallback.
+  A supplied title replaces the source label's semantic H1 role; it does not
+  create a second H1. Keywords after body content do not supply title fields.
 - Proven by :: [[#rt-004-2][RT004.2 - Org frontmatter headings]] and the
   emergency operator review recorded in [[file:validation.org][validation]].
 
@@ -354,8 +362,9 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   body]].
 - Boundary :: Literal Org input through final parsed preview HTML.
 - Setup :: =TestRT004_2_OrgFrontmatterHeadings= renders one Org document with
-  all four metadata fields and one body heading, then each field on its own.
-- Action :: Run =go test ./internal/preview -run TestRT004_2_OrgFrontmatterHeadings -count=1=.
+  all four metadata fields and one body heading;
+  =TestRT004_2_IndependentFrontmatter= renders each field on its own.
+- Action :: Run =go test ./internal/preview -run TestRT004_2 -count=1=.
 - Expected :: The title block contains exactly one H1 followed immediately by
   an H2, then author and date paragraphs. Each single-field case emits only its
   corresponding element; the browser title uses TITLE or the filename fallback.
@@ -370,7 +379,8 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 - Boundary :: The existing real-Pandoc command regression produces final HTML.
 - Cases :: TITLE, SUBTITLE, AUTHOR, DATE, STARTUP, TODO, OPTIONS, TAGS and an
   unknown field; repeated title; settings-only and absent metadata; literal
-  source/example and drawer text. Assert one panel, field order and escaping,
+  source/example and drawer text; body content before keyword lines. Assert one
+  panel, exact ordered field-name/value pairs and escaping,
   no duplicate STARTUP/TODO boxes, literal content retained, and separate filename.
 - Action :: =go test ./internal/preview -run TestRT004_3 -count=1=.
 
