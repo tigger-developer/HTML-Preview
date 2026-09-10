@@ -4,6 +4,15 @@
 
 * Automated evidence
 
+- Candidate :: =0e96473 - responsive navigation and simplified Org metadata=.
+- Combined suite :: =make test= passed with the race detector; preview package
+  225.840 seconds, integration 14.605 seconds. The final run includes the
+  escaped-key assertion and installed-symlink navigation expectation.
+- Static checks :: =make lint= passed with Go vet, golangci-lint, StyLua 2.5.2
+  and the Pandoc filter check. =make build= produced the candidate executable.
+- Environment :: macOS 26.6, Pandoc 3.9.0.2 with Lua 5.4. Go and linter caches
+  for final verification were confined to the task's OS temporary directory.
+
 ** RT005.1 - Drawer presentation
 :PROPERTIES:
 :RESULT: PASS
@@ -56,6 +65,9 @@
   navigation, metadata, focus and fragment revelation. The first light-theme
   contrast probe found a 4.14:1 key-label ratio; the key foreground was darkened
   and the final probe is repeated after review.
+- Further diagnostics :: Wide Markdown and long-navigation/property fixtures
+  pass. Updated light-theme key contrast meets AA. Final one-off results are
+  recorded after the implementation gate; operator review remains separate.
 
 ** UT005.1 - Reading presentation
 :PROPERTIES:
