@@ -14,10 +14,10 @@
 - Definition :: [[file:spec.org::#ut-004-1][UT004.1 - Browser drawer state]].
 - Expected :: Every generated Org drawer starts closed only with JavaScript;
   native summaries and existing global or section controls can reveal content;
-  print preserves each pre-print state; no-JavaScript remains open. Source-authored
-  HTML details retain their authored state after enhancement. =showall= and
-  =VISIBILITY=all= keep generated Org drawers open. Fragment handling remains
-  unchanged for a generated non-drawer target under a folded ancestor;
-  drawer-internal text has no generated fragment mapping.
+  print preserves each pre-print state; no-JavaScript remains open. Generated Org
+  drawers fold after every startup and VISIBILITY mode; spoofed source HTML details
+  remain open. Fragment handling reveals generated heading/body targets and their
+  ancestors; drawer text has no generated fragment mapping.
 - Result :: PENDING.
-- Evidence :: Not run.
+- Evidence :: On execution, record revision, browser and OS, each startup and
+  VISIBILITY case, the seven UT004.1 subcheck results, and the observed state.

@@ -1,0 +1,68 @@
+version: 1
+audits:
+    - work_item: W004-fold-initial-property-drawers
+      gate: definition
+      session_id: 01a088a6-0e45-7c41-a848-c960caacab80
+      external_round: 5
+      status: exhausted
+      updated: "2026-09-10T00:26:31Z"
+      revision: 1689daeb35a457b4ed12f3a04bd6e6f9354829db3318850f37a368ff207eeb3a
+      verdict: FAIL
+      response: "GATE: definition  \nREVISION: 1689daeb35a457b4ed12f3a04bd6e6f9354829db3318850f37a368ff207eeb3a  \nVERDICT: FAIL\n\nFINDINGS:\n\n1. Startup precedence is undefined. W001 permits `showall` and `VISIBILITY=all` to open drawers, while W004 requires all generated drawers to close after enhancement. The specification also cites `hidedrawers`/`nohidedrawers` without defining whether they are supported.  \n   Required remediation: define precedence and lifecycle order for all existing startup modes, and explicitly classify the cited Org keywords as supported or out of scope. Add only the corresponding bounded RT/UT coverage.\n\n2. The fixture requires “nested drawers”, but the named [Org authority](https://orgmode.org/manual/Drawers.html) disallows drawers nested inside drawers.  \n   Required remediation: clarify that this means drawers under nested headings, or remove the invalid case and adjust coverage.\n\n3. The source-authored HTML `<details>` oracle is under-specified. The fixture does not define its initial `open` state, so “leaves it open” cannot distinguish preserving an authored state from forcing it open.  \n   Required remediation: define the source fixture and whether authored state is preserved or all source details are forced open; align RT/UT assertions.\n\n4. RT004.1 includes browser-user-test results in its automated expected outcome. This blurs RT and UT classification and makes the RT oracle non-self-contained.  \n   Required remediation: restrict RT to generated passive DOM/marker assertions; place enhanced interaction, accessibility, print, lifecycle, and source-detail state assertions in UT."
+      history:
+        - round: 1
+          revision: 6b3a2ff8564404d8c48aedd22e76c62d856d79a1fc7dcbab1cb36031d89e5b28
+          verdict: FAIL
+          response: |-
+            GATE: definition
+            REVISION: 6b3a2ff8564404d8c48aedd22e76c62d856d79a1fc7dcbab1cb36031d89e5b28
+            VERDICT: FAIL
+
+            FINDINGS:
+            1. W004 conflicts with W002’s explicit prohibition on folding drawers, but does not state that this baseline rule is amended or superseded. Reconcile the authorities and trace the narrow exception for immediate PROPERTIES drawers.
+            2. AC004.3 requires restoration to the pre-print state, but UT004.1 opens the drawer before printing and expects it to restore closed. Split the criterion and define print checks for both closed and open pre-print states.
+            3. “Reopening is solely” through summary, fragment, and print paths conflicts with retained section/global controls that open drawers. Clarify that existing controls remain valid, or explicitly constrain and test their effect.
+            4. “A fragment inside a drawer” is undefined and conflicts with the current renderer, which escapes drawer content into `<pre>` and defines no target mapping. Define the supported source construct and generated target, or remove this case.
+            5. RT004.1 does not concretely cover the listed empty, no-drawer, nested-heading, startup-mode, or lifecycle cases; its fixture is not identified. Add exact ordered fixtures and expected marker/state results, including heading boundaries.
+            6. The trust boundary is asserted but not tested. Add a rendered-output regression fixture containing source-supplied HTML and marker-like attributes, proving only application-generated metadata selects initial folding.
+            7. UT004.1 does not specify keyboard activation, focus visibility, native summary semantics, or adequate no-JavaScript accessibility checks. Add those observable checks.
+            8. Page-lifecycle teardown is in scope but absent from the procedure and expected evidence. Add pagehide/bfcache teardown and restoration checks, including no duplicate enhancement and passive drawers returning open.
+          updated: "2026-09-10T00:14:05Z"
+        - round: 2
+          revision: 4306a92efcf87766c4e6887235658179a84a16af2721298d4daa341aa6e7e2aa
+          verdict: FAIL
+          response: |-
+            GATE: definition
+            REVISION: 4306a92efcf87766c4e6887235658179a84a16af2721298d4daa341aa6e7e2aa
+            VERDICT: FAIL
+
+            FINDINGS:
+            1. RT004.1 places the purported “unheaded” PROPERTIES drawer after multiple headed sections, so it is not outside a headed section as required by AC004.2. Move it before the first heading or use a separate fixture, and assert the resulting classification.
+            2. `002-validation.org` still expects fragments to reveal the marked drawer, while W004 now explicitly excludes drawer-internal fragment targets and defines no alternative fragment case. Align the validation definition with W004 and, if existing non-drawer fragment revelation remains in scope, define and trace that case explicitly.
+            3. The source-marker trust test names only a “marker-like class/attribute” without defining the reserved marker semantics or asserting that source-supplied metadata cannot cause browser closure. Define the application-owned marker contract and assert source spoofing is ignored while generated immediate drawers alone are closed.
+          updated: "2026-09-10T00:16:16Z"
+        - round: 3
+          revision: 52f8b1a87b945f73be00d2af98536bdda812c27ab389e24acb7d3147c1e55c7c
+          verdict: FAIL
+          response: |-
+            GATE: definition
+            REVISION: 52f8b1a87b945f73be00d2af98536bdda812c27ab389e24acb7d3147c1e55c7c
+            VERDICT: FAIL
+
+            FINDINGS:
+            1. AC004.2 requires non-immediate drawers to remain open in the enhanced preview, but RT004.1 only checks passive HTML and marker presence, while UT004.1 does not explicitly inspect later, unheaded, LOGBOOK, and source-supplied drawers after enhancement. Add those enhanced-state assertions.
+            2. AC004.4 retains non-drawer fragment revelation as an acceptance condition, but UT004.1 never navigates to a generated non-drawer fragment target. Add a concrete folded-ancestor fragment check and expected result, or remove that unchanged condition from W004’s acceptance and validation definitions.
+          updated: "2026-09-10T00:18:45Z"
+        - round: 4
+          revision: 3b4b6d935159befaa43e87c29d782653d8c5c24561afffd3b3471c369fe66be0
+          verdict: PASS
+          response: |-
+            GATE: definition
+            REVISION: 3b4b6d935159befaa43e87c29d782653d8c5c24561afffd3b3471c369fe66be0
+            VERDICT: PASS
+          updated: "2026-09-10T00:20:19Z"
+        - round: 5
+          revision: 1689daeb35a457b4ed12f3a04bd6e6f9354829db3318850f37a368ff207eeb3a
+          verdict: FAIL
+          response: "GATE: definition  \nREVISION: 1689daeb35a457b4ed12f3a04bd6e6f9354829db3318850f37a368ff207eeb3a  \nVERDICT: FAIL\n\nFINDINGS:\n\n1. Startup precedence is undefined. W001 permits `showall` and `VISIBILITY=all` to open drawers, while W004 requires all generated drawers to close after enhancement. The specification also cites `hidedrawers`/`nohidedrawers` without defining whether they are supported.  \n   Required remediation: define precedence and lifecycle order for all existing startup modes, and explicitly classify the cited Org keywords as supported or out of scope. Add only the corresponding bounded RT/UT coverage.\n\n2. The fixture requires “nested drawers”, but the named [Org authority](https://orgmode.org/manual/Drawers.html) disallows drawers nested inside drawers.  \n   Required remediation: clarify that this means drawers under nested headings, or remove the invalid case and adjust coverage.\n\n3. The source-authored HTML `<details>` oracle is under-specified. The fixture does not define its initial `open` state, so “leaves it open” cannot distinguish preserving an authored state from forcing it open.  \n   Required remediation: define the source fixture and whether authored state is preserved or all source details are forced open; align RT/UT assertions.\n\n4. RT004.1 includes browser-user-test results in its automated expected outcome. This blurs RT and UT classification and makes the RT oracle non-self-contained.  \n   Required remediation: restrict RT to generated passive DOM/marker assertions; place enhanced interaction, accessibility, print, lifecycle, and source-detail state assertions in UT."
+          updated: "2026-09-10T00:26:31Z"

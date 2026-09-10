@@ -14,8 +14,9 @@
   fully readable.
 - Changes :: The renderer identifies generated Org drawers; browser enhancement
   applies their initial closed state and retains existing reveal and print rules.
-- Unchanged :: Source-authored HTML details retain their authored state; section
-  controls, no-JavaScript output and document navigation remain unchanged.
+- Unchanged :: Source-authored HTML details retain the existing forced-open
+  passive state; section controls, no-JavaScript output and document navigation
+  remain unchanged.
 - Edge cases :: Unheaded, empty, nested, LOGBOOK and named drawers, global modes,
   source marker-like HTML, printing and page-lifecycle teardown retain defined
   behaviour.
@@ -61,8 +62,6 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   behaviour keep their current contracts.
 - Existing non-drawer fragment revelation remains governed by W001/W002. Drawer
   text has no generated fragment mapping and is outside this defect correction.
-- Existing =showall= and =VISIBILITY=all= directives retain their W001 meaning:
-  they leave generated Org drawers open after enhancement.
 
 ** Authority and starting point
 
@@ -95,17 +94,29 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 
 ** Decisions
 
-- Every generated Org drawer begins closed only after JavaScript enhancement.
-- Existing =showall= and =VISIBILITY=all= are higher-precedence source requests:
-  their generated Org drawers remain open. In every other existing startup mode,
-  the enhancement closes generated Org drawers after outline visibility is set.
-- Org's =hidedrawers= and =nohidedrawers= keywords are editor-startup settings;
-  this previewer does not support them as source directives.
+- Existing Org outline startup is applied first: absent metadata means =showall=;
+  exact =overview=, =content= and =showall= use their existing meanings; the last
+  =#+STARTUP= directive wins; =VISIBILITY= folded|children|all= overrides its
+  own heading subtree. Unknown, multiple-value, =hidedrawers= and =nohidedrawers=
+  directives are retained as visible metadata, warn, and select =showall=.
+- After outline startup, every generated Org drawer begins closed. This W004
+  rule supersedes W001's previous drawer-open result for default, all supported
+  startup modes and every =VISIBILITY= value. Runtime Show all, section unfold,
+  native summary, fragment revelation and print may subsequently open drawers.
+- Each drawer fragment is keyed by a random transport token that cannot occur in
+  source. After scrubbing source HTML, restoration replaces exactly one matching
+  placeholder with the owned drawer and adds =data-hp-org-drawer=. The final
+  sanitizer permits that attribute only on =details=; source attributes and
+  classes are scrubbed before restoration and cannot create it.
+- Fragment destinations remain limited to generated headings and ordinary body
+  targets. Drawer text has no generated target; source-authored detail targets
+  retain their existing browser behaviour and are outside W004.
 - The native =summary= interaction and the existing global/section, fragment and
   print paths remain valid ways to reveal drawers; no additional control is added.
-- The reserved application marker is =data-hp-org-drawer=. It is
-  added only by the post-sanitization renderer from an Org pre-pass provenance
-  record. Source HTML cannot create, retain or select this marker.
+- The reserved application marker is =data-hp-org-drawer=. The pre-pass creates
+  one random placeholder per drawer; post-scrub restoration replaces that exact
+  placeholder and adds the marker; final publication sanitization permits it only
+  on details. Source HTML cannot create, retain or select this marker.
 
 ** Unresolved blockers
 
@@ -126,13 +137,14 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 - Proven by :: [[#rt-004-1][RT004.1 - Marked Org drawers]] and
   [[#ut-004-1][UT004.1 - Browser drawer state]].
 
-** AC004.2 - Source HTML details retain authored state
+** AC004.2 - Only generated Org drawers fold initially
 :PROPERTIES:
 :CUSTOM_ID: ac-004-2
 :END:
 
-- Criterion :: Given a source-authored HTML =details= element, the *enhanced
-  preview retains its authored open or closed state*.
+- Criterion :: Given a source-authored HTML =details= element carrying an owned
+  marker lookalike, the *enhanced preview leaves its existing forced-open state
+  unchanged*.
 - Proven by :: [[#rt-004-1][RT004.1 - Marked Org drawers]] and
   [[#ut-004-1][UT004.1 - Browser drawer state]].
 
@@ -171,23 +183,21 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   enhancement]], [[#ac-004-2][AC004.2 - Source HTML details remain open]] and
   [[#ac-004-3][AC004.3 - Passive reading remains available]].
 - Boundary :: The Org input through the generated HTML document.
-- Setup :: Render one fixed Org fixture containing an unheaded PROPERTIES drawer;
-  immediate and later PROPERTIES drawers; an immediate LOGBOOK; a named drawer;
-  empty drawers; drawers beneath nested headings; a heading with no drawer; and
-  raw HTML details, one authored open and one authored closed, carrying
-  =data-hp-org-drawer= and a marker-like class. Render the same fixture with
-  showall, overview and content startup metadata. Include a generated body target
-  under an initially folded non-drawer heading for the existing fragment-revelation
-  check.
-- Action :: Render the document through the existing test command and inspect the
-  generated DOM.
+- Setup :: Add =TestRT004_1_OrgDrawerOwnership= to =internal/preview/graph_test.go=.
+  It renders literal Org fixtures containing unheaded, PROPERTIES, LOGBOOK, named,
+  empty and nested-heading drawers; no drawer; raw HTML details with spoofed
+  =data-hp-org-drawer= attributes/classes; each exact supported startup value;
+  absent startup; empty, unknown, multi-value, repeated, =hidedrawers= and
+  =nohidedrawers= directives; and each =VISIBILITY= value.
+- Action :: Run =make test=.
 - Expected :: Every generated Org drawer, including unheaded, later, LOGBOOK,
-  named, empty and nested-heading cases, carries exactly the owned
-  =data-hp-org-drawer= marker. Source-supplied details lacks it. The generated
-  Org drawers retain =open= in passive HTML across startup variants. The source
-  details retain respectively its authored =open= attribute and its absence.
-  Drawer text and raw source remain intact or pass through the established
-  sanitization path.
+  named, empty and nested-heading cases, carries exactly one owned
+  =data-hp-org-drawer= marker. Source-supplied details carries none, whether it
+  supplies the attribute, a matching class or marker-like drawer text. All details
+  retain =open= in passive HTML. Exact startup and VISIBILITY metadata retain the
+  existing section attributes; empty, invalid and multi-value directives select
+  =showall= and emit the existing diagnostic. Repeated valid directives use the
+  last value; a later invalid directive selects =showall= and emits a diagnostic.
 - Retention :: Persistent regression suite under =make test=. Observe RED before
   production changes, then GREEN.
 
@@ -201,25 +211,25 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   [[#ac-004-3][AC004.3 - Passive reading remains available]] and
   [[#ac-004-4][AC004.4 - Existing reveal and print state remains coherent]].
 - Reviewer :: Operator.
-- Procedure :: Open the provided synthetic Org fixture in the default browser
-  with JavaScript enabled, then reload with JavaScript disabled. With JavaScript
-  enabled, tab to the native summary, inspect its visible focus, use Space or
-  Enter to open and close it, use existing section/global controls, print once
-  while closed and once while open, and return from each print preview. Navigate
-  to the fixture's generated non-drawer body target under its folded ancestor,
-  then navigate away and back through the browser history to exercise
-  pagehide/bfcache. Inspect every generated drawer and both source-supplied
-  details after enhancement. Repeat for =showall= and =VISIBILITY=all= fixtures.
-  With JavaScript disabled,
-  inspect the drawer text and summary semantics.
+- Procedure :: After delivery creates =testdata/rt004-org-drawers.org=, invoke
+  the installed =htmlpreview= command on that fixture in the default browser.
+  Record separately: (1) JavaScript-enhanced initial state for every drawer and
+  startup/VISIBILITY fixture; (2) native summary focus and Space/Enter state;
+  (3) runtime Show all and section-unfold state; (4) generated heading/body
+  fragment revelation; (5) closed and open print restoration; (6) pagehide and
+  bfcache pageshow restoration; and (7) disabled-JavaScript readability.
 - Expected :: Every generated drawer begins closed only when enhanced; each summary
   remains keyboard operable with visible focus; existing controls reveal content;
   print shows drawer text and restores respectively closed and open pre-print
   states; history restoration creates no duplicate controls and leaves passive
-  drawers open. Each source-authored detail retains its authored open or closed
-  state after enhancement. In =showall= and =VISIBILITY=all= fixtures, generated
-  Org drawers remain open. The non-drawer fragment reveals its folded ancestor
-  without changing drawer scope. No-JavaScript output remains open and readable.
+  drawers open. Every generated drawer starts closed after every startup mode and
+  VISIBILITY value; the spoofed source detail remains open. Runtime Show all and
+  section unfold open generated drawers; native summary reverses its own state.
+  A generated heading/body fragment opens its folded section ancestors;
+  generated drawer text has no fragment target. Before print all content opens;
+  after print every prior state returns. Pagehide restores passive open drawers;
+  pageshow creates no duplicate controls and reapplies initial generated-drawer
+  folding. No-JavaScript output remains open and readable.
 - Record :: Write the dated result to =validation.org=.
 
 * Edge Cases
@@ -231,8 +241,8 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 
 - Condition :: The input has unheaded, empty, PROPERTIES, LOGBOOK and named Org
   drawers; drawers beneath nested headings; source marker-like HTML; or no drawer.
-- Required behaviour :: Every generated Org drawer is marked and closed only in
-  the ordinary enhanced preview. Source HTML details retain authored state.
+- Required behaviour :: Every generated Org drawer is marked and closed after
+  outline startup. Source HTML details retain their existing forced-open state.
 - Covered by :: [[#rt-004-1][RT004.1 - Marked Org drawers]].
 
 ** Nested, global and print state
@@ -261,24 +271,27 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 
 *** Flow
 
-1. The Org pre-pass recognizes every Org drawer and emits an owned marker on its
-   details element.
+1. The Org pre-pass recognizes every Org drawer and emits one unique text
+   placeholder. Post-scrub restoration replaces each placeholder with its owned
+   =details open data-hp-org-drawer= fragment; final document sanitization retains
+   that attribute only on =details=.
 2. The generated document retains =open= on all drawers for passive reading.
 3. At enhancement start, browser JavaScript applies existing outline visibility,
-   then closes owned marked drawers except those in a =showall= or
-   =VISIBILITY=all= section. Existing global/section, print and teardown logic
-   continues to operate on native details elements and preserves the pre-print
-   state.
+   then closes every owned marker. Existing global/section, fragment, print and
+   teardown logic continues to operate on native details elements; pageshow
+   reapplies the owned initial state after pagehide restoration.
 
 *** Interfaces and configuration
 
 - Interface :: Internal =data-hp-org-drawer= marker only; no CLI
   option or public setting. The renderer adds it after sanitization from a
-  provenance record, and browser code selects this exact attribute only.
+  provenance record; the final sanitizer permits it only on generated
+  =details=; browser code selects this exact attribute only.
 - Compatibility :: Generated Org drawers change only after enhancement;
-  source-authored details retain authored state. =hidedrawers= and
-  =nohidedrawers= are unsupported source directives. Markers are removed or
-  ignored safely by non-enhanced reading.
+  source-authored details retain the existing forced-open state. Unsupported
+  =hidedrawers= and =nohidedrawers= follow the existing unknown-startup warning
+  and =showall= outline fallback. Markers are removed or ignored safely by
+  non-enhanced reading.
 
 ** Architecture impact
 
