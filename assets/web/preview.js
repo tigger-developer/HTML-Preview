@@ -281,11 +281,14 @@ async function enhanceOutline(main, header, controller, dispose) {
     plus.textContent = '+';
     plus.setAttribute('aria-hidden', 'true');
     button.append(plus);
-    button.addEventListener('click', () => {
+    const toggle = event => {
+      if (event && event.target.closest('a,button')) return;
       subtree(record, record.mode === 'all' ? 'folded' : 'all');
       if (record.mode === 'all') closeOwnedDrawers(record.node);
       refresh();
-    }, events);
+    };
+    button.addEventListener('click', toggle, events);
+    record.title.addEventListener('click', toggle, events);
     record.button = button;
     record.node.classList.add('hp-outline-section');
     record.node.prepend(button);
