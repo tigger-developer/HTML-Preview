@@ -60,6 +60,9 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		"--lua-filter=" + filepath.Join(s.path, "fidelity.lua"), "--template=" + filepath.Join(s.path, "page.html5"),
 		"--metadata=htmlpreview-code-token:" + token, "--variable=htmlpreview-toc-token:" + token,
 		"--toc=" + strconv.FormatBool(toc), "--toc-depth=" + strconv.Itoa(s.cfg.tocDepth), "+RTS", "-M512M", "-RTS"}
+	if format == "org" {
+		args = append(args, "--metadata=htmlpreview-org:true")
+	}
 	output, err := s.host.Execute(ctx, Command{Path: s.pandoc, Args: args, Input: data, Dir: s.path, Limit: s.cfg.outputBytes - s.used})
 	if err != nil {
 		return fmt.Errorf("Pandoc conversion: %w", err)

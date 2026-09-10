@@ -96,3 +96,19 @@ func TestRT001_16_OutlineMetadata(t *testing.T) {
 		}
 	}
 }
+
+func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
+	root := t.TempDir()
+	p := source(t, root, "frontmatter.org", "#+TITLE: Document title\n#+SUBTITLE: Document subtitle\n#+AUTHOR: A. Writer\n#+DATE: 2026-09-10\n\n* Body\n")
+	r := run(t, root, nil, p)
+	success(t, r, 1)
+	raw := r.raw[0]
+	last := -1
+	for _, text := range []string{"Document title", "Document subtitle", "A. Writer", "2026-09-10"} {
+		index := strings.Index(raw, text)
+		if index < 0 || index <= last {
+			t.Fatalf("frontmatter order for %q in preview HTML", text)
+		}
+		last = index
+	}
+}

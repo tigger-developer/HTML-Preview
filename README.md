@@ -32,6 +32,9 @@ The [Org ledger](examples/work.org) demonstrates TODO markers, tags, drawers,
 planning and source blocks. The [Markdown companion](examples/code.md) includes
 highlighting, inline code, duplicate headings and long lines:
 
+Org previews render `#+TITLE` and `#+SUBTITLE` as leading document headings.
+When present, `#+AUTHOR` and `#+DATE` follow them as document metadata.
+
 ```sh
 HTMLPREVIEW_LINKS=1 htmlpreview examples/work.org examples/code.md
 ```

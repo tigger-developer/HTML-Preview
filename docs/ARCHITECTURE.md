@@ -160,6 +160,11 @@ stacks do not yet implement this contract.
 For Org, preserve planning information and logbooks before Pandoc parses the
 source, then apply the adapted Lua filter. Pre-processing must recognize literal
 source and example blocks so that text inside them is not transformed. Keep
+
+Org metadata remains document content in the final preview: `TITLE` and
+`SUBTITLE` become leading headings, followed by `AUTHOR` and `DATE` when present.
+The renderer passes an owned Org-format marker to the packaged Lua filter, so
+Markdown metadata behaviour remains unchanged.
 section wrappers for outline folding. Preserve source content and identifiers;
 do not recompute task statistics or execute source blocks.
 
