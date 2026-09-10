@@ -110,7 +110,8 @@ func TestRT001_13_PassiveSource(t *testing.T) {
 	org := source(t, root, "include.org", "#+INCLUDE: \""+secret+"\"\n#+SETUPFILE: \""+secret+"\"\n")
 	r = run(t, root, nil, org)
 	success(t, r, 1)
-	if strings.Contains(r.raw[0], "NEVER_INCLUDE_THIS") || !strings.Contains(textOf(nodes(r.pages[0], "main")[0]), "#+INCLUDE") {
+	frontmatter := documentNode(t, r.pages[0], "hp-frontmatter")
+	if strings.Contains(r.raw[0], "NEVER_INCLUDE_THIS") || !strings.Contains(textOf(frontmatter), "INCLUDE") || !strings.Contains(textOf(frontmatter), secret) {
 		t.Fatal("Org include policy")
 	}
 }

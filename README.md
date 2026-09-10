@@ -3,22 +3,23 @@
 Preview local Markdown and Org in the system default browser, using Pandoc,
 embedded Asap and Iosevka Custom fonts, and a private temporary directory.
 
-**Status:** The implementation audit reports PASS under
-[the approved specification](specs/001-local-document-preview/spec.org).
+**Evidence:** See [the specification](specs/001-local-document-preview/spec.org)
+and its [audit record](specs/001-local-document-preview/audits.org).
 Browser qualification and the Homebrew installation trial remain pending in
 [the validation record](specs/001-local-document-preview/validation.org).
 
 [The approved code and navigation change](specs/002-code-and-outline/spec.org)
 adds highlighting, code copying, margin bars and configurable contents.
-Its implementation audit reports PASS; browser qualification remains pending
-in the [change evidence](specs/002-code-and-outline/validation.org).
+Its [audit record](specs/002-code-and-outline/audits.org) retains the delivery
+review; browser qualification remains pending in the
+[change evidence](specs/002-code-and-outline/validation.org).
 
 ```sh
 htmlpreview README.md docs/notes.org
 ```
 
 Each distinct source context receives a separate preview. The header identifies
-the original source; activating it copies its full logical path. When browser
+the original source; activating the filename text copies its full logical path. When browser
 clipboard access is unavailable, the header offers manual copying.
 
 Code uses local syntax highlighting and the embedded Iosevka Custom font.
@@ -34,6 +35,12 @@ highlighting, inline code, duplicate headings and long lines:
 
 Org previews render `#+TITLE` and `#+SUBTITLE` as leading document headings.
 When present, `#+AUTHOR` and `#+DATE` follow them as document metadata.
+Leading Org fields share one left-aligned, initially open frontmatter panel
+above the separator, using compact Iosevka text and a settings glyph. The
+filename alone remains right-aligned. Frontmatter never activates path copying.
+The title also supplies the browser tab title, with the filename as fallback.
+Successful path and code copying briefly overlays the copied text with a fading
+confirmation; refused clipboard writes retain the manual-copy fallback.
 
 ```sh
 HTMLPREVIEW_LINKS=1 htmlpreview examples/work.org examples/code.md
@@ -43,8 +50,11 @@ Every preview is a complete styled HTML document. Markdown's table of contents
 defaults to on through source heading level three; Org's defaults to off.
 An explicit `HTMLPREVIEW_TOC=0` or `1` overrides the default for every document
 in that invocation, including linked pages. A thick accent margin
-bar with a bottom plus opens a folded section; the thin bar closes it. The
-global Overview, Contents and Show all buttons select the outline view.
+bar opens a folded section; the thin bar closes it. Headings also toggle their
+sections, and folded sections show a large disclosure triangle and a labelled
+Show more button. These supersede the earlier small bottom-plus indicator.
+Overview, Contents and Show all sit beside the filename in subtly coloured
+buttons for both formats. Generated Org drawers remain closed when sections open.
 Without JavaScript, the full document remains open and code stays selectable.
 Printing includes all content and hides the interactive controls.
 

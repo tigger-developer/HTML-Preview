@@ -18,6 +18,7 @@ import (
 )
 
 type page struct {
+	frontmatter                   []metadataField
 	source                        sourceContext
 	name, url, startup            string
 	title, subtitle, author, date string
@@ -48,6 +49,7 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		}
 		preserved = preserveOrg(data, token)
 		p.title, p.subtitle, p.author, p.date = preserved.title, preserved.subtitle, preserved.author, preserved.date
+		p.frontmatter = preserved.frontmatter
 		data = []byte(preserved.text)
 	}
 	p.startup = preserved.startup

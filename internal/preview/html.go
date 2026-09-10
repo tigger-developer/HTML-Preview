@@ -152,17 +152,21 @@ func (s *session) document(p *page) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	fontNotices, err := embeddedFontNotices()
+	if err != nil {
+		return nil, err
+	}
 	policy := fmt.Sprintf("default-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; script-src 'sha256-%s'; style-src 'sha256-%s'; font-src data:; img-src file: data:", hashBase64(script), hashBase64([]byte(css)))
 	data := struct {
 		Policy, Name, Source, Directory, Startup, Title, Subtitle, Author, Date string
-		HasFrontmatter                                                          bool
+		Frontmatter                                                             []metadataField
 		CSS                                                                     template.CSS
 		Script                                                                  template.JS
-		Body, TOC                                                               template.HTML
+		Body, TOC, FontNotices                                                  template.HTML
 	}{
-		Policy: policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: strings.TrimSuffix(p.source.logical, filepath.Base(p.source.logical)), Startup: p.startup, Title: p.title, Subtitle: p.subtitle, Author: p.author, Date: p.date, HasFrontmatter: p.title != "" || p.subtitle != "" || p.author != "" || p.date != "",
+		Policy: policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: strings.TrimSuffix(p.source.logical, filepath.Base(p.source.logical)), Startup: p.startup, Title: p.title, Subtitle: p.subtitle, Author: p.author, Date: p.date, Frontmatter: p.frontmatter,
 		// #nosec G203 -- CSS, script, and notices come only from embed.FS; body has passed the passive allowlist.
-		CSS: template.CSS(css), Script: template.JS(script), Body: template.HTML(body), TOC: template.HTML(toc), // Only embedded assets and allowlisted HTML cross these trusted boundaries.
+		CSS: template.CSS(css), Script: template.JS(script), Body: template.HTML(body), TOC: template.HTML(toc), FontNotices: template.HTML(fontNotices), // Only embedded assets and allowlisted HTML cross these trusted boundaries.
 	}
 	t, err := template.New("page").Parse(string(layout))
 	if err != nil {
@@ -178,6 +182,20 @@ func (s *session) document(p *page) ([]byte, error) {
 func hashBase64(data []byte) string {
 	sum := sha256.Sum256(data)
 	return base64.StdEncoding.EncodeToString(sum[:])
+}
+
+// Embedded fonts retain their own notices. The application's Apache licence
+// belongs to the distribution and is not inserted into the preview document.
+func embeddedFontNotices() (string, error) {
+	var out strings.Builder
+	for _, path := range []string{"assets/fonts/asap/OFL.txt", "assets/fonts/iosevka-custom/OFL.md"} {
+		data, err := bundle.Assets.ReadFile(path)
+		if err != nil {
+			return "", err
+		}
+		out.WriteString("<!--\n" + string(data) + "\n-->\n")
+	}
+	return out.String(), nil
 }
 func presentationCSS() (string, error) {
 	var out strings.Builder

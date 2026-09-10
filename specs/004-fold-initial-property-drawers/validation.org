@@ -19,6 +19,11 @@
 - GREEN :: Restoring the owned marker passed the same test on 2026-09-10.
 - Coverage :: Unheaded, PROPERTIES, LOGBOOK, named, empty and nested drawers
   remain open in passive HTML and carry the browser ownership marker.
+- Extended coverage :: The emergency correction adds eleven startup directive
+  cases, each with all three VISIBILITY values and attribute/class/text spoofs.
+  It checks exactly one ownership marker per generated drawer, none on source
+  details, passive openness and the no-drawer case. These additional checks
+  pass; the earlier marker-removal RED is retained above.
 
 ** Emergency Org frontmatter presentation
 :PROPERTIES:
@@ -32,6 +37,9 @@
 - Automated evidence :: =TestRT004_2_OrgFrontmatterHeadings= passed after the
   emergency implementation. It verifies consecutive title and subtitle headings and the
   title, subtitle, author and date source order in final preview HTML.
+- Extended coverage :: The current test asserts exact H1/H2/paragraph sibling
+  order, each field independently with the other three absent, and the browser
+  title fallback.
 - Remaining user evidence :: Browser presentation, including typography and
   source-header interaction, remains subject to operator review.
 
@@ -44,7 +52,8 @@
 
 - Definition :: [[file:spec.org::#ut-004-1][UT004.1 - Browser drawer state]].
 - Expected :: Every generated Org drawer starts closed only with JavaScript;
-  native summaries and existing global or section controls can reveal content;
+  native summaries and Show all can reveal drawer content; section unfolding
+  leaves generated drawers closed;
   print preserves each pre-print state; no-JavaScript remains open. Generated Org
   drawers fold after every startup and VISIBILITY mode; spoofed source HTML details
   remain open. Fragment handling reveals generated heading/body targets and their
@@ -52,3 +61,46 @@
 - Result :: PENDING.
 - Evidence :: On execution, record revision, browser and OS, each startup and
   VISIBILITY case, the seven UT004.1 subcheck results, and the observed state.
+
+* Emergency header and interaction correction, 2026-09-10
+
+** RT004.3 - Consolidated frontmatter regression
+:PROPERTIES:
+:RESULT: PASS
+:END:
+
+- Definition :: [[file:spec.org::#rt-004-3][RT004.3 - Consolidated frontmatter]].
+- Baseline :: At =4ce8119 - toggle outline sections from headings= the new test
+  failed: =frontmatter fields: labels=4 values=4, want 9=.
+- Result :: The real-Pandoc tests pass with the correction, including source
+  order, unknown/repeated fields, absent/settings-only frontmatter and literal
+  blocks. The initial RED was observed before production changes.
+
+** OT004.1 - Browser interaction check
+:PROPERTIES:
+:RESULT: PENDING
+:CATEGORY: ONE-OFF
+:END:
+
+- Definition :: [[file:spec.org::#ot-004-1][OT004.1 - Browser interaction check]].
+- Diagnostic evidence :: Native WebKit passed checks on generated synthetic Org
+  HTML for isolated filename copying, panel typography and placement, three
+  toolbar colours, bar/glyph/heading/Show more actions, pointer cursors,
+  clipboard success/refusal, overlay expiry, print and history restoration.
+- Environment :: macOS, native WebKit with a non-persistent data store. Clipboard
+  promises were controlled inside the browser; no system clipboard was read.
+- Final evidence :: Repeat against the audited candidate, including Markdown.
+
+** UT004.2 - Preview layout review
+:PROPERTIES:
+:RESULT: PENDING
+:CATEGORY: USER
+:END:
+
+- Definition :: [[file:spec.org::#ut-004-2][UT004.2 - Preview layout review]].
+- Procedure :: Operator checks =examples/work.org= and =examples/code.md= in the
+  usual browser. Record revision, light/dark appearance, narrow-window layout,
+  click and keyboard behaviour, and clipboard messages.
+- Expected :: One left-aligned monospace frontmatter panel, coloured controls,
+  independent filename copying, readable disclosure cues and working bars.
+- Result :: Awaiting operator review; the WebKit diagnostic is separate evidence.

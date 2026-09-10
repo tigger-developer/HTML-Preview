@@ -20,6 +20,11 @@ type preservation struct {
 	fragments                     map[string]string
 	heads                         []*orgHeading
 	warnings                      []string
+	frontmatter                   []metadataField
+}
+
+type metadataField struct {
+	Name, Value string
 }
 
 func preserveOrg(data []byte, token string) preservation {
@@ -37,6 +42,7 @@ func preserveOrg(data []byte, token string) preservation {
 	keywords := map[string]bool{"TODO": true, "DONE": true}
 	block := ""
 	codeCount := 0
+	preamble := true
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]
 		trim := strings.TrimSpace(line)
@@ -53,12 +59,24 @@ func preserveOrg(data []byte, token string) preservation {
 		if len(fields) > 0 {
 			directive = fields[0]
 		}
-		for key, target := range map[string]*string{"#+TITLE:": &p.title, "#+SUBTITLE:": &p.subtitle, "#+AUTHOR:": &p.author, "#+DATE:": &p.date} {
-			if strings.HasPrefix(upper, key) {
-				*target = strings.TrimSpace(trim[len(key):])
-				out.WriteString(line)
-				goto next
+		key, value, keyword := orgKeyword(trim)
+		frontmatter := preamble && keyword
+		if frontmatter {
+			p.frontmatter = append(p.frontmatter, metadataField{key, value})
+		}
+		if keyword {
+			switch key {
+			case "TITLE":
+				p.title = value
+			case "SUBTITLE":
+				p.subtitle = value
+			case "AUTHOR":
+				p.author = value
+			case "DATE":
+				p.date = value
 			}
+		} else if trim != "" && !strings.HasPrefix(trim, "# ") && trim != "#" {
+			preamble = false
 		}
 		if directive == "#+BEGIN_SRC" || directive == "#+BEGIN_EXAMPLE" {
 			kind := "SRC"
@@ -103,7 +121,9 @@ func preserveOrg(data []byte, token string) preservation {
 			continue
 		}
 		if strings.HasPrefix(upper, "#+INCLUDE:") || strings.HasPrefix(upper, "#+SETUPFILE:") {
-			out.WriteString(marker("<pre class=\"org-metadata\">" + html.EscapeString(line) + "</pre>"))
+			if !frontmatter {
+				out.WriteString(marker("<pre class=\"org-metadata\">" + html.EscapeString(line) + "</pre>"))
+			}
 			p.warnings = append(p.warnings, "Org include/setup directive retained without expansion")
 			continue
 		}
@@ -114,7 +134,9 @@ func preserveOrg(data []byte, token string) preservation {
 				p.startup = "showall"
 				p.warnings = append(p.warnings, "unknown STARTUP value; showing all content")
 			}
-			out.WriteString(marker("<pre class=\"org-metadata\">" + html.EscapeString(line) + "</pre>"))
+			if !frontmatter {
+				out.WriteString(marker("<pre class=\"org-metadata\">" + html.EscapeString(line) + "</pre>"))
+			}
 			continue
 		}
 		if strings.HasPrefix(upper, "#+TODO:") || strings.HasPrefix(upper, "#+SEQ_TODO:") || strings.HasPrefix(upper, "#+TYP_TODO:") {
@@ -126,7 +148,9 @@ func preserveOrg(data []byte, token string) preservation {
 				}
 			}
 			out.WriteString(line)
-			out.WriteString(marker("<pre class=\"org-metadata\">" + html.EscapeString(line) + "</pre>"))
+			if !frontmatter {
+				out.WriteString(marker("<pre class=\"org-metadata\">" + html.EscapeString(line) + "</pre>"))
+			}
 			continue
 		}
 		if level, title, ok := orgTitle(line); ok {
@@ -172,11 +196,27 @@ func preserveOrg(data []byte, token string) preservation {
 			continue
 		}
 		out.WriteString(line)
-	next:
 	}
 	// Pandoc's Org reader otherwise turns headings beyond its H limit into lists.
 	p.text = out.String() + "\n#+OPTIONS: H:100000\n"
 	return p
+}
+
+// Blocks and drawers are consumed before their contents reach this boundary.
+func orgKeyword(line string) (string, string, bool) {
+	if !strings.HasPrefix(line, "#+") {
+		return "", "", false
+	}
+	name, value, ok := strings.Cut(line[2:], ":")
+	if !ok || name == "" {
+		return "", "", false
+	}
+	for _, r := range name {
+		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r == '_') {
+			return "", "", false
+		}
+	}
+	return strings.ToUpper(name), strings.TrimSpace(value), true
 }
 
 func orgTitle(line string) (int, string, bool) {

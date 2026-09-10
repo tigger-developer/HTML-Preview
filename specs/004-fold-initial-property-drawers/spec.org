@@ -1,4 +1,4 @@
-#+TITLE: W004 - Fold generated Org drawers
+#+TITLE: W004 - Org metadata and preview controls
 #+SUBTITLE: Unified defect correction specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
@@ -15,14 +15,16 @@
 - Changes :: The renderer identifies generated Org drawers; browser enhancement
   applies their initial closed state and retains existing reveal and print rules.
 - Unchanged :: Source-authored HTML details retain the existing forced-open
-  passive state; section controls, no-JavaScript output and document navigation
-  remain unchanged.
+  passive state; no-JavaScript output and document navigation remain readable.
+  The emergency amendment below changes section controls and metadata layout.
 - Edge cases :: Unheaded, empty, nested, LOGBOOK and named drawers, global modes,
   source marker-like HTML, printing and page-lifecycle teardown retain defined
   behaviour.
 - Decisions :: The operator classified this as a *defect*. This amendment adopts
   Org's all-drawer startup model rather than a PROPERTIES-only exception.
-- Next step :: Definition gate, then operator sign-off.
+- Additional outcome :: The emergency amendments below consolidate Org
+  frontmatter, correct clipboard targets and make disclosure controls visible.
+- Next step :: Emergency implementation verification and operator review.
 
 -----
 
@@ -44,7 +46,42 @@ existing display contract. =RT004.2 - Org frontmatter headings= in
 =internal/preview/graph_test.go= verifies the rendered title and subtitle
 heading levels and the source order of all four fields. The emergency
 implementation is recorded before the outstanding drawer correction; it does
-not alter AC004.1 through AC004.4.
+not alter AC004.1 through AC004.4. The later layout amendment below supersedes
+the initial use of Pandoc outline headings for title metadata.
+
+** Emergency layout and interaction amendment, 2026-09-10
+
+- Authority :: The operator's repeated =BYPASS-GATE-7= request and screenshots
+  showing split/right-aligned frontmatter, over-broad copying, and inert bars.
+- Current contract :: Leading Org keyword fields form *one left-aligned panel*
+  above the header separator. Preserve order, repeated and unknown fields;
+  literal blocks, body content and drawers are not frontmatter. The panel starts
+  open, uses small muted Iosevka text and settings glyphs instead of =#+=.
+- Title block :: Below the separator, TITLE is an H1, SUBTITLE an H2, then
+  AUTHOR and DATE paragraphs when present, then contents and body. Each field
+  is independent; missing title does not hide a supplied subtitle or author.
+  The browser title uses TITLE, otherwise the filename. The special filename
+  header remains a separate source identity, not a document outline section.
+- Header row :: Overview, Contents and Show all appear on the left in adjoining
+  subtle blue, green and amber buttons; only the filename text is right-aligned.
+  Both Org and Markdown receive these controls.
+- Copying :: Only filename text copies the original path. Neither metadata nor
+  its fold control copies anything. Path, inline-code and block-code success
+  messages overlay the copied surface for two seconds, then disappear. Success
+  follows a resolved write; refusal keeps the manual fallback. Literal contents,
+  selection, links, print and page-history restoration remain intact.
+- Disclosure :: Bar clicks and heading clicks both toggle. Bar child glyphs
+  work too. Heading links, code, controls, selection and modified clicks keep
+  their normal actions. Folded sections show a large right-facing triangle and
+  a labelled Show more control instead of the small plus. Native buttons remain
+  keyboard operable; all clickable disclosure surfaces use pointer cursors.
+- Licence correction :: Application Apache text is excluded from preview HTML.
+  Font OFL notices accompany the embedded font payloads. This corrects the
+  previous blanket deletion of notices without reinstating the Apache comment.
+- Research :: The [[https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/][W3C
+  disclosure pattern]] describes a directional triangle and =aria-expanded=.
+  This supports a recognizable disclosure control, not a claim that one symbol
+  is universally most effective.
 
 -----
 
@@ -70,6 +107,9 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 - Preserve each marked drawer's normal native summary control, print
   expansion/restoration and page-lifecycle teardown.
 - Add regression and user validation evidence for the defect.
+- Consolidate leading Org frontmatter, render independent title fields and
+  correct header, clipboard feedback and outline controls under the emergency
+  layout amendment above.
 
 *** Out of scope
 
@@ -80,8 +120,9 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 *** Unchanged
 
 - Generated HTML with JavaScript disabled keeps every drawer open and readable.
-- Existing section visibility, global outline controls, copied code and contents
-  behaviour keep their current contracts.
+- Existing section visibility, exact copied text and contents semantics keep
+  their current contracts. The emergency amendment changes control placement,
+  click targets, disclosure cues and clipboard feedback.
 - Existing non-drawer fragment revelation remains governed by W001/W002. Drawer
   text has no generated fragment mapping and is outside this defect correction.
 
@@ -103,7 +144,7 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   [[https://orgmode.org/manual/In_002dbuffer-Settings.html][startup settings]]
   provide =hidedrawers= and =nohidedrawers= for all drawers. This 2026-09-10
   amendment supersedes W004's earlier PROPERTIES-only interpretation.
-- Current implementation :: =internal/preview/org.go= emits every drawer as
+- Pre-correction implementation :: =internal/preview/org.go= emitted every drawer as
   =details open=; =assets/web/preview.js= only opens drawer state.
 
 ** Constraints and dependencies
@@ -198,10 +239,47 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 :END:
 
 - Criterion :: Given Org =#+TITLE=, =#+SUBTITLE=, =#+AUTHOR= and =#+DATE=
-  metadata, the preview body presents title and subtitle as consecutive headings followed
-  by author and date in source order. Absent fields produce no blank element.
+  metadata, the preview presents title as H1 and subtitle as H2 below the header
+  separator, followed by author and date paragraphs. Absent fields produce no
+  blank element. TITLE supplies the browser tab title, with filename fallback.
 - Proven by :: [[#rt-004-2][RT004.2 - Org frontmatter headings]] and the
   emergency operator review recorded in [[file:validation.org][validation]].
+
+** AC004.6 - Frontmatter is consolidated and separate from copying
+:PROPERTIES:
+:CUSTOM_ID: ac-004-6
+:END:
+
+- Criterion :: All leading Org fields appear once in one initially open,
+  left-aligned, small muted monospace panel above the separator, with settings
+  glyphs. Clicking its summary or values never copies the path.
+- Proven by :: [[#rt-004-3][RT004.3 - Consolidated frontmatter]],
+  [[#ot-004-1][OT004.1 - Browser interaction check]] and
+  [[#ut-004-2][UT004.2 - Preview layout review]].
+
+** AC004.7 - Clipboard feedback belongs to the copied surface
+:PROPERTIES:
+:CUSTOM_ID: ac-004-7
+:END:
+
+- Criterion :: A successful path or code write overlays that surface with a
+  fading confirmation and announces success accessibly. It restores after two
+  seconds without changing literal text. Refusal shows no success and offers
+  manual copying. Printing and teardown clear transient confirmation.
+- Proven by :: [[#ot-004-1][OT004.1 - Browser interaction check]] and
+  [[#ut-004-2][UT004.2 - Preview layout review]].
+
+** AC004.8 - Disclosure actions remain independently operable
+:PROPERTIES:
+:CUSTOM_ID: ac-004-8
+:END:
+
+- Criterion :: Heading, full-height bar, its glyph, and Show more each toggle
+  the appropriate section. Pointer cursors and a large disclosure triangle with
+  a visible Show more label signal hidden text. Only one bar appears per section.
+  Three differently tinted outline buttons share the filename row in both formats.
+- Proven by :: [[#ot-004-1][OT004.1 - Browser interaction check]] and
+  [[#ut-004-2][UT004.2 - Preview layout review]].
 
 * Test Definitions
 :PROPERTIES:
@@ -276,11 +354,58 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   body]].
 - Boundary :: Literal Org input through final parsed preview HTML.
 - Setup :: =TestRT004_2_OrgFrontmatterHeadings= renders one Org document with
-  all four metadata fields and one body heading.
+  all four metadata fields and one body heading, then each field on its own.
 - Action :: Run =go test ./internal/preview -run TestRT004_2_OrgFrontmatterHeadings -count=1=.
-- Expected :: The body contains exactly one title heading and a next-level
-  subtitle heading. Author and date occur after those headings in source order.
+- Expected :: The title block contains exactly one H1 followed immediately by
+  an H2, then author and date paragraphs. Each single-field case emits only its
+  corresponding element; the browser title uses TITLE or the filename fallback.
 - Retention :: Persistent regression suite under =make test=.
+
+** RT004.3 - Consolidated frontmatter
+:PROPERTIES:
+:CUSTOM_ID: rt-004-3
+:END:
+
+- Covers :: [[#ac-004-6][AC004.6 - Frontmatter consolidation]].
+- Boundary :: The existing real-Pandoc command regression produces final HTML.
+- Cases :: TITLE, SUBTITLE, AUTHOR, DATE, STARTUP, TODO, OPTIONS, TAGS and an
+  unknown field; repeated title; settings-only and absent metadata; literal
+  source/example and drawer text. Assert one panel, field order and escaping,
+  no duplicate STARTUP/TODO boxes, literal content retained, and separate filename.
+- Action :: =go test ./internal/preview -run TestRT004_3 -count=1=.
+
+** OT004.1 - Browser interaction check
+:PROPERTIES:
+:CUSTOM_ID: ot-004-1
+:END:
+
+- Category :: Bounded one-off browser check; no added persistent browser stack.
+- Covers :: [[#ac-004-6][AC004.6 - Frontmatter]], [[#ac-004-7][AC004.7 - Copy
+  feedback]], [[#ac-004-8][AC004.8 - Disclosure controls]].
+- Procedure :: Render synthetic Org and Markdown using the existing command
+  test adapter. Open the output in a native WebKit view. Exercise bar, glyph,
+  heading and Show more clicks; inspect computed cursors, metadata typography,
+  alignment, toolbar placement and distinct colours. Supply a controlled
+  browser clipboard promise to check resolved/refused writes and exact copied
+  values without reading or changing the system clipboard. Check overlay
+  placement/expiry, print restoration, pagehide and persisted pageshow.
+- Expected :: Every action and state follows AC004.6 through AC004.8; one toolbar
+  remains after restoration. This does not establish Firefox clipboard policy.
+
+** UT004.2 - Preview layout review
+:PROPERTIES:
+:CUSTOM_ID: ut-004-2
+:END:
+
+- Category :: Operator browser review.
+- Covers :: [[#ac-004-6][AC004.6 - Frontmatter]], [[#ac-004-7][AC004.7 - Copy
+  feedback]], [[#ac-004-8][AC004.8 - Disclosure controls]].
+- Procedure :: Preview =examples/work.org= and =examples/code.md= after rebuilding.
+  Check metadata grouping, small muted font, button colours, readable disclosure
+  cues, header/code confirmations, click targets and keyboard bar activation.
+  Check light/dark themes and narrow-window wrapping in the usual browser.
+- Expected :: The requested layout and interactions are usable; record browser,
+  revision and observed results in =validation.org=.
 
 * Edge Cases
 :PROPERTIES:
@@ -332,6 +457,21 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
    teardown logic continues to operate on native details elements; pageshow
    reapplies the owned initial state after pagehide restoration.
 
+*** Emergency presentation correction
+
+- Go collects leading Org keyword fields in source order before Pandoc, ending
+  at body content, a literal block or a drawer. It passes escaped field values
+  to one template-owned metadata panel. Existing directive interpretation and
+  include/setup refusal remain in the pre-pass.
+- The template separates the filename row, metadata panel and document title
+  block. Browser code wraps only the source-path element for copying. Title,
+  subtitle, author and date render independently outside the folding outline.
+- Clipboard confirmation is a transient overlay on the immutable copied
+  surface, with a separate live announcement and manual fallback on refusal.
+- Bar and Show more buttons share the section toggle action; the heading uses
+  its own guarded listener. CSS reserves one gutter, keeps passive indentation
+  separate and gives each toolbar action a different subtle colour.
+
 *** Interfaces and configuration
 
 - Interface :: Internal =data-hp-org-drawer= marker only; no CLI
@@ -378,5 +518,7 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   validation]].
 - Documentation impact :: Update README and Architecture only if their drawer
   descriptions become inaccurate; otherwise record their review.
-- Emergency documentation impact :: README and Architecture record Org
-  frontmatter presentation and its Org-only metadata flag.
+- Emergency documentation impact :: README and Architecture record consolidated
+  frontmatter, the independent title block, exact copying targets and disclosure
+  interactions. The initial Org-only metadata flag remains reader plumbing;
+  the owned HTML template now renders the document title block.

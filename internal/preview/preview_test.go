@@ -551,8 +551,11 @@ func TestRT001_5_FontPayloads(t *testing.T) {
 		}
 		delete(want, hash)
 	}
-	for _, file := range []string{"../../LICENSE", "../../assets/fonts/asap/OFL.txt", "../../assets/fonts/iosevka-custom/OFL.md"} {
-		// #nosec G304 -- The table contains only the three committed licence authorities.
+	if strings.Contains(r.raw[0], "Apache License") {
+		t.Fatal("application licence text belongs to the distribution, not the preview")
+	}
+	for _, file := range []string{"../../assets/fonts/asap/OFL.txt", "../../assets/fonts/iosevka-custom/OFL.md"} {
+		// #nosec G304 -- The table contains only the committed embedded-font licence authorities.
 		data, err := os.ReadFile(file)
 		if err != nil {
 			t.Fatal(err)

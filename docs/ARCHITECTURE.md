@@ -160,13 +160,20 @@ stacks do not yet implement this contract.
 For Org, preserve planning information and logbooks before Pandoc parses the
 source, then apply the adapted Lua filter. Pre-processing must recognize literal
 source and example blocks so that text inside them is not transformed. Keep
+section wrappers for outline folding. Preserve source content and identifiers;
+do not recompute task statistics or execute source blocks.
 
 Org metadata remains document content in the final preview: `TITLE` and
 `SUBTITLE` become leading headings, followed by `AUTHOR` and `DATE` when present.
-The renderer passes an owned Org-format marker to the packaged Lua filter, so
-Markdown metadata behaviour remains unchanged.
-section wrappers for outline folding. Preserve source content and identifiers;
-do not recompute task statistics or execute source blocks.
+Go retains the leading Org keyword fields in source order, including repeated
+and unknown fields. Literal blocks and drawers are excluded. The final template
+escapes their values into one native details panel above the separator; the
+panel begins open, left-aligned, in small Iosevka text. Leading STARTUP and TODO
+values no longer create independent boxes in the body. Their parser semantics
+remain active, and include/setup directives remain inert with diagnostics.
+Title, subtitle, author and date form a separate title block below the separator,
+before contents navigation and body. An owned Org-format marker tells Lua not to
+duplicate that block. Markdown metadata behaviour remains unchanged.
 
 The browser script should remain a small enhancement. Ordinary reading and
 navigation must work without it. Folding must preserve keyboard navigation,
@@ -184,8 +191,9 @@ path. Preserve the personal template's directory followed by an emphasized
 filename, compact right alignment, and separator above the document body.
 Use Iosevka Custom at 400 for the directory and 700 for the filename, with
 accessible contrast and wrapping for long paths. The browser tab title uses
-the original filename. This requirement, confirmed on 8 September 2026,
-supersedes the earlier optional-copy proposal.
+the Org document title when supplied, falling back to the original filename.
+The 10 September 2026 emergency layout amendment supersedes the earlier
+filename-only tab title. The source path remains the dedicated copying target.
 
 Display and copy the absolute logical source path used for that preview,
 including the Linux path when viewed from WSL. Do not copy the temporary HTML
@@ -256,11 +264,25 @@ pending write per page. Code within links keeps navigation; its copy button is
 outside the link. Direct copying respects active selections, dragging and
 modifier clicks. Success follows the resolved write; failure exposes a labelled
 readonly field without reading the clipboard or moving focus.
+Only the element with the owned source-path attribute becomes the filename
+button; the surrounding row and frontmatter are never wrapped in it. Successful
+writes place a temporary CSS overlay on that source button or the copied code
+surface, with a separate live-region announcement. Literal text stays intact.
+New copying, printing, and teardown clear the prior overlay. A two-second
+confirmation fades, except when reduced motion is requested. Refusal shows the
+existing labelled manual field and no success overlay.
 
 Each enhanced section reserves a separate gutter for its native folding button.
 The hit target fills its visible height and is at least 24 CSS pixels wide.
-A hidden body uses a four-pixel accent bar and bottom plus; a visible body uses
-a one-pixel bar. Local activation switches between fully open and folded.
+A hidden body uses a four-pixel accent bar, large right-facing triangle and
+labelled Show more button; a visible body uses a one-pixel bar. These replace
+the small bottom plus after the operator's 10 September correction. The native
+bar and Show more buttons share the toggle action. A separate heading listener
+ignores links, code, controls, selection and modified clicks; it cannot reject
+the bar's own events. Headings and buttons use a pointer cursor. There is one
+bar per section and no additional decorative nested border.
+Compact blue, green and amber outline buttons share the filename row in both
+formats. Frontmatter spans its own row beneath them.
 Global modes, initial Org visibility, fragment reveal and print restoration
 retain their existing roles. Control names capture heading text before code
 buttons are inserted. Lifecycle teardown removes listeners, controls and timers;

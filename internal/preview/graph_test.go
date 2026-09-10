@@ -116,7 +116,6 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 	if textOf(nodes(r.pages[0], "title")[0]) != "Document title" {
 		t.Fatal("Org title is absent from the HTML title")
 	}
-	main := nodes(r.pages[0], "main")[0]
 	headings := nodes(r.pages[0], "h1")
 	if len(headings) != 2 || textOf(headings[1]) != "Document title" {
 		t.Fatalf("Org title heading: %#v", headings)
@@ -146,15 +145,36 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 		}
 		return nil
 	}
-	if nextElement(subtitles[0]) != paragraphs[0] || nextElement(paragraphs[0]) != paragraphs[1] {
+	if nextElement(headings[1]) != subtitles[0] || nextElement(subtitles[0]) != paragraphs[0] || nextElement(paragraphs[0]) != paragraphs[1] {
 		t.Fatal("Org author/date do not immediately follow the subtitle")
 	}
-	missing := source(t, root, "missing.org", "#+TITLE: Title only\n\n* Body\n")
-	r = run(t, root, nil, missing)
-	success(t, r, 1)
-	main = nodes(r.pages[0], "main")[0]
-	if len(nodes(main, "h3")) != 0 || len(nodes(main, "p")) != 0 {
-		t.Fatal("absent Org frontmatter produced blank output")
+	for _, tc := range []struct {
+		field, tag string
+	}{
+		{"TITLE", "h1"}, {"SUBTITLE", "h2"}, {"AUTHOR", "p"}, {"DATE", "p"},
+	} {
+		t.Run(tc.field+"-only", func(t *testing.T) {
+			missing := source(t, root, "missing.org", "#+"+tc.field+": Present\n\n* Body\n")
+			r := run(t, root, nil, missing)
+			success(t, r, 1)
+			block := documentNode(t, r.pages[0], "hp-document-title")
+			var children []*html.Node
+			for child := block.FirstChild; child != nil; child = child.NextSibling {
+				if child.Type == html.ElementNode {
+					children = append(children, child)
+				}
+			}
+			if len(children) != 1 || children[0].Data != tc.tag || textOf(children[0]) != "Present" {
+				t.Fatal("absent metadata produced extra elements or hid the present field")
+			}
+			wantTitle := "missing.org"
+			if tc.field == "TITLE" {
+				wantTitle = "Present"
+			}
+			if textOf(nodes(r.pages[0], "title")[0]) != wantTitle {
+				t.Fatal("browser title fallback")
+			}
+		})
 	}
 }
 
@@ -181,5 +201,74 @@ func TestRT004_1_OrgDrawerOwnership(t *testing.T) {
 		if !open {
 			t.Fatal("generated drawer is unreadable without JavaScript")
 		}
+	}
+}
+
+func TestRT004_1_DrawerModesAndSpoofing(t *testing.T) {
+	for _, tc := range []struct {
+		name, input, startup string
+		warn                 bool
+	}{
+		{"absent", "", "showall", false},
+		{"overview", "#+STARTUP: overview\n", "overview", false},
+		{"content", "#+STARTUP: content\n", "content", false},
+		{"showall", "#+STARTUP: showall\n", "showall", false},
+		{"empty", "#+STARTUP:\n", "showall", true},
+		{"unknown", "#+STARTUP: nonsense\n", "showall", true},
+		{"multiple", "#+STARTUP: overview content\n", "showall", true},
+		{"hidedrawers", "#+STARTUP: hidedrawers\n", "showall", true},
+		{"nohidedrawers", "#+STARTUP: nohidedrawers\n", "showall", true},
+		{"repeated", "#+STARTUP: showall\n#+STARTUP: content\n", "content", false},
+		{"later-invalid", "#+STARTUP: overview\n#+STARTUP: invalid\n", "showall", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			var input strings.Builder
+			input.WriteString(tc.input)
+			for _, visibility := range []string{"folded", "children", "all"} {
+				input.WriteString("* Heading " + visibility + "\n:PROPERTIES:\n:VISIBILITY: " + visibility + "\n:END:\n")
+			}
+			input.WriteString("#+begin_export html\n<details data-hp-org-drawer=\"true\"><summary>Spoof attribute</summary>source</details>\n<details class=\"data-hp-org-drawer hp-org-drawer org-metadata\"><summary>Spoof class</summary>source</details>\n<details><summary>Marker text</summary>HTMLPREVIEW_DRAWER_forged_0 data-hp-org-drawer</details>\n#+end_export\n")
+			r := run(t, root, nil, source(t, root, "doc.org", input.String()))
+			success(t, r, 1)
+			main := nodes(r.pages[0], "main")[0]
+			if attr(main, "data-hp-startup") != tc.startup || strings.Contains(r.stderr, "unknown STARTUP") != tc.warn {
+				t.Fatalf("startup=%q warning=%s", attr(main, "data-hp-startup"), r.stderr)
+			}
+			drawers := nodes(main, "details")
+			if len(drawers) != 6 {
+				t.Fatalf("details=%d", len(drawers))
+			}
+			for i, drawer := range drawers {
+				markers, opens := 0, 0
+				for _, a := range drawer.Attr {
+					if a.Key == "data-hp-org-drawer" {
+						markers++
+					}
+					if a.Key == "open" {
+						opens++
+					}
+				}
+				want := 0
+				if i < 3 {
+					want = 1
+				}
+				if markers != want || opens != 1 {
+					t.Fatalf("drawer %d: markers=%d open=%d", i, markers, opens)
+				}
+			}
+			sections := nodes(main, "section")
+			for i, visibility := range []string{"folded", "children", "all"} {
+				if attr(sections[i], "data-hp-visibility") != visibility {
+					t.Fatalf("visibility %s missing", visibility)
+				}
+			}
+		})
+	}
+	root := t.TempDir()
+	r := run(t, root, nil, source(t, root, "none.org", "* Heading\nNo drawers.\n"))
+	success(t, r, 1)
+	if len(nodes(r.pages[0], "details")) != 0 {
+		t.Fatal("no-drawer document gained a drawer")
 	}
 }

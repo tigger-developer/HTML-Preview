@@ -12,17 +12,29 @@ function clipboardService(controller, dispose) {
   manual.readOnly = true;
   manual.hidden = true;
   feedback.append(status, manual);
+  document.body.append(feedback);
   let timer;
   let pending = false;
+  let confirmed;
 
-  dispose(() => { clearTimeout(timer); feedback.remove(); });
-  return (value, label, button) => {
-    if (pending || value === '' || controller.signal.aborted) return;
+  function clearConfirmation() {
     clearTimeout(timer);
+    if (confirmed) {
+      confirmed.classList.remove('hp-copy-confirmed');
+      confirmed.removeAttribute('data-hp-copy-message');
+      confirmed = undefined;
+    }
     status.textContent = '';
+  }
+
+  dispose(() => { clearConfirmation(); feedback.remove(); });
+  window.addEventListener('beforeprint', clearConfirmation, { signal: controller.signal });
+  return (value, label, button, surface = button) => {
+    if (pending || value === '' || controller.signal.aborted) return;
+    clearConfirmation();
+    feedback.classList.remove('hp-copy-error');
     manual.hidden = true;
     manual.value = '';
-    button.after(feedback);
     pending = true;
     button.disabled = true;
 
@@ -30,6 +42,8 @@ function clipboardService(controller, dispose) {
       if (controller.signal.aborted) return;
       pending = false;
       button.disabled = false;
+      button.after(feedback);
+      feedback.classList.add('hp-copy-error');
       status.textContent = 'Clipboard unavailable. Select and copy ' + label.toLowerCase() + ' below.';
       manual.value = value;
       manual.setAttribute('aria-label', label + ' for manual copying');
@@ -43,14 +57,17 @@ function clipboardService(controller, dispose) {
         pending = false;
         button.disabled = false;
         status.textContent = label + ' copied.';
-        timer = setTimeout(() => { status.textContent = ''; }, 2000);
+        confirmed = surface;
+        surface.setAttribute('data-hp-copy-message', status.textContent);
+        surface.classList.add('hp-copy-confirmed');
+        timer = setTimeout(clearConfirmation, 2000);
       }, failed);
     } catch { failed(); }
   };
 }
 
 function enhanceHeader(header, copyValue, events, dispose) {
-  const heading = header.firstElementChild;
+  const heading = header.querySelector('[data-hp-source]');
   const sourcePath = heading.getAttribute('data-hp-source');
   const copy = document.createElement('button');
   copy.type = 'button';
@@ -124,7 +141,8 @@ async function enhanceCode(main, copyValue, controller, dispose) {
     button.textContent = '⧉';
     button.setAttribute('aria-label', 'Copy ' + label.toLowerCase());
     button.title = 'Copy ' + label.toLowerCase();
-    button.addEventListener('click', () => { copyValue(value, label, button); }, events);
+    let surface = code;
+    button.addEventListener('click', () => { copyValue(value, label, button, surface); }, events);
     buttons.push(button);
 
     const link = code.closest('a');
@@ -145,10 +163,11 @@ async function enhanceCode(main, copyValue, controller, dispose) {
         blockWrappers.set(pre, wrapper);
       }
       wrapper.insertBefore(button, pre);
+      surface = wrapper;
     } else {
       code.after(button);
     }
-    const target = { value, label, button };
+    const target = { value, label, button, surface };
     targets.set(code, target);
     if (pre && pre.querySelectorAll('code').length === 1) targets.set(pre, target);
     if (i % 250 === 249) await nextFrame(controller.signal);
@@ -175,7 +194,7 @@ async function enhanceCode(main, copyValue, controller, dispose) {
     gesture = undefined;
     if (!target || event.button !== 0 || event.detail > 1 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || hasSelection()) return;
     if (prior && (prior.target !== target || prior.selected || prior.dragged)) return;
-    copyValue(target.value, target.label, target.button);
+    copyValue(target.value, target.label, target.button, target.surface);
   }, events);
 }
 
@@ -211,12 +230,15 @@ async function enhanceOutline(main, header, controller, dispose) {
       record.visible = !record.parent || (record.parent.visible && record.parent.mode !== 'folded');
       record.node.hidden = !record.visible;
       for (const part of record.node.children) {
-        if (part !== record.title && part !== record.button && !part.matches('section[data-hp-level]')) part.hidden = record.mode !== 'all';
+        if (part !== record.title && part !== record.button && part !== record.more && !part.matches('section[data-hp-level]')) part.hidden = record.mode !== 'all';
       }
       const expanded = record.mode === 'all';
       record.button.setAttribute('aria-expanded', String(expanded));
       record.button.setAttribute('aria-label', (expanded ? 'Collapse ' : 'Expand ') + record.label);
       record.button.title = (expanded ? 'Collapse ' : 'Expand ') + record.label;
+      record.more.hidden = expanded;
+      record.more.setAttribute('aria-expanded', String(expanded));
+      record.node.classList.toggle('hp-folded', !expanded);
     }
   }
 
@@ -242,6 +264,7 @@ async function enhanceOutline(main, header, controller, dispose) {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = label;
+    button.dataset.hpMode = mode;
     button.addEventListener('click', () => { globalMode(mode); }, events);
     toolbar.append(button);
   }
@@ -251,8 +274,10 @@ async function enhanceOutline(main, header, controller, dispose) {
     for (const record of records) {
       record.node.hidden = false;
       record.node.classList.remove('hp-outline-section');
+      record.node.classList.remove('hp-folded');
       for (const part of record.node.children) part.hidden = false;
       if (record.button) record.button.remove();
+      if (record.more) record.more.remove();
       for (const wrapper of record.textWrappers) {
         while (wrapper.firstChild) wrapper.before(wrapper.firstChild);
         wrapper.remove();
@@ -276,27 +301,38 @@ async function enhanceOutline(main, header, controller, dispose) {
     button.type = 'button';
     button.disabled = true;
     button.className = 'hp-toggle';
-    const plus = document.createElement('span');
-    plus.className = 'hp-toggle-plus';
-    plus.textContent = '+';
-    plus.setAttribute('aria-hidden', 'true');
-    button.append(plus);
-    const toggle = event => {
-      if (event && event.target.closest('a,button')) return;
+    const indicator = document.createElement('span');
+    indicator.className = 'hp-toggle-indicator';
+    indicator.textContent = '▸';
+    indicator.setAttribute('aria-hidden', 'true');
+    button.append(indicator);
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'hp-show-more';
+    more.textContent = '▸ Show more …';
+    more.setAttribute('aria-label', 'Expand ' + record.label);
+    more.hidden = true;
+    const toggle = () => {
       subtree(record, record.mode === 'all' ? 'folded' : 'all');
       if (record.mode === 'all') closeOwnedDrawers(record.node);
       refresh();
     };
     button.addEventListener('click', toggle, events);
-    record.title.addEventListener('click', toggle, events);
+    more.addEventListener('click', toggle, events);
+    record.title.addEventListener('click', event => {
+      if (!(event.target instanceof Element) || event.target.closest('a,button,code,input,textarea,select') || hasSelection() || event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+      toggle();
+    }, events);
     record.button = button;
+    record.more = more;
     record.node.classList.add('hp-outline-section');
     record.node.prepend(button);
+    record.title.after(more);
     if (i % 250 === 249) await nextFrame(controller.signal);
   }
   if (controller.signal.aborted) return;
   for (const record of records) record.button.disabled = false;
-  header.prepend(toolbar);
+  header.querySelector('#hp-header-row').prepend(toolbar);
   globalMode(main.getAttribute('data-hp-startup'));
   for (const record of records) {
     const initial = record.node.getAttribute('data-hp-visibility');
