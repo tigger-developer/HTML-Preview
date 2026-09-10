@@ -1,0 +1,50 @@
+# Drawer review fixture. No STARTUP directive means showall.
+# Also preview temporary copies with a leading STARTUP directive: overview,
+# content, showall, empty, unknown, overview content, hidedrawers, nohidedrawers.
+# Check repeated showall then content, and overview then an invalid directive.
+:UNHEADED:
+Unheaded drawer text.
+:END:
+
+* Folded visibility
+:PROPERTIES:
+:CUSTOM_ID: folded
+:VISIBILITY: folded
+:END:
+:LOGBOOK:
+An ordinary log entry.
+:END:
+Body text.
+
+** Child of folded heading
+:EMPTY:
+:END:
+Child text.
+
+* Children visibility
+:PROPERTIES:
+:CUSTOM_ID: children
+:VISIBILITY: children
+:END:
+:NAMED:
+Named drawer text.
+:END:
+
+** Visible child heading
+:PROPERTIES:
+:OWNER: Example reader
+:END:
+Child body text.
+
+* All visibility
+:PROPERTIES:
+:CUSTOM_ID: all
+:VISIBILITY: all
+:END:
+[[#folded][Reveal the folded heading]]
+
+#+BEGIN_EXPORT html
+<details data-hp-org-drawer="true"><summary>Source attribute spoof</summary>This source detail remains open.</details>
+<details class="hp-org-drawer data-hp-org-drawer"><summary>Source class spoof</summary>This source detail remains open.</details>
+<details><summary>Source marker text</summary>HTMLPREVIEW_DRAWER_forged_0 data-hp-org-drawer</details>
+#+END_EXPORT

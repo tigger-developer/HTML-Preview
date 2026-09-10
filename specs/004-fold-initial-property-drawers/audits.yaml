@@ -3,27 +3,16 @@ audits:
     - work_item: W004-fold-initial-property-drawers
       gate: implementation
       session_id: 01a08996-f5d1-77a1-b5b6-07cb9693cba3
-      external_round: 1
-      status: active
-      updated: "2026-09-10T04:39:03Z"
-      revision: c8981cd1fe65cdeea6eebebf4685c9059178babb
-      verdict: FAIL
+      external_round: 2
+      status: passed
+      updated: "2026-09-10T04:47:29Z"
+      revision: 54621c8f4499476f932cde34c3858d341a2c8b5c
+      verdict: PROVISIONAL PASS
       response: |-
         GATE: implementation
-        REVISION: c8981cd1fe65cdeea6eebebf4685c9059178babb
-        VERDICT: FAIL
-
-        FINDINGS:
-
-        1. `internal/preview/org.go:62-77` promotes `#+TITLE`, `#+SUBTITLE`, `#+AUTHOR`, and `#+DATE` wherever they occur, including after body content. This violates the leading-field boundary. Remediation: gate title-field capture on `frontmatter` and add a body-before-keyword regression.
-
-        2. `assets/web/page.html:13,19` emits two semantic H1 elements on titled Org pages. This violates the inherited one-source-identity-H1 contract and the selected web standard. Remediation: retain exactly one semantic H1, keep the filename as non-outline source identity, and update `TestRT004_2_OrgFrontmatterHeadings`.
-
-        3. `assets/web/preview.css:53` removes the toolbar buttons’ borders, so the required coloured outline controls are rendered as filled controls. Remediation: restore a visible outline while retaining distinct accessible colours, then recheck both themes.
-
-        4. `internal/preview/presentation_test.go:15-24` counts metadata labels but never asserts their names. A regression could lose or corrupt field names while passing. Remediation: assert the exact ordered label and value pairs, including repeated and unknown fields.
-
-        5. The added or expanded automated cases have no demonstrated intended RED evidence. `validation.org:22-26` records GREEN for the new drawer matrix, while `graph_test.go:207-274` adds it; the expanded single-field cases at `graph_test.go:151-177` likewise have no RED record. The validation record also contains no completed current full-suite result. Remediation: rerun the affected tests and complete `make test` after remediation, recording distinct RED/GREEN and full-suite evidence.
+        REVISION: 54621c8f4499476f932cde34c3858d341a2c8b5c
+        VERDICT: PROVISIONAL PASS
+        FOLLOW-UP: Rerun OT004.1, then complete pending operator reviews UT004.1 and UT004.2. These are bounded qualification checks and do not invalidate implementation sign-off.
       history:
         - evidence:
             - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
@@ -100,3 +89,67 @@ audits:
 
             5. The added or expanded automated cases have no demonstrated intended RED evidence. `validation.org:22-26` records GREEN for the new drawer matrix, while `graph_test.go:207-274` adds it; the expanded single-field cases at `graph_test.go:151-177` likewise have no RED record. The validation record also contains no completed current full-suite result. Remediation: rerun the affected tests and complete `make test` after remediation, recording distinct RED/GREEN and full-suite evidence.
           updated: "2026-09-10T04:39:03Z"
+        - evidence:
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 09f5de89a4d7b3788058ffbe7b4845cdbeee3df8709989059e5d915c1e00aa24
+              bytes: 11969
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: e96ac41133808bcb35fc307c12b073b0a8f10e1ace9c2474706f8bcb63507cef
+              bytes: 4828
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: fcfc26ac9a8759532d6360ad82c63c5a39e611d54d2920e6af824287a8fc16b9
+              bytes: 1322
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: c6571c3fa131a263802c7ccb03780f4ffc1ee2e018b5f62e11020d974f51e779
+              bytes: 10843
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: 7c74c3abcfabde4e877a53b7d1c008f2d9632ae24c34aa5d1dbd9163e8a6dcb7
+              bytes: 16862
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 41c3d18208ea9fa9c9ccc3f93b9e895894a0d9e0b5430c60b0804e2bfc05f0e6
+              bytes: 33345
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 17620dbd6d342e51cc96ffa39f312a8435acb43c872d3f3bb4610809cc326e4e
+              bytes: 8207
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 2472a8aac4176c8a1634bbcdc80fa72dac5b37d0ee486b03cb90a7088fe6a172
+              bytes: 5767
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/graph_test.go
+              sha256: 0cfcf3067ec78e35606910344469c7e545af85e41543ec5d3fe99c00a3a92530
+              bytes: 9973
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: ba893572ec8fe875ebb2293d5043f7f150cedc873eebac978cc6138d2ebd0993
+              bytes: 8109
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/org.go
+              sha256: c11d7b41181bc4d8be6237f8aaa9bba1ca7633fe1de5cb5408ab32fee4eb75a8
+              bytes: 8212
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/presentation_test.go
+              sha256: 47c6234950763f381ab58f300daaad8a2296a8f5ef1e68828d67bd9350a71097
+              bytes: 4038
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/preview_test.go
+              sha256: 22a039cb7429d37966adb8157ed430e7a7f8e50e46985355bd761d32b20fd5ca
+              bytes: 18693
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/references_test.go
+              sha256: 9c3db99743fe663d5df46fcc81aae709238ac96b54296fbbf173619b4b9b5749
+              bytes: 5377
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 182ba2a4227e42498f22024d922be5c47d64971f176b2763170f0e1e5a63b78a
+              bytes: 12104
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/spec.org
+              sha256: 709c18dbc5a4ec64a7f6de6596bc30a2bce6a59fe3f3db8ae99ae7afe750ca27
+              bytes: 26587
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/validation.org
+              sha256: 7ee15c87f3b7f39b7174502c6775cc84c5275837334c72c06e4cda746aae01a3
+              bytes: 6538
+          round: 2
+          revision: 54621c8f4499476f932cde34c3858d341a2c8b5c
+          verdict: PROVISIONAL PASS
+          response: |-
+            GATE: implementation
+            REVISION: 54621c8f4499476f932cde34c3858d341a2c8b5c
+            VERDICT: PROVISIONAL PASS
+            FOLLOW-UP: Rerun OT004.1, then complete pending operator reviews UT004.1 and UT004.2. These are bounded qualification checks and do not invalidate implementation sign-off.
+          updated: "2026-09-10T04:47:29Z"

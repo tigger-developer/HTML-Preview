@@ -106,7 +106,7 @@
 
 ** OT004.1 - Browser interaction check
 :PROPERTIES:
-:RESULT: PENDING
+:RESULT: PASS
 :CATEGORY: ONE-OFF
 :END:
 
@@ -117,7 +117,24 @@
   clipboard success/refusal, overlay expiry, print and history restoration.
 - Environment :: macOS, native WebKit with a non-persistent data store. Clipboard
   promises were controlled inside the browser; no system clipboard was read.
-- Final evidence :: Repeat against the audited candidate, including Markdown.
+- Final evidence :: Repeated on revision =54621c8= after the implementation
+  review returned, on macOS 26.6. Org and Markdown each passed at 1000 CSS
+  pixels in dark appearance and 390 CSS pixels in light appearance. Checks
+  covered heading/bar/glyph/Show more events, cursors, gutter geometry, the
+  sole document-title H1, metadata alignment/font, borderless distinct toolbar
+  fills, clipboard success/refusal, overlay expiry, print and page lifecycle.
+- Drawer supplement :: Eight generated drawers and three source detail spoofs
+  passed initial-state, Show all, section-unfold, mixed open/closed print
+  restoration and history checks. All eleven startup variants passed, including
+  absent, invalid and repeated directives; all three VISIBILITY values occur in
+  each fixture. This is browser-driven diagnostic evidence, not operator review.
+- Review materials :: =testdata/rt004-org-drawers.org= supplies the drawer
+  fixture and startup variant instructions. =examples/work.org= now includes
+  author/date and describes the current disclosure and contents controls.
+- Retention :: Temporary native WebKit runner, synthetic inputs, captured HTML
+  and screenshots were used for this bounded check; no browser dependency or
+  metered operation was added to the regression suite. The controlled clipboard
+  promise does not establish system clipboard permissions in the usual browser.
 
 ** UT004.2 - Preview layout review
 :PROPERTIES:

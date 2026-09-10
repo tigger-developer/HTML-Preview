@@ -1,5 +1,7 @@
 #+TITLE: Preview work ledger
 #+SUBTITLE: Synthetic examples, not project delivery status
+#+AUTHOR: Example writer
+#+DATE: 2026-09-10
 #+TODO: TODO(t) ACTIVE(a) BLOCKED(b) REVIEW(r) | DONE(d)
 #+STARTUP: content
 
@@ -78,8 +80,9 @@ fi
 :VISIBILITY: folded
 :END:
 
-The thick accent bar and its bottom plus open this whole subtree. Clicking the
-thin bar closes it. Its full height is clickable, including beside the text.
+The thick accent bar, large triangle, heading and Show more button open this
+whole subtree. Clicking the thin bar or heading closes it. The bar's full
+height is clickable, including beside the text.
 
 *** TODO A child with inline ~code~
 :PROPERTIES:
@@ -125,8 +128,8 @@ logical path. It does not identify the temporary HTML output.
 - [[https://pandoc.org][Pandoc documentation, opened only by following this link]]
 
 The global Overview, Contents and Show all controls retain their distinct
-outline views. The table of contents above them is enabled by default through
-source heading level three.
+outline views and appear beside the filename. Org's table of contents defaults
+to off; setting HTMLPREVIEW_TOC=1 enables it through source heading level three.
 
 :LOGBOOK_:
 A drawer whose name ends in an underscore is retained.
