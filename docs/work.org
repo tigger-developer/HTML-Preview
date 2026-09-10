@@ -126,7 +126,7 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/004-fold-initial-property-drawers/audits.yaml][W004 - Definition and implementation audit record]].
 - User validation :: [[file:../specs/004-fold-initial-property-drawers/validation.org][W004 - Generated Org drawer validation]].
 
-** ACTIVE W005 - Responsive navigation and quieter Org metadata :feature:
+** BLOCKED W005 - Responsive navigation and quieter Org metadata :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-005
 :PRIORITY: P1
@@ -137,6 +137,10 @@ classification; it is provenance, not current state.
 - Specification :: [[file:../specs/005-navigation-and-metadata/spec.org][W005 - Responsive navigation and quieter Org metadata]].
 - Audit evidence :: [[file:../specs/005-navigation-and-metadata/audits.yaml][W005 - Implementation audit record]].
 - Validation :: [[file:../specs/005-navigation-and-metadata/validation.org][W005 - Navigation and metadata validation]].
+- Delivery blocker :: The installed audit runner timed out before persisting
+  its session mapping. Its resume command refuses the absent mapping. The
+  supported recovery requires runner repair or an operator-authorized fresh
+  session; the application changes and verification checkpoints are retained.
 
 * Migration record
 :PROPERTIES:
