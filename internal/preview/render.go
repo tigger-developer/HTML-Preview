@@ -21,6 +21,7 @@ type page struct {
 	frontmatter                   []metadataField
 	source                        sourceContext
 	name, url, startup            string
+	format                        string
 	title, subtitle, author, date string
 	dom                           *html.Node
 	toc                           *html.Node
@@ -40,14 +41,15 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		return err
 	}
 	format := strings.TrimSpace(string(dialect))
-	toc := s.cfg.toc
+	p.format = "markdown"
 	preserved := preservation{startup: "showall"}
 	if strings.EqualFold(filepath.Ext(p.source.logical), ".org") {
 		format = "org"
-		if !s.cfg.tocSet {
-			toc = false
+		p.format = "org"
+		preserved, err = preserveOrg(data, token)
+		if err != nil {
+			return err
 		}
-		preserved = preserveOrg(data, token)
 		p.title, p.subtitle, p.author, p.date = preserved.title, preserved.subtitle, preserved.author, preserved.date
 		p.frontmatter = preserved.frontmatter
 		data = []byte(preserved.text)
@@ -63,7 +65,7 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	args := []string{"--defaults=" + filepath.Join(s.path, "defaults.yaml"), "--data-dir=" + s.path, "--from=" + format,
 		"--lua-filter=" + filepath.Join(s.path, "fidelity.lua"), "--template=" + filepath.Join(s.path, "page.html5"),
 		"--metadata=htmlpreview-code-token:" + token, "--variable=htmlpreview-toc-token:" + token,
-		"--toc=" + strconv.FormatBool(toc), "--toc-depth=" + strconv.Itoa(s.cfg.tocDepth)}
+		"--toc=" + strconv.FormatBool(s.cfg.toc), "--toc-depth=" + strconv.Itoa(s.cfg.tocDepth)}
 	if format == "org" {
 		args = append(args, "--metadata=htmlpreview-org:true")
 	}

@@ -126,6 +126,18 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/004-fold-initial-property-drawers/audits.yaml][W004 - Definition and implementation audit record]].
 - User validation :: [[file:../specs/004-fold-initial-property-drawers/validation.org][W004 - Generated Org drawer validation]].
 
+** ACTIVE W005 - Responsive navigation and quieter Org metadata :feature:
+:PROPERTIES:
+:CUSTOM_ID: w-005
+:PRIORITY: P1
+:SOURCE: operator BYPASS-GATE-7
+:CREATED: 2026-09-10
+:END:
+
+- Specification :: [[file:../specs/005-navigation-and-metadata/spec.org][W005 - Responsive navigation and quieter Org metadata]].
+- Audit evidence :: [[file:../specs/005-navigation-and-metadata/audits.yaml][W005 - Implementation audit record]].
+- Validation :: [[file:../specs/005-navigation-and-metadata/validation.org][W005 - Navigation and metadata validation]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

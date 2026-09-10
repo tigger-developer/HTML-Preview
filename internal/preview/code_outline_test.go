@@ -276,9 +276,6 @@ func TestRT002_3_ContentsSettings(t *testing.T) {
 			}
 			p := source(t, root, "levels."+format, body.String())
 			defaultDepth := 3
-			if format == "org" {
-				defaultDepth = 0
-			}
 			cases := []struct {
 				env   []string
 				depth int

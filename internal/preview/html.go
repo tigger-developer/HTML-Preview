@@ -159,12 +159,14 @@ func (s *session) document(p *page) ([]byte, error) {
 	policy := fmt.Sprintf("default-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; script-src 'sha256-%s'; style-src 'sha256-%s'; font-src data:; img-src file: data:", hashBase64(script), hashBase64([]byte(css)))
 	data := struct {
 		Policy, Name, Source, Directory, Startup, Title, Subtitle, Author, Date string
+		Format                                                                  string
 		Frontmatter                                                             []metadataField
 		CSS                                                                     template.CSS
 		Script                                                                  template.JS
 		Body, TOC, FontNotices                                                  template.HTML
 	}{
 		Policy: policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: strings.TrimSuffix(p.source.logical, filepath.Base(p.source.logical)), Startup: p.startup, Title: p.title, Subtitle: p.subtitle, Author: p.author, Date: p.date, Frontmatter: p.frontmatter,
+		Format: p.format,
 		// #nosec G203 -- CSS, script, and notices come only from embed.FS; body has passed the passive allowlist.
 		CSS: template.CSS(css), Script: template.JS(script), Body: template.HTML(body), TOC: template.HTML(toc), FontNotices: template.HTML(fontNotices), // Only embedded assets and allowlisted HTML cross these trusted boundaries.
 	}

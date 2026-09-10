@@ -1,0 +1,72 @@
+#+TITLE: W005 - Navigation and metadata validation
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* Automated evidence
+
+** RT005.1 - Drawer presentation
+:PROPERTIES:
+:RESULT: PASS
+:END:
+
+- Requirement :: Property rows retain their names and values, with one drawer
+  summary and no opening/closing delimiter lines. Free-form text remains text.
+- Procedure :: Exercise final HTML through the existing command test adapter,
+  including empty, repeated, mixed, escaped and unterminated drawer content.
+- RED :: Before production changes, the test reported repeated delimiter lines,
+  missing gear summaries and =property rows keys=0 values=0, want 5=.
+- GREEN :: The new template renders ordered property rows and preserved free
+  text. The combined W003-W005 focused tests passed in 16.597 seconds; an
+  additional escaped-key assertion is included in the final full-suite run.
+
+** RT005.2 - Navigation document structure
+:PROPERTIES:
+:RESULT: PASS
+:END:
+
+- Requirement :: One navigation landmark uses the existing heading targets and
+  configured depth. Each document carries its own format for responsive layout.
+- Procedure :: Render Org and Markdown with enabled/disabled contents and
+  headingless input; inspect the final parsed HTML and fragment targets.
+- RED :: Before production changes, Org reported missing navigation and
+  Markdown lacked the format/accessible identity. The amended mixed-input
+  default case failed with =missing table of contents=.
+- GREEN :: Both formats now pass the structural and defaults cases. The
+  installed-symlink expectation was also reconciled with default-on Org
+  navigation after the initial full run exposed its superseded expectation.
+
+* Browser evidence
+
+** OT005.1 - Responsive navigation and metadata
+:PROPERTIES:
+:RESULT: PENDING
+:CATEGORY: ONE-OFF
+:END:
+
+- Requirement :: The navigation stays visible in the wide left column; at a
+  narrow width it disappears for Org and precedes Markdown content. Tags have
+  no border/background, metadata differs from code, and drawers have no inner
+  box. Property keys and values retain distinct readable styling.
+- Procedure :: Use the existing temporary native WebKit diagnostic technique
+  on synthetic generated files, at wide/narrow widths in light/dark appearance.
+  Check scrolling, keyboard focus, fragment revelation and print-event
+  restoration without adding a persistent browser framework. Actual print and
+  disabled-JavaScript presentation remain operator checks below.
+- Diagnostic :: Wide/narrow Org and narrow Markdown checks passed for
+  navigation, metadata, focus and fragment revelation. The first light-theme
+  contrast probe found a 4.14:1 key-label ratio; the key foreground was darkened
+  and the final probe is repeated after review.
+
+** UT005.1 - Reading presentation
+:PROPERTIES:
+:RESULT: PENDING
+:CATEGORY: USER
+:END:
+
+- Requirement :: Tags, drawers and navigation are visually distinct and useful.
+- Procedure :: Operator previews examples/work.org and examples/code.md in the
+  usual browser; checks wide/narrow layouts, long properties, folding and links.
+- Expected :: Readable muted metadata, plain pink tags and navigation that does
+  not overlap or obscure the document.
+- Additional conditions :: Check actual print preview and JavaScript-disabled
+  reading in the normal browser, including long navigation and properties.

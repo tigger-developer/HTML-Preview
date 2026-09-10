@@ -1,0 +1,260 @@
+#+TITLE: W005 - Responsive navigation and quieter Org metadata
+#+SUBTITLE: Emergency presentation change
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* Responsive navigation and quieter Org metadata
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+- Outcome :: Documents gain *persistent wide-screen navigation* and *visually
+  distinct metadata*.
+- Before :: Contents appear in the reading column; Org contents default off.
+  Tags resemble TODO badges, and drawers repeat source delimiters inside a box.
+- After :: Navigation occupies a sticky left column. Narrow Org hides it;
+  narrow Markdown puts it immediately after the header/frontmatter. Tags become
+  plain muted-pink text; drawers show property rows or unboxed free text.
+- Changes :: Navigation defaults on for both formats, with the existing explicit
+  disable/depth settings. Frontmatter and drawers use a subtler theme than code.
+- Unchanged :: Original source files, identifiers, links, copy values, folding,
+  default-closed generated drawers, fonts, privacy and temporary-file policy.
+- Edge cases :: Empty/disabled navigation, deep headings, long names/values,
+  repeated/empty properties, mixed text, missing drawer terminators and print.
+- Decisions :: The operator authorized =BYPASS-GATE-7= on 2026-09-10. The request
+  is the temporary specification; this document reconciles its implementation.
+- Next step :: Implementation verification followed by operator visual review.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem and scope
+
+- The operator requests a left navigation column that stays available while
+  reading, and less visual competition between metadata, tags and task states.
+- Scope covers generated Org drawer content, tag/frontmatter/drawer styling,
+  and responsive presentation of existing heading navigation in both formats.
+- No new runtime, browser framework, source execution or external resource is
+  introduced. Markdown frontmatter parsing retains its existing contract.
+
+** Authority and starting point
+
+- Profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product :: [[file:../../docs/VISION.md][Vision - reading experience]].
+- Architecture :: [[file:../../docs/ARCHITECTURE.md][Architecture - presentation and navigation]].
+- Baseline :: Revision =1b9f683=, recorded by
+  [[file:../004-fold-initial-property-drawers/spec.org][W004 - Org metadata and preview controls]].
+- Superseded :: [[file:../003-format-contents-defaults/spec.org][W003 - Format-specific contents defaults]]
+  previously disabled Org contents by default. W005's default-on navigation
+  replaces that default while preserving explicit overrides and depth limits.
+- Preserved :: [[file:../002-code-and-outline/spec.org][W002 - Code and document navigation]]
+  owns exact heading destinations, copying and outline actions. W004 owns drawer
+  provenance and default folding. Their behavioural boundaries remain active.
+- Implementation evidence :: The current renderer uses Pandoc's contents,
+  Go-owned final IDs and passive HTML; the browser module reveals linked targets.
+
+** Decisions and compatibility
+
+- The wide navigation uses a *72rem breakpoint*. Below it Org navigation is
+  hidden and Markdown navigation is in normal flow after the header/frontmatter,
+  before the title/body. At and above it, the left navigation is sticky and has
+  its own vertical scrolling when longer than the viewport.
+- Default-on for both formats is the implementation interpretation of the
+  operator's "always visible" navigation request. The explicit
+  =HTMLPREVIEW_TOC=0= override remains available; an optional clarification was
+  offered. This interpretation remains visible for operator review.
+- =HTMLPREVIEW_TOC_DEPTH= remains 3 by default, accepting 1 through 6. An empty
+  setting selects its default; disabled or headingless output reserves no column.
+- The example's =CUSTOM_ID= remains =CUSTOM_ID=. Property names are not renamed
+  to the different label shown in the operator's illustrative output.
+- Presentation removes only opening/closing drawer syntax. It retains property
+  order, repeated and unknown keys, empty values and free-form text. Missing
+  =:END:= retains the current consume-to-EOF behaviour.
+- Printing uses normal-flow navigation without a viewport height limit. The
+  existing before/after-print expansion and restoration remain intact.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC005.1 - Distinct tags and metadata
+:PROPERTIES:
+:CUSTOM_ID: ac-005-1
+:END:
+
+- Criterion :: Tags have *no background or border* and use muted pink. TODO
+  styling remains distinct. Frontmatter and generated drawers have a subtler
+  background and text colour than code, in both themes, with readable contrast.
+- Proven by :: [[#ot-005-1][OT005.1 - Browser presentation]] and
+  [[#ut-005-1][UT005.1 - Reading presentation]].
+
+** AC005.2 - Readable drawer contents
+:PROPERTIES:
+:CUSTOM_ID: ac-005-2
+:END:
+
+- Criterion :: A generated drawer has one outer border and one gear-labelled
+  summary, without repeated opening/closing delimiter lines. Property names
+  have gear glyphs and darker key backgrounds with muted text; values use the
+  normal foreground. Free-form content remains readable without an inner box.
+- Proven by :: [[#rt-005-1][RT005.1 - Drawer presentation]],
+  [[#ot-005-1][OT005.1 - Browser presentation]] and
+  [[#ut-005-1][UT005.1 - Reading presentation]].
+
+** AC005.3 - Responsive navigation
+:PROPERTIES:
+:CUSTOM_ID: ac-005-3
+:END:
+
+- Criterion :: Enabled navigation stays visible in a *wide left column* without
+  overlapping the reading column. Below 72rem it is hidden for Org and appears
+  after the header/frontmatter for Markdown. Long navigation scrolls within the
+  viewport; printing removes that constraint. Navigation links remain keyboard
+  reachable and reveal the correct folded section.
+- Proven by :: [[#rt-005-2][RT005.2 - Navigation structure]],
+  [[#ot-005-1][OT005.1 - Browser presentation]] and
+  [[#ut-005-1][UT005.1 - Reading presentation]].
+
+** AC005.4 - Configuration and fidelity
+:PROPERTIES:
+:CUSTOM_ID: ac-005-4
+:END:
+
+- Criterion :: Navigation defaults on through source level 3 in each format;
+  explicit disable and depth settings remain effective for mixed and linked
+  inputs. No eligible heading yields no navigation. Source content remains
+  escaped, and drawer ownership, identifiers, copying and folding retain their
+  existing contracts.
+- Proven by :: [[#rt-005-1][RT005.1 - Drawer presentation]],
+  [[#rt-005-2][RT005.2 - Navigation structure]] and the existing W001-W004 suite.
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT005.1 - Drawer presentation
+:PROPERTIES:
+:CUSTOM_ID: rt-005-1
+:END:
+
+- Covers :: [[#ac-005-2][AC005.2 - Drawer contents]] and
+  [[#ac-005-4][AC005.4 - Fidelity]].
+- Boundary :: Literal Org input through the existing command adapter and real
+  Pandoc to final parsed HTML.
+- Cases :: Properties, LOGBOOK, empty and unterminated drawers; repeated keys,
+  empty values, escaped names/values and mixed free text; exact summary and row
+  labels, no source delimiter repetition, no property pre box, preserved text.
+- Action :: =go test ./internal/preview -run TestRT005_1 -count=1=.
+- Retention :: Persistent regression under =make test=; observe RED first.
+
+** RT005.2 - Navigation structure
+:PROPERTIES:
+:CUSTOM_ID: rt-005-2
+:END:
+
+- Covers :: [[#ac-005-3][AC005.3 - Navigation]] and
+  [[#ac-005-4][AC005.4 - Configuration]].
+- Boundary :: Org and Markdown input through final HTML. Assert one named
+  navigation landmark immediately after the header, its per-document format,
+  exact heading destinations and absence when disabled or headingless.
+- Existing coverage :: Amend the W003 mixed/linked and W002 depth matrices to
+  expect default-on for Org. Preserve explicit 0/1, empty settings, depth-only,
+  invalid depth, source-metadata precedence and headings through depth 6.
+- Action :: =go test ./internal/preview -run 'TestRT005_2|TestRT003' -count=1=.
+- Retention :: Persistent regression under =make test=; observe RED first.
+
+** OT005.1 - Browser presentation
+:PROPERTIES:
+:CUSTOM_ID: ot-005-1
+:END:
+
+- Covers :: [[#ac-005-1][AC005.1 - Styling]], [[#ac-005-2][AC005.2 - Drawers]] and
+  [[#ac-005-3][AC005.3 - Responsive navigation]].
+- Procedure :: Repeat the existing bounded native WebKit diagnostic technique
+  with generated synthetic Org/Markdown. Inspect wide/narrow light/dark layouts,
+  scrolling and overflow, colour contrast, property rows and border counts,
+  keyboard focus, linked-target revelation and print-event restoration.
+- Bounds :: Local synthetic files only, no external service or clipboard data;
+  no persistent framework or test-only production interface. Test scripts and
+  captures remain in OS temporary storage; results go in =validation.org=.
+
+** UT005.1 - Reading presentation
+:PROPERTIES:
+:CUSTOM_ID: ut-005-1
+:END:
+
+- Covers :: [[#ac-005-1][AC005.1 - Styling]], [[#ac-005-2][AC005.2 - Drawers]] and
+  [[#ac-005-3][AC005.3 - Navigation]].
+- Reviewer :: Operator in the usual browser.
+- Procedure :: Preview =examples/work.org= and =examples/code.md=, including
+  wide/narrow widths, both themes, long fields/navigation, keyboard navigation,
+  disabled JavaScript and print preview.
+- Expected :: Quiet readable metadata and plain pink tags; navigation stays
+  useful without overlap. Print has no clipped navigation or drawer content.
+- Record :: Date, revision, browser, conditions and result in =validation.org=.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+- Long fields :: Keys and values wrap within the drawer; code retains its own
+  horizontal scrolling. Long navigation scrolls independently on wide screens.
+- Empty or disabled navigation :: No landmark or reserved sidebar gap.
+- Malformed/mixed drawers :: Unrecognized lines remain escaped literal text;
+  properties retain order around those text runs. Empty drawers show a summary.
+- Passive/print :: Native details remain open in passive HTML. CSS responsiveness
+  does not depend on JavaScript; print returns navigation to normal flow.
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Rendering and layout
+
+- Go collects drawer contents without outer delimiters and groups property
+  runs and free text in source order. The embedded =drawer.html= template
+  escapes field names and values and emits native details, definition lists and
+  plain preformatted text. Template errors propagate as render failures.
+- The owned marker remains attached only after source scrubbing; the existing
+  final allowlist and browser folding logic remain in place.
+- The final template supplies the input-format attribute and one optional
+  navigation landmark before the title/body. CSS Grid and sticky positioning
+  establish the wide column; media queries implement the narrow/print rules.
+- CSS variables keep metadata, key backgrounds, code panels and tag colours
+  separate. No new JavaScript is needed for navigation or drawer formatting.
+
+** Architecture impact
+
+- Security :: No new input permission, source execution, resource loading or
+  dependency. HTML templates escape all drawer content. Existing bounded
+  source/output conversion and provenance rules remain active.
+- Performance :: Drawer content groups linearly; the drawer template is parsed
+  once per Org conversion. Navigation reuses Pandoc's existing bounded output.
+- Accessibility :: Native landmarks, links and details remain keyboard usable;
+  muted colours still require AA contrast. Metadata conveys meaning through
+  labels and structure as well as colour.
+- Portability :: Existing embedded assets work through symlinks and on macOS,
+  Linux and WSL. Screen CSS and print CSS have distinct layout rules.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: Named authorities, =internal/preview/org.go=,
+  =drawer.go=, =render.go=, =html.go=, =assets/web/= and existing W002-W004 tests.
+- First implementation step :: Observe failing drawer/navigation regressions
+  against the previous output before changing production.
+- Audit evidence :: [[file:audits.yaml][Implementation audit record]].
+- Validation :: [[file:validation.org][Navigation and metadata evidence]].
+- Documentation :: Update README, Vision, Architecture, CLI help, example
+  guidance and the work ledger. Earlier specifications remain historical
+  authorities for their unchanged requirements.

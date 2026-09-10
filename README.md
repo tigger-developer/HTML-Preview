@@ -46,15 +46,21 @@ confirmation; refused clipboard writes retain the manual-copy fallback.
 HTMLPREVIEW_LINKS=1 htmlpreview examples/work.org examples/code.md
 ```
 
-Every preview is a complete styled HTML document. Markdown's table of contents
-defaults to on through source heading level three; Org's defaults to off.
-An explicit `HTMLPREVIEW_TOC=0` or `1` overrides the default for every document
-in that invocation, including linked pages. A thick accent margin
+Every preview is a complete styled HTML document. Navigation defaults to on
+through source heading level three in both formats. At widths of 72rem and
+above it stays in a left sidebar; narrower Org previews hide it and Markdown
+previews place it immediately below the header/frontmatter. An explicit
+`HTMLPREVIEW_TOC=0` disables it for every document, including linked pages.
+This replaces the earlier default-off setting for Org. A thick accent margin
 bar opens a folded section; the thin bar closes it. Headings also toggle their
 sections, and folded sections show a large disclosure triangle and a labelled
 Show more button. These supersede the earlier small bottom-plus indicator.
 Overview, Contents and Show all sit beside the filename in subtly coloured
 buttons for both formats. Generated Org drawers remain closed when sections open.
+Tags are plain muted-pink text. Frontmatter and drawers use a quieter background
+than code. Drawer summaries name the drawer once; property keys have muted
+labels and darker backgrounds, while values retain the normal foreground.
+Opening and closing drawer delimiters are omitted, and free text has no inner box.
 Without JavaScript, the full document remains open and code stays selectable.
 Printing includes all content and hides the interactive controls.
 
@@ -166,7 +172,7 @@ interface. Use `--` before a filename beginning with `-`.
 
 | Setting | Default | Accepted values |
 | --- | --- | --- |
-| `HTMLPREVIEW_TOC` | Markdown: `1`; Org: `0` | `0` or `1`; override the table of contents for all documents |
+| `HTMLPREVIEW_TOC` | `1` | `0` or `1`; enable navigation for all documents |
 | `HTMLPREVIEW_TOC_DEPTH` | `3` | Integer, 1 to 6; maximum source heading level |
 | `HTMLPREVIEW_LINKS` | `0` | `0` or `1` |
 | `HTMLPREVIEW_MODE` | `quick`; `read` with links | `quick` or `read`; links require `read` |
@@ -186,8 +192,8 @@ transactional: a publication failure opens no entry. Help and version requests
 have no preview side effects and bypass environment validation.
 
 Standalone output is always enabled. `HTMLPREVIEW_STANDALONE` is unsupported
-and rejected as an unknown setting. Unset/empty TOC selects each document's
-format default. Depth alone does not enable Org contents. Application defaults
+and rejected as an unknown setting. Unset/empty TOC enables navigation for both
+formats. Depth controls the displayed source levels. Application defaults
 and explicit settings override source TOC metadata; depth is validated even
 when the TOC is disabled. A document with no eligible
 headings has no empty contents navigation.

@@ -128,8 +128,9 @@ logical path. It does not identify the temporary HTML output.
 - [[https://pandoc.org][Pandoc documentation, opened only by following this link]]
 
 The global Overview, Contents and Show all controls retain their distinct
-outline views and appear beside the filename. Org's table of contents defaults
-to off; setting HTMLPREVIEW_TOC=1 enables it through source heading level three.
+outline views and appear beside the filename. Navigation defaults on through
+source heading level three. On wide screens it stays in a left column; on
+narrow Org screens it disappears. HTMLPREVIEW_TOC=0 disables it explicitly.
 
 :LOGBOOK_:
 A drawer whose name ends in an underscore is retained.

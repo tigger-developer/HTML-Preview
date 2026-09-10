@@ -41,10 +41,11 @@ The reader should receive:
   languages receive local syntax highlighting while literal text remains intact.
 - **Org fidelity:** recognizable task states, tags, priorities, timestamps,
   planning information, drawers, and an outline that can be folded.
-- **Direct document navigation:** complete styled pages with Markdown contents
-  enabled by default through source heading level three and Org contents off
-  by default. Contents can be enabled, disabled or given another depth.
-  Clickable margin bars open and close sections.
+- **Direct document navigation:** a persistent left navigation column on wide
+  screens, enabled by default through source heading level three in both formats.
+  Narrow Org previews hide it; narrow Markdown previews place it after the
+  header/frontmatter. Navigation can be disabled or given another depth.
+  Clickable margin bars and headings open and close sections.
 - **Code copying:** inline code, Org verbatim and code blocks offer explicit
   copying with keyboard controls, honest feedback and manual fallback. Selection
   and links retain their normal actions. Code is never executed.
@@ -65,8 +66,11 @@ The code-copying, margin-bar and contents direction was approved through
 [W002 - Code and document navigation](../specs/002-code-and-outline/spec.org)
 on 8 September 2026. Standalone output is always enabled.
 The operator's later [W003 - Format-specific contents defaults](../specs/003-format-contents-defaults/spec.org)
-changes the Org default to off, superseding W002's default-on setting for both
-formats while retaining explicit overrides.
+changed the Org default to off, superseding W002's initial default-on setting.
+The later [W005 - Responsive navigation and quieter Org metadata](../specs/005-navigation-and-metadata/spec.org)
+replaces that default with navigation enabled for both formats. Tags become
+plain muted-pink text; drawers present property rows or unboxed free text,
+without repeated source delimiters. Explicit navigation overrides remain.
 
 ## Temporary output
 

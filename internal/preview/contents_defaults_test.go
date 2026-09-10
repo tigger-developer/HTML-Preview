@@ -1,4 +1,4 @@
-// ABOUTME: Checks format-specific contents defaults through real CLI conversion.
+// ABOUTME: Checks navigation defaults through real CLI conversion.
 // ABOUTME: Covers mixed inputs, linked pages, explicit settings and empty values.
 package preview
 
@@ -25,11 +25,11 @@ func TestRT003_1_FormatContentsDefaults(t *testing.T) {
 		env     []string
 		md, org int
 	}{
-		{"unset", nil, 3, 0},
-		{"empty", []string{"HTMLPREVIEW_TOC=", "HTMLPREVIEW_TOC_DEPTH="}, 3, 0},
+		{"unset", nil, 3, 3},
+		{"empty", []string{"HTMLPREVIEW_TOC=", "HTMLPREVIEW_TOC_DEPTH="}, 3, 3},
 		{"enabled", []string{"HTMLPREVIEW_TOC=1"}, 3, 3},
 		{"disabled", []string{"HTMLPREVIEW_TOC=0"}, 0, 0},
-		{"depth only", []string{"HTMLPREVIEW_TOC_DEPTH=2"}, 2, 0},
+		{"depth only", []string{"HTMLPREVIEW_TOC_DEPTH=2"}, 2, 2},
 	} {
 		for i, entries := range [][]string{{a, b, c}, {b, c, a}, {a}, {b}} {
 			t.Run(fmt.Sprintf("%s/entries-%d", setting.name, i), func(t *testing.T) {
@@ -61,6 +61,6 @@ func TestRT003_1_FormatContentsDefaults(t *testing.T) {
 	}
 	r := run(t, root, []string{"HTMLPREVIEW_TOC_DEPTH=7"}, b)
 	if r.code != 2 || len(r.opens) != 0 || len(r.pages) != 0 || r.cleanedAt != 0 || !strings.Contains(r.stderr, "HTMLPREVIEW_TOC_DEPTH") {
-		t.Fatal("Org's inactive default depth was not validated before allocation")
+		t.Fatal("Org navigation depth was not validated before allocation")
 	}
 }

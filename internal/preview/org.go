@@ -6,8 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"html/template"
 	"regexp"
 	"strings"
+
+	bundle "github.com/tigger-developer/HTML-Preview"
 )
 
 type orgHeading struct {
@@ -27,10 +30,14 @@ type metadataField struct {
 	Name, Value string
 }
 
-func preserveOrg(data []byte, token string) preservation {
+func preserveOrg(data []byte, token string) (preservation, error) {
 	source := strings.ReplaceAll(string(data), "\r\n", "\n")
 	prefix := "HTMLPREVIEW_DRAWER_" + token
 	p := preservation{startup: "showall", fragments: make(map[string]string)}
+	drawerLayout, err := template.ParseFS(bundle.Assets, "assets/web/drawer.html")
+	if err != nil {
+		return p, fmt.Errorf("drawer template: %w", err)
+	}
 	var out strings.Builder
 	marker := func(fragment string) string {
 		key := fmt.Sprintf("%s_%d", prefix, len(p.fragments))
@@ -164,12 +171,11 @@ func preserveOrg(data []byte, token string) preservation {
 		if drawerName(trim) != "" && trim != ":END:" {
 			name := drawerName(trim)
 			var body strings.Builder
-			body.WriteString(line)
 			for i++; i < len(lines); i++ {
-				body.WriteString(lines[i])
 				if strings.EqualFold(strings.TrimSpace(lines[i]), ":END:") {
 					break
 				}
+				body.WriteString(lines[i])
 				if name == "PROPERTIES" && current != nil {
 					key, value, ok := property(lines[i])
 					if ok {
@@ -184,11 +190,11 @@ func preserveOrg(data []byte, token string) preservation {
 					}
 				}
 			}
-			glyph := "▸"
-			if name == "PROPERTIES" {
-				glyph = "⚙"
+			fragment, err := renderDrawer(drawerLayout, name, body.String())
+			if err != nil {
+				return p, fmt.Errorf("render drawer: %w", err)
 			}
-			out.WriteString(marker("<details open class=\"org-metadata\" data-hp-org-drawer=\"true\"><summary>" + glyph + " " + html.EscapeString(name) + "</summary><pre>" + html.EscapeString(body.String()) + "</pre></details>"))
+			out.WriteString(marker(fragment))
 			continue
 		}
 		if strings.HasPrefix(upper, "SCHEDULED:") || strings.HasPrefix(upper, "DEADLINE:") || strings.HasPrefix(upper, "CLOSED:") {
@@ -199,7 +205,7 @@ func preserveOrg(data []byte, token string) preservation {
 	}
 	// Pandoc's Org reader otherwise turns headings beyond its H limit into lists.
 	p.text = out.String() + "\n#+OPTIONS: H:100000\n"
-	return p
+	return p, nil
 }
 
 // Blocks and drawers are consumed before their contents reach this boundary.

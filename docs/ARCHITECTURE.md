@@ -171,8 +171,9 @@ escapes their values into one native details panel above the separator; the
 panel begins open, left-aligned, in small Iosevka text. Leading STARTUP and TODO
 values no longer create independent boxes in the body. Their parser semantics
 remain active, and include/setup directives remain inert with diagnostics.
-Title, subtitle, author and date form a separate title block below the separator,
-before contents navigation and body. An owned Org-format marker tells Lua not to
+Title, subtitle, author and date form a separate title block below the separator.
+W005 places navigation before that block in reading order and in a separate
+column on wide screens. An owned Org-format marker tells Lua not to
 duplicate that block. Markdown metadata behaviour remains unchanged.
 
 The browser script should remain a small enhancement. Ordinary reading and
@@ -185,6 +186,17 @@ sanitizer permits that marker on generated details elements, while source HTML
 cannot retain it. During enhancement, marked drawers close after outline state
 is applied. Unfolding a section leaves them closed; native summary, fragment
 revelation, runtime Show all, and print retain their defined roles.
+
+W005 replaces raw drawer delimiters with presentation structure. Go collects
+only the inner content and groups consecutive property lines and free text.
+The embedded drawer template escapes each key and value, renders property runs
+as definition lists, and leaves other text preformatted without an inner border.
+The drawer name appears once in a gear-labelled summary. Empty and repeated
+properties remain visible; missing terminators retain consume-to-EOF behaviour.
+The template is parsed once per Org conversion and errors propagate normally.
+Frontmatter and drawers share subtle metadata colours distinct from code panels;
+keys have darker backgrounds, values use the normal foreground, and tags use
+plain muted pink without the TODO badge's border or background.
 
 The original filename header is required, including copying its full source
 path. Preserve the personal template's directory followed by an emphasized
@@ -227,18 +239,27 @@ the owned `page.html5` template. This intermediate wrapper includes only the
 generated body and optional contents; the final Go template adds the original
 source header, fonts, policy and browser script once.
 
-`HTMLPREVIEW_TOC` defaults to `1` for Markdown and `0` for Org, accepting an
+`HTMLPREVIEW_TOC` defaults to `1` for both Markdown and Org, accepting an
 explicit `0` or `1` for all documents in the invocation, including linked pages.
 `HTMLPREVIEW_TOC_DEPTH` defaults to `3`, accepting source levels `1` through `6`.
-Empty values select defaults. Configuration retains whether TOC was explicitly
-set; rendering selects the effective default per document using the same format
-decision as Pandoc input. The shared configuration is never changed by rendering
-an Org file, so mixed inputs and linked targets remain independent. Depth alone
-does not enable Org contents. Validation precedes session allocation, including
+Empty values select defaults. Each page carries an owned format attribute
+derived from the same input-format decision as Pandoc. The shared configuration
+is never changed by rendering an Org file, so mixed inputs and linked targets
+remain independent. Validation precedes session allocation, including
 depth when contents are disabled. Source TOC metadata does not override these
 application choices. No standalone setting is exposed.
-This follows [W003 - Format-specific contents defaults](../specs/003-format-contents-defaults/spec.org),
-which supersedes W002's original default-on choice for both formats.
+This follows [W005 - Responsive navigation and quieter Org metadata](../specs/005-navigation-and-metadata/spec.org).
+It supersedes W003's Org default-off choice; W003 had previously replaced W002's
+default-on choice. Existing explicit overrides retain their meaning.
+
+The final template emits one navigation landmark immediately after the source
+header/frontmatter and before the title/body. With eligible navigation, CSS Grid
+uses a 16rem left column at widths of 72rem and above. Sticky positioning keeps
+it visible; a viewport height limit and independent overflow keep long lists
+reachable. Below the breakpoint it is hidden for Org and flows above Markdown
+content. Disabled or empty navigation reserves no column. Print returns it to
+normal flow without a height limit. The existing fragment handler reveals folded
+targets; no new navigation JavaScript or active-section tracking is introduced.
 
 The Org pre-pass preserves source-block bodies in string-only JSON records in
 an unpredictable per-document raw format. Lua validates the records and makes

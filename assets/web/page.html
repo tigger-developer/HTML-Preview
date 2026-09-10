@@ -8,7 +8,7 @@
 {{.FontNotices}}
 <style>{{.CSS}}</style>
 </head>
-<body>
+<body data-hp-format="{{.Format}}"{{if .TOC}} class="hp-has-nav"{{end}}>
 <header id="hp-header">
   <div id="hp-header-row">{{if .Title}}<div id="hp-source" data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></div>{{else}}<h1 id="hp-source" data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1>{{end}}</div>
   {{if .Frontmatter}}<details id="hp-frontmatter" open>
@@ -16,8 +16,8 @@
     <dl>{{range .Frontmatter}}<dt><span aria-hidden="true">⚙</span> {{.Name}}</dt><dd>{{.Value}}</dd>{{end}}</dl>
   </details>{{end}}
 </header>
+{{if .TOC}}<nav id="hp-toc" aria-label="Document navigation"><span class="hp-nav-label">Navigate</span>{{.TOC}}</nav>{{end}}
 {{if or .Title .Subtitle .Author .Date}}<section id="hp-document-title">{{if .Title}}<h1>{{.Title}}</h1>{{end}}{{if .Subtitle}}<h2>{{.Subtitle}}</h2>{{end}}{{if .Author}}<p>{{.Author}}</p>{{end}}{{if .Date}}<p>{{.Date}}</p>{{end}}</section>{{end}}
-{{if .TOC}}<nav id="hp-toc" aria-label="Table of contents">{{.TOC}}</nav>{{end}}
 <main id="hp-document" data-hp-startup="{{.Startup}}">{{.Body}}</main>
 <script type="module">{{.Script}}</script>
 </body>
