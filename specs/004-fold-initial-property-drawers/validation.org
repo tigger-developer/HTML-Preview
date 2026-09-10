@@ -1,4 +1,4 @@
-#+TITLE: W004 - Browser validation
+#+TITLE: W004 - Generated Org drawer validation
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 
@@ -12,11 +12,12 @@
 :END:
 
 - Definition :: [[file:spec.org::#ut-004-1][UT004.1 - Browser drawer state]].
-- Expected :: An immediate PROPERTIES drawer starts closed only with JavaScript;
-  native summary and existing global or section controls can reveal it; print
-  preserves its pre-print state; no-JavaScript remains open. Fragment handling
-  remains unchanged for a generated non-drawer target under a folded ancestor;
-  later, unheaded, LOGBOOK and source-supplied drawers remain open after
-  enhancement. Drawer-internal text has no generated fragment mapping.
+- Expected :: Every generated Org drawer starts closed only with JavaScript;
+  native summaries and existing global or section controls can reveal content;
+  print preserves each pre-print state; no-JavaScript remains open. Source-authored
+  HTML details retain their authored state after enhancement. =showall= and
+  =VISIBILITY=all= keep generated Org drawers open. Fragment handling remains
+  unchanged for a generated non-drawer target under a folded ancestor;
+  drawer-internal text has no generated fragment mapping.
 - Result :: PENDING.
 - Evidence :: Not run.

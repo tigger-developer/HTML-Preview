@@ -3,15 +3,12 @@ audits:
     - work_item: W004-fold-initial-property-drawers
       gate: definition
       session_id: 01a088a6-0e45-7c41-a848-c960caacab80
-      external_round: 4
-      status: passed
-      updated: "2026-09-10T00:20:19Z"
-      revision: 3b4b6d935159befaa43e87c29d782653d8c5c24561afffd3b3471c369fe66be0
-      verdict: PASS
-      response: |-
-        GATE: definition
-        REVISION: 3b4b6d935159befaa43e87c29d782653d8c5c24561afffd3b3471c369fe66be0
-        VERDICT: PASS
+      external_round: 5
+      status: exhausted
+      updated: "2026-09-10T00:26:31Z"
+      revision: 1689daeb35a457b4ed12f3a04bd6e6f9354829db3318850f37a368ff207eeb3a
+      verdict: FAIL
+      response: "GATE: definition  \nREVISION: 1689daeb35a457b4ed12f3a04bd6e6f9354829db3318850f37a368ff207eeb3a  \nVERDICT: FAIL\n\nFINDINGS:\n\n1. Startup precedence is undefined. W001 permits `showall` and `VISIBILITY=all` to open drawers, while W004 requires all generated drawers to close after enhancement. The specification also cites `hidedrawers`/`nohidedrawers` without defining whether they are supported.  \n   Required remediation: define precedence and lifecycle order for all existing startup modes, and explicitly classify the cited Org keywords as supported or out of scope. Add only the corresponding bounded RT/UT coverage.\n\n2. The fixture requires “nested drawers”, but the named [Org authority](https://orgmode.org/manual/Drawers.html) disallows drawers nested inside drawers.  \n   Required remediation: clarify that this means drawers under nested headings, or remove the invalid case and adjust coverage.\n\n3. The source-authored HTML `<details>` oracle is under-specified. The fixture does not define its initial `open` state, so “leaves it open” cannot distinguish preserving an authored state from forcing it open.  \n   Required remediation: define the source fixture and whether authored state is preserved or all source details are forced open; align RT/UT assertions.\n\n4. RT004.1 includes browser-user-test results in its automated expected outcome. This blurs RT and UT classification and makes the RT oracle non-self-contained.  \n   Required remediation: restrict RT to generated passive DOM/marker assertions; place enhanced interaction, accessibility, print, lifecycle, and source-detail state assertions in UT."
       history:
         - round: 1
           revision: 6b3a2ff8564404d8c48aedd22e76c62d856d79a1fc7dcbab1cb36031d89e5b28
@@ -64,3 +61,8 @@ audits:
             REVISION: 3b4b6d935159befaa43e87c29d782653d8c5c24561afffd3b3471c369fe66be0
             VERDICT: PASS
           updated: "2026-09-10T00:20:19Z"
+        - round: 5
+          revision: 1689daeb35a457b4ed12f3a04bd6e6f9354829db3318850f37a368ff207eeb3a
+          verdict: FAIL
+          response: "GATE: definition  \nREVISION: 1689daeb35a457b4ed12f3a04bd6e6f9354829db3318850f37a368ff207eeb3a  \nVERDICT: FAIL\n\nFINDINGS:\n\n1. Startup precedence is undefined. W001 permits `showall` and `VISIBILITY=all` to open drawers, while W004 requires all generated drawers to close after enhancement. The specification also cites `hidedrawers`/`nohidedrawers` without defining whether they are supported.  \n   Required remediation: define precedence and lifecycle order for all existing startup modes, and explicitly classify the cited Org keywords as supported or out of scope. Add only the corresponding bounded RT/UT coverage.\n\n2. The fixture requires “nested drawers”, but the named [Org authority](https://orgmode.org/manual/Drawers.html) disallows drawers nested inside drawers.  \n   Required remediation: clarify that this means drawers under nested headings, or remove the invalid case and adjust coverage.\n\n3. The source-authored HTML `<details>` oracle is under-specified. The fixture does not define its initial `open` state, so “leaves it open” cannot distinguish preserving an authored state from forcing it open.  \n   Required remediation: define the source fixture and whether authored state is preserved or all source details are forced open; align RT/UT assertions.\n\n4. RT004.1 includes browser-user-test results in its automated expected outcome. This blurs RT and UT classification and makes the RT oracle non-self-contained.  \n   Required remediation: restrict RT to generated passive DOM/marker assertions; place enhanced interaction, accessibility, print, lifecycle, and source-detail state assertions in UT."
+          updated: "2026-09-10T00:26:31Z"

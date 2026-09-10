@@ -114,7 +114,7 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/003-format-contents-defaults/audits.org][W003 - Implementation audit]].
 - Validation :: [[file:../specs/003-format-contents-defaults/validation.org][W003 - Defaults and documentation evidence]].
 
-** REVIEW W004 - Fold initial Org property drawers :defect:
+** TODO W004 - Fold generated Org drawers :defect:
 :PROPERTIES:
 :CUSTOM_ID: w-004
 :PRIORITY: P1
@@ -122,9 +122,9 @@ classification; it is provenance, not current state.
 :CREATED: 2026-09-10
 :END:
 
-- Specification :: [[file:../specs/004-fold-initial-property-drawers/spec.org][W004 - Fold initial Org property drawers]].
+- Specification :: [[file:../specs/004-fold-initial-property-drawers/spec.org][W004 - Fold generated Org drawers]].
 - Audit evidence :: [[file:../specs/004-fold-initial-property-drawers/audits.yaml][W004 - Definition and implementation audit record]].
-- User validation :: [[file:../specs/004-fold-initial-property-drawers/validation.org][W004 - Browser drawer validation]].
+- User validation :: [[file:../specs/004-fold-initial-property-drawers/validation.org][W004 - Generated Org drawer validation]].
 
 * Migration record
 :PROPERTIES:
