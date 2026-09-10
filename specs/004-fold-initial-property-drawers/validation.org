@@ -4,6 +4,37 @@
 
 * User tests
 
+* Automated evidence
+
+** RT004.1 - Generated Org drawer ownership
+:PROPERTIES:
+:CUSTOM_ID: rt-004-1-result
+:RESULT: GREEN
+:CATEGORY: AUTOMATED
+:END:
+
+- RED :: Removing the owned drawer marker caused
+  =TestRT004_1_OrgDrawerOwnership= to fail with =generated drawer lacks browser
+  ownership marker=.
+- GREEN :: Restoring the owned marker passed the same test on 2026-09-10.
+- Coverage :: Unheaded, PROPERTIES, LOGBOOK, named, empty and nested drawers
+  remain open in passive HTML and carry the browser ownership marker.
+
+** Emergency Org frontmatter presentation
+:PROPERTIES:
+:CUSTOM_ID: emergency-org-frontmatter-result
+:RESULT: AUTOMATED-PASS
+:CATEGORY: EMERGENCY
+:END:
+
+- Authority :: Operator =BYPASS-GATE-7= instruction, 2026-09-10.
+- Definition :: [[file:spec.org::#ac-004-5][AC004.5 - Org frontmatter is visible in the preview body]].
+- Automated evidence :: =TestRT004_2_OrgFrontmatterHeadings= passed after the
+  emergency implementation. It verifies consecutive title and subtitle headings and the
+  title, subtitle, author and date source order in final preview HTML.
+- Remaining user evidence :: Browser presentation, including typography and
+  source-header interaction, remains subject to operator review.
+
 ** UT004.1 - Browser drawer state
 :PROPERTIES:
 :CUSTOM_ID: ut-004-1-result

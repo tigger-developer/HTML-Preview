@@ -59,10 +59,11 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	args := []string{"--defaults=" + filepath.Join(s.path, "defaults.yaml"), "--data-dir=" + s.path, "--from=" + format,
 		"--lua-filter=" + filepath.Join(s.path, "fidelity.lua"), "--template=" + filepath.Join(s.path, "page.html5"),
 		"--metadata=htmlpreview-code-token:" + token, "--variable=htmlpreview-toc-token:" + token,
-		"--toc=" + strconv.FormatBool(toc), "--toc-depth=" + strconv.Itoa(s.cfg.tocDepth), "+RTS", "-M512M", "-RTS"}
+		"--toc=" + strconv.FormatBool(toc), "--toc-depth=" + strconv.Itoa(s.cfg.tocDepth)}
 	if format == "org" {
 		args = append(args, "--metadata=htmlpreview-org:true")
 	}
+	args = append(args, "+RTS", "-M512M", "-RTS")
 	output, err := s.host.Execute(ctx, Command{Path: s.pandoc, Args: args, Input: data, Dir: s.path, Limit: s.cfg.outputBytes - s.used})
 	if err != nil {
 		return fmt.Errorf("Pandoc conversion: %w", err)
@@ -108,7 +109,7 @@ func transportToken(data []byte) (string, error) {
 			return "", fmt.Errorf("allocate private transport: %w", err)
 		}
 		token := hex.EncodeToString(random[:])
-		if !strings.Contains(lower, "htmlpreview-code-"+token) && !strings.Contains(lower, "htmlpreview-heading-"+token) && !strings.Contains(lower, "htmlpreview-toc-"+token) {
+		if !strings.Contains(lower, "htmlpreview-code-"+token) && !strings.Contains(lower, "htmlpreview-heading-"+token) && !strings.Contains(lower, "htmlpreview-toc-"+token) && !strings.Contains(lower, "htmlpreview_drawer_"+token) {
 			return token, nil
 		}
 	}

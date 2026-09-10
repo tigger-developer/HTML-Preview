@@ -26,6 +26,28 @@
 
 -----
 
+* Emergency amendment - Org frontmatter presentation
+:PROPERTIES:
+:CUSTOM_ID: emergency-org-frontmatter
+:END:
+
+The operator authorized =BYPASS-GATE-7= on 2026-09-10 for immediate Org
+frontmatter presentation. The delivered renderer identifies Org input with an
+owned Pandoc metadata flag. It emits the following leading body content in this
+order when each field is present: =#+TITLE= and =#+SUBTITLE= as consecutive
+heading levels,
+=#+AUTHOR= as a paragraph, and =#+DATE= as a paragraph. Missing fields are
+omitted. The ordinary filename header remains the preview's source identity.
+
+The flag is supplied only for Org conversion. Markdown metadata keeps its
+existing display contract. =RT004.2 - Org frontmatter headings= in
+=internal/preview/graph_test.go= verifies the rendered title and subtitle
+heading levels and the source order of all four fields. The emergency
+implementation is recorded before the outstanding drawer correction; it does
+not alter AC004.1 through AC004.4.
+
+-----
+
 * Context
 :PROPERTIES:
 :CUSTOM_ID: context
@@ -101,8 +123,9 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   directives are retained as visible metadata, warn, and select =showall=.
 - After outline startup, every generated Org drawer begins closed. This W004
   rule supersedes W001's previous drawer-open result for default, all supported
-  startup modes and every =VISIBILITY= value. Runtime Show all, section unfold,
-  native summary, fragment revelation and print may subsequently open drawers.
+  startup modes and every =VISIBILITY= value. Runtime Show all, native summary,
+  fragment revelation and print may subsequently open drawers. Unfolding a
+  section leaves its generated drawers closed.
 - Each drawer fragment is keyed by a random transport token that cannot occur in
   source. After scrubbing source HTML, restoration replaces exactly one matching
   placeholder with the owned drawer and adds =data-hp-org-drawer=. The final
@@ -162,12 +185,23 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 :CUSTOM_ID: ac-004-4
 :END:
 
-- Criterion :: Existing global/section and native-summary controls may reveal a
-  marked drawer. Print *shows drawer content* and, afterwards, restores each
+- Criterion :: Runtime Show all and native-summary controls may reveal a marked
+  drawer; section unfolding leaves it closed. Print *shows drawer content* and, afterwards, restores each
   marked drawer to its own immediately preceding open or closed state. Existing
   non-drawer fragment revelation remains unchanged; drawer-text fragments are
   not a supported destination.
 - Proven by :: [[#ut-004-1][UT004.1 - Browser drawer state]].
+
+** AC004.5 - Org frontmatter is visible in the preview body
+:PROPERTIES:
+:CUSTOM_ID: ac-004-5
+:END:
+
+- Criterion :: Given Org =#+TITLE=, =#+SUBTITLE=, =#+AUTHOR= and =#+DATE=
+  metadata, the preview body presents title and subtitle as consecutive headings followed
+  by author and date in source order. Absent fields produce no blank element.
+- Proven by :: [[#rt-004-2][RT004.2 - Org frontmatter headings]] and the
+  emergency operator review recorded in [[file:validation.org][validation]].
 
 * Test Definitions
 :PROPERTIES:
@@ -223,14 +257,30 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   print shows drawer text and restores respectively closed and open pre-print
   states; history restoration creates no duplicate controls and leaves passive
   drawers open. Every generated drawer starts closed after every startup mode and
-  VISIBILITY value; the spoofed source detail remains open. Runtime Show all and
-  section unfold open generated drawers; native summary reverses its own state.
+  VISIBILITY value; the spoofed source detail remains open. Runtime Show all
+  opens generated drawers, while section unfold leaves them closed; native
+  summary reverses its own state.
   A generated heading/body fragment opens its folded section ancestors;
   generated drawer text has no fragment target. Before print all content opens;
   after print every prior state returns. Pagehide restores passive open drawers;
   pageshow creates no duplicate controls and reapplies initial generated-drawer
   folding. No-JavaScript output remains open and readable.
 - Record :: Write the dated result to =validation.org=.
+
+** RT004.2 - Org frontmatter headings
+:PROPERTIES:
+:CUSTOM_ID: rt-004-2
+:END:
+
+- Covers :: [[#ac-004-5][AC004.5 - Org frontmatter is visible in the preview
+  body]].
+- Boundary :: Literal Org input through final parsed preview HTML.
+- Setup :: =TestRT004_2_OrgFrontmatterHeadings= renders one Org document with
+  all four metadata fields and one body heading.
+- Action :: Run =go test ./internal/preview -run TestRT004_2_OrgFrontmatterHeadings -count=1=.
+- Expected :: The body contains exactly one title heading and a next-level
+  subtitle heading. Author and date occur after those headings in source order.
+- Retention :: Persistent regression suite under =make test=.
 
 * Edge Cases
 :PROPERTIES:
@@ -247,9 +297,10 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
 
 ** Nested, global and print state
 
-- Condition :: A marked drawer appears under a folded ancestor, global/section
-  controls reveal it, or the reader prints while it is closed or open.
-- Required behaviour :: Existing controls reveal content; print returns to the
+- Condition :: A marked drawer appears under a folded ancestor, a section is
+  unfolded, runtime Show all is selected, or the reader prints while it is closed or open.
+- Required behaviour :: Section unfolding leaves drawer state closed; runtime
+  Show all and native summary reveal content; print returns to the
   actual pre-print state. Drawer-internal fragment targets are out of scope
   because preserved drawer text has no generated fragment mapping.
 - Covered by :: [[#ut-004-1][UT004.1 - Browser drawer state]].
@@ -327,3 +378,5 @@ in an enhanced preview, contrary to Org's normal drawer startup model.
   validation]].
 - Documentation impact :: Update README and Architecture only if their drawer
   descriptions become inaccurate; otherwise record their review.
+- Emergency documentation impact :: README and Architecture record Org
+  frontmatter presentation and its Org-only metadata flag.

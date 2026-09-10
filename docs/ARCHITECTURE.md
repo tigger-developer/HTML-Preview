@@ -173,6 +173,12 @@ navigation must work without it. Folding must preserve keyboard navigation,
 visible focus, and fragment destinations, including revealing folded ancestors
 when a link targets their contents.
 
+The Org pre-pass marks only its own restored drawer fragments. The publication
+sanitizer permits that marker on generated details elements, while source HTML
+cannot retain it. During enhancement, marked drawers close after outline state
+is applied. Unfolding a section leaves them closed; native summary, fragment
+revelation, runtime Show all, and print retain their defined roles.
+
 The original filename header is required, including copying its full source
 path. Preserve the personal template's directory followed by an emphasized
 filename, compact right alignment, and separator above the document body.

@@ -114,6 +114,7 @@ func sanitizeDocument(body *html.Node) (string, error) {
 	policy.AllowElements(strings.Fields(passiveElements)...)
 	policy.AllowAttrs(strings.Fields(passiveAttrs)...).Globally()
 	policy.AllowAttrs("open").OnElements("details")
+	policy.AllowAttrs("data-hp-org-drawer").OnElements("details")
 	policy.AllowAttrs("data-hp-level", "data-hp-visibility").OnElements("section")
 	policy.AllowAttrs("role", "aria-level").OnElements("div")
 	policy.AllowURLSchemes("file", "http", "https", "mailto", "data")

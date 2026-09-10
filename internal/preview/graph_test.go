@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"golang.org/x/net/html"
 )
 
 func TestRT001_10_LinkedBreadthFirst(t *testing.T) {
@@ -66,7 +68,7 @@ func TestRT001_11_GraphCountDepthRoot(t *testing.T) {
 func TestRT001_16_OutlineMetadata(t *testing.T) {
 	for _, startup := range []string{"overview", "content", "showall", "unknown"} {
 		root := t.TempDir()
-		p := source(t, root, "doc.org", "#+STARTUP: "+startup+"\n* Parent\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\nbody\n*** Child\n:PROPERTIES:\n:VISIBILITY: children\n:END:\nchild body\n**** Grandchild\n")
+		p := source(t, root, "doc.org", "#+STARTUP: "+startup+"\n* Parent\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\nbody\n#+begin_export html\n<details open data-hp-org-drawer=\"true\"><summary>Source detail</summary>source body</details>\n#+end_export\n*** Child\n:PROPERTIES:\n:VISIBILITY: children\n:END:\nchild body\n**** Grandchild\n")
 		r := run(t, root, nil, p)
 		success(t, r, 1)
 		main := nodes(r.pages[0], "main")[0]
@@ -93,6 +95,15 @@ func TestRT001_16_OutlineMetadata(t *testing.T) {
 			if !found {
 				t.Fatal("drawer hidden without JS")
 			}
+			if strings.Contains(textOf(details), "source body") {
+				if attr(details, "data-hp-org-drawer") != "" {
+					t.Fatal("source-authored marker was retained")
+				}
+				continue
+			}
+			if attr(details, "data-hp-org-drawer") != "true" {
+				t.Fatal("generated Org drawer is not marked for browser folding")
+			}
 		}
 	}
 }
@@ -102,6 +113,31 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 	p := source(t, root, "frontmatter.org", "#+TITLE: Document title\n#+SUBTITLE: Document subtitle\n#+AUTHOR: A. Writer\n#+DATE: 2026-09-10\n\n* Body\n")
 	r := run(t, root, nil, p)
 	success(t, r, 1)
+	main := nodes(r.pages[0], "main")[0]
+	var top []*html.Node
+	for child := main.FirstChild; child != nil; child = child.NextSibling {
+		if child.Type == html.ElementNode && child.Data == "section" {
+			top = append(top, child)
+		}
+	}
+	if len(top) != 2 || textOf(directHeading(top[0])) != "Document title" || textOf(directHeading(top[1])) != "Body" {
+		t.Fatalf("Org frontmatter body structure: %#v", top)
+	}
+	if directHeading(top[0]).Data != "h2" {
+		t.Fatalf("Org title heading level: %s", directHeading(top[0]).Data)
+	}
+	var nested []*html.Node
+	for child := top[0].FirstChild; child != nil; child = child.NextSibling {
+		if child.Type == html.ElementNode && child.Data == "section" {
+			nested = append(nested, child)
+		}
+	}
+	if len(nested) != 1 || textOf(directHeading(nested[0])) != "Document subtitle" {
+		t.Fatalf("Org subtitle structure: %#v", nested)
+	}
+	if directHeading(nested[0]).Data != "h3" {
+		t.Fatalf("Org subtitle heading level: %s", directHeading(nested[0]).Data)
+	}
 	raw := r.raw[0]
 	last := -1
 	for _, text := range []string{"Document title", "Document subtitle", "A. Writer", "2026-09-10"} {
@@ -110,5 +146,53 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 			t.Fatalf("frontmatter order for %q in preview HTML", text)
 		}
 		last = index
+	}
+	paragraphs := nodes(nested[0], "p")
+	if len(paragraphs) < 2 || textOf(paragraphs[0]) != "A. Writer" || textOf(paragraphs[1]) != "2026-09-10" {
+		t.Fatalf("Org author/date paragraphs: %#v", paragraphs)
+	}
+	nextElement := func(node *html.Node) *html.Node {
+		for node = node.NextSibling; node != nil; node = node.NextSibling {
+			if node.Type == html.ElementNode {
+				return node
+			}
+		}
+		return nil
+	}
+	if nextElement(directHeading(nested[0])) != paragraphs[0] || nextElement(paragraphs[0]) != paragraphs[1] {
+		t.Fatal("Org author/date do not immediately follow the subtitle")
+	}
+	missing := source(t, root, "missing.org", "#+TITLE: Title only\n\n* Body\n")
+	r = run(t, root, nil, missing)
+	success(t, r, 1)
+	main = nodes(r.pages[0], "main")[0]
+	if len(nodes(main, "h3")) != 0 || len(nodes(main, "p")) != 0 {
+		t.Fatal("absent Org frontmatter produced blank output")
+	}
+}
+
+func TestRT004_1_OrgDrawerOwnership(t *testing.T) {
+	root := t.TempDir()
+	p := source(t, root, "drawers.org", ":UNHEADED:\n:END:\n* Parent\n:PROPERTIES:\n:OWNER: Reader\n:END:\n:LOGBOOK:\nclock\n:END:\n:NAMED:\nvalue\n:END:\n** Child\n:EMPTY:\n:END:\n")
+	r := run(t, root, nil, p)
+	success(t, r, 1)
+	main := nodes(r.pages[0], "main")[0]
+	drawers := nodes(main, "details")
+	if len(drawers) != 5 {
+		t.Fatalf("generated drawers: %d", len(drawers))
+	}
+	for _, drawer := range drawers {
+		if attr(drawer, "data-hp-org-drawer") != "true" {
+			t.Fatal("generated drawer lacks browser ownership marker")
+		}
+		open := false
+		for _, attribute := range drawer.Attr {
+			if attribute.Key == "open" {
+				open = true
+			}
+		}
+		if !open {
+			t.Fatal("generated drawer is unreadable without JavaScript")
+		}
 	}
 }

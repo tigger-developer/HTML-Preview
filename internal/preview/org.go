@@ -3,7 +3,6 @@
 package preview
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"html"
@@ -24,10 +23,7 @@ type preservation struct {
 
 func preserveOrg(data []byte, token string) preservation {
 	source := strings.ReplaceAll(string(data), "\r\n", "\n")
-	prefix := fmt.Sprintf("HTMLPREVIEW_%x", sha256.Sum256(data))
-	for strings.Contains(source, prefix) {
-		prefix += "X"
-	}
+	prefix := "HTMLPREVIEW_DRAWER_" + token
 	p := preservation{startup: "showall", fragments: make(map[string]string)}
 	var out strings.Builder
 	marker := func(fragment string) string {
@@ -156,7 +152,7 @@ func preserveOrg(data []byte, token string) preservation {
 					}
 				}
 			}
-			out.WriteString(marker("<details open class=\"org-metadata\"><summary>:" + html.EscapeString(name) + ":</summary><pre>" + html.EscapeString(body.String()) + "</pre></details>"))
+			out.WriteString(marker("<details open class=\"org-metadata\" data-hp-org-drawer=\"true\"><summary>:" + html.EscapeString(name) + ":</summary><pre>" + html.EscapeString(body.String()) + "</pre></details>"))
 			continue
 		}
 		if strings.HasPrefix(upper, "SCHEDULED:") || strings.HasPrefix(upper, "DEADLINE:") || strings.HasPrefix(upper, "CLOSED:") {

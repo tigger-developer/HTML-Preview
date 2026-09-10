@@ -2,92 +2,180 @@ version: 1
 audits:
     - work_item: W004-fold-initial-property-drawers
       gate: definition
-      session_id: 01a08901-84b9-78b2-9601-92f9616949ce
-      external_round: 4
+      session_id: ""
+      external_round: 0
       status: active
-      updated: "2026-09-10T02:01:24Z"
-      revision: 2a5d3b44ddb6743101f10de4597b0d0990d44b96407916404d6bdb179b8f1d7a
+      updated: ""
+    - work_item: W004-fold-initial-property-drawers
+      gate: implementation
+      session_id: 01a0895a-d23c-78b3-8bb6-e459cdee2b1c
+      external_round: 3
+      status: active
+      updated: "2026-09-10T03:33:46Z"
+      revision: a760e4c5871c1de6fd165c2817c6c461152f2665 + supplied working-tree delta
       verdict: FAIL
       response: |-
-        GATE: definition
-        REVISION: 2a5d3b44ddb6743101f10de4597b0d0990d44b96407916404d6bdb179b8f1d7a
+        GATE: implementation
+        REVISION: a760e4c5871c1de6fd165c2817c6c461152f2665 + supplied working-tree delta
         VERDICT: FAIL
 
-        Finding: The transport contract does not define fail-safe behaviour when a drawer placeholder is dropped, duplicated, or altered across Pandoc, scrubbing, and restoration. This can silently lose or mis-associate generated drawer content while RT coverage exercises only valid transport.
+        FINDINGS:
 
-        Required remediation: Define the restoration failure outcome and diagnostic, and add a bounded RT/UT case proving that malformed transport cannot publish incomplete or mis-associated drawer output.
+        - RT004.1 still covers only the six named drawer origins. It omits no-drawer, spoofed class/marker-text details, startup edge cases, repeated/invalid directives, and all `VISIBILITY` values; it also does not assert exactly one ownership marker. Its RED/GREEN evidence therefore covers only this subset. Remediation: add rendered-HTML behavioural coverage for every specified case and retain corresponding RED/GREEN evidence.
+
+        - RT004.2 now checks the parsed section hierarchy, but does not assert the actual title and subtitle heading levels, their exact immediate sequence, or that author/date paragraphs follow the subtitle heading. Remediation: assert the exact heading tags and ordered parsed child sequence, including the absent-field cases.
       history:
-        - round: 1
-          revision: 48cebb0fa3c1ccd6b607bf7a343bb23d813736ef0c51c39e6c518ae02235fd9c
+        - evidence:
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: 8e1bcb77847d131fc0b7d4bb4eb70440d4322eeaf9281d366a6751827d8d840d
+              bytes: 14888
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 42fce84488e5a36e00d103ea4766f059163f9ff3032913c16d523d7681bbfa64
+              bytes: 31376
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 17620dbd6d342e51cc96ffa39f312a8435acb43c872d3f3bb4610809cc326e4e
+              bytes: 8207
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 73d300b8a515bff9af1cfcd58263019937764d5edf7afc5c85412b0b3b16d83c
+              bytes: 5753
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/graph_test.go
+              sha256: 27778639bb0608960143d82f2be0858ca9e2a2118ef0186bab1742de8ec17d51
+              bytes: 4628
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: b6ec3531428d979558da36211c5f6aa8e22a728cf4a073af344bd7b6c5037062
+              bytes: 7847
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/org.go
+              sha256: f83be013d9e483bf202f67a2ba59c9eb49302b68da9b716bc9db560bcb7b89bf
+              bytes: 6973
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: c6f322b6bb3617fcada5e9388c7e6d4f83fa9ba973387b8dddc771a496aa976c
+              bytes: 11722
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/spec.org
+              sha256: ae05ebcc1b2ebb32fd114ac77c9fab2a9bfff14dea3bc11128dabc5369af254b
+              bytes: 17758
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/validation.org
+              sha256: d71e7f320808b3e557496f054c6ec1143db08311d4bb159cad9c06adc3706e8e
+              bytes: 1643
+          round: 1
+          revision: a760e4c5871c1de6fd165c2817c6c461152f2665 + supplied working-tree delta
           verdict: FAIL
           response: |-
-            GATE: definition
-            REVISION: 48cebb0fa3c1ccd6b607bf7a343bb23d813736ef0c51c39e6c518ae02235fd9c
+            GATE: implementation
+            REVISION: a760e4c5871c1de6fd165c2817c6c461152f2665 + supplied working-tree delta
             VERDICT: FAIL
 
-            Findings:
+            FINDINGS:
 
-            1. **Duplicated audit state.** The specification records a prior “exhausted” audit session and calls the new record “fresh”. Remove this audit-status history from the specification; retain audit state only in `audits.yaml`.
+            - `preview.js:205` returns when no outline sections exist, so generated drawers in headingless Org documents never close after enhancement. Remediation: close marked drawers independently of outline discovery and add coverage.
 
-            2. **Startup precedence is contradictory and incomplete.** “Every drawer starts closed” conflicts with the `showall` and `VISIBILITY=all` exceptions, while W001 defines the absent-startup default as `showall`. Define an ordered precedence model covering absent startup, all supported startup modes, every `VISIBILITY` value, nesting, runtime controls, fragments, and print. Amend AC004.1, the design flow, and RT/UT coverage accordingly.
+            - Required `TestRT004_1_OrgDrawerOwnership` is absent. Existing `TestRT001_16_OutlineMetadata` omits the specified unheaded, empty, named, LOGBOOK, nested, spoofing, invalid/multi-value startup, and VISIBILITY cases. No RED/GREEN evidence is supplied. Remediation: implement the complete RT004.1 regression and retain intended RED/GREEN evidence.
 
-            3. **Unsupported `hidedrawers` and `nohidedrawers` behaviour is undefined.** “Not supported” does not say whether these settings are ignored, diagnosed, preserved as text, or allowed to affect other startup settings. Define their inert behaviour, including multiple settings on one or more `#+STARTUP` lines, and test it. The cited Org authority documents these settings and permits multiple startup settings on a line: [Org in-buffer settings](https://orgmode.org/manual/In_002dbuffer-Settings.html).
+            - The frontmatter test does not assert exactly one title heading, exact body ordering, paragraph structure for author/date, or absent-field behaviour. Remediation: strengthen RT004.2 assertions and fixtures to cover the full AC004.5 condition.
 
-            4. **Marker trust and provenance are not implementable as specified.** “A provenance record” has no schema, association, cardinality, collision, mismatch, or post-sanitization binding rule. Define how each generated drawer is bound to exactly one marker, how source-authored marker lookalikes are removed or ignored, and failure behaviour for missing, duplicate, or mis-associated records. Add negative RT assertions for source attributes, classes, duplicate markers, and marker-like drawer content.
+            - `preview.js:282-284` does not close generated drawers when a section is unfolded after a drawer was previously opened. Remediation: enforce closure on section unfolding while preserving the explicitly permitted Show all, native-summary, fragment, and print openings.
 
-            5. **Authored-details, native state, print, and lifecycle preservation are under-specified.** The design claims existing teardown is sufficient, but the supplied browser evidence opens every `details` element during teardown, which can change a source-authored closed detail before bfcache restoration. Specify state ownership and restoration for generated and source-authored details across summary interaction, section/global controls, print, `pagehide`, and `pageshow`; extend UT004.1 to verify each case.
-
-            6. **Fragment compatibility is asserted rather than defined.** “Non-drawer fragments remain unchanged” and “drawer text has no mapping” do not define targets inside source-authored details, generated drawers, or sections containing drawers, nor whether fragment revelation may override authored state. Specify supported and unsupported fragment targets and their precedence, then add corresponding RT/UT cases.
-
-            7. **The RT/UT package is not self-contained enough.** “One fixed fixture”, “provided fixture”, and “existing test command” do not identify a durable fixture, exact input oracle, or complete setup. The RT also uses the vague result “remain intact or pass through sanitization”. Name the fixture or define it completely, provide exact textual assertions, name `make test` explicitly, and split or enumerate the independent browser checks for startup precedence, marker trust, authored state, print, lifecycle, and fragments.
-          updated: "2026-09-10T01:52:47Z"
-        - round: 2
-          revision: b8d9ada6f151e93fe0cb097ffd5506a1830b841a613aebd6f5ed40af12b1931b
+            - `org.go:27-36` keys drawer placeholders with a deterministic source hash, not the specified random transport token. Remediation: use a per-render random collision-free token for drawer provenance and retain source-collision protection.
+          updated: "2026-09-10T03:30:11Z"
+        - evidence:
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: a6e66d5efe79ebef9fef34b36712a70eaecf2bef268775d69b0bcddde999ac87
+              bytes: 15070
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 42fce84488e5a36e00d103ea4766f059163f9ff3032913c16d523d7681bbfa64
+              bytes: 31376
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 17620dbd6d342e51cc96ffa39f312a8435acb43c872d3f3bb4610809cc326e4e
+              bytes: 8207
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 73d300b8a515bff9af1cfcd58263019937764d5edf7afc5c85412b0b3b16d83c
+              bytes: 5753
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/graph_test.go
+              sha256: e1d4f1964af3de194e766a7607274c64f643ae837ed33c4ddfcaf31aa249159f
+              bytes: 5921
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: b6ec3531428d979558da36211c5f6aa8e22a728cf4a073af344bd7b6c5037062
+              bytes: 7847
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/org.go
+              sha256: 4fb9c9afe5fccbc38a0fccf7669f86c16b6d03fbc87b0a33af79f045663ff3dd
+              bytes: 6876
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 3fa1e57cc1ce4858bb52822e06b51b35d1c3382d73b8d2d32159496863ecf192
+              bytes: 11779
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/spec.org
+              sha256: ae05ebcc1b2ebb32fd114ac77c9fab2a9bfff14dea3bc11128dabc5369af254b
+              bytes: 17758
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/validation.org
+              sha256: d71e7f320808b3e557496f054c6ec1143db08311d4bb159cad9c06adc3706e8e
+              bytes: 1643
+          round: 2
+          revision: a760e4c5871c1de6fd165c2817c6c461152f2665 + supplied working-tree delta
           verdict: FAIL
           response: |-
-            GATE: definition
-            REVISION: b8d9ada6f151e93fe0cb097ffd5506a1830b841a613aebd6f5ed40af12b1931b
+            GATE: implementation
+            REVISION: a760e4c5871c1de6fd165c2817c6c461152f2665 + supplied working-tree delta
             VERDICT: FAIL
 
-            Findings:
+            FINDINGS:
 
-            1. **Post-scrub marker placement is architecturally ambiguous.** The design adds `data-hp-org-drawer` after `scrub`, but the current publication path applies a further `sanitizeDocument` pass that does not allow this attribute. Define the exact final publication phase, preserve the marker only as trusted generated metadata, and test it in the published HTML consumed by JavaScript.
+            - `preview.js:207-209` closes drawers in headingless documents but returns before registering print and pagehide lifecycle handlers. Remediation: preserve print expansion/restoration and passive pagehide restoration when no outline sections exist.
 
-            2. **Startup coverage is incomplete despite the defined fallback.** The specification defines absent startup, last-directive-wins, invalid/multiple values, and `hidedrawers`/`nohidedrawers`, but RT004.1 does not explicitly exercise repeated `#+STARTUP` directives or an empty directive. Add those cases and assert the selected `showall` fallback and diagnostic.
+            - RT004.1 remains incomplete. It omits no-drawer, spoofed class/marker-text details, startup edge cases, repeated/invalid directives, and all `VISIBILITY` values; it also does not assert exactly one marker. Remediation: add behavioural rendered-HTML coverage for every specified case.
 
-            3. **Fragment requirements contradict each other.** The design excludes generated drawer-text destinations, but UT004.1 expects a generated heading/body fragment to open “drawer ancestors”. Specify whether generated drawers can be fragment ancestors. If not, remove that expectation and test only section ancestors; if so, define the mapping and scope it as a requirement.
+            - RT004.2 still checks “at least one” title/subtitle heading and raw substring order rather than exact consecutive body structure. Remediation: assert exactly one title heading, the immediate next-level subtitle, ordered author/date paragraphs, and absent-field combinations through parsed output.
 
-            4. **Malformed transport behaviour lacks evidence.** Missing or duplicate drawer placeholders are specified as render errors, but neither RT004.1 nor UT004.1 defines a check for those failure paths. Add a bounded automated test at the appropriate transport/restoration boundary, or remove that untested failure contract.
-
-            5. **The browser test is not fully self-contained.** “The provided synthetic Org fixture” has no repository path, exact contents, browser setup, or oracle, and the single user test combines startup, native details, print, fragments, lifecycle, and no-JavaScript checks. Identify the fixture and exact expected states, and enumerate the independent subchecks and evidence to be recorded.
-          updated: "2026-09-10T01:56:35Z"
-        - round: 3
-          revision: 6737c7304cd1c483d67784f9d989bae6217f376dbaec55a63c89f08cfc3cbd13
+            - No RED/GREEN evidence is supplied for RT004.1. `validation.org` records only the frontmatter test as automated evidence and leaves UT004.1 pending. Remediation: retain actual intended-RED and post-implementation-GREEN evidence for the required drawer regression.
+          updated: "2026-09-10T03:32:11Z"
+        - evidence:
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: a13a97ebc794bf05937745e56f083334aa515bfe7c0fa4947253b2f0b3cc7eea
+              bytes: 15048
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 42fce84488e5a36e00d103ea4766f059163f9ff3032913c16d523d7681bbfa64
+              bytes: 31376
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 17620dbd6d342e51cc96ffa39f312a8435acb43c872d3f3bb4610809cc326e4e
+              bytes: 8207
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 73d300b8a515bff9af1cfcd58263019937764d5edf7afc5c85412b0b3b16d83c
+              bytes: 5753
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/graph_test.go
+              sha256: a5d83912bdc0c31ace4cc300a1a03f51f8a34cb00ddfc206c5da81853c81c90b
+              bytes: 6362
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: b6ec3531428d979558da36211c5f6aa8e22a728cf4a073af344bd7b6c5037062
+              bytes: 7847
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/org.go
+              sha256: 4fb9c9afe5fccbc38a0fccf7669f86c16b6d03fbc87b0a33af79f045663ff3dd
+              bytes: 6876
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 3fa1e57cc1ce4858bb52822e06b51b35d1c3382d73b8d2d32159496863ecf192
+              bytes: 11779
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/spec.org
+              sha256: ae05ebcc1b2ebb32fd114ac77c9fab2a9bfff14dea3bc11128dabc5369af254b
+              bytes: 17758
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/validation.org
+              sha256: 33a48558c70d2c938024185f1f79ce44bdd9ce730a11b42643c327e130bc6a83
+              bytes: 2165
+          round: 3
+          revision: a760e4c5871c1de6fd165c2817c6c461152f2665 + supplied working-tree delta
           verdict: FAIL
           response: |-
-            GATE: definition
-            REVISION: 6737c7304cd1c483d67784f9d989bae6217f376dbaec55a63c89f08cfc3cbd13
+            GATE: implementation
+            REVISION: a760e4c5871c1de6fd165c2817c6c461152f2665 + supplied working-tree delta
             VERDICT: FAIL
 
-            Findings:
+            FINDINGS:
 
-            1. **Marker phase and ownership remain contradictory.** The flow says the pre-pass emits the marker, while the decision and interface say trusted restoration adds it after scrubbing. The supplied final sanitizer also currently omits the marker from its allowed attributes. Define one exact pipeline, including per-drawer placeholder schema, trusted association, final-sanitizer handling, and publication timing. Assert the marker in final HTML, not only an intermediate DOM.
+            - RT004.1 still covers only the six named drawer origins. It omits no-drawer, spoofed class/marker-text details, startup edge cases, repeated/invalid directives, and all `VISIBILITY` values; it also does not assert exactly one ownership marker. Its RED/GREEN evidence therefore covers only this subset. Remediation: add rendered-HTML behavioural coverage for every specified case and retain corresponding RED/GREEN evidence.
 
-            2. **Repeated startup directives contradict the stated precedence.** The decision says the last `#+STARTUP` directive wins, but RT004.1 says repeated directives select `showall`. Define whether repetition is valid and last-wins, or invalid and fallback-to-`showall`; distinguish repeated valid directives from invalid or multi-value directives, then align the acceptance and RT cases.
-
-            3. **Declared transport failure behaviour is untested.** Missing or duplicate placeholders are required to produce a render error without an owned marker, but no RT or UT exercises either case. Add a bounded automated restoration test with exact status, diagnostic, marker, and output expectations, or remove that failure contract.
-
-            4. **The user-test evidence boundary is still incomplete.** The fixture path is named, but its exact contents and oracle remain distributed across category prose, and the procedure does not require recording browser/OS environment, tested revision, per-mode states, or the exact observed result for each matrix case. Define the fixture and expected state table explicitly and require those evidence fields in `validation.org`.
-          updated: "2026-09-10T01:58:33Z"
-        - round: 4
-          revision: 2a5d3b44ddb6743101f10de4597b0d0990d44b96407916404d6bdb179b8f1d7a
-          verdict: FAIL
-          response: |-
-            GATE: definition
-            REVISION: 2a5d3b44ddb6743101f10de4597b0d0990d44b96407916404d6bdb179b8f1d7a
-            VERDICT: FAIL
-
-            Finding: The transport contract does not define fail-safe behaviour when a drawer placeholder is dropped, duplicated, or altered across Pandoc, scrubbing, and restoration. This can silently lose or mis-associate generated drawer content while RT coverage exercises only valid transport.
-
-            Required remediation: Define the restoration failure outcome and diagnostic, and add a bounded RT/UT case proving that malformed transport cannot publish incomplete or mis-associated drawer output.
-          updated: "2026-09-10T02:01:24Z"
+            - RT004.2 now checks the parsed section hierarchy, but does not assert the actual title and subtitle heading levels, their exact immediate sequence, or that author/date paragraphs follow the subtitle heading. Remediation: assert the exact heading tags and ordered parsed child sequence, including the absent-field cases.
+          updated: "2026-09-10T03:33:46Z"

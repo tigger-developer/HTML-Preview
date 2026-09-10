@@ -181,6 +181,7 @@ async function enhanceCode(main, copyValue, controller, dispose) {
 
 async function enhanceOutline(main, controller, dispose) {
   const events = { signal: controller.signal };
+  const closeOwnedDrawers = root => { root.querySelectorAll('details[data-hp-org-drawer]').forEach(detail => { detail.open = false; }); };
   const owners = new WeakMap();
   const records = [];
   const walker = document.createTreeWalker(main, NodeFilter.SHOW_ELEMENT);
@@ -202,7 +203,8 @@ async function enhanceOutline(main, controller, dispose) {
     count += 1;
     if (count % 500 === 0) await nextFrame(controller.signal);
   }
-  if (controller.signal.aborted || records.length === 0) return;
+  if (controller.signal.aborted) return;
+  if (records.length === 0) closeOwnedDrawers(main);
 
   function refresh() {
     for (const record of records) {
@@ -225,7 +227,6 @@ async function enhanceOutline(main, controller, dispose) {
       record.mode = mode;
       stack.push(...record.children);
     }
-    if (mode === 'all') root.node.querySelectorAll('details').forEach(detail => { detail.open = true; });
   }
 
   const toolbar = document.createElement('nav');
@@ -282,6 +283,7 @@ async function enhanceOutline(main, controller, dispose) {
     button.append(plus);
     button.addEventListener('click', () => {
       subtree(record, record.mode === 'all' ? 'folded' : 'all');
+      if (record.mode === 'all') closeOwnedDrawers(record.node);
       refresh();
     }, events);
     record.button = button;
@@ -301,6 +303,7 @@ async function enhanceOutline(main, controller, dispose) {
     record.initialCascade = initial ? (initial === 'all' ? 'all' : 'folded') : inherited;
   }
   refresh();
+  closeOwnedDrawers(main);
 
   function revealFragment() {
     let id;
