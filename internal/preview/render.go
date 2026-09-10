@@ -18,14 +18,15 @@ import (
 )
 
 type page struct {
-	source             sourceContext
-	name, url, startup string
-	dom                *html.Node
-	toc                *html.Node
-	ready              bool
-	ids, headings      map[string][]string
-	orgIDs             map[string][]string
-	resourceLinks      map[*html.Node]bool
+	source                        sourceContext
+	name, url, startup            string
+	title, subtitle, author, date string
+	dom                           *html.Node
+	toc                           *html.Node
+	ready                         bool
+	ids, headings                 map[string][]string
+	orgIDs                        map[string][]string
+	resourceLinks                 map[*html.Node]bool
 }
 
 func (s *session) render(ctx context.Context, p *page, data []byte) error {
@@ -46,6 +47,7 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 			toc = false
 		}
 		preserved = preserveOrg(data, token)
+		p.title, p.subtitle, p.author, p.date = preserved.title, preserved.subtitle, preserved.author, preserved.date
 		data = []byte(preserved.text)
 	}
 	p.startup = preserved.startup

@@ -15,10 +15,11 @@ type orgHeading struct {
 	level                                 int
 }
 type preservation struct {
-	text, startup string
-	fragments     map[string]string
-	heads         []*orgHeading
-	warnings      []string
+	text, startup                 string
+	title, subtitle, author, date string
+	fragments                     map[string]string
+	heads                         []*orgHeading
+	warnings                      []string
 }
 
 func preserveOrg(data []byte, token string) preservation {
@@ -51,6 +52,13 @@ func preserveOrg(data []byte, token string) preservation {
 		directive := ""
 		if len(fields) > 0 {
 			directive = fields[0]
+		}
+		for key, target := range map[string]*string{"#+TITLE:": &p.title, "#+SUBTITLE:": &p.subtitle, "#+AUTHOR:": &p.author, "#+DATE:": &p.date} {
+			if strings.HasPrefix(upper, key) {
+				*target = strings.TrimSpace(trim[len(key):])
+				out.WriteString(line)
+				goto next
+			}
 		}
 		if directive == "#+BEGIN_SRC" || directive == "#+BEGIN_EXAMPLE" {
 			kind := "SRC"
@@ -152,7 +160,11 @@ func preserveOrg(data []byte, token string) preservation {
 					}
 				}
 			}
-			out.WriteString(marker("<details open class=\"org-metadata\" data-hp-org-drawer=\"true\"><summary>:" + html.EscapeString(name) + ":</summary><pre>" + html.EscapeString(body.String()) + "</pre></details>"))
+			glyph := "▸"
+			if name == "PROPERTIES" {
+				glyph = "⚙"
+			}
+			out.WriteString(marker("<details open class=\"org-metadata\" data-hp-org-drawer=\"true\"><summary>" + glyph + " " + html.EscapeString(name) + "</summary><pre>" + html.EscapeString(body.String()) + "</pre></details>"))
 			continue
 		}
 		if strings.HasPrefix(upper, "SCHEDULED:") || strings.HasPrefix(upper, "DEADLINE:") || strings.HasPrefix(upper, "CLOSED:") {
@@ -160,6 +172,7 @@ func preserveOrg(data []byte, token string) preservation {
 			continue
 		}
 		out.WriteString(line)
+	next:
 	}
 	// Pandoc's Org reader otherwise turns headings beyond its H limit into lists.
 	p.text = out.String() + "\n#+OPTIONS: H:100000\n"

@@ -47,20 +47,6 @@ local function display_metadata(doc)
   local org_preview = doc.meta["htmlpreview-org"]
   doc.meta["htmlpreview-org"] = nil
   if org_preview then
-    for _, item in ipairs({ { "title", 1 }, { "subtitle", 2 } }) do
-      local value = doc.meta[item[1]]
-      if value then
-        prefix:insert(pandoc.Header(item[2], { pandoc.Str(pandoc.utils.stringify(value)) }))
-      end
-    end
-    for _, key in ipairs({ "author", "date" }) do
-      local value = doc.meta[key]
-      if value then
-        prefix:insert(pandoc.Para({ pandoc.Str(pandoc.utils.stringify(value)) }))
-      end
-    end
-    prefix:extend(doc.blocks)
-    doc.blocks = prefix
     doc.meta = {}
     return doc
   end

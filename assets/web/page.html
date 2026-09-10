@@ -4,14 +4,13 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="{{.Policy}}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Name}}</title>
-{{.Notices}}
+<title>{{if .Title}}{{.Title}}{{else}}{{.Name}}{{end}}</title>
 <style>{{.CSS}}</style>
 </head>
 <body>
-<header id="hp-header"><h1 data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1></header>
+<header id="hp-header"><div><h1 data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1>{{if .HasFrontmatter}}<details id="hp-frontmatter" open><summary>◈ Frontmatter</summary><dl>{{if .Title}}<dt>◆ Title</dt><dd>{{.Title}}</dd>{{end}}{{if .Subtitle}}<dt>◇ Subtitle</dt><dd>{{.Subtitle}}</dd>{{end}}{{if .Author}}<dt>♙ Author</dt><dd>{{.Author}}</dd>{{end}}{{if .Date}}<dt>◷ Date</dt><dd>{{.Date}}</dd>{{end}}</dl></details>{{end}}</div></header>
 {{if .TOC}}<nav id="hp-toc" aria-label="Table of contents">{{.TOC}}</nav>{{end}}
-<main id="hp-document" data-hp-startup="{{.Startup}}">{{.Body}}</main>
+{{if .Title}}<section id="hp-document-title"><h1>{{.Title}}</h1>{{if .Subtitle}}<h2>{{.Subtitle}}</h2>{{end}}{{if .Author}}<p>{{.Author}}</p>{{end}}{{if .Date}}<p>{{.Date}}</p>{{end}}</section>{{end}}<main id="hp-document" data-hp-startup="{{.Startup}}">{{.Body}}</main>
 <script type="module">{{.Script}}</script>
 </body>
 </html>

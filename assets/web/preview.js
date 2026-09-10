@@ -179,7 +179,7 @@ async function enhanceCode(main, copyValue, controller, dispose) {
   }, events);
 }
 
-async function enhanceOutline(main, controller, dispose) {
+async function enhanceOutline(main, header, controller, dispose) {
   const events = { signal: controller.signal };
   const closeOwnedDrawers = root => { root.querySelectorAll('details[data-hp-org-drawer]').forEach(detail => { detail.open = false; }); };
   const owners = new WeakMap();
@@ -293,7 +293,7 @@ async function enhanceOutline(main, controller, dispose) {
   }
   if (controller.signal.aborted) return;
   for (const record of records) record.button.disabled = false;
-  main.before(toolbar);
+  header.prepend(toolbar);
   globalMode(main.getAttribute('data-hp-startup'));
   for (const record of records) {
     const initial = record.node.getAttribute('data-hp-visibility');
@@ -357,7 +357,7 @@ function enhancePreview() {
   enhanceHeader(header, copyValue, { signal: controller.signal }, dispose);
   // Outline labels are captured before inline copy controls can affect headings.
   async function enhance() {
-    await enhanceOutline(main, controller, dispose);
+    await enhanceOutline(main, header, controller, dispose);
     if (!controller.signal.aborted) await enhanceCode(main, copyValue, controller, dispose);
   }
   enhance().catch(() => {

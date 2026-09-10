@@ -113,30 +113,17 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 	p := source(t, root, "frontmatter.org", "#+TITLE: Document title\n#+SUBTITLE: Document subtitle\n#+AUTHOR: A. Writer\n#+DATE: 2026-09-10\n\n* Body\n")
 	r := run(t, root, nil, p)
 	success(t, r, 1)
+	if textOf(nodes(r.pages[0], "title")[0]) != "Document title" {
+		t.Fatal("Org title is absent from the HTML title")
+	}
 	main := nodes(r.pages[0], "main")[0]
-	var top []*html.Node
-	for child := main.FirstChild; child != nil; child = child.NextSibling {
-		if child.Type == html.ElementNode && child.Data == "section" {
-			top = append(top, child)
-		}
+	headings := nodes(r.pages[0], "h1")
+	if len(headings) != 2 || textOf(headings[1]) != "Document title" {
+		t.Fatalf("Org title heading: %#v", headings)
 	}
-	if len(top) != 2 || textOf(directHeading(top[0])) != "Document title" || textOf(directHeading(top[1])) != "Body" {
-		t.Fatalf("Org frontmatter body structure: %#v", top)
-	}
-	if directHeading(top[0]).Data != "h2" {
-		t.Fatalf("Org title heading level: %s", directHeading(top[0]).Data)
-	}
-	var nested []*html.Node
-	for child := top[0].FirstChild; child != nil; child = child.NextSibling {
-		if child.Type == html.ElementNode && child.Data == "section" {
-			nested = append(nested, child)
-		}
-	}
-	if len(nested) != 1 || textOf(directHeading(nested[0])) != "Document subtitle" {
-		t.Fatalf("Org subtitle structure: %#v", nested)
-	}
-	if directHeading(nested[0]).Data != "h3" {
-		t.Fatalf("Org subtitle heading level: %s", directHeading(nested[0]).Data)
+	subtitles := nodes(r.pages[0], "h2")
+	if len(subtitles) == 0 || textOf(subtitles[0]) != "Document subtitle" {
+		t.Fatalf("Org subtitle heading: %#v", subtitles)
 	}
 	raw := r.raw[0]
 	last := -1
@@ -147,7 +134,7 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 		}
 		last = index
 	}
-	paragraphs := nodes(nested[0], "p")
+	paragraphs := nodes(r.pages[0], "p")
 	if len(paragraphs) < 2 || textOf(paragraphs[0]) != "A. Writer" || textOf(paragraphs[1]) != "2026-09-10" {
 		t.Fatalf("Org author/date paragraphs: %#v", paragraphs)
 	}
@@ -159,7 +146,7 @@ func TestRT004_2_OrgFrontmatterHeadings(t *testing.T) {
 		}
 		return nil
 	}
-	if nextElement(directHeading(nested[0])) != paragraphs[0] || nextElement(paragraphs[0]) != paragraphs[1] {
+	if nextElement(subtitles[0]) != paragraphs[0] || nextElement(paragraphs[0]) != paragraphs[1] {
 		t.Fatal("Org author/date do not immediately follow the subtitle")
 	}
 	missing := source(t, root, "missing.org", "#+TITLE: Title only\n\n* Body\n")
