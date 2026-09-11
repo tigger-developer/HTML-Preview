@@ -25,9 +25,10 @@ packaging and native platform qualification. It deliberately replaces graph
 pre-generation while retaining file quick/read lifetimes and the current
 presentation contracts.
 
-This is a definition proposal. On sign-off, its exact contracts supersede the
-no-service, pre-generation and file-only resource-policy portions below; the
-earlier sections remain baseline history. No service implementation or native
+Taḋg approved this design on 11 September 2026 and explicitly deferred
+implementation. Its exact contracts supersede the no-service, pre-generation
+and file-only resource-policy portions below as design authority; the earlier
+sections remain baseline history. No service implementation or native
 qualification is claimed by this document update.
 
 ## System shape

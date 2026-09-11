@@ -142,7 +142,7 @@ classification; it is provenance, not current state.
   supported recovery requires runner repair or an operator-authorized fresh
   session; the application changes and verification checkpoints are retained.
 
-** REVIEW W006 - Local preview service and automatic fallback :feature:
+** ACTIVE W006 - Local preview service and automatic fallback :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-006
 :PRIORITY: P1
@@ -156,6 +156,8 @@ classification; it is provenance, not current state.
 - Scope :: *On-demand HTTP within configured trees*, hardcoded loopback binding,
   token-prefixed links, automatic single-document fallback and optional user
   service packaging. *Definition only*; existing delivery records remain separate.
+- Delivery instruction :: *Design approved by Taḋg on 11 September 2026;
+  implementation explicitly deferred*. Await a subsequent instruction to begin.
 
 * Migration record
 :PROPERTIES:

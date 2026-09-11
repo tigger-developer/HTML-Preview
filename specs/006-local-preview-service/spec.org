@@ -3,7 +3,7 @@
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 #+DEFINITION_GATE: PASS
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: Taḋg, 2026-09-11: design approved; implementation explicitly deferred
 
 * Local preview service and automatic fallback
 :PROPERTIES:
@@ -37,10 +37,11 @@
   without changing host networking. Tokens are excluded from routine logs.
 - Decisions :: The operator approved *HTTP, loopback-only serving, configured
   trees, random URL tokens and automatic fallback* on 11 September 2026.
-  The candidate chooses *tokens lasting until service restart* and *replacement
-  of pre-generated linked browsing*, subject to definition sign-off.
-- Next step :: *Operator sign-off before implementation*. Native platform and
-  browser qualification remain delivery work.
+  Design sign-off on 11 September 2026 includes *tokens lasting until service
+  restart*, *replacement of pre-generated linked browsing* and the asset contract.
+- Next step :: *Await an explicit instruction to implement*. The operator approved
+  the design but deferred implementation. Native platform and browser
+  qualification remain delivery work.
 
 -----
 
@@ -160,6 +161,11 @@
 
 - *No technical blocker has been established*. The candidate lifetime and
   migration are fully specified proposals requiring operator sign-off.
+- Sign-off resolution :: On *11 September 2026*, Taḋg approved the design after
+  clarification of its asset restrictions: "makes sense. design is approved but
+  don't implement yet". This resolves the sign-off requirement above, including
+  the lifetime and migration proposals. *Implementation remains deferred* until
+  a subsequent explicit instruction.
 
 * Hands-off mode decision log
 :PROPERTIES:
@@ -1201,6 +1207,8 @@ serve:
 - Artefact inventory :: Deliver the *four named service source/guide files*,
   generated archive/install destinations and Homebrew service block specified
   under Packaging layout and manager contracts; do not invent another layout.
-- Closure boundary :: *Definition sign-off authorizes later delivery*, not
-  activation on the operator's machine. Required RTs, implementation gate,
-  browser/platform validation and operator closure remain distinct.
+- Closure boundary :: *Design approval is recorded; implementation is explicitly
+  deferred*. A subsequent operator instruction is required to begin delivery.
+  Activation on the operator's machine requires its own authority. Required RTs,
+  implementation gate, browser/platform validation and operator closure remain
+  distinct.

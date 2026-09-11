@@ -14,11 +14,12 @@ request. The command uses it only for configured directory trees; otherwise it
 retains a single-document file preview. Hardcoded loopback binding and random
 token-prefixed URLs constrain access. Service installation does not activate it.
 
-This is a definition candidate, not implemented behaviour. On sign-off, it
-supersedes the initial persistent-service exclusion and pre-generated linked
-browsing approach below. The existing reader, source-preservation and platform
-requirements remain. Its specification records token lifetime, compatibility
-and qualification decisions for review.
+Taḋg approved this design on 11 September 2026 and explicitly deferred
+implementation. It supersedes the initial persistent-service exclusion and
+pre-generated linked browsing approach below as design authority; those earlier
+sections remain history. The existing reader, source-preservation and platform
+requirements remain. Its specification records the approved token lifetime,
+compatibility and asset contracts; runtime qualification remains future work.
 
 ## Purpose
 
