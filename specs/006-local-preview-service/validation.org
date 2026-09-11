@@ -15,10 +15,11 @@
 :CATEGORY: USER
 :RESULT: PENDING
 :END:
-- Requirements :: [[file:spec.org::#ac-006-1][AC006.1 - HTTP opening]],
-  [[file:spec.org::#ac-006-6][AC006.6 - Relative references]],
-  [[file:spec.org::#ac-006-7][AC006.7 - Org destinations]],
-  [[file:spec.org::#ac-006-8][AC006.8 - Presentation]].
+- Requirements :: [[file:spec.org::#ac-006-5][AC006.5 - On-demand document rendering]],
+  [[file:spec.org::#ac-006-1][AC006.1 - HTTP opening]],
+  [[file:spec.org::#ac-006-6][AC006.6 - Relative references]], [[file:spec.org::#ac-006-7][AC006.7 - Org destinations]],
+  [[file:spec.org::#ac-006-8][AC006.8 - Presentation]],
+  [[file:spec.org::#ac-006-19][AC006.19 - Source content remains passive]].
 - Procedure :: Follow the specification's mixed-document browser procedure on
   macOS/Safari, Ubuntu/Firefox and Windows/Edge under WSL1 and WSL2. Include
   narrow/wide, light/dark, copying, print, keyboard and JavaScript-disabled views.
@@ -32,7 +33,9 @@
 :CATEGORY: USER
 :RESULT: PENDING
 :END:
-- Requirement :: [[file:spec.org::#ac-006-12][AC006.12 - Optional installation]].
+- Requirements :: [[file:spec.org::#ac-006-12][AC006.12 - Optional installation]],
+  [[file:spec.org::#ac-006-26][AC006.26 - Service activation is explicit and unprivileged]],
+  [[file:spec.org::#ac-006-29][AC006.29 - Packaged guidance explains the two-mode contract]].
 - Procedure :: Operator follows the packaged activation, root configuration,
   stop/restart and fallback guide on macOS and Linux/WSL.
 - Expected :: *Usable setup and diagnostics*, no implicit service activation,
@@ -45,8 +48,12 @@
 :RESULT: PENDING
 :END:
 - Requirements :: [[file:spec.org::#ac-006-3][AC006.3 - Loopback]],
-  [[file:spec.org::#ac-006-10][AC006.10 - Lifecycle]],
-  [[file:spec.org::#ac-006-12][AC006.12 - Optional installation]].
+  [[file:spec.org::#ac-006-10][AC006.10 - Lifecycle]], [[file:spec.org::#ac-006-12][AC006.12 - Installation]],
+  [[file:spec.org::#ac-006-18][AC006.18 - Foreign HTTP authorities and peers are refused]],
+  [[file:spec.org::#ac-006-22][AC006.22 - Service restart revokes prior credentials]],
+  [[file:spec.org::#ac-006-23][AC006.23 - Shutdown cleans only owned state]],
+  [[file:spec.org::#ac-006-26][AC006.26 - Service activation is explicit and unprivileged]],
+  [[file:spec.org::#ac-006-27][AC006.27 - Installation preserves user configuration]].
 - Procedure :: Execute the specification's bounded native Homebrew/launchd,
   systemd-user and WSL loopback checks using synthetic allowed roots. Actual
   activation requires the operator's host-specific authority.
@@ -62,9 +69,7 @@
 :CATEGORY: ONE-OFF
 :RESULT: PENDING
 :END:
-- Requirements :: [[file:spec.org::#ac-006-2][AC006.2 - Fallback]],
-  [[file:spec.org::#ac-006-12][AC006.12 - Optional installation]],
-  [[file:spec.org::#ac-006-13][AC006.13 - Migration]].
+- Requirements :: [[file:spec.org::#ac-006-29][AC006.29 - Packaged two-mode guidance]].
 - Procedure :: Review candidate help, README, architecture, vision, service
   guide and compatibility notices against the implemented interface. Sanitize
   changed documentation; no persistent prose test is required.
