@@ -6,6 +6,20 @@ That approval includes opt-in linked browsing. Implementation and verification
 are in progress; the proposal wording below records the design's development
 and does not establish release qualification.
 
+## Local service proposal - 11 September 2026
+
+[W006 - Local preview service and automatic fallback](../specs/006-local-preview-service/spec.org)
+defines an optional per-user HTTP service that renders linked documents on
+request. The command uses it only for configured directory trees; otherwise it
+retains a single-document file preview. Hardcoded loopback binding and random
+token-prefixed URLs constrain access. Service installation does not activate it.
+
+This is a definition candidate, not implemented behaviour. On sign-off, it
+supersedes the initial persistent-service exclusion and pre-generated linked
+browsing approach below. The existing reader, source-preservation and platform
+requirements remain. Its specification records token lifetime, compatibility
+and qualification decisions for review.
+
 ## Purpose
 
 `htmlpreview` makes local Markdown and Org documents comfortable to read in a

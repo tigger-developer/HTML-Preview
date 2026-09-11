@@ -142,6 +142,21 @@ classification; it is provenance, not current state.
   supported recovery requires runner repair or an operator-authorized fresh
   session; the application changes and verification checkpoints are retained.
 
+** TODO W006 - Local preview service and automatic fallback :feature:
+:PROPERTIES:
+:CUSTOM_ID: w-006
+:PRIORITY: P1
+:SOURCE: operator define-change
+:CREATED: 2026-09-11
+:END:
+
+- Specification :: [[file:../specs/006-local-preview-service/spec.org][W006 - Local preview service and automatic fallback]].
+- Audit evidence :: [[file:../specs/006-local-preview-service/audits.yaml][W006 - Definition audit record]].
+- Validation :: [[file:../specs/006-local-preview-service/validation.org][W006 - Service and browser qualification]].
+- Scope :: *On-demand HTTP within configured trees*, hardcoded loopback binding,
+  token-prefixed links, automatic single-document fallback and optional user
+  service packaging. *Definition only*; existing delivery records remain separate.
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

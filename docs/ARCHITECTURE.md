@@ -7,6 +7,29 @@ proposal wording below is retained as design history; the specification supplies
 the exact adopted contracts. Browser and release qualification require the
 separate validation record.
 
+## Local service proposal - 11 September 2026
+
+[W006 - Local preview service and automatic fallback](../specs/006-local-preview-service/spec.org)
+defines a second delivery transport around the existing renderer. A per-user Go
+HTTP service renders requested documents within configured roots. A private
+Unix-domain control socket registers previews; browser URLs use a random token
+followed by a root-relative path. Binding is hardcoded to IPv4 loopback, with
+HTTP and no remote-address setting. Documents and permitted assets undergo
+authorization and rooted file-handle checks on every request.
+
+The command falls back to single-document file delivery when the service is
+unavailable or the explicit source is outside the configured roots. Rendering
+failures remain errors. The candidate specifies restart-scoped capabilities,
+bounded caching/concurrency, Org destination handling, optional user-service
+packaging and native platform qualification. It deliberately replaces graph
+pre-generation while retaining file quick/read lifetimes and the current
+presentation contracts.
+
+This is a definition proposal. On sign-off, its exact contracts supersede the
+no-service, pre-generation and file-only resource-policy portions below; the
+earlier sections remain baseline history. No service implementation or native
+qualification is claimed by this document update.
+
 ## System shape
 
 The implementation uses `cmd/htmlpreview`, `internal/preview`, a root Go asset

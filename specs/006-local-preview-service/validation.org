@@ -1,0 +1,72 @@
+#+TITLE: W006 - Local preview service validation
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* Planned qualification
+
+- Specification :: [[file:spec.org][W006 - Local preview service and automatic fallback]].
+- Evidence boundary :: *Definition only*. No service implementation or test
+  execution is claimed. Each result requires its candidate revision, exact
+  environment, observed evidence and, for user tests, human authority.
+
+** UT006.1 - Linked reading across platforms
+:PROPERTIES:
+:CUSTOM_ID: ut-006-1
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+- Requirements :: [[file:spec.org::#ac-006-1][AC006.1 - HTTP opening]],
+  [[file:spec.org::#ac-006-6][AC006.6 - Relative references]],
+  [[file:spec.org::#ac-006-7][AC006.7 - Org destinations]],
+  [[file:spec.org::#ac-006-8][AC006.8 - Presentation]].
+- Procedure :: Follow the specification's mixed-document browser procedure on
+  macOS/Safari, Ubuntu/Firefox and Windows/Edge under WSL1 and WSL2. Include
+  narrow/wide, light/dark, copying, print, keyboard and JavaScript-disabled views.
+- Expected :: *Correct navigation, assets, source identity and presentation*,
+  with Windows-default-browser handoff from WSL and explained denied links.
+- Per-platform result :: *All four environments remain PENDING* until observed.
+
+** UT006.2 - Service setup and fallback workflow
+:PROPERTIES:
+:CUSTOM_ID: ut-006-2
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+- Requirement :: [[file:spec.org::#ac-006-12][AC006.12 - Optional installation]].
+- Procedure :: Operator follows the packaged activation, root configuration,
+  stop/restart and fallback guide on macOS and Linux/WSL.
+- Expected :: *Usable setup and diagnostics*, no implicit service activation,
+  elevated privileges or host configuration changes.
+
+** OT006.1 - Native service and network qualification
+:PROPERTIES:
+:CUSTOM_ID: ot-006-1
+:CATEGORY: ONE-OFF
+:RESULT: PENDING
+:END:
+- Requirements :: [[file:spec.org::#ac-006-3][AC006.3 - Loopback]],
+  [[file:spec.org::#ac-006-10][AC006.10 - Lifecycle]],
+  [[file:spec.org::#ac-006-12][AC006.12 - Optional installation]].
+- Procedure :: Execute the specification's bounded native Homebrew/launchd,
+  systemd-user and WSL loopback checks using synthetic allowed roots. Actual
+  activation requires the operator's host-specific authority.
+- Bounds :: At most *two start/stop cycles per installation route per platform*,
+  20 local requests per cycle, five-second probes and 15 minutes per platform.
+  Restore prior service state and remove only test-owned fixtures/state.
+- Expected :: *Loopback-only, user-owned serving and correct fallback* with no
+  networking changes; record exact listener addresses and service commands.
+
+** OT006.2 - Documentation and compatibility review
+:PROPERTIES:
+:CUSTOM_ID: ot-006-2
+:CATEGORY: ONE-OFF
+:RESULT: PENDING
+:END:
+- Requirements :: [[file:spec.org::#ac-006-2][AC006.2 - Fallback]],
+  [[file:spec.org::#ac-006-12][AC006.12 - Optional installation]],
+  [[file:spec.org::#ac-006-13][AC006.13 - Migration]].
+- Procedure :: Review candidate help, README, architecture, vision, service
+  guide and compatibility notices against the implemented interface. Sanitize
+  changed documentation; no persistent prose test is required.
+- Expected :: *Accurate two-mode guidance and preserved supersession history*,
+  with explicit qualification limits and no remote-serving workaround.

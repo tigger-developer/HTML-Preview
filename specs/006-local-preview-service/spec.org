@@ -1,0 +1,880 @@
+#+TITLE: W006 - Local preview service and automatic fallback
+#+SUBTITLE: Unified change specification
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+DEFINITION_GATE: PENDING
+#+OPERATOR_SIGNOFF: PENDING
+
+* Local preview service and automatic fallback
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+- Outcome :: Readers *follow local Org and Markdown links on demand*, with a
+  *single-document fallback* when serving is unavailable or disallowed.
+- Before :: The command *opens temporary file URLs*. Optional linked browsing
+  pre-converts a bounded graph and occupies the terminal until interrupted.
+- After :: An optional *per-user Go service serves HTTP only on loopback*.
+  The command opens a *random-token/root-relative-path URL* for an eligible
+  source and then returns. No service, or a source outside configured trees,
+  selects the existing file preview and its quick/read retention policy.
+- Changes :: *Configured roots, private service discovery, token authorization,
+  lazy rendering, bounded caching and relative asset delivery* join the existing
+  renderer. Org heading/custom-ID searches resolve when their target is visited.
+  Homebrew service support, a macOS LaunchAgent and a Linux user service are
+  packaged for explicit operator activation; WSL retains Windows-browser handoff.
+- Unchanged :: *Source files remain read-only*. The filename header, fonts,
+  navigation, metadata, drawers, highlighting, copying, passive-content policy,
+  licences and Pandoc compatibility remain as specified by their current work.
+  JavaScript stays in the browser. *No remote bind option or TLS is provided*.
+- Edge cases :: *Escaped paths, symlinks, cross-root links, ambiguous Org targets,
+  stale service discovery, cache eviction, concurrent requests and restarts*
+  have explicit outcomes. Outside-root links are inactive in served pages;
+  conversion failures remain errors. WSL reachability failure selects fallback
+  without changing host networking. Tokens are excluded from routine logs.
+- Decisions :: The operator approved *HTTP, loopback-only serving, configured
+  trees, random URL tokens and automatic fallback* on 11 September 2026.
+  The candidate chooses *tokens lasting until service restart* and *replacement
+  of pre-generated linked browsing*, subject to definition sign-off.
+- Next step :: *Audit this definition*, then obtain operator sign-off before
+  implementation. Native platform and browser qualification remain delivery work.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+- A reader opening a ledger wants to *follow its linked specifications* without
+  manually invoking a converter for every file.
+- The current graph mode *converts unvisited documents in advance*. Quick file
+  cleanup prevents later navigation; foreground reading ties lifetime to the CLI.
+
+** Outcome
+
+- A *running local service renders only requested documents*. The CLI selects
+  HTTP or file delivery without starting a service implicitly.
+- A *configured directory allowlist limits served content*. An explicit command
+  outside that allowlist still produces a local single-document preview.
+
+** Scope
+
+*** In scope
+
+- *Service/client coordination, HTTP rendering, token URLs, local references,
+  caching, failure handling and service packaging* on the existing platforms.
+- *User-authored configuration for allowed roots* and operator-controlled
+  activation, restart and stop instructions.
+
+*** Out of scope
+
+- *Remote serving, configurable bind addresses, TLS, tunnelling guidance,
+  uploads, editing, live-reload watchers, whole-disk scanning and publication*.
+- *Global Org-ID indexing*, fetching remote documents or resources, a Windows
+  native binary, root daemons and changes to host firewall/WSL settings.
+- *Closure of earlier work or remediation of its unrelated warnings/audits*.
+
+*** Unchanged
+
+- *Go and Pandoc remain the application stack*. Lua remains inside Pandoc;
+  no command-line JavaScript or new browser test framework is introduced.
+- *Both delivery paths use the same renderer* and the existing source-identity,
+  presentation, copy, folding, print and passive-source semantics.
+
+** Authority and starting point
+
+- Project profile :: [[file:../../.sdlc/project.yaml][Project profile]] declares
+  *no external infrastructure owner*. This is an optional local user service.
+- Product authority :: [[file:../../docs/VISION.md][Vision]], reading experience,
+  linked-document browsing and installation; its initial background-service
+  exclusion is *superseded for this bounded local feature on sign-off*.
+- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture]],
+  reference resolution, platform handoff and lifetime. File delivery remains;
+  HTTP becomes an *additional transport with on-demand conversion*.
+- Historical requirements :: [[file:../001-local-document-preview/spec.org][W001 - Local document preview]],
+  especially AC001.9 - Source-relative links, AC001.23 - Actual heading targets,
+  AC001.31 through AC001.36 - Graph budgets and lifetime, and AC001.37 through
+  AC001.46 - Passive rendering and platforms. Graph discovery and its third
+  mode are replaced; *source-relative meaning and file retention remain*.
+- Presentation baseline :: [[file:../002-code-and-outline/spec.org][W002 - Code and outline]],
+  [[file:../004-fold-initial-property-drawers/spec.org][W004 - Metadata and controls]],
+  [[file:../005-navigation-and-metadata/spec.org][W005 - Navigation and metadata]]
+  remain authorities for *rendered content*, not approval of this service.
+- Current implementation :: At =df8bf96716680eaa549682be541dbc1524b34e1a=,
+  [[file:../../internal/preview/session.go][Session coordination]],
+  [[file:../../internal/preview/links.go][Reference resolution]],
+  [[file:../../internal/preview/source.go][Source confinement]],
+  [[file:../../internal/preview/platform.go][Desktop adapter]] and
+  [[file:../../internal/preview/html.go][HTML policy]] implement *file delivery*.
+- Regression baseline :: [[file:../../internal/preview/graph_test.go][Graph tests]],
+  [[file:../../internal/preview/references_test.go][Reference tests]],
+  [[file:../../internal/preview/lifecycle_test.go][Lifecycle tests]] and
+  [[file:../../integration/cli_test.go][Installed CLI tests]] protect the affected
+  boundaries. Their *graph-only expectations require explicit migration*;
+  they are evidence, not authority to retain an extra public mode.
+- External contracts :: [[https://docs.brew.sh/Formula-Cookbook#service-files][Homebrew service definitions]],
+  [[https://learn.microsoft.com/en-us/windows/wsl/networking][WSL localhost networking]],
+  [[https://orgmode.org/manual/Search-Options.html][Org file-search syntax]],
+  [[https://pkg.go.dev/net/http][Go HTTP]], and
+  [[https://pkg.go.dev/os#Root][Go rooted filesystem access]].
+
+** Constraints and dependencies
+
+- *Bind only to literal IPv4 loopback, 127.0.0.1*. An OS-assigned port avoids
+  collisions. Neither a flag, environment value nor config key can change the
+  address. This operator requirement overrides the generic configurable-address
+  advice in the Go standards; no IPv6 listener is required in this revision.
+- *Use HTTP without certificates*. No host trust-store changes are required.
+- *YAML configuration requires a maintained parser*, compiled into the binary;
+  it does not add a runtime executable. Use the YAML organization's maintained
+  Go package, pin a reviewed stable release at delivery, and record its licence
+  and transitive dependencies. Do not hand-write a YAML parser.
+- *All real service activation is operator-controlled*. Definition changes only
+  specifications and documentation; packaging does not silently start a service.
+
+** Decisions
+
+- Operator direction, 11 September 2026 :: *Prefer an existing service*, otherwise
+  perform a single-file conversion. *Configured trees are the serving boundary*;
+  sources outside them use the same fallback. HTTP and random tokens are approved.
+- URL direction :: The operator explicitly permits
+  =/<random-token>/<relative-path>=. *Relative names may appear after the token*;
+  full filename concealment is no longer required. A filename hash is not used
+  as an access credential and the port is not treated as authentication.
+- Candidate lifetime :: *Tokens survive cache eviction but expire at restart*.
+  There is no idle timer, tab tracking or persisted token restoration. This is
+  a proposed default for sign-off, not an independently confirmed user answer.
+- Candidate compatibility :: *Two transports replace graph mode*. Legacy graph
+  settings are validated and diagnosed as described below. This proposal is
+  explicit so delivery need not guess how old scripts should behave.
+- Definition mode :: *ATTENDED*. The two candidate choices above were presented
+  as clarification questions; the final sign-off must cover them if unanswered.
+
+** Unresolved blockers
+
+- *No technical blocker has been established*. The candidate lifetime and
+  migration are fully specified proposals requiring operator sign-off.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:CUSTOM_ID: hands-off-mode-decision-log
+:VISIBILITY: folded
+:END:
+
+- *No hands-off invocation occurred* during this definition.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC006.1 - Eligible inputs use the available service
+:PROPERTIES:
+:CUSTOM_ID: ac-006-1
+:END:
+- Criterion :: Given a compatible, reachable service and an allowed source,
+  the CLI *opens its token-prefixed HTTP URL in the default browser and returns*,
+  without pre-rendering linked documents or retaining a foreground reading job.
+- Proven by :: [[#rt-006-1][RT006.1 - Automatic transport selection]],
+  [[#ut-006-1][UT006.1 - Linked reading across platforms]].
+
+** AC006.2 - Unavailable or excluded sources use single-file delivery
+:PROPERTIES:
+:CUSTOM_ID: ac-006-2
+:END:
+- Criterion :: *Absent or unreachable service, absent/empty roots, and an
+  outside-root explicit input select single-document file delivery*. Conversion,
+  permission, invalid-configuration and incompatible-service failures remain
+  diagnosed errors; they do not masquerade as service absence.
+- Proven by :: [[#rt-006-1][RT006.1 - Automatic transport selection]],
+  [[#rt-006-2][RT006.2 - Configuration and compatibility]].
+
+** AC006.3 - HTTP never listens outside loopback
+:PROPERTIES:
+:CUSTOM_ID: ac-006-3
+:END:
+- Criterion :: Every service HTTP listener *binds only to 127.0.0.1*. Requests
+  from non-loopback peers are refused, and *no public setting enables another
+  bind address*, including installed service definitions.
+- Proven by :: [[#rt-006-3][RT006.3 - Network and capability boundary]],
+  [[#ot-006-1][OT006.1 - Native service and network qualification]].
+
+** AC006.4 - Tokens and roots authorize each served request
+:PROPERTIES:
+:CUSTOM_ID: ac-006-4
+:END:
+- Criterion :: *Only a valid random capability for an allowed root* can reveal
+  its permitted content. Missing/forged/restarted tokens reveal no source data.
+  *Traversal, symlink escape and special files are denied* before content reads.
+  Browser requests cannot mint tokens or expand configured roots.
+- Proven by :: [[#rt-006-3][RT006.3 - Network and capability boundary]],
+  [[#rt-006-4][RT006.4 - Rooted path access]].
+
+** AC006.5 - Requested documents render on demand
+:PROPERTIES:
+:CUSTOM_ID: ac-006-5
+:END:
+- Criterion :: An eligible Org or Markdown request *returns styled HTML at the
+  original source extension*. Following a new local link renders that target
+  when requested. Cycles and repeated names retain the correct source context.
+- Proven by :: [[#rt-006-5][RT006.5 - Lazy mixed-document navigation]].
+
+** AC006.6 - Relative references preserve their source meaning
+:PROPERTIES:
+:CUSTOM_ID: ac-006-6
+:END:
+- Criterion :: *Links and image references resolve from their containing source*,
+  including spaces, Unicode, literal delimiters, subdirectories and parent
+  paths. Allowed cross-root links use the target root's capability. Outside-root
+  references are *inactive with an explanation*, never an HTTP escape or
+  server-triggered file preview. External web/mail links remain unchanged.
+- Proven by :: [[#rt-006-5][RT006.5 - Lazy mixed-document navigation]],
+  [[#rt-006-4][RT006.4 - Rooted path access]],
+  [[#ut-006-1][UT006.1 - Linked reading across platforms]].
+
+** AC006.7 - Org destinations remain meaningful
+:PROPERTIES:
+:CUSTOM_ID: ac-006-7
+:END:
+- Criterion :: *Unique custom-ID and heading searches reach the target's actual
+  generated anchor*. Ambiguous, unknown and unsupported searches show the target
+  with an explanation. Fileless IDs resolve only when unique among known rendered
+  pages; unknown IDs remain explained and inactive without filesystem scanning.
+- Proven by :: [[#rt-006-6][RT006.6 - Org destination resolution]],
+  [[#ut-006-1][UT006.1 - Linked reading across platforms]].
+
+** AC006.8 - Passive presentation survives HTTP delivery
+:PROPERTIES:
+:CUSTOM_ID: ac-006-8
+:END:
+- Criterion :: *Existing content, source-path copying, fonts, folding, metadata,
+  navigation, highlighting and printing survive both transports*. Sources do
+  not introduce executable code or automatic remote loads. Local raster assets
+  load through authorized HTTP routes; other permitted linked files download
+  without executing as same-origin HTML or script.
+- Proven by :: [[#rt-006-7][RT006.7 - HTTP content and assets]],
+  [[#ut-006-1][UT006.1 - Linked reading across platforms]].
+
+** AC006.9 - Refresh and concurrent requests remain bounded
+:PROPERTIES:
+:CUSTOM_ID: ac-006-9
+:END:
+- Criterion :: *Refresh reflects the current readable source snapshot*. Cache
+  eviction never revokes valid URLs. Concurrent conversions *respect the declared
+  count, byte and deadline limits* and cannot mix source identities or settings.
+  Failures leave no successful response containing incomplete HTML.
+- Proven by :: [[#rt-006-8][RT006.8 - Cache, concurrency and resource limits]].
+
+** AC006.10 - Service lifecycle preserves ownership
+:PROPERTIES:
+:CUSTOM_ID: ac-006-10
+:END:
+- Criterion :: *One service per runtime directory* owns its private control
+  socket, capability state and temporary conversion data. Restart invalidates
+  old URLs. Normal shutdown cancels/reaps converters and removes only owned
+  temporary state. Stale discovery cannot impersonate a compatible service.
+- Proven by :: [[#rt-006-9][RT006.9 - Lifecycle and discovery]],
+  [[#ot-006-1][OT006.1 - Native service and network qualification]].
+
+** AC006.11 - Diagnostics protect tokens and explain failures
+:PROPERTIES:
+:CUSTOM_ID: ac-006-11
+:END:
+- Criterion :: *Routine logs exclude tokens, URL paths and document bodies*.
+  Responses suppress referrer disclosure and browser caching. CLI stdout may
+  print the requested preview URL as its deliberate user output. HTTP failures
+  use the specified non-success status; CLI failures retain status 1 or 2.
+- Proven by :: [[#rt-006-3][RT006.3 - Network and capability boundary]],
+  [[#rt-006-7][RT006.7 - HTTP content and assets]],
+  [[#rt-006-9][RT006.9 - Lifecycle and discovery]].
+
+** AC006.12 - Service installation remains optional and per-user
+:PROPERTIES:
+:CUSTOM_ID: ac-006-12
+:END:
+- Criterion :: *Distributions include service support and configuration guidance*.
+  Installation alone does not activate serving or grant roots. Homebrew and
+  native user-service instructions use fixed executable paths and preserve
+  existing user configuration. No privileged daemon is installed or required.
+- Proven by :: [[#rt-006-10][RT006.10 - Packaged service artefacts]],
+  [[#ot-006-1][OT006.1 - Native service and network qualification]],
+  [[#ut-006-2][UT006.2 - Service setup and fallback workflow]].
+
+** AC006.13 - Legacy options have a documented migration
+:PROPERTIES:
+:CUSTOM_ID: ac-006-13
+:END:
+- Criterion :: *Legacy graph settings never enable pre-generation*. Valid old
+  values receive one migration notice per invocation; malformed values retain
+  status 2. File quick/read retention and presentation overrides remain usable.
+  Mixed HTTP/file batches keep independent sources and truthful exit status.
+- Proven by :: [[#rt-006-1][RT006.1 - Automatic transport selection]],
+  [[#rt-006-2][RT006.2 - Configuration and compatibility]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT006.1 - Automatic transport selection
+:PROPERTIES:
+:CUSTOM_ID: rt-006-1
+:END:
+- Covers :: [[#ac-006-1][AC006.1 - Eligible inputs]],
+  [[#ac-006-2][AC006.2 - File fallback]], [[#ac-006-13][AC006.13 - Migration]].
+- Boundary :: *Installed executable*, real local service and existing desktop
+  capture adapter; fixture sources and runtime/config paths use OS temp storage.
+- Action :: Open nested Org/Markdown with service ready, stopped and unreachable;
+  inside/outside roots; mix both transports, duplicate inputs and one bad input.
+  Include incompatible protocol, registration failure and failed browser handoff.
+- Expected :: *Correct scheme, source, setting snapshot and exit status*; HTTP
+  CLI returns after handoff, file output retains configured grace/read lifetime.
+  No child service is started; graph links are not pre-rendered. All publication
+  preparation precedes browser opening, preserving batch failure semantics.
+- Retention :: Persistent under =make test=; *TDD before production changes*.
+
+** RT006.2 - Configuration and compatibility
+:PROPERTIES:
+:CUSTOM_ID: rt-006-2
+:END:
+- Covers :: [[#ac-006-2][AC006.2 - File fallback]],
+  [[#ac-006-13][AC006.13 - Migration]].
+- Boundary :: *CLI startup and service registration*.
+- Action :: Exercise absent/empty/default/explicit config; invalid YAML, duplicate
+  and unknown keys, wrong types, over-limit root lists, relative/missing/file
+  roots, duplicate/overlapping roots, bad permissions, stale client config and
+  configured restart. Cover legacy options and TOC values at both bounds.
+- Expected :: *Strict documented validation and precedence*, no implicit root
+  grant, canonical duplicate handling and no work on malformed settings.
+  Service-authoritative roots prevail; a CLI root override can only narrow them.
+  Help/version bypass config and discovery with no side effects.
+- Retention :: Persistent under =make test=; *TDD before production changes*.
+
+** RT006.3 - Network and capability boundary
+:PROPERTIES:
+:CUSTOM_ID: rt-006-3
+:END:
+- Covers :: [[#ac-006-3][AC006.3 - Loopback]],
+  [[#ac-006-4][AC006.4 - Authorization]], [[#ac-006-11][AC006.11 - Diagnostics]].
+- Boundary :: *Real listener and HTTP request/response*, plus the existing host
+  seam only for peer-address cases unavailable on the test host.
+- Action :: Inspect the actual bound socket address; send absent/invalid tokens,
+  filename hashes, root listings, forged Host/Origin, cross-site fetch metadata,
+  unsupported methods and attempts to register a root over TCP. Try invalid
+  bind settings and capture stdout/stderr for successful and rejected requests.
+- Expected :: *Loopback binding and specific rejection codes*, no credential or
+  source disclosure, no wildcard CORS, and no HTTP route for token creation.
+  Separate capabilities cannot substitute roots or settings. Tokens meet the
+  stated encoding/entropy construction through generator review and independent
+  negative requests, not a statistical randomness test.
+- Retention :: Persistent under =make test=; *TDD before production changes*.
+
+** RT006.4 - Rooted path access
+:PROPERTIES:
+:CUSTOM_ID: rt-006-4
+:END:
+- Covers :: [[#ac-006-4][AC006.4 - Authorization]],
+  [[#ac-006-6][AC006.6 - Relative references]].
+- Boundary :: *HTTP requests against synthetic rooted filesystems*.
+- Action :: Cover literal/encoded/double-encoded traversal, separators, absolute
+  paths, NUL, invalid UTF-8, spaces, Irish text, percent/hash/question marks,
+  sibling-prefix directories, symlinked roots and targets, symlink replacement
+  during reads, devices/FIFOs/directories and disallowed filesystem boundaries.
+- Expected :: *Only authorized regular-file bytes are returned*; outside sentinel
+  bytes never appear. Both documents and assets receive the same containment
+  checks. No directory listing or redirect leaks a token/path outside its root.
+- Retention :: Persistent under =make test=; *TDD before production changes*.
+
+** RT006.5 - Lazy mixed-document navigation
+:PROPERTIES:
+:CUSTOM_ID: rt-006-5
+:END:
+- Covers :: [[#ac-006-5][AC006.5 - Lazy rendering]],
+  [[#ac-006-6][AC006.6 - Relative references]].
+- Boundary :: *CLI entry followed by actual returned HTTP anchors* and real Pandoc.
+- Setup :: Nested Org/Markdown graph with cycles, repeated basenames, aliases,
+  cross-root links, literal link lookalikes and an unvisited malformed target.
+- Action :: Request the entry, then create/change the linked target before
+  following its generated URL; follow back links, queries and fragments.
+- Expected :: *Target content reflects its first request*, the bad unvisited
+  document does not fail the entry, and every fetched page preserves its source
+  context. Literal code is not interpreted as links; external links stay exact.
+- Retention :: Persistent under =make test=; *TDD before production changes*.
+
+** RT006.6 - Org destination resolution
+:PROPERTIES:
+:CUSTOM_ID: rt-006-6
+:END:
+- Covers :: [[#ac-006-7][AC006.7 - Org destinations]].
+- Boundary :: *Returned links and HTTP redirects* against real converted Org.
+- Action :: Follow plain files, custom-ID searches, headings with TODO/tags,
+  duplicate headings/IDs, unsupported searches, same-page fragments and fileless
+  IDs before/after their target has entered the bounded rendered catalogue.
+  Change a target and repeat after cache eviction.
+- Expected :: *Actual unique anchors or an explicit explanation*; one bounded
+  redirect with no eager graph scan. Unresolved IDs never guess a file. No stale
+  catalogue entry bypasses validation when a target changes or disappears.
+- Retention :: Persistent under =make test=; *TDD before production changes*.
+
+** RT006.7 - HTTP content and assets
+:PROPERTIES:
+:CUSTOM_ID: rt-006-7
+:END:
+- Covers :: [[#ac-006-8][AC006.8 - Presentation]],
+  [[#ac-006-11][AC006.11 - Diagnostics]].
+- Boundary :: *HTTP headers, parsed rendered DOM and returned asset bytes*.
+- Action :: Request Org/Markdown and referenced rasters, PDF, text, HTML and SVG;
+  include malicious scripts/attributes, remote images, source-authored service
+  URLs, includes, attachment type spoofing and unsupported raw reference forms.
+- Expected :: *Shared rendering assertions hold*, local rasters load, attachments
+  have download disposition, HTML/SVG never execute as service-origin content,
+  owned CSP and privacy headers are present on successes and errors. No source
+  content, permissions or unrelated files change. HTTP pages contain no file URLs
+  for denied resources and no source-originated automatic network access.
+- Retention :: Persistent under =make test=; *TDD before production changes*.
+
+** RT006.8 - Cache, concurrency and resource limits
+:PROPERTIES:
+:CUSTOM_ID: rt-006-8
+:END:
+- Covers :: [[#ac-006-9][AC006.9 - Refresh and bounded work]].
+- Boundary :: *Concurrent real HTTP clients*, real Pandoc and controlled process
+  boundary doubles for deterministic stalls/output floods.
+- Action :: Refresh unchanged/edited/replaced/deleted files; change same-size
+  content with restored mtime. Evict cached pages; make duplicate and distinct
+  requests with different settings. Exercise exact/over byte, count, path,
+  request, token and timeout limits; abort clients during conversion.
+- Expected :: *Current bytes or the specified error*, no mixed settings,
+  bounded workers/cache/scratch, duplicate in-flight work coalesced, and no
+  leaked converters. An evicted page re-renders through its existing URL.
+- Retention :: Persistent under =make test - race enabled by the target=.
+
+** RT006.9 - Lifecycle and discovery
+:PROPERTIES:
+:CUSTOM_ID: rt-006-9
+:END:
+- Covers :: [[#ac-006-10][AC006.10 - Lifecycle]],
+  [[#ac-006-11][AC006.11 - Diagnostics]].
+- Boundary :: *Service executable, private control socket and HTTP listener*.
+- Action :: Start twice with one runtime path; try wrong-owner/symlinked runtime
+  state, stale sockets, occupied ports and malformed discovery replies. Stop
+  during idle and conversion, restart, reuse old tokens, and inject cleanup error.
+- Expected :: *One owner, bounded shutdown, stale-token refusal and safe fallback
+  only for unavailable discovery*. Private state remains inaccessible to other
+  users; no unrelated socket/file removal. Logs identify operation and error
+  class without bearer credentials or source bodies.
+- Retention :: Persistent under =make test=; *TDD before production changes*.
+
+** RT006.10 - Packaged service artefacts
+:PROPERTIES:
+:CUSTOM_ID: rt-006-10
+:END:
+- Covers :: [[#ac-006-12][AC006.12 - Optional installation]].
+- Boundary :: *Existing staged install/release commands and archive contents*.
+- Action :: Install twice under temporary DESTDIR/prefix and generate each
+  supported archive/formula. Parse supplied plist/XML, unit and YAML example;
+  invoke staged executable help. Preserve a pre-existing configuration sentinel.
+- Expected :: *Fixed absolute executable arguments, user-service scope, declared
+  Pandoc and licences*, safe staging/repetition, no configuration overwrite and
+  no service activation. Generated formula service resolves its installed binary.
+- Retention :: Extend existing Go integration suite; *no runtime service manager
+  or Homebrew invocation in persistent tests*.
+
+** UT006.1 - Linked reading across platforms
+:PROPERTIES:
+:CUSTOM_ID: ut-006-1
+:END:
+- Covers :: [[#ac-006-1][AC006.1 - HTTP opening]],
+  [[#ac-006-6][AC006.6 - Relative references]], [[#ac-006-7][AC006.7 - Org destinations]],
+  [[#ac-006-8][AC006.8 - Presentation]].
+- Reviewer :: Operator, on the existing W001 platform matrix: macOS/Safari,
+  Ubuntu/Firefox, Windows/Edge with WSL1 and WSL2 including WSLg-present handoff.
+- Procedure :: Open nested synthetic documents from another cwd through an
+  installed command; follow Org/Markdown links, parent paths, cross-root links,
+  folded anchors, images and downloads. Use Back, refresh after editing, copy,
+  keyboard navigation, narrow/wide light/dark, print and JavaScript-disabled views.
+- Expected :: *Correct content and source header, usable navigation and unchanged
+  presentation*. No browser warning, unintended remote fetch or Linux-browser
+  substitution in WSL. Denied links explain their boundary.
+- Record :: *Exact platform/browser/Pandoc versions and dated human result* in
+  [[file:validation.org][W006 - Service validation]]. Missing platforms stay pending.
+
+** UT006.2 - Service setup and fallback workflow
+:PROPERTIES:
+:CUSTOM_ID: ut-006-2
+:END:
+- Covers :: [[#ac-006-12][AC006.12 - Optional installation]].
+- Reviewer :: Operator on macOS and Linux/WSL.
+- Procedure :: Follow packaged guidance to configure roots and explicitly start,
+  stop and restart the user service. Open eligible/excluded files and try a stale
+  browser URL after restart. Check the migration notice from old graph settings.
+- Expected :: *Clear activation and fallback*, usable diagnostics and no need
+  for elevated privileges, host configuration changes or a foreground CLI.
+- Record :: Dated result and environment in [[file:validation.org][W006 - Service validation]].
+
+** OT006.1 - Native service and network qualification
+:PROPERTIES:
+:CUSTOM_ID: ot-006-1
+:END:
+- Covers :: [[#ac-006-3][AC006.3 - Loopback]],
+  [[#ac-006-10][AC006.10 - Lifecycle]], [[#ac-006-12][AC006.12 - Installation]].
+- Boundary :: *Actual launchd/Homebrew and systemd user activation*, plus native
+  Windows-to-WSL loopback access; synthetic documentation roots only.
+- Procedure :: Use a staged candidate and installed user-service recipe; inspect
+  actual listeners, reject host-interface access, verify default-browser HTTP
+  handoff and stop/restart behaviour. On WSL, verify Windows loopback access and
+  absence of LAN exposure without changing networking. Also test service absence
+  and an unavailable Windows-facing endpoint selecting file fallback.
+- Bounds :: At most *two start/stop cycles per installation route per platform*,
+  20 local requests per cycle, five-second individual probe deadlines, 15 minutes
+  per platform. No remote/metered service; activation requires the operator's
+  explicit authority for the host, with its prior service state restored.
+- Expected :: *Loopback-only listeners and correct user ownership*, no implicit
+  boot/root activation, clean supported shutdown and truthful fallback.
+- Record :: Revision, native commands, outcomes and cleanup in
+  [[file:validation.org][W006 - Service validation]]. Never add to CI or =make test=.
+
+** OT006.2 - Documentation and compatibility review
+:PROPERTIES:
+:CUSTOM_ID: ot-006-2
+:END:
+- Covers :: [[#ac-006-2][AC006.2 - Fallback]], [[#ac-006-12][AC006.12 - Installation]],
+  [[#ac-006-13][AC006.13 - Migration]].
+- Boundary :: *Packaged help, README, Vision, Architecture and service guide*.
+- Procedure :: One candidate review checks two-mode selection, config paths,
+  root grants, temporary tokens, graph-option migration, WSL limitations,
+  activation/stop instructions and qualification claims; sanitize edited prose.
+- Expected :: *Commands match the candidate interface*, histories identify
+  superseded behaviour, and no tunnel, remote bind or certificate workaround is
+  recommended. No public package publication is claimed.
+- Bounds :: One review per final candidate; *no new persistent prose tests*.
+- Record :: Dated result in [[file:validation.org][W006 - Service validation]].
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** Multiple roots and aliases
+- Condition :: *Sibling roots, overlapping roots or a symlink alias* change how
+  a relative path is interpreted.
+- Required behaviour :: Select the longest containing configured canonical root;
+  keep the logical parent separately. Canonical and logical context must both
+  remain within the effective grant. Cross-root links receive another authorized
+  token; never reinterpret =../= as permission to escape the current token.
+- Covered by :: [[#ac-006-4][AC006.4 - Authorization]],
+  [[#rt-006-4][RT006.4 - Rooted path access]].
+
+** Missing and denied linked files
+- Condition :: A *linked file is missing, unreadable, outside a root or too large*.
+- Required behaviour :: The entry still renders. Outside-root links are inactive;
+  allowed missing links lead to a bounded 404, unreadable files to 403 and size
+  violations to 413. HTTP never opens an OS application or runs the CLI itself.
+- Covered by :: [[#ac-006-6][AC006.6 - Relative references]],
+  [[#rt-006-5][RT006.5 - Lazy mixed-document navigation]].
+
+** Configuration and service replacement
+- Condition :: Roots are changed while a service runs, or a second binary uses
+  the same runtime directory.
+- Required behaviour :: *Restart applies configuration and revokes old tokens*.
+  The active service's root snapshot is authoritative. A protocol mismatch is
+  diagnosed; a missing/refused/timed-out socket means unavailable service.
+- Covered by :: [[#ac-006-2][AC006.2 - Fallback]],
+  [[#rt-006-9][RT006.9 - Lifecycle and discovery]].
+
+** WSL loopback is unavailable
+- Condition :: The Linux service is healthy but Windows cannot reach the same
+  authenticated service instance through loopback.
+- Required behaviour :: A *bounded Windows-side probe selects file fallback*
+  and explains why. No wildcard bind, IP-address bypass, firewall modification,
+  alternate browser or networking reconfiguration is attempted.
+- Covered by :: [[#ac-006-2][AC006.2 - Fallback]],
+  [[#ot-006-1][OT006.1 - Native service and network qualification]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Components :: *Extract rendering from file-session publication*. Preserve
+  source snapshots, Org preservation, Pandoc, destination catalogue, sanitizer
+  and final template. Give URL rewriting explicit file and HTTP resolvers.
+- Ownership :: *One binary owns the CLI, service and protocol*. launchd/systemd
+  supervise it; they do not implement conversion or access decisions.
+- Replacement :: *Lazy HTTP replaces breadth-first pre-generation*. The file
+  path remains a single-document renderer. No source scanning is needed to start
+  the service or create a capability.
+
+** High-level design
+
+*** Flow
+
+1. The operator *starts the optional service explicitly*. It validates its config,
+   Pandoc, runtime directory and exclusive instance lock before reporting ready.
+2. The CLI validates inputs/settings and contacts the *private Unix-domain
+   control socket*. Discovery/registration has a five-second overall deadline.
+3. The service checks allowed roots and captures rendering settings, returning
+   *authorized HTTP URLs or explicit outside-root results*. It does not render.
+4. The CLI verifies eligible entry responses before opening any batch input;
+   this *preflights explicit inputs only*. Prepare fallback file entries in the
+   same batch, then use the existing platform opener. Failed individual inputs
+   may coexist with successful inputs; publication failure opens none.
+5. HTTP requests *validate token, root, path and file handle*, obtain a bounded
+   current snapshot and render/cache the response. References receive token
+   routes without converting their target documents.
+6. *CLI return does not stop the service*. SIGINT/SIGTERM or the user-service
+   manager ends it, invalidating capabilities and cleaning owned scratch data.
+
+*** Interfaces and configuration
+
+- Commands :: Preserve =htmlpreview FILE [FILE ...]= and add
+  =htmlpreview --serve= as a sole operation. =--= still permits a literal
+  filename beginning with a dash. Service mode opens no browser and requires
+  no desktop session. No =open= command or file association is installed.
+- Configuration file :: =HTMLPREVIEW_CONFIG= selects an absolute YAML path;
+  unset/empty uses =os.UserConfigDir()/htmlpreview/config.yaml=. The initial
+  schema is the following, with *no directory grants by default*:
+
+#+begin_src yaml
+version: 1
+serve:
+  roots: []
+#+end_src
+
+- Root schema :: Up to *32 existing absolute directory paths*, at most 4096
+  UTF-8 bytes each; no tilde/environment expansion. Canonical duplicates collapse;
+  overlaps use longest containment. A missing default config means empty roots;
+  an explicitly selected missing file is an error. Maximum config size is 64 KiB.
+  Reject duplicate/unknown fields, wrong types, aliases/tags and extra documents.
+  Reject config not owned by the current user or writable by group/others.
+- Configuration lifetime :: *Read once per service start*. Missing/empty roots
+  allow an idle service but serve no documents. Invalid config exits 2 before
+  listening. The CLI validates a present config but does not use a changed file
+  to override the running service's snapshot. Restart is the reload mechanism.
+- Runtime path :: =HTMLPREVIEW_RUNTIME_DIR= selects an absolute private directory;
+  default =os.UserCacheDir()/htmlpreview/runtime=. Reject symlinks, other owners
+  and group/other permissions instead of chmodding existing paths. New runtime
+  directories are 0700. Long Unix-socket paths fail with an actionable diagnostic.
+- Discovery :: =control.sock= is a *0600 Unix-domain socket* inside that directory,
+  guarded by an exclusive process-held lock. Authenticate peer UID as the service
+  user as well as checking directory ownership. No TCP registration endpoint,
+  PID scan, port scan, service autostart or environment-proxy use is permitted.
+- Control protocol :: HTTP over that Unix socket, *version 1*, with JSON bodies.
+  =GET /v1/status= returns ={protocol:1,instance,origin,ready}=; =instance= is a
+  non-secret random instance ID and =origin= is the bound loopback HTTP origin.
+  =POST /v1/previews= accepts ={paths:[absolute logical paths],settings:{...}}=
+  with up to the existing MAX_FILES limit, a 64 KiB request body and 256 KiB
+  response. Reject unknown/duplicate fields and wrong types. The settings object
+  contains only toc, toc_depth, source/output byte limits, deadline and optional
+  narrowing root; arbitrary environment or Pandoc arguments are rejected.
+- Registration response :: HTTP 200 returns ={protocol:1,results:[...]}= in input
+  order, each with =path= and =url= or a stable =error= code. Codes include
+  =outside_root=, =invalid_source= and =capacity_exceeded=. Only outside_root
+  selects per-file fallback. Invalid request is 400, version conflict 409,
+  excessive body 413 and service unavailable 503. Error bodies are bounded JSON
+  ={error:code}=; clients do not parse prose. No automatic POST retry occurs.
+- Public routes :: *GET and HEAD only*. =/<token>/<root-relative-path>= returns
+  document HTML or registered assets. =/_health= returns only protocol/instance
+  identity for readiness/WSL verification; no roots, tokens or filenames. Other
+  methods return 405; unknown routes/tokens return a generic 404 without listing.
+- URL handling :: *Percent-encode path segments exactly once*. Separate query
+  and fragment before filesystem resolution; reject malformed encoding, decoded
+  separators, NUL, invalid UTF-8, absolute paths and decoded dot segments.
+  Renderer-generated parent links are normalized into a root-relative route
+  before output. Ordinary source query strings are preserved as inert data.
+- Org lookup route :: A file-search link uses
+  =/<token>/_org?path=<encoded-root-relative-path>&search=<encoded-selector>=.
+  The reserved route is processed before content paths; a source named =_org=
+  is accessed through =/<token>/_file/<encoded-path>=, also reserved for collisions.
+  Resolve the target only on request, then send 303 to its actual anchor when
+  unique. Otherwise serve target HTML with an escaped explanation, status 200.
+  Search and path are single values; duplicates/oversized selectors return 400.
+- Existing settings :: *TOC defaults and overrides remain unchanged* and are
+  snapshotted per capability. Source and output limits/deadlines cannot exceed
+  the service ceilings below. =HTMLPREVIEW_ROOT=, if supplied, further narrows
+  the configured trees and retains its existing explicit-input admission check;
+  it can never add a served tree.
+- Migration :: =HTMLPREVIEW_LINKS= and =HTMLPREVIEW_MAX_DEPTH= remain accepted
+  with their old validation ranges but *have no graph effect*, with one concise
+  deprecation notice when non-empty. =HTMLPREVIEW_MODE= continues quick/read
+  retention for file fallback; it never starts/stops the service. MAX_FILES and
+  total-source/output-byte budgets still apply to explicit batch preparation;
+  HTTP requests then use per-request limits. Preserve validation of inactive
+  settings. Document these intentional replacements before release.
+- Fallback classification :: *Missing/refused/timed-out control endpoint* means
+  unavailable service. Unsafe runtime permissions, malformed replies, different
+  protocol, invalid config and registered conversion failures are errors.
+  A disappearing HTTP service before handoff permits one fresh availability
+  check; confirmed unavailability selects file fallback. No endless retries.
+- CLI output :: *Explicit preview URLs remain stdout output*. Treat these as
+  deliberate bearer disclosure to the invoking user, not log events. Diagnostics
+  may identify the user's explicit source path but never include token URLs;
+  service logs contain only operation, status, duration and a safe request ID.
+
+*** Data and state
+
+- Capabilities :: Generate *32 random bytes with crypto/rand*, encoded as
+  unpadded base64url (43 characters). This is a chosen 256-bit secret, not a
+  filename hash, encryption scheme or configurable entropy policy. Tokens map
+  in memory to canonical root, logical context and immutable rendering settings.
+  Reuse a token for equivalent root/context/settings within one service lifetime.
+- Scope :: A token grants *rendering of regular Org/Markdown files in its root*,
+  not listing or arbitrary raw-file retrieval. Non-document assets must first
+  be registered by an authorized rendered document reference. A cross-root link
+  may mint/reuse a separate token only for another configured, permitted root.
+- Lifetime :: *Restart destroys all capabilities*. Cache eviction does not.
+  At 128 distinct capability contexts, reject new contexts with capacity_exceeded;
+  retain existing tokens. A service restart is the explicit reset operation.
+- Reads :: Preserve *logical source location separately from canonical identity*.
+  Use rooted file handles and revalidate regular-file type, containment and the
+  configured root filesystem before each read. Do not admit symlink escapes,
+  sockets/FIFOs/devices or implicit mount crossings. Separate configured roots
+  can explicitly authorize different filesystems. Handle-safe confinement must
+  survive a symlink rename between checking and opening.
+- Cache :: Cache *rendered document plus its destination catalogue*, keyed by
+  capability, logical path, SHA-256 of the bounded current source snapshot and
+  application asset revision. Re-read/hash on every request before reusing output;
+  mtime alone is insufficient. Assets are read through authorization each time.
+  Evict least-recently-used entries within 50 pages and 100 MiB of cached bytes.
+- Org IDs :: *Fileless ID lookup covers only the current bounded catalogue* of
+  rendered pages under the same effective roots/settings. It never enumerates
+  directories. Revalidate matching candidates and catalogue freshness before
+  issuing a redirect; absent/ambiguous IDs produce an explained inactive label.
+- Budgets :: At most *two Pandoc conversions concurrently*, with no unbounded
+  work queue; excess distinct requests return 503 with Retry-After: 1. Duplicate
+  in-flight conversions for the same snapshot/settings share a result. Each
+  conversion has a maximum 60-second deadline, 10 MiB source and 50 MiB output
+  including embedded assets, and the existing Pandoc 512 MiB heap limit.
+- Aggregate bounds :: *128 active HTTP connections*, 16 KiB headers, 16 KiB URL,
+  4096-byte filesystem path and Org selector, 8192 registered assets and 100 MiB
+  total owned scratch output. An asset is at most 10 MiB and streamed from its
+  verified handle. Control requests have five-second deadlines. HTTP header/idle
+  timeouts are 5/30 seconds; total response lifetime is 70 seconds. Over-capacity
+  registration/request is explicit, never an eviction of live authorization.
+- Scratch :: *Each conversion owns an OS-temporary private directory*. Cleanup
+  follows conversion cancellation or result publication; the bounded cache is
+  in memory. Runtime lock/socket are removed only by their owning instance.
+  Abrupt termination may leave exact scratch paths for manual cleanup; no scan
+  or deletion by filename prefix is introduced.
+
+*** Failure behaviour
+
+- Public HTTP :: *404* for absent/unknown token/path; *403* for known-capability
+  denied content, Host/Origin/peer violations; *400* for malformed URL/search;
+  *413* for source/body limits; *422* for invalid source encoding/conversion;
+  *503* for capacity/dependency unavailability; *504* for conversion timeout.
+  No partial success response is sent. Errors use escaped readable HTML for
+  browser requests and contain no stack trace, token or absolute source path.
+- Startup :: *Pandoc incompatibility or missing runtime tools exits 1* before
+  ready; bad configuration exits 2. A second instance fails visibly without
+  replacing the active socket or lock. Stale owned sockets are recoverable only
+  after exclusive lock acquisition and verification of their type/ownership.
+- Cancellation :: *Cancel and reap Pandoc on shutdown/deadline*. For shared work,
+  a single disconnected waiter does not cancel other live waiters; when all
+  depart, cancel the work. Shutdown stops admission immediately and has a
+  five-second cleanup deadline before reporting remaining owned scratch.
+- WSL :: Perform a *five-second Windows-side health probe* through the existing
+  fixed PowerShell bridge with proxying and redirects disabled. Match the exact
+  instance/protocol from the private socket before passing a token URL to the
+  Windows browser. Probe failure is diagnosed unavailability and uses file
+  fallback; it never changes the loopback-only bind requirement.
+
+** Architecture impact
+
+*** Security impact
+
+- Threat boundary :: *HTTP exposes a local reading capability to browser clients*.
+  Loopback excludes direct non-local peers, but is not user authentication.
+  Private Unix-socket registration plus unpredictable tokens provides that
+  additional boundary. Same-user malicious processes and a compromised browser
+  remain outside the application's isolation guarantee.
+- Origin checks :: Require the *exact advertised 127.0.0.1 authority and port*;
+  reject unrelated Host, absolute-form authority, non-loopback peers and an
+  explicit foreign/null Origin. Reject Sec-Fetch-Site: cross-site; allow absent
+  fetch metadata for ordinary navigation/compatible clients. No wildcard CORS,
+  proxy forwarding trust or service-directed network fetch is enabled.
+- Browser policy :: Preserve *only hash-authorized packaged scripts/styles*;
+  change HTTP image permission to the service origin and raster data. Strip
+  source-authored service-origin URLs so only owned rewriting creates automatic
+  local requests. Retain disabled includes, source-script removal and no remote
+  automatic loading. No generic file server serves active source HTML.
+- Response protection :: All HTTP responses send *Referrer-Policy: no-referrer*,
+  *Cache-Control: no-store*, X-Content-Type-Options: nosniff and CSP frame-ancestors
+  'none'. Source images require matching approved raster type/signature. Other
+  registered regular-file links use application/octet-stream and attachment
+  disposition with an escaped filename; raw HTML/SVG/CSS/JS cannot execute as
+  same-origin content. The original source header deliberately remains visible.
+- Authorization renewal :: *Every request revalidates the allowed root and source
+  handle*. Configuration changes take effect on restart; old tokens then fail.
+  Allowed roots are explicit user grants, not inferred cwd/home/repository scans.
+- Data and secrets :: *Tokens and content remain in memory/private state* apart
+  from necessary browser delivery and explicit CLI URL output. No access log of
+  full URLs, cookie/session persistence, telemetry, crash upload or token backup.
+  Browser history may retain visited URLs; server restart revokes them.
+- Conclusion :: *Loopback is hardcoded with no escape hatch*. Service templates
+  run under the user, never root. No SSH tunnel or remote-serving workaround is
+  documented or recommended. The public change remains a local reader.
+
+*** Other relevant qualities
+
+- Reliability :: *Fallback is deliberate and classified*. Service conversion
+  errors do not silently become successful alternate output.
+- Performance :: *No graph pre-generation or filesystem index*. Cache reuses
+  immutable rendered snapshots; budgets protect the long-running process.
+- Operability :: Add *packaged per-user launchd and systemd service templates*
+  using fixed absolute executable/config paths and direct arguments. Extend the
+  generated Homebrew formula's service block. Source/prefix installs place
+  templates and an empty-root example alongside notices, not into active service
+  directories; never overwrite a user config or enable a service automatically.
+- macOS activation :: The guide documents *brew services start htmlpreview* for
+  the generated installed formula, without claiming an existing published tap.
+  Non-Homebrew users install the generated LaunchAgent and use launchctl
+  bootstrap/bootout in their GUI domain. No root LaunchDaemon or sudo route.
+- Linux activation :: Ship a *systemd user unit* for explicit installation/start;
+  a foreground =htmlpreview --serve= works without a user service manager.
+  WSL with no functioning systemd user manager uses that same explicit command;
+  installation never enables systemd or changes WSL settings.
+- Packaging :: Retain *current install locations, four release targets, embedded
+  fonts and licences*. Resolve installed paths at build/install time using
+  structured templates; never discover commands into a scheduler at runtime.
+  Service stdout/stderr use user-manager logs with redacted diagnostic content.
+- Accessibility :: *Ordinary links and fragments work without browser JavaScript*.
+  Existing enhancements reveal folded targets and retain keyboard/copy/print
+  contracts; errors are readable text, not notification-only failures.
+- Portability :: Preserve *macOS, Linux and Windows-default-browser WSL* through
+  existing adapters. Native checks, not cross-compilation alone, establish each
+  platform's qualification; unavailable environments remain pending.
+- Maintainability :: Go's *net/http, crypto/rand, os.Root and Unix sockets* supply
+  the service machinery. YAML is the sole proposed dependency addition; review
+  the maintained [[https://github.com/yaml/go-yaml][YAML Go implementation]] and
+  select/pin its stable supported API during delivery. Keep its licence in
+  THIRD_PARTY_NOTICES and run the existing vulnerability gate. No new shell
+  application logic, routing framework, CLI JS or persistent browser harness.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: This specification, *the named project authorities and
+  affected baseline components*, plus the platform contracts linked above.
+  Historical W001 graph tests must be reconciled explicitly, not silently dropped.
+- First implementation step :: Write
+  [[#rt-006-1][RT006.1 - Automatic transport selection]] and
+  [[#rt-006-3][RT006.3 - Network and capability boundary]], *observe intended RED*,
+  then add the service boundary around the existing renderer.
+- Definition evidence :: [[file:audits.yaml][W006 - Definition audit record]].
+- Validation evidence :: [[file:validation.org][W006 - Service validation]] begins
+  *PENDING*. No implementation or native qualification is claimed by this draft.
+- Documentation impact :: On delivery, update *README/help, Vision, Architecture,
+  service configuration/activation guide and packaging notices*. Retain explicit
+  supersession of graph/no-service contracts. Reconcile CLI examples and legacy
+  settings; do not present proposed service commands as currently implemented.
+- Closure boundary :: *Definition sign-off authorizes later delivery*, not
+  activation on the operator's machine. Required RTs, implementation gate,
+  browser/platform validation and operator closure remain distinct.
