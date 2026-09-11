@@ -142,7 +142,7 @@ classification; it is provenance, not current state.
   supported recovery requires runner repair or an operator-authorized fresh
   session; the application changes and verification checkpoints are retained.
 
-** TODO W006 - Local preview service and automatic fallback :feature:
+** REVIEW W006 - Local preview service and automatic fallback :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-006
 :PRIORITY: P1

@@ -4,25 +4,15 @@ audits:
       gate: definition
       session_id: 01a08ddd-6c47-7b71-9a22-e28d9eb56418
       harness: codex
-      external_round: 1
-      status: active
-      updated: "2026-09-11T00:34:58Z"
-      revision: ce24a8363e2566d6d2198f46c548924ea79e28093e91ef4fb6af2e3df43adfd0
-      verdict: FAIL
+      external_round: 2
+      status: passed
+      updated: "2026-09-11T00:50:07Z"
+      revision: f7ac03dcf576f8e52ba6c584d4269be3dd0ce82fa64e69ccde19b571b30f02d3
+      verdict: PASS
       response: |-
         GATE: definition
-        REVISION: ce24a8363e2566d6d2198f46c548924ea79e28093e91ef4fb6af2e3df43adfd0
-        VERDICT: FAIL
-
-        FINDINGS:
-        - The specification duplicates workflow status with `#+DEFINITION_GATE: PENDING` and `#+OPERATOR_SIGNOFF: PENDING`. Remove both fields and any duplicate audit status, revision, round, or session data; retain lifecycle state in `docs/work.org` and audit state only in `audits.yaml`.
-        - Traceability is incomplete: `UT006.1` covers requested lazy rendering but is absent from AC006.5; `OT006.2` claims AC006.2, AC006.12, and AC006.13 but those criteria do not link it. Correct the reverse mappings, or remove claims that documentation review proves runtime behaviour.
-        - Several acceptance criteria combine independently falsifiable outcomes, especially AC006.2, AC006.3, AC006.4, AC006.8, AC006.9, AC006.10, AC006.11, AC006.12, and AC006.13. Split them and trace each independent condition to explicit evidence.
-        - AC006.2 promises fallback for sources outside configured roots, while the design preserves `HTMLPREVIEW_ROOT`’s existing explicit-input rejection. Define the distinction and precedence between service-root exclusion and client-root narrowing, then align acceptance criteria, edge cases, and tests.
-        - “Approved raster type/signature” and “permitted linked files” are not defined precisely enough for implementation or security testing. Specify the allowlist, signature/content-type rules, registration boundary, disposition, and mismatch outcomes.
-        - RT006.7 relies on vague “shared rendering assertions”, and the HTTP test definitions do not explicitly cover `HEAD`, `/_health`, reserved `/_org`/`_file` routes, or route-collision behaviour. Name the exact inherited W001–W005 invariants and add these HTTP boundary cases.
-        - RT006.3 treats generator review as test evidence for token entropy without defining observable wire assertions. Test token encoding and length at the HTTP boundary; reserve `crypto/rand` implementation review for the implementation audit. Define intended RED evidence for every persistent RT, including RT006.10.
-        - RT006.10 refers to “supplied” plist, unit, and YAML artefacts without naming their paths, installation locations, or exact service-manager contracts. Enumerate those artefacts and their packaging, activation, preservation, and rollback expectations in the handoff and corresponding tests.
+        REVISION: f7ac03dcf576f8e52ba6c584d4269be3dd0ce82fa64e69ccde19b571b30f02d3
+        VERDICT: PASS
       history:
         - evidence:
             - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
@@ -112,3 +102,87 @@ audits:
             - RT006.3 treats generator review as test evidence for token entropy without defining observable wire assertions. Test token encoding and length at the HTTP boundary; reserve `crypto/rand` implementation review for the implementation audit. Define intended RED evidence for every persistent RT, including RT006.10.
             - RT006.10 refers to “supplied” plist, unit, and YAML artefacts without naming their paths, installation locations, or exact service-manager contracts. Enumerate those artefacts and their packaging, activation, preservation, and rollback expectations in the handoff and corresponding tests.
           updated: "2026-09-11T00:28:13Z"
+        - evidence:
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 8e8c072b9b0fb174056f9bcce24682610438dc69e7ef613fba1f0b0812c1b559
+              bytes: 12004
+            - path: /Users/tigger/.agents/skills/define-change/SKILL.md
+              sha256: c17c9bde2c7551f999373ca998a8edd6753b5b60a0557af3dc1484ecfb3b4e8b
+              bytes: 3444
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: deb17b7b7d26e652fdd152c1e004ae5822e2c655d576a88b6cbcc5f213cc3943
+              bytes: 12402
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 761de7064e7a7d93c9c96e557cf14fe46751588442b53fea6b6c959871f21a50
+              bytes: 36167
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: bc272356b4b8581d390b1f183eccaab6b34a40eb5a431f07cf3293d6e8d56247
+              bytes: 9403
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 2ab981c9195396a1f4e71e71bbb2b9be01b8937959cb4f03113a76381f7aeba5
+              bytes: 7389
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: 1dc7093d6a6c441a09d1b3865e97badbcaa05579f9529668e1fd996a61e858b8
+              bytes: 246
+            - path: /Users/tigger/code/tigoss/html-preview/integration/cli_test.go
+              sha256: b47ac53fb8f977ca4fa71a224a1cca5ed492a9d271e1dca554dff04b11eb2db0
+              bytes: 4861
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/config.go
+              sha256: 56f464b8c74b1799f4b98e29ed0dfc07b5f7a2668907ccf6a5bd5867b3c063ef
+              bytes: 4233
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/graph_test.go
+              sha256: 0cfcf3067ec78e35606910344469c7e545af85e41543ec5d3fe99c00a3a92530
+              bytes: 9973
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 9e31521d91b4c07aa1fa9bd841dfa8662407bc92b80fa6851db544480eb236a3
+              bytes: 8210
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/lifecycle_test.go
+              sha256: 8c1b03c0b7cafbb7f395d3155c6bb5af9a39575a668c8fdec51ba394bcc06c9d
+              bytes: 7079
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/links.go
+              sha256: b40b583599e016ec5e5da8de365900f340319d296f5d5c054cedd6327a87cf27
+              bytes: 6371
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/platform.go
+              sha256: 73ad1eb513dfe6f66c30dbb580fc6ccaba228f9fcfed50e2ca7913087233f92f
+              bytes: 5513
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/references_test.go
+              sha256: 9c3db99743fe663d5df46fcc81aae709238ac96b54296fbbf173619b4b9b5749
+              bytes: 5377
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 6fb4b2e127964c85d85b26ba2dee26ac506a329c4c6c6cca85af28e7c3a652aa
+              bytes: 8554
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/source.go
+              sha256: 83f37b504c268dcf7346529f58dfbe387cf3a843eaed9186859747e9941446e9
+              bytes: 2878
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: 84cd2db6816383aac88f09dd9e98a6a83cc9483eacbbdd0d045ab1938cb834bf
+              bytes: 903
+            - path: /Users/tigger/code/tigoss/html-preview/specs/001-local-document-preview/spec.org
+              sha256: e3ff995cfe23fb46cd9c114a452e27ea37ead79b3d526ce068d5334038b1ce6e
+              bytes: 111653
+            - path: /Users/tigger/code/tigoss/html-preview/specs/002-code-and-outline/spec.org
+              sha256: 1323aaaebe175984d9b7ea39ef0e71927094468f16cbdfd811dac641083be612
+              bytes: 45682
+            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/spec.org
+              sha256: 709c18dbc5a4ec64a7f6de6596bc30a2bce6a59fe3f3db8ae99ae7afe750ca27
+              bytes: 26587
+            - path: /Users/tigger/code/tigoss/html-preview/specs/005-navigation-and-metadata/spec.org
+              sha256: 56f4efc28c729bf89fcfd30296a44dd4ea4b24abe1c91a5d8c18e9f8e4a6c06f
+              bytes: 12451
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: f7ac03dcf576f8e52ba6c584d4269be3dd0ce82fa64e69ccde19b571b30f02d3
+              bytes: 69744
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/validation.org
+              sha256: 4b6a26582e58ab90a302374d4c270c3e869027bbe1473e1532b0388b7c7fe979
+              bytes: 4014
+          round: 2
+          revision: f7ac03dcf576f8e52ba6c584d4269be3dd0ce82fa64e69ccde19b571b30f02d3
+          verdict: PASS
+          response: |-
+            GATE: definition
+            REVISION: f7ac03dcf576f8e52ba6c584d4269be3dd0ce82fa64e69ccde19b571b30f02d3
+            VERDICT: PASS
+          updated: "2026-09-11T00:46:52Z"

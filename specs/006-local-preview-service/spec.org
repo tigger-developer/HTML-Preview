@@ -2,7 +2,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PENDING
+#+DEFINITION_GATE: PASS
 #+OPERATOR_SIGNOFF: PENDING
 
 * Local preview service and automatic fallback
@@ -39,8 +39,8 @@
   trees, random URL tokens and automatic fallback* on 11 September 2026.
   The candidate chooses *tokens lasting until service restart* and *replacement
   of pre-generated linked browsing*, subject to definition sign-off.
-- Next step :: *Audit this definition*, then obtain operator sign-off before
-  implementation. Native platform and browser qualification remain delivery work.
+- Next step :: *Operator sign-off before implementation*. Native platform and
+  browser qualification remain delivery work.
 
 -----
 
