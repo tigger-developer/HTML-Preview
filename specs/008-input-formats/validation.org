@@ -15,7 +15,11 @@
 :RESULT: PENDING
 :END:
 
-- Requirements :: [[file:spec.org::#ac-008-13][AC008.13 - Installed portability and guidance]].
+- Requirements :: [[file:spec.org::#ac-008-6][AC008.6 - Wrappers preserve original content]],
+  [[file:spec.org::#ac-008-7][AC008.7 - Ordinary JSON is readable without changing its source]],
+  [[file:spec.org::#ac-008-8][AC008.8 - HTML retains passive authored presentation]],
+  [[file:spec.org::#ac-008-11][AC008.11 - Existing previews and lifetimes remain compatible]],
+  [[file:spec.org::#ac-008-13][AC008.13 - Installed use remains portable and documented]].
 - Procedure :: Follow the specification's DOCX/ODT/code/JSON/text/native HTML
   workflow through the installed command on macOS/Safari, Linux/Firefox and
   Windows/Edge via WSL1 and WSL2. Check layout, keyboard, copy, print and passive
@@ -31,10 +35,40 @@
 :RESULT: PENDING
 :END:
 
-- Requirements :: [[file:spec.org::#ac-008-13][AC008.13 - Installed portability and guidance]].
+- Requirements :: [[file:spec.org::#ac-008-13][AC008.13 - Installed use remains portable and documented]].
 - Procedure :: Compare reader listing with the fixture catalogue and candidate
   guidance; inspect every mapping, selection example, licence/provenance and
   file/service distinction as specified in OT008.1.
 - Bounds :: One local review per candidate, no external API or service activation.
 - Expected :: *All installed readers accounted for and guidance matching the
   candidate's public behaviour*.
+
+* Definition feasibility
+:PROPERTIES:
+:CUSTOM_ID: definition-feasibility
+:END:
+
+- Scope :: *Bounded design probes, not application implementation or RT/UT
+  qualification*. Executed on 12 September 2026 with Pandoc 3.9.0.2 on macOS.
+- Media probe :: Generated a valid 73-byte, one-pixel PNG using Go's image/png
+  encoder in OS temporary storage. Created DOCX, ODT and EPUB fixtures containing
+  that image as a data URI, with --sandbox and an isolated empty --data-dir.
+- Conversion :: Read each fixture using a copy of the project's owned
+  assets/pandoc/defaults.yaml (sandbox: true), the isolated data directory and
+  a diagnostic owned Lua filter. The filter iterated pandoc.mediabag.items(),
+  enforced one image/png item below 1024 bytes and wrote to a fixed owned
+  exported.png path; it did not call fetch or extract-media.
+- Observed :: *All three readers exported identical 73-byte PNG content*;
+  cmp succeeded each time. Original and exported SHA-256 were
+  =fcdbbd9628b73cc2c4191c294782f276e05b859847dd19c9f01b46057262e61d=.
+  The corrected fixture produced no checksum warning.
+- Earlier probe :: A manually supplied 68-byte PNG carried a CRC error. Its
+  bytes were exported unchanged, but it was replaced with the encoder-generated
+  fixture above before drawing a raster-validity conclusion.
+- Limit :: This demonstrates *sandbox-compatible media-bag access and owned Lua
+  export*, not the future renderer's media admission, confinement or complete
+  platform behaviour. AC008.9 specifies a dependency error when export is unavailable.
+- API reference :: [[https://pandoc.org/lua-filters.html#module-pandoc.mediabag][Pandoc media-bag API]].
+- Language probe :: Compared every source-block language in the common-code
+  table against =pandoc --list-highlight-languages=. *All non-plaintext names
+  were present*; plaintext deliberately selects an unhighlighted block.

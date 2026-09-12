@@ -63,6 +63,7 @@
   original copying, specialist reader selection and passive authored HTML*.
 - *TITLE and SCHEMA suffice* for generated wrapper metadata.
 - *W008 delivers independently in file mode*; W006 consumes its format pipeline.
+- *File-mode graph admission awaits a decision* before renewed definition review.
 
 ** Next step
 
@@ -131,7 +132,9 @@
 - External reference :: [[https://pandoc.org/MANUAL.html][Pandoc manual]],
   input formats, sandbox, media extraction and security. Reader availability
   comes from the installed executable, not a permanently copied web list.
-- Definition probes :: Installed Pandoc 3.9.0.2 reports DOCX, ODT, EPUB, PPTX and
+- Definition probes :: [[file:validation.org::#definition-feasibility][Bounded feasibility evidence]]
+  records sandboxed media export and language checks. Installed Pandoc 3.9.0.2
+  reports DOCX, ODT, EPUB, PPTX and
   XLSX readers. Ordinary JSON fails its AST reader without pandoc-api-version.
   Org comma escaping protects END_SRC; indentation alone terminates the block.
 
@@ -165,7 +168,10 @@
 
 ** Unresolved blockers
 
-- None.
+- *File-mode graph admission awaits the operator's decision*: extend the existing
+  opt-in graph to every newly supported kind under unchanged traversal budgets,
+  or retain some kinds as original-file references. Resolve this question in
+  AC008.11 and RT008.9 before definition sign-off.
 
 * Acceptance Criteria
 :PROPERTIES:
@@ -177,11 +183,13 @@
 :CUSTOM_ID: ac-008-1
 :END:
 
-- Criterion :: For every *built-in reader reported by the installed Pandoc*, an explicit valid
-  input produces a preview using that reader's supported content model. Binary documents are
-  admitted as bytes; malformed, encrypted or unsupported documents produce an actionable error
-  rather than a misleading successful preview.
-- Proven by :: [[#rt-008-1][RT008.1 - Every installed reader at the CLI boundary]].
+- Criterion :: For every installed built-in reader *other than native HTML*, a valid explicit
+  input produces a preview using that reader's supported content model. Binary
+  documents are admitted as bytes; invalid documents produce actionable errors.
+  *--from=html selects passive authored HTML*, without Pandoc conversion;
+  HTML reader extension qualifiers are refused.
+- Proven by :: [[#rt-008-1][RT008.1 - Every installed reader at the CLI boundary]],
+  [[#rt-008-2][RT008.2 - Detection and explicit reader selection]].
 
 ** AC008.2 - Automatic detection has deterministic precedence
 :PROPERTIES:
@@ -229,9 +237,11 @@
 :CUSTOM_ID: ac-008-6
 :END:
 
-- Criterion :: *Delimiter-like lines, leading commas, tabs and line endings cannot escape the
-  wrapper*. Code copying supplies the original decoded UTF-8 text, including its original
-  whitespace, to the clipboard operation. No wrapper framing or indentation is copied.
+- Criterion :: *Code and plaintext display preserve every original character*, with only
+  the defined BOM/newline display normalization; wrapper escapes are invisible.
+  Existing commas remain present and delimiter-like lines stay inside one block.
+  *Copying supplies the original decoded UTF-8 text*, with no wrapper framing.
+  Ordinary JSON alone follows AC008.7's explicit display-formatting exception.
 - Proven by :: [[#rt-008-4][RT008.4 - Literal payload preservation]],
   [[#ut-008-1][UT008.1 - Native format reading]].
 
@@ -264,10 +274,12 @@
 :CUSTOM_ID: ac-008-9
 :END:
 
-- Criterion :: A converted document *retains its original logical source-path header* and
-  resolves references from the original source location. Supported embedded raster media survive
-  binary/container conversion. Temporary wrapper or extraction paths never become source
-  identity or browser-facing links.
+- Criterion :: Converted documents *retain original logical source-path headers* and resolve
+  references from their original locations. Supported container-owned raster
+  media survives conversion. If sandbox-safe extraction is unavailable, return
+  an explicit *dependency error before publication*, never an insecure retry or
+  silent omission of otherwise supported media. Temporary paths never become
+  source identity or browser-facing links.
 - Proven by :: [[#rt-008-7][RT008.7 - Binary resources and original identity]].
 
 ** AC008.10 - Hostile inputs stay bounded and passive
@@ -349,7 +361,8 @@
 :END:
 
 - Covers :: [[#ac-008-2][AC008.2 - Automatic detection has deterministic precedence]],
-  [[#ac-008-3][AC008.3 - Explicit reader selection is bounded]].
+  [[#ac-008-3][AC008.3 - Explicit reader selection is bounded]],
+  [[#ac-008-1][AC008.1 - Installed Pandoc readers are selectable]].
 - Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
   opening captured at the existing OS boundary.
 - Setup :: Create fixtures for every extension and basename in the two mapping tables, mixed
@@ -357,7 +370,8 @@
   real Pandoc for actual conversions; exercise parser errors through the public CLI.
 - Action :: Invoke automatic detection, --from=reader, --from reader, extension-qualified
   readers and --list-input-formats. Cover mixed batches, --, invalid names, duplicate selection,
-  reader paths, unsupported extensions and missing Pandoc.
+  reader paths, unsupported extensions and missing Pandoc. Specifically require
+  exit 2 for -f and --from=html+raw_html, with no browser invocation.
 - Expected :: Chosen routes match the tables; explicit readers apply only to the supplied batch,
   not discovered links. Invalid flags exit 2 before publication; unsupported file/conversion
   errors retain per-input status 1. Listing returns the installed reader names, exit 0 and no
@@ -401,10 +415,13 @@
   final newline and embedded HTML/script text.
 - Action :: Round-trip the actual wrapper/preservation/Pandoc pipeline. Decode the page's public
   copy payload and compare it to the original decoded input, separately from displayed
-  line-ending normalization. Include .txt and code inputs.
+  line-ending normalization. Independently compare rendered code DOM text with
+  the original after only the specified BOM/newline normalization. Include .txt
+  and code inputs.
 - Expected :: Exactly one code block contains every input line; no payload becomes metadata,
   headings, links or executable HTML. Copy payload matches the original. NUL or invalid UTF-8 is
-  explicitly rejected for these text routes.
+  explicitly rejected for these text routes. *No added escape comma is visible*;
+  every original comma, delimiter and tab remains visible as original text.
 - Intended RED :: Baseline cannot wrap these inputs; a naive delimiter/indentation wrapper also
   fails this corpus.
 - Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
@@ -443,7 +460,9 @@
   forms, refresh, iframes, remote resources, srcset and CSS URL/import escape cases.
 - Action :: Preview native HTML and inspect DOM, rewritten URLs and CSP. A local canary HTTP
   endpoint observes that converter execution makes no requests; UT008.1 observes actual browser
-  behaviour. Exercise malformed HTML through the maintained parser.
+  behaviour. Exercise malformed HTML through the maintained parser. Cover each
+  raster-admission row with a matching image and truncated/conflicting header;
+  inspect published bytes for allowed images and omission text for denied ones.
 - Expected :: Authored permitted styles and structure remain, without application chrome. All
   active/automatic request forms obey the HTML contract. Relative resource identity survives
   movement into OS temp.
@@ -463,10 +482,13 @@
   duplicate media basenames, read-only source directories, symlink entry aliases and two
   documents in different directories.
 - Action :: Convert with real Pandoc; open generated asset references and compare raster bytes
-  to fixture assets. Inspect source header, link resolution and cleanup.
+  to fixture assets. Inspect source header, link resolution and cleanup. Exercise
+  an unavailable-export result at the converter boundary as well as the real
+  sandbox-enabled success case.
 - Expected :: Original logical paths remain visible and copyable, admitted raster bytes match,
   media from different source revisions do not collide, and no temporary path is exposed as
-  source context.
+  source context. Unavailable sandbox-safe export gives a named dependency error,
+  no published page and no retry with sandbox disabled.
 - Intended RED :: Baseline rejects containers and cannot extract their embedded media.
 - Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
   external API participates.
@@ -521,9 +543,9 @@
 :CUSTOM_ID: ut-008-1
 :END:
 
-- Covers :: [[#ac-008-13][AC008.13 - Installed portability]],
-  [[#ac-008-6][AC008.6 - Original copying]], [[#ac-008-7][AC008.7 - JSON display]],
-  [[#ac-008-8][AC008.8 - Passive HTML]], [[#ac-008-11][AC008.11 - Compatible presentation]].
+- Covers :: [[#ac-008-13][AC008.13 - Installed use remains portable and documented]],
+  [[#ac-008-6][AC008.6 - Wrappers preserve original content]], [[#ac-008-7][AC008.7 - Ordinary JSON is readable without changing its source]],
+  [[#ac-008-8][AC008.8 - HTML retains passive authored presentation]], [[#ac-008-11][AC008.11 - Existing previews and lifetimes remain compatible]].
 - Reviewer :: Operator.
 - Procedure :: On macOS/Safari, Linux/Firefox and Windows/Edge via WSL1 and WSL2,
   open a DOCX, ODT, code file, compact JSON, .txt and authored HTML from another
@@ -545,7 +567,8 @@
 
 - Covers :: [[#ac-008-13][AC008.13 - Installed use remains portable and documented]].
 - Boundary :: Candidate help, README and format documentation.
-- Procedure :: Compare --list-input-formats with the fixture catalogue; review
+- Procedure :: Compare --list-input-formats with the fixture catalogue and
+  --list-highlight-languages with every non-plaintext code-table identifier; review
   every mapping, explicit selection example, binary limitation, HTML restriction,
   generated metadata and file/service distinction. Check licence/provenance of
   retained fixtures and sanitize technical documentation.
@@ -565,7 +588,7 @@
 - Condition :: A suffix can mean *source data or a Pandoc document representation*.
 - Required behaviour :: Tables determine the default. Explicit --from selects a
   built-in reader; an unknown extension is never guessed as Markdown.
-- Covered by :: [[#ac-008-2][AC008.2 - Detection]], [[#ac-008-3][AC008.3 - Selection]]
+- Covered by :: [[#ac-008-2][AC008.2 - Automatic detection has deterministic precedence]], [[#ac-008-3][AC008.3 - Explicit reader selection is bounded]]
   and [[#rt-008-2][RT008.2 - Detection and explicit reader selection]].
 
 ** Literal delimiters and encoding
@@ -573,7 +596,7 @@
 - Condition :: Content includes *END_SRC, leading commas, invalid UTF-8 or NUL*.
 - Required behaviour :: Escape syntax for transport without changing copy text;
   reject binary content only on text/code routes, not container readers.
-- Covered by :: [[#ac-008-6][AC008.6 - Literal preservation]],
+- Covered by :: [[#ac-008-6][AC008.6 - Wrappers preserve original content]],
   [[#rt-008-4][RT008.4 - Literal payload preservation]].
 
 ** Damaged containers and external content
@@ -582,7 +605,7 @@
   exceed *authorized files or finite budgets*.
 - Required behaviour :: Fail locally with no partial publication; unsafe media
   receives a visible omission notice without loading it.
-- Covered by :: [[#ac-008-9][AC008.9 - Resources]], [[#ac-008-10][AC008.10 - Confinement]],
+- Covered by :: [[#ac-008-9][AC008.9 - Conversion preserves identity and resources]], [[#ac-008-10][AC008.10 - Hostile inputs stay bounded and passive]],
   [[#rt-008-7][RT008.7 - Binary resources]], [[#rt-008-8][RT008.8 - Confinement]].
 
 ** JSON values and native HTML
@@ -591,7 +614,7 @@
   *active content interspersed with authored styling*.
 - Required behaviour :: JSON formatting preserves lexical values and member
   order. HTML keeps permitted appearance while enforcing its passive contract.
-- Covered by :: [[#ac-008-7][AC008.7 - JSON]], [[#ac-008-8][AC008.8 - HTML]],
+- Covered by :: [[#ac-008-7][AC008.7 - Ordinary JSON is readable without changing its source]], [[#ac-008-8][AC008.8 - HTML retains passive authored presentation]],
   [[#rt-008-5][RT008.5 - JSON]], [[#rt-008-6][RT008.6 - Passive HTML]].
 
 * Solution Design
@@ -628,7 +651,8 @@
 
 - CLI :: =htmlpreview [--from FORMAT] FILE [FILE ...]=; accept the equivalent
   =--from=FORMAT= spelling. At most one selection applies to all explicit inputs.
-  =--= retains literal filename handling. No -f alias is required.
+  =--= retains literal filename handling. *-f is refused* as an unknown option,
+  with exit status 2; only the documented --from forms are accepted.
 - Reader listing :: =htmlpreview --list-input-formats= is a sole informational
   operation and prints the installed Pandoc reader list. Missing/incompatible
   Pandoc exits 1. Help and --version remain independent of Pandoc.
@@ -814,6 +838,11 @@ The application version is the same build version used by --version, including
 - Copy authority :: Preserve *original decoded text separately from formatted
   display*. Existing random, collision-checked transport and safe encoding carry
   it into the page's copy control, never into executable source HTML.
+- Display authority :: *Restore the original payload after transport*, before
+  highlighting. Org reader escaping must never leak its added commas into the
+  rendered code. The existing Org prepass copies literal lines into its transport;
+  generated wrappers therefore need an explicit original-payload restoration
+  boundary, verified against displayed DOM text as well as clipboard data.
 - Encoding :: Wrappers require valid UTF-8 without NUL. A leading UTF-8 BOM is
   omitted from display but retained in the original copy payload. CRLF may become
   LF for browser display; clipboard input retains the original decoded text.
@@ -834,6 +863,8 @@ The application version is the same build version used by --version, including
   --extract-media. Use the sandbox and an owned bounded media-bag export, then
   independently validate output paths and raster types before publication.
   Source-relative external files are separately admitted by the URL resolver.
+  Missing sandbox-safe export support is a *dependency error before publication*;
+  never retry without sandboxing or silently drop an otherwise supported raster.
 - Archives :: Before a known ZIP-container reader, validate member names and
   declared/actual inflation using Go's bounded archive reader: no absolute,
   traversal, duplicate normalized names, symlinks or non-regular entries.
@@ -847,6 +878,34 @@ The application version is the same build version used by --version, including
 - Metadata-only readers :: Use the parsed document's metadata as *readable
   structured frontmatter*, including bibliographic entries, if it has no body.
   Do not invent content or invoke remote citation services to fill an empty page.
+
+*** Raster admission
+:PROPERTIES:
+:CUSTOM_ID: raster-admission
+:END:
+
+W008 owns this *file-mode and shared conversion policy*. W006 adds transport
+authorization and HTTP headers; its implementation is not a W008 prerequisite.
+
+| Suffix | MIME type | Required bounded-header signature |
+|--------+-----------+-----------------------------------|
+| .png | image/png | Eight bytes 89 50 4E 47 0D 0A 1A 0A |
+| .jpg, .jpeg | image/jpeg | Initial FF D8 FF |
+| .gif | image/gif | Initial GIF87a or GIF89a |
+| .webp | image/webp | Initial RIFF and WEBP at bytes 8-11 |
+| .avif | image/avif | Complete initial ISO-BMFF ftyp box, 16-4096 bytes, containing avif or avis as a major/compatible brand |
+
+- *Match suffix and signature*; any declared MIME must agree. Truncated or
+  conflicting data is refused. Container/data-URI media needs matching MIME and signature
+  where there is no original suffix. SVG is never promoted to a raster.
+- *At most 10 MiB per admitted image*, within the stricter configured source,
+  output and scratch budgets. Root and same-filesystem checks govern local paths.
+- File mode embeds admitted raster bytes or publishes owned copies within the
+  session directory; its CSP permits only those local resources and validated
+  raster data. Remote automatic loading remains blocked.
+- Refused media retains *alternative text and an omission notice*. This policy
+  rejection differs from a missing sandbox-safe export capability, which fails
+  conversion under AC008.9.
 
 *** Passive native HTML
 :PROPERTIES:
@@ -869,8 +928,8 @@ The application version is the same build version used by --version, including
   Local stylesheets referenced by the page may be read under its existing root,
   10 MiB asset limit and aggregate budget, sanitized and inlined. Relative CSS
   URLs resolve against that stylesheet's original directory.
-- Resources :: Admit local raster images and valid raster data using W006's
-  matching format/signature rules. Rewrite img/srcset and CSS image URLs through
+- Resources :: Admit local raster images and raster data under
+  [[#raster-admission][W008's raster admission contract]]. Rewrite img/srcset and CSS image URLs through
   the transport's authorized resolver. Unsupported/remote automatic resources
   remain inactive with a concise omission notice; ordinary external anchors
   remain explicit user navigation with no referrer/opener propagation.
