@@ -10,64 +10,44 @@ audits:
       gate: definition
       session_id: 7fd7367c-c746-45d7-93a2-a1ec0fb6268e
       harness: claude
-      external_round: 2
-      status: active
-      updated: "2026-09-12T06:47:19Z"
-      revision: specs/007-service-annotations/spec.org@sha256:c032df3d (candidate on master; git not invocable in this session)
-      verdict: FAIL
+      external_round: 3
+      status: passed
+      updated: "2026-09-12T11:54:57Z"
+      revision: specs/007-service-annotations/spec.org@sha256:1b2afe3d (candidate on master)
+      verdict: PROVISIONAL PASS
       response: |-
-        `EHLO SOUL OPS`
-        I have read the canonical agent instructions in full. I pledge to uphold their rules, the spirit of these same rules, and that I will not attempt to game these same rules.
-
-        **Evidence limitation (read first):** five manifest files were **not readable** in this session (permission denied, all outside cwd): `~/.agents/sdlc/templates/v3/spec.org`, `~/.agents/skills/define-change/SKILL.md`, and the three Writeback prior-art files. I therefore did **not** verify exact v3 template conformance, the define-change skill's procedural requirements, or the spec's asserted Writeback findings. No review of those files is claimed. All other manifest files were read in full.
+        All five previously denied inputs are now readable and have been read in full this session: the canonical v3 template, `define-change/SKILL.md`, `inline_feedback.go`, `feedback-autosave.js`, and `inline-comments.js` (complete). The three changed files (`spec.org`, `VISION.md`, `ARCHITECTURE.md`) were re-read; unchanged evidence was reused from this retained session, with `config.go`, `render.go` and `preview.js` re-consulted where the remediations depend on them.
 
         ```
         GATE: definition
-        REVISION: specs/007-service-annotations/spec.org@sha256:c032df3d (candidate on master; git not invocable in this session)
-        VERDICT: FAIL
+        REVISION: specs/007-service-annotations/spec.org@sha256:1b2afe3d (candidate on master)
+        VERDICT: PROVISIONAL PASS
         ```
 
-        **Clean:** AC↔test traceability is complete in both directions (AC007.1–24 all proven; RT007.1–11, UT007.1–9, OT007.1–2 all carry Covers). Tests are behaviour-level at real boundaries with an explicit "no source-text assertions" rule — no grep-the-source tests. No audit findings, status, revisions, round numbers or session IDs are duplicated in the spec; `DEFINITION_GATE`/`OPERATOR_SIGNOFF` are the mandatory fields only. W007 proposal notices exist in both named authorities (`docs/VISION.md:24-39`, `docs/ARCHITECTURE.md:34-53`). The W006 dependency and implementation hold are stated correctly and consistently with `docs/work.org:145-177`.
+        ## Prior findings — all resolved
 
-        ## Findings and required remediation
+        - **F1 concurrency.** `source_revision` is now the optimistic write precondition and the full `revision` is an explicit read/refresh cursor; annotation-only appends by another composer no longer stale a pending request (Revision, Save race, Compare). Framing, per-annotation next-sequence, operation identity and store validity still run under the writer lock. The initial two-line-ending store separator is defined as part of the stripped owned tail, so creating a store does not itself change the authored digest — this closes the loophole the first fix would otherwise have left. AC007.9/AC007.11 reworded to match; RT007.5 drives two composers from a shared source revision and UT007.4 adds 30 seconds of overlapping two-tab typing.
+        - **F2 429.** Busy now joins network and transient 503 in the 1/2/4-second retry with 0–250 ms jitter and a `Retry-After: 1` floor, ending in explicit *Not saved*/Retry; named capacity errors are correctly excluded from automatic retry. RT007.5 and RT007.10 separate transient from sustained contention.
+        - **F3 settings.** `HTMLPREVIEW_USER_DISPLAY_NAME` joins the strict known-settings set; an invalid resolved name exits 2 before registration or browser opening, and unknown `HTMLPREVIEW_*` still fails. This matches `internal/preview/config.go:134-136` and the status-2 expectations in `internal/preview/contracts_test.go:63-69`. Missing values remain a read-only success.
+        - **F4 anchoring.** `heading_id` may now name only a verified explicit Org `CUSTOM_ID`/`ID` captured into a provenance map *before* the catalogue strips `data-hp-custom`/`data-hp-org-id` — the correct seam, given `internal/preview/render.go:252-254`. Pandoc slugs, ordinal `heading-N` fallbacks and raw HTML/Markdown IDs are explicitly non-corroborating, source HTML cannot forge the map, and drawers return to their folded default across source change. RT007.9 exercises shifting ordinals, changed slugs and forged provenance.
+        - **F5 browser harness.** The supersession of W006's exclusion and the Architecture's unselected-harness baseline is recorded in the specification and in `docs/ARCHITECTURE.md:50-56`. Unavailable browser, display or WSL handoff fails with a diagnostic and never counts as a pass; headless CI runs Go tests and reports browser coverage unexecuted; actual engine and version are recorded; no flake retry or quarantine; the result tab may remain with an instruction to close it.
+        - **F6 live reload.** Bounded polling supersedes the exclusion in the specification, `docs/VISION.md:41-43` and Architecture, with recursive watchers and file-mode reload still excluded.
+        - **F7 accessibility coverage.** AC007.19 now has RT007.8 alongside the human UTs, and RT007.8 specifies mechanical roles, accessible names, keyboard activation, focus return and polite textual status independent of colour, leaving screen-reader intelligibility to UT007.6. The link is reciprocal.
+        - **F8 composer capacity.** A 65th composer receives `503 composer_capacity` with no eviction and retained text; closing releases the slot; RT007.10 covers it.
+        - **F9 intended RED.** All eleven RTs record a specific intended failure against the delivered W006 baseline. RT007.7's is notably honest that forbidden-case denials alone are not valid RED.
 
-        **F1 — Concurrent-append contract contradicts AC007.9 (blocking).**
-        `revision` is SHA-256 over source **plus sidecar bytes**, and every append changes it. Two tabs on one document — a supported case (RT007.11 Setup, AC007.9, Edge Cases) — therefore invalidate each other on every autosave, bounded by "two automatic rebases per snapshot", then a visible waiting state. Under continuous typing in both tabs, saving can stall indefinitely, which contradicts AC007.9's "concurrent tabs retain their own records".
-        *Remediation:* state whether an annotation-only change makes a pending append stale. Either gate appends on `source_revision` plus store-tail/sequence validity, or record the accepted stall behaviour with an acceptance criterion and expected outcome for two simultaneously composing tabs.
+        Prior-art claims in the Reuse assessment are now verified against source, not accepted on assertion: 300 ms update debounce (`inline-comments.js:16,624`), two-second general feedback (`feedback-autosave.js:79`), create-on-first-input (`:580-588`), close path firing an async flush then removing the editor (`flushAndClose`, `:863-881`), first-matching-text-node excerpt restoration (`:71-96`, `:503-522`), SQLite ownership and edit/delete routes (`inline_feedback.go`), sentence-click takeover (`:101-126`) and automatic clipboard writes on save failure (`:940-948`). Every adopted-versus-rejected statement in the specification is accurate.
 
-        **F2 — 429 has no client behaviour (blocking, same area).**
-        Per-document busy returns 429 with "no waiting queue", but the Retry rule covers only "Network/503 failures". A routine transient 429 between two writers becomes a user-visible failure in a feature whose headline behaviour is silent autosave.
-        *Remediation:* define the client's 429 handling (retry schedule and bound, or explicit non-retry with named recovery) in the Autosave/Retry contract and in RT007.5 or RT007.10.
+        Traceability re-checked on this revision: all 24 ACs are proven, all 22 test definitions cover at least one AC, no orphans in either direction. The specification carries no audit findings, verdicts, revisions, round numbers or session identity; `DEFINITION_GATE` and `OPERATOR_SIGNOFF` remain the mandatory template fields at PENDING. Level-one headlines and the RT/UT/OT field sets match the canonical v3 template exactly.
 
-        **F3 — Display-name setting contradicts the established strict-settings contract (blocking).**
-        `internal/preview/config.go:134-136` rejects any unknown `HTMLPREVIEW_*` variable, and invalid values exit 2 (asserted in `internal/preview/contracts_test.go:63-69`); W006 AC006.17 keeps invalid configuration an error that never degrades to success. W007 specifies an invalid explicit `HTMLPREVIEW_USER_DISPLAY_NAME` is diagnosed while the preview still opens without creation. The spec neither registers the new variable in the validated set nor names the exception.
-        *Remediation:* state that the variable joins the strict settings validation, and either record the deliberate exception to the invalid-setting exit contract (with the exit status in AC007.4 and RT007.2) or align it to the existing error behaviour.
+        ## Follow-up condition (bounded, reversible, does not invalidate sign-off)
 
-        **F4 — `heading_id` stability is not supported by the current renderer (blocking).**
-        Targets use "an optional **stable** source/custom heading ID", and refresh restores folds from "surviving stable heading/drawer IDs". `internal/preview/render.go:288-306` assigns a section ID from custom ID, else a Pandoc text slug, else ordinal `heading-N`, and `:252-254` deletes `data-hp-custom`/`data-hp-org-id` provenance. Neither browser nor server can tell a stable source ID from a text-derived slug or a shifting ordinal, so a wrong `heading_id` can disambiguate between duplicate quote candidates.
-        *Remediation:* define how `heading_id` provenance is determined and preserved in the rendered DOM, or state that non-source IDs are never used as corroborating context for reattachment or fold restoration.
+        - **Restore the template's Accessibility bullet** under *Solution Design ▸ Architecture impact ▸ Other relevant qualities*. The canonical template requires it ("Impact or not applicable with reason") and W006 carries it; W007 lists Reliability, Performance, Operability, Portability, Maintainability and Future hosting only. The substance already exists in *Browser interaction ▸ Accessibility*, AC007.19, RT007.8 and UT007.6, so this is a one-bullet documentary correction, not a coverage gap.
 
-        **F5 — The persistent browser harness is undefined where it decides runnability (blocking).**
-        `docs/ARCHITECTURE.md:585` records "No browser harness is selected by this document"; W006 excludes a "persistent browser harness" (W006 spec, Maintainability). W007 introduces `make test-browser`, opening the **system default browser**, without recording that supersession and without specifying: behaviour when no browser or display is available (headless CI, SSH, WSL); whether CI and the ordinary gate include it; what engine coverage a pass can claim when the default browser varies per host; flake/retry policy; and whether the run leaves a window for a human to dismiss. RT007.5, RT007.8, RT007.9 and RT007.11 depend on it.
-        *Remediation:* record the supersession with rationale, and specify unavailability behaviour (skip versus fail), CI/gate inclusion, engine-coverage claim and flake policy.
+        ## Observations, not conditions
 
-        **F6 — Superseded product/architecture boundaries not named (documentary).**
-        Automatic polling refresh delivers what `docs/VISION.md:188` excludes as "live reload" and what W006 excludes as "live-reload watchers"; writes narrow Vision's "leave the source untouched". Only the source-writing exception is named in the W007 Authority/Unchanged/Compatibility sections and the two proposal notices.
-        *Remediation:* name the live-reload supersession alongside the write exception, as W006 did for the persistent-service exclusion.
-
-        **F7 — AC007.19 has no persistent regression (coverage).**
-        Accessible browser interaction is proven only by human UT007.5/UT007.6, while a browser regression harness is being introduced and the mechanical parts (accessible names, focus return, textual status in a live region, no colour-only status) are automatable.
-        *Remediation:* add the mechanical checks to a browser RT (RT007.8 already runs a browser regression page) or record why the whole criterion is human-only.
-
-        **F8 — Composer-limit overflow unspecified (minor).**
-        "At most 64 active service composers" has no stated outcome, unlike the 256 document grants (503). Eviction would conflict with "only the active composer may append".
-        *Remediation:* state the status code and user-visible behaviour at the composer limit, and that no active composer is evicted.
-
-        **F9 — Per-test intended RED is absent (minor, consistency).**
-        Every W006 RT records an "Intended RED"; W007 relies on one global sentence plus two named tests in Delivery Handoff, leaving nine RTs with no recorded intended failure. I could not read the template, so I raise this as inconsistency with the approved sibling, not as asserted template non-conformance.
-        *Remediation:* record the intended RED per RT, or state that the global rule is deliberate.
-
-        **Not findings, recorded as verified positions:** embedded-history privacy and growth (disclosed, with no compaction and visible capacity failure); the external-editor overwrite limit (stated, not overclaimed); frozen-on-close composer semantics (matches the operator's 12 September acceptance); Markdown/Org frame escaping (delimiters cannot be produced from user strings); no hosted-deployment expansion (Exodan boundary is described, not adopted).
+        - **Emphasis granularity.** Several AC criteria bold a whole leading sentence (AC007.1, AC007.2), against the template's "do not bold … whole sentences". The bold-only reading test still passes; tighten opportunistically.
+        - **Consequence of the F3 resolution.** A malformed `USER` with no override now blocks previewing entirely, where it previously had no effect on reading. This is the behaviour you directed this round and is specified consistently; recording it here only so the trade-off is visible in the guidance required by AC007.23.
       history:
         - incident: start-failed
           evidence:
@@ -251,3 +231,101 @@ audits:
 
             **Not findings, recorded as verified positions:** embedded-history privacy and growth (disclosed, with no compaction and visible capacity failure); the external-editor overwrite limit (stated, not overclaimed); frozen-on-close composer semantics (matches the operator's 12 September acceptance); Markdown/Org frame escaping (delimiters cannot be produced from user strings); no hosted-deployment expansion (Exodan boundary is described, not adopted).
           updated: "2026-09-12T06:41:47Z"
+        - evidence:
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 8e8c072b9b0fb174056f9bcce24682610438dc69e7ef613fba1f0b0812c1b559
+              bytes: 12004
+            - path: /Users/tigger/.agents/skills/define-change/SKILL.md
+              sha256: c17c9bde2c7551f999373ca998a8edd6753b5b60a0557af3dc1484ecfb3b4e8b
+              bytes: 3444
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: 7c74c3abcfabde4e877a53b7d1c008f2d9632ae24c34aa5d1dbd9163e8a6dcb7
+              bytes: 16862
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: bd56322d461189005d5aeadb9edf13ef47cb4be2b0c222e90563bbf43e33059e
+              bytes: 38133
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 79359a7275415978d3d71a446ea2f0a7858289ffeae8253a21828cfe329a9b8b
+              bytes: 10774
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 9284a642c6296a3dd6150c8322f842aac9900113692b1453b7e3b1987a85b9ea
+              bytes: 8466
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/config.go
+              sha256: 56f464b8c74b1799f4b98e29ed0dfc07b5f7a2668907ccf6a5bd5867b3c063ef
+              bytes: 4233
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contracts_test.go
+              sha256: 9e5c16dd882f1658219270c73f47f339b2868275835cd79d1e5d5809819710b2
+              bytes: 6448
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/navigation_test.go
+              sha256: 7660aaca5f40b0fae536c92f9f148f2483c501f080ee11f7b0a2ca2d607d83a4
+              bytes: 1801
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/presentation_test.go
+              sha256: 47c6234950763f381ab58f300daaad8a2296a8f5ef1e68828d67bd9350a71097
+              bytes: 4038
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: c28861bc20ae2ee86afaa7f83c3b2cbbaa5e8e61d569d30efe1ead36df417c18
+              bytes: 12173
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/source.go
+              sha256: 83f37b504c268dcf7346529f58dfbe387cf3a843eaed9186859747e9941446e9
+              bytes: 2878
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: 2be6df30e38a0641281d07de3b1721058af652d00ceba1e11c83181263e129a0
+              bytes: 70321
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/validation.org
+              sha256: 4b6a26582e58ab90a302374d4c270c3e869027bbe1473e1532b0388b7c7fe979
+              bytes: 4014
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+              sha256: 1b2afe3dfefa6ca43a25beb8774945f705c3fd852dc63db66cff74cb22befe6c
+              bytes: 78058
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/validation.org
+              sha256: f0fbea1096750b4fe704461a9227fa9b94c674956a3eac8ab40e9d5efff95a83
+              bytes: 5178
+            - path: /Users/tigger/code/tigoss/writeback/internal/review/inline_feedback.go
+              sha256: bbbfe6ca5953f8a726688af7d14828952e83fbe177866cbc66e8a0b7df7bf872
+              bytes: 7288
+            - path: /Users/tigger/code/tigoss/writeback/static/feedback-autosave.js
+              sha256: 8d2ea9629731e4a86e3dddb60c675b4755fa0aecfc915d2d12a343ce095118db
+              bytes: 3646
+            - path: /Users/tigger/code/tigoss/writeback/static/inline-comments.js
+              sha256: 5e1f6b809ef14ef2f703d10d3e2d95b2d1997fef3704a562a5526d53f55e1b9e
+              bytes: 44362
+          round: 3
+          revision: specs/007-service-annotations/spec.org@sha256:1b2afe3d (candidate on master)
+          verdict: PROVISIONAL PASS
+          response: |-
+            All five previously denied inputs are now readable and have been read in full this session: the canonical v3 template, `define-change/SKILL.md`, `inline_feedback.go`, `feedback-autosave.js`, and `inline-comments.js` (complete). The three changed files (`spec.org`, `VISION.md`, `ARCHITECTURE.md`) were re-read; unchanged evidence was reused from this retained session, with `config.go`, `render.go` and `preview.js` re-consulted where the remediations depend on them.
+
+            ```
+            GATE: definition
+            REVISION: specs/007-service-annotations/spec.org@sha256:1b2afe3d (candidate on master)
+            VERDICT: PROVISIONAL PASS
+            ```
+
+            ## Prior findings — all resolved
+
+            - **F1 concurrency.** `source_revision` is now the optimistic write precondition and the full `revision` is an explicit read/refresh cursor; annotation-only appends by another composer no longer stale a pending request (Revision, Save race, Compare). Framing, per-annotation next-sequence, operation identity and store validity still run under the writer lock. The initial two-line-ending store separator is defined as part of the stripped owned tail, so creating a store does not itself change the authored digest — this closes the loophole the first fix would otherwise have left. AC007.9/AC007.11 reworded to match; RT007.5 drives two composers from a shared source revision and UT007.4 adds 30 seconds of overlapping two-tab typing.
+            - **F2 429.** Busy now joins network and transient 503 in the 1/2/4-second retry with 0–250 ms jitter and a `Retry-After: 1` floor, ending in explicit *Not saved*/Retry; named capacity errors are correctly excluded from automatic retry. RT007.5 and RT007.10 separate transient from sustained contention.
+            - **F3 settings.** `HTMLPREVIEW_USER_DISPLAY_NAME` joins the strict known-settings set; an invalid resolved name exits 2 before registration or browser opening, and unknown `HTMLPREVIEW_*` still fails. This matches `internal/preview/config.go:134-136` and the status-2 expectations in `internal/preview/contracts_test.go:63-69`. Missing values remain a read-only success.
+            - **F4 anchoring.** `heading_id` may now name only a verified explicit Org `CUSTOM_ID`/`ID` captured into a provenance map *before* the catalogue strips `data-hp-custom`/`data-hp-org-id` — the correct seam, given `internal/preview/render.go:252-254`. Pandoc slugs, ordinal `heading-N` fallbacks and raw HTML/Markdown IDs are explicitly non-corroborating, source HTML cannot forge the map, and drawers return to their folded default across source change. RT007.9 exercises shifting ordinals, changed slugs and forged provenance.
+            - **F5 browser harness.** The supersession of W006's exclusion and the Architecture's unselected-harness baseline is recorded in the specification and in `docs/ARCHITECTURE.md:50-56`. Unavailable browser, display or WSL handoff fails with a diagnostic and never counts as a pass; headless CI runs Go tests and reports browser coverage unexecuted; actual engine and version are recorded; no flake retry or quarantine; the result tab may remain with an instruction to close it.
+            - **F6 live reload.** Bounded polling supersedes the exclusion in the specification, `docs/VISION.md:41-43` and Architecture, with recursive watchers and file-mode reload still excluded.
+            - **F7 accessibility coverage.** AC007.19 now has RT007.8 alongside the human UTs, and RT007.8 specifies mechanical roles, accessible names, keyboard activation, focus return and polite textual status independent of colour, leaving screen-reader intelligibility to UT007.6. The link is reciprocal.
+            - **F8 composer capacity.** A 65th composer receives `503 composer_capacity` with no eviction and retained text; closing releases the slot; RT007.10 covers it.
+            - **F9 intended RED.** All eleven RTs record a specific intended failure against the delivered W006 baseline. RT007.7's is notably honest that forbidden-case denials alone are not valid RED.
+
+            Prior-art claims in the Reuse assessment are now verified against source, not accepted on assertion: 300 ms update debounce (`inline-comments.js:16,624`), two-second general feedback (`feedback-autosave.js:79`), create-on-first-input (`:580-588`), close path firing an async flush then removing the editor (`flushAndClose`, `:863-881`), first-matching-text-node excerpt restoration (`:71-96`, `:503-522`), SQLite ownership and edit/delete routes (`inline_feedback.go`), sentence-click takeover (`:101-126`) and automatic clipboard writes on save failure (`:940-948`). Every adopted-versus-rejected statement in the specification is accurate.
+
+            Traceability re-checked on this revision: all 24 ACs are proven, all 22 test definitions cover at least one AC, no orphans in either direction. The specification carries no audit findings, verdicts, revisions, round numbers or session identity; `DEFINITION_GATE` and `OPERATOR_SIGNOFF` remain the mandatory template fields at PENDING. Level-one headlines and the RT/UT/OT field sets match the canonical v3 template exactly.
+
+            ## Follow-up condition (bounded, reversible, does not invalidate sign-off)
+
+            - **Restore the template's Accessibility bullet** under *Solution Design ▸ Architecture impact ▸ Other relevant qualities*. The canonical template requires it ("Impact or not applicable with reason") and W006 carries it; W007 lists Reliability, Performance, Operability, Portability, Maintainability and Future hosting only. The substance already exists in *Browser interaction ▸ Accessibility*, AC007.19, RT007.8 and UT007.6, so this is a one-bullet documentary correction, not a coverage gap.
+
+            ## Observations, not conditions
+
+            - **Emphasis granularity.** Several AC criteria bold a whole leading sentence (AC007.1, AC007.2), against the template's "do not bold … whole sentences". The bold-only reading test still passes; tighten opportunistically.
+            - **Consequence of the F3 resolution.** A malformed `USER` with no override now blocks previewing entirely, where it previously had no effect on reading. This is the behaviour you directed this round and is specified consistently; recording it here only so the trade-off is visible in the guidance required by AC007.23.
+          updated: "2026-09-12T11:51:53Z"
