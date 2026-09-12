@@ -111,7 +111,7 @@ func TestMain(m *testing.M) {
 				if version := os.Getenv("PREVIEW_TEST_PANDOC_VERSION"); version != "" {
 					return []byte("pandoc " + version + "\nScripting engine: Lua 5.4\n"), nil
 				}
-			} else if fault == "converter-stall" || fault == "converter-flood" || fault == "converter-signal" {
+			} else if len(cmd.Args) > 0 && strings.HasPrefix(cmd.Args[0], "--defaults=") && (fault == "converter-stall" || fault == "converter-flood" || fault == "converter-signal") {
 				exe, err := os.Executable()
 				if err != nil {
 					return nil, err

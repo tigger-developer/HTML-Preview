@@ -134,7 +134,15 @@ func TestRT001_11_DeviceBoundary(t *testing.T) {
 		t.Fatal(err)
 	}
 	host := NativeHost()
-	src, err := identify(a, "")
+	pandoc, err := host.LookPath("pandoc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.formats, err = discoverFormats(t.Context(), host, pandoc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src, err := identifyFormat(a, "", "", cfg.formats)
 	if err != nil {
 		t.Fatal(err)
 	}
