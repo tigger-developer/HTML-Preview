@@ -236,6 +236,7 @@ func TestMain(m *testing.M) {
 }
 
 type result struct {
+	wrappers       []string
 	code           int
 	stdout, stderr string
 	pages          []*html.Node
@@ -362,6 +363,14 @@ func run(t *testing.T, root string, settings []string, args ...string) result {
 		t.Fatal(err)
 	}
 	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), ".wrapper.org") {
+			// #nosec G304 -- Reads an owned conversion artefact captured by the test host.
+			data, err := os.ReadFile(filepath.Join(capture, entry.Name()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			r.wrappers = append(r.wrappers, string(data))
+		}
 		if filepath.Ext(entry.Name()) == ".html" {
 			// #nosec G304 -- Entry names come from the test-owned capture directory.
 			data, err := os.ReadFile(filepath.Join(capture, entry.Name()))

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"path"
+	"slices"
 	"strings"
 )
 
@@ -32,7 +33,7 @@ func validateArchive(ctx context.Context, data []byte, budget int64) (int64, err
 			return total, err
 		}
 		name := path.Clean(entry.Name)
-		if strings.ContainsAny(entry.Name, "\\:\x00") || path.IsAbs(name) || name == ".." || strings.HasPrefix(name, "../") {
+		if strings.ContainsAny(entry.Name, "\\:\x00") || path.IsAbs(name) || slices.Contains(strings.Split(entry.Name, "/"), "..") {
 			return total, errors.New("document archive has an unsafe member path")
 		}
 		if seen[name] {
@@ -47,7 +48,7 @@ func validateArchive(ctx context.Context, data []byte, budget int64) (int64, err
 			return total, errors.New("document archive contains a non-regular member")
 		}
 		limit := min(maxArchiveBytes-total, budget-total)
-		if strings.Contains("/"+strings.ToLower(name), "/media/") || strings.Contains("/"+strings.ToLower(name), "/pictures/") {
+		if rasterSuffix(name) != "" || strings.Contains("/"+strings.ToLower(name), "/media/") || strings.Contains("/"+strings.ToLower(name), "/pictures/") {
 			limit = min(limit, maxAssetBytes)
 		}
 		if limit < 0 || entry.UncompressedSize64 > uint64(limit) {
@@ -74,6 +75,9 @@ func countArchiveEntry(ctx context.Context, entry *zip.File, limit int64) (n int
 			return n, err
 		}
 		count, readErr := reader.Read(buffer[:])
+		if n == 0 && rasterMIME(buffer[:count]) != "" {
+			limit = min(limit, maxAssetBytes)
+		}
 		n += int64(count)
 		if n > limit {
 			return n, errors.New("inflated data exceeds byte budget")

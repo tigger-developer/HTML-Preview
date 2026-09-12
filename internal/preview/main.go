@@ -9,6 +9,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	bundle "github.com/tigger-developer/HTML-Preview"
 )
 
 // Main runs one command and returns its public exit status.
@@ -27,7 +29,7 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 		return listFormats(host, log)
 	}
 	if info != "" {
-		log.print("%s", helpText)
+		log.print("%s", bundle.HelpText)
 		return log.status(0)
 	}
 	cfg, err := settings(env)
@@ -100,38 +102,3 @@ func (c *console) status(code int) int {
 	}
 	return code
 }
-
-const helpText = `Usage: htmlpreview FILE [FILE ...]
-Preview local UTF-8 Markdown (.md, .markdown) and Org (.org) documents.
-Use -- before a filename beginning with -. Open the system default browser.
-
-  -h, --help       Show this help without reading documents or settings
-  --version        Show build identity without preview side effects
-
-Environment settings (empty values use defaults):
-  HTMLPREVIEW_TOC                     1; navigation for both formats; 0 disables
-  HTMLPREVIEW_TOC_DEPTH               3; source heading levels 1 to 6
-  HTMLPREVIEW_LINKS                   0; 0 or 1 for bounded linked browsing
-  HTMLPREVIEW_MODE                    quick; read when LINKS=1
-  HTMLPREVIEW_ROOT                    Each entry's canonical parent directory
-  HTMLPREVIEW_GRACE                   3s; 100ms to 1h, quick retention
-  HTMLPREVIEW_MAX_FILES               50; 1 to 500 contexts including entries
-  HTMLPREVIEW_MAX_DEPTH               3; 0 to 10 linked levels
-  HTMLPREVIEW_MAX_SOURCE_BYTES        10485760; 1 to 10485760
-  HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES  52428800; 1 to 52428800
-  HTMLPREVIEW_MAX_OUTPUT_BYTES        104857600; 1 to 104857600
-  HTMLPREVIEW_DEADLINE                60s; 100ms to 10m for conversion
-
-LINKS=1 requires read mode. Read mode retains pages until Ctrl+C or SIGTERM.
-Standalone styled output is always enabled; there is no fragment setting.
-Quick mode removes its private temporary directory after the grace period;
-the delay does not guarantee browser readiness. SIGKILL can leave that directory.
-Source files are never modified. Local assets remain dependent on their originals.
-
-Requires Pandoc 3.9.0.2 or a later 3.9 patch with bundled Lua 5.4.
-macOS uses /usr/bin/open; Linux desktops require xdg-open (xdg-utils).
-WSL requires wslpath, built-in Windows powershell.exe, enabled interoperation,
-and private Linux temporary storage. WSL opens the Windows default browser.
-No system font installation is required. Asap and Iosevka Custom are embedded.
-
-Exit status: 0 success, 1 operational failure, 2 invalid invocation.`

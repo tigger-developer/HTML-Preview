@@ -1,7 +1,14 @@
 # htmlpreview
 
-Preview local Markdown and Org in the system default browser, using Pandoc,
-embedded Asap and Iosevka Custom fonts, and a private temporary directory.
+Preview local Pandoc documents, source code, plain text and passive native HTML
+in the system default browser, using a private temporary directory. Converted
+documents use embedded Asap and Iosevka Custom fonts; native HTML retains its
+authored presentation. See [supported formats](docs/FORMATS.md) for mappings,
+reader selection and resource limits.
+
+The [W008 input-format candidate](specs/008-input-formats/spec.org) extends the
+earlier Org/Markdown-only scope. Its [validation record](specs/008-input-formats/validation.org)
+tracks automated evidence and pending native qualification separately.
 
 **Evidence:** See [the specification](specs/001-local-document-preview/spec.org)
 and its [audit record](specs/001-local-document-preview/audits.org).
@@ -94,8 +101,10 @@ HTMLPREVIEW_LINKS=1 HTMLPREVIEW_ROOT="$PWD" htmlpreview docs/VISION.md
 
 The graph follows rendered document anchors breadth-first. Cycles reuse the
 same source context; symlink aliases with different logical parents retain
-separate relative-link contexts. Images and other files remain references to
-their original locations. Skipped or failed linked documents retain original
+separate relative-link contexts. Eligible linked documents of all supported
+kinds can become previews. Validated local/container raster bytes are embedded;
+other files remain references to their original locations. This supersedes the
+earlier original-file image URLs. Skipped or failed linked documents retain original
 file links with diagnostics. Org ID and heading searches require unique actual
 destinations; unresolved searches receive an explanation.
 
@@ -169,6 +178,13 @@ Empty values select defaults. Unknown `HTMLPREVIEW_` settings are errors.
 Every supplied setting is validated, including those inactive in the selected
 mode. There is no personal configuration file or arbitrary Pandoc-argument
 interface. Use `--` before a filename beginning with `-`.
+
+An optional `--from FORMAT` or `--from=FORMAT` selects an installed built-in
+reader for the explicit input batch. It never propagates to linked documents.
+`--list-input-formats` lists available readers without opening a browser.
+Ordinary `.json` defaults to pretty-printed code; `--from=json` selects Pandoc's
+JSON document AST. Unknown extensions need explicit selection. Native HTML
+uses its separate passive policy and receives no application reading controls.
 
 | Setting | Default | Accepted values |
 | --- | --- | --- |

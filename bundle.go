@@ -8,3 +8,8 @@ import "embed"
 //
 //go:embed assets/fonts assets/web assets/pandoc assets/platform assets/licenses LICENSE THIRD_PARTY_NOTICES.md
 var Assets embed.FS
+
+// HelpText is the installed command's reviewable, build-time documentation.
+//
+//go:embed docs/htmlpreview-help.txt
+var HelpText string

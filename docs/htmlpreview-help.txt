@@ -1,0 +1,50 @@
+Usage: htmlpreview [--from FORMAT] FILE [FILE ...]
+Preview local Pandoc documents, source code, plain text and passive native HTML.
+Use -- before a filename beginning with -. Open the system default browser.
+
+  -h, --help           Show help without reading documents or settings
+  --version            Show build identity without preview side effects
+  --list-input-formats List this installation's Pandoc readers; no browser opens
+  --from FORMAT        Select one installed reader for all explicit inputs
+  --from=FORMAT        Equivalent reader selection; -f is not accepted
+
+Filename mappings cover document aliases, common code languages and .txt.
+Unknown suffixes require --from. Ordinary .json is pretty-printed source code;
+--from=json selects Pandoc's JSON document AST instead. Reader extensions such
+as markdown+smart are validated; custom readers, filters and extra arguments
+are not accepted. --from=html uses passive native HTML and accepts no extensions.
+
+Code and .txt use private Org wrappers. Code has one Source code heading;
+plain text has none. Copying preserves original UTF-8 text. Sources never execute.
+Native HTML keeps its authored structure and permitted CSS without application
+chrome. Scripts, forms, remote fonts and automatic remote resources are blocked.
+Admitted local/container rasters are embedded; unsupported media gets a notice.
+
+Environment settings (empty values use defaults):
+  HTMLPREVIEW_TOC                     1; converted-page navigation; 0 disables
+  HTMLPREVIEW_TOC_DEPTH               3; source heading levels 1 to 6
+  HTMLPREVIEW_LINKS                   0; 0 or 1 for bounded linked browsing
+  HTMLPREVIEW_MODE                    quick; read when LINKS=1
+  HTMLPREVIEW_ROOT                    Each entry's canonical parent directory
+  HTMLPREVIEW_GRACE                   3s; 100ms to 1h, quick retention
+  HTMLPREVIEW_MAX_FILES               50; 1 to 500 contexts including entries
+  HTMLPREVIEW_MAX_DEPTH               3; 0 to 10 linked levels
+  HTMLPREVIEW_MAX_SOURCE_BYTES        10485760; 1 to 10485760
+  HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES  52428800; 1 to 52428800
+  HTMLPREVIEW_MAX_OUTPUT_BYTES        104857600; 1 to 104857600
+  HTMLPREVIEW_DEADLINE                60s; 100ms to 10m for conversion
+
+LINKS=1 pre-generates supported linked files and requires read mode. Without it,
+links retain original-file destinations. Explicit --from never applies to children.
+Read mode retains pages until Ctrl+C or SIGTERM. Standalone output is always on.
+Quick mode removes its private temporary directory after the grace period;
+the delay does not guarantee browser readiness. SIGKILL can leave that directory.
+Source files are never modified. There is no running preview service in file mode.
+
+Requires Pandoc 3.9.0.2 or a later 3.9 patch with bundled Lua 5.4.
+macOS uses /usr/bin/open; Linux desktops require xdg-open (xdg-utils).
+WSL requires wslpath, built-in Windows powershell.exe, enabled interoperation,
+and private Linux temporary storage. WSL opens the Windows default browser.
+Converted pages embed Asap and Iosevka Custom; no system font install is required.
+
+Exit status: 0 success, 1 operational failure, 2 invalid invocation.

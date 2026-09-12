@@ -48,12 +48,27 @@ func rasterURL(data []byte, name, declared string) (string, error) {
 		return "", errors.New("image has an unsupported, truncated or conflicting raster header")
 	}
 	if name != "" {
-		suffixMIME := map[string]string{".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".webp": "image/webp", ".avif": "image/avif"}
-		if suffixMIME[strings.ToLower(filepath.Ext(name))] != mime {
+		if rasterSuffix(name) != mime {
 			return "", errors.New("image suffix conflicts with its raster header")
 		}
 	}
 	return "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(data), nil
+}
+
+func rasterSuffix(name string) string {
+	switch strings.ToLower(filepath.Ext(name)) {
+	case ".png":
+		return "image/png"
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".gif":
+		return "image/gif"
+	case ".webp":
+		return "image/webp"
+	case ".avif":
+		return "image/avif"
+	}
+	return ""
 }
 
 func (s *session) restoreMedia(doc *html.Node, p *page, token string) error {
