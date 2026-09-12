@@ -10,44 +10,13 @@ audits:
       gate: definition
       session_id: 7fd7367c-c746-45d7-93a2-a1ec0fb6268e
       harness: claude
-      external_round: 3
-      status: passed
-      updated: "2026-09-12T11:54:57Z"
-      revision: specs/007-service-annotations/spec.org@sha256:1b2afe3d (candidate on master)
-      verdict: PROVISIONAL PASS
-      response: |-
-        All five previously denied inputs are now readable and have been read in full this session: the canonical v3 template, `define-change/SKILL.md`, `inline_feedback.go`, `feedback-autosave.js`, and `inline-comments.js` (complete). The three changed files (`spec.org`, `VISION.md`, `ARCHITECTURE.md`) were re-read; unchanged evidence was reused from this retained session, with `config.go`, `render.go` and `preview.js` re-consulted where the remediations depend on them.
-
-        ```
-        GATE: definition
-        REVISION: specs/007-service-annotations/spec.org@sha256:1b2afe3d (candidate on master)
-        VERDICT: PROVISIONAL PASS
-        ```
-
-        ## Prior findings — all resolved
-
-        - **F1 concurrency.** `source_revision` is now the optimistic write precondition and the full `revision` is an explicit read/refresh cursor; annotation-only appends by another composer no longer stale a pending request (Revision, Save race, Compare). Framing, per-annotation next-sequence, operation identity and store validity still run under the writer lock. The initial two-line-ending store separator is defined as part of the stripped owned tail, so creating a store does not itself change the authored digest — this closes the loophole the first fix would otherwise have left. AC007.9/AC007.11 reworded to match; RT007.5 drives two composers from a shared source revision and UT007.4 adds 30 seconds of overlapping two-tab typing.
-        - **F2 429.** Busy now joins network and transient 503 in the 1/2/4-second retry with 0–250 ms jitter and a `Retry-After: 1` floor, ending in explicit *Not saved*/Retry; named capacity errors are correctly excluded from automatic retry. RT007.5 and RT007.10 separate transient from sustained contention.
-        - **F3 settings.** `HTMLPREVIEW_USER_DISPLAY_NAME` joins the strict known-settings set; an invalid resolved name exits 2 before registration or browser opening, and unknown `HTMLPREVIEW_*` still fails. This matches `internal/preview/config.go:134-136` and the status-2 expectations in `internal/preview/contracts_test.go:63-69`. Missing values remain a read-only success.
-        - **F4 anchoring.** `heading_id` may now name only a verified explicit Org `CUSTOM_ID`/`ID` captured into a provenance map *before* the catalogue strips `data-hp-custom`/`data-hp-org-id` — the correct seam, given `internal/preview/render.go:252-254`. Pandoc slugs, ordinal `heading-N` fallbacks and raw HTML/Markdown IDs are explicitly non-corroborating, source HTML cannot forge the map, and drawers return to their folded default across source change. RT007.9 exercises shifting ordinals, changed slugs and forged provenance.
-        - **F5 browser harness.** The supersession of W006's exclusion and the Architecture's unselected-harness baseline is recorded in the specification and in `docs/ARCHITECTURE.md:50-56`. Unavailable browser, display or WSL handoff fails with a diagnostic and never counts as a pass; headless CI runs Go tests and reports browser coverage unexecuted; actual engine and version are recorded; no flake retry or quarantine; the result tab may remain with an instruction to close it.
-        - **F6 live reload.** Bounded polling supersedes the exclusion in the specification, `docs/VISION.md:41-43` and Architecture, with recursive watchers and file-mode reload still excluded.
-        - **F7 accessibility coverage.** AC007.19 now has RT007.8 alongside the human UTs, and RT007.8 specifies mechanical roles, accessible names, keyboard activation, focus return and polite textual status independent of colour, leaving screen-reader intelligibility to UT007.6. The link is reciprocal.
-        - **F8 composer capacity.** A 65th composer receives `503 composer_capacity` with no eviction and retained text; closing releases the slot; RT007.10 covers it.
-        - **F9 intended RED.** All eleven RTs record a specific intended failure against the delivered W006 baseline. RT007.7's is notably honest that forbidden-case denials alone are not valid RED.
-
-        Prior-art claims in the Reuse assessment are now verified against source, not accepted on assertion: 300 ms update debounce (`inline-comments.js:16,624`), two-second general feedback (`feedback-autosave.js:79`), create-on-first-input (`:580-588`), close path firing an async flush then removing the editor (`flushAndClose`, `:863-881`), first-matching-text-node excerpt restoration (`:71-96`, `:503-522`), SQLite ownership and edit/delete routes (`inline_feedback.go`), sentence-click takeover (`:101-126`) and automatic clipboard writes on save failure (`:940-948`). Every adopted-versus-rejected statement in the specification is accurate.
-
-        Traceability re-checked on this revision: all 24 ACs are proven, all 22 test definitions cover at least one AC, no orphans in either direction. The specification carries no audit findings, verdicts, revisions, round numbers or session identity; `DEFINITION_GATE` and `OPERATOR_SIGNOFF` remain the mandatory template fields at PENDING. Level-one headlines and the RT/UT/OT field sets match the canonical v3 template exactly.
-
-        ## Follow-up condition (bounded, reversible, does not invalidate sign-off)
-
-        - **Restore the template's Accessibility bullet** under *Solution Design ▸ Architecture impact ▸ Other relevant qualities*. The canonical template requires it ("Impact or not applicable with reason") and W006 carries it; W007 lists Reliability, Performance, Operability, Portability, Maintainability and Future hosting only. The substance already exists in *Browser interaction ▸ Accessibility*, AC007.19, RT007.8 and UT007.6, so this is a one-bullet documentary correction, not a coverage gap.
-
-        ## Observations, not conditions
-
-        - **Emphasis granularity.** Several AC criteria bold a whole leading sentence (AC007.1, AC007.2), against the template's "do not bold … whole sentences". The bold-only reading test still passes; tighten opportunistically.
-        - **Consequence of the F3 resolution.** A malformed `USER` with no override now blocks previewing entirely, where it previously had no effect on reading. This is the behaviour you directed this round and is specified consistently; recording it here only so the trade-off is visible in the guidance required by AC007.23.
+      model: claude-opus-5
+      configured:
+        harness: claude
+        model: claude-opus-5
+      external_round: 4
+      status: incident
+      updated: "2026-09-12T23:07:43Z"
       history:
         - incident: start-failed
           evidence:
@@ -329,3 +298,137 @@ audits:
             - **Emphasis granularity.** Several AC criteria bold a whole leading sentence (AC007.1, AC007.2), against the template's "do not bold … whole sentences". The bold-only reading test still passes; tighten opportunistically.
             - **Consequence of the F3 resolution.** A malformed `USER` with no override now blocks previewing entirely, where it previously had no effect on reading. This is the behaviour you directed this round and is specified consistently; recording it here only so the trade-off is visible in the guidance required by AC007.23.
           updated: "2026-09-12T11:51:53Z"
+        - cache_key: sha256:9cc551a484d29821e20de2755e54e218b25521a3650680752c1a7df8f590f6f6
+          session_id: 7fd7367c-c746-45d7-93a2-a1ec0fb6268e
+          harness: claude
+          model: claude-opus-5
+          incident: resume-failed
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: c1544731cc777904f903858d1e78ed61be24abd8480a91b6579f3a919cd64a7a
+              bytes: 10625
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: bd32656992311c5b4da2f83ac154bfcb073a71fe987a8bf0d7618b05e7e5cf2c
+              bytes: 3994
+            - path: /Users/tigger/.agents/sdlc/GIT.md
+              sha256: 97bbf89af1c65d159688b452a0434e77d9775f7a98dd1c822ffd264b41012bbb
+              bytes: 7807
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: 8545a6297e21423a9ed1797bc3b6f90ac4425600606ae20152252d2da3c0cc42
+              bytes: 16332
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 833de19319224d80f95ad94ab6923b3d4b1255d13a11bac50b07553efa675fc4
+              bytes: 11310
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: 59522d1f15d3d204a9a3e3a648e5eca106344aa87e6b6302077fd2af6e177d83
+              bytes: 2813
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 5ed902d49dbb8321ea093fd60db68d5195e59c95c763c02e4ca0c09f6fa1e932
+              bytes: 13561
+            - path: /Users/tigger/.agents/sdlc/technologies/API.md
+              sha256: 617a6fed7544d449204f0d79426d91a1d4571a084770e6f4589929cf88856fff
+              bytes: 10905
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/LUA.md
+              sha256: 83386b235c96e1ee1209e854764c41c604196db62c6db729a1641bd61027bae1
+              bytes: 10768
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 5f8e42f83ff183e91e2e4af1e3b27f22d9b8082866cdb6932aa1e3f0386d7be7
+              bytes: 18411
+            - path: /Users/tigger/.agents/skills/define-change/SKILL.md
+              sha256: 64351c54bb17460f0f7ac4e62550a8f4867b6cf252f6ef050689cfc0bbd8dfa2
+              bytes: 4252
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: bc583079db44081fe00234a9d16b61e1c8e178261b8603fcca1d60aed99152ec
+              bytes: 17067
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 21cd51bb05ab890816ea1a2698b33272d0b554b48f3ba6b36fca1702662d16a0
+              bytes: 41278
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 80b3da38f7adbc56ba52ad50032b528e3b1900381d25eb6ef82d4ff90c479b84
+              bytes: 12379
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: b30df09b06d3139897cc2287400a586ce4789c317e70f349870727f38d1e637f
+              bytes: 10174
+            - path: /Users/tigger/code/tigoss/html-preview/integration/service_test.go
+              sha256: 3f8b8428fb3538a15080d1acec90f688a9c6458d26c19feb1476e3d047790df7
+              bytes: 13188
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/config.go
+              sha256: 19859b981951d1935026756492ebedf819883b6628a98497895ae86438c96752
+              bytes: 4983
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contracts_test.go
+              sha256: c828ec1f16836b3a4b90060f8b59d082b53620fa0e7869da216c6eef5b9392ee
+              bytes: 6875
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats.go
+              sha256: 3154a18d48461d2a5fee934395767ad56422061cf695d12217ed33e729225350
+              bytes: 7853
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/navigation_test.go
+              sha256: 7660aaca5f40b0fae536c92f9f148f2483c501f080ee11f7b0a2ca2d607d83a4
+              bytes: 1801
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/presentation_test.go
+              sha256: 47c6234950763f381ab58f300daaad8a2296a8f5ef1e68828d67bd9350a71097
+              bytes: 4038
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 69fe2f0500876cba19b15955940e03122494494c6f53019f71cd47b15d24e278
+              bytes: 13436
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache.go
+              sha256: 2d05e1d437d8dbb7e44f806c1869f451ddc5e459ec5564c587a6d90764cb11ae
+              bytes: 4689
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_render.go
+              sha256: 10955fb10b6dce5a0d856702cb573934a8e7d5e24277f72925ade599855a609c
+              bytes: 6505
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/source.go
+              sha256: 1ff1e81cbfac5dcd085d5619b5f53d50d0fad549658eb108c3f0467d2156fa0d
+              bytes: 2798
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/wrapper.go
+              sha256: 2edf25380ec636b0e1b8881e92e2d8dd1911eb181d49763b82faf561b5e89410
+              bytes: 2463
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: f827b45366bd0f7133c7fa055d35fa2cacc70194d86237e405b650609450a9ea
+              bytes: 89536
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/validation.org
+              sha256: a9901445ee0b7eeb5acea2ad0c7b4a0ff69ad792df6a442e7b124ce4536fd195
+              bytes: 15702
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+              sha256: 82551172ad1541d51a51177f73031009ced9fcf85b0f6d1e388c9a121070012a
+              bytes: 84680
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/validation.org
+              sha256: f0fbea1096750b4fe704461a9227fa9b94c674956a3eac8ab40e9d5efff95a83
+              bytes: 5178
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+              sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
+              bytes: 62969
+            - path: /Users/tigger/code/tigoss/writeback/internal/review/inline_feedback.go
+              sha256: bbbfe6ca5953f8a726688af7d14828952e83fbe177866cbc66e8a0b7df7bf872
+              bytes: 7288
+            - path: /Users/tigger/code/tigoss/writeback/static/feedback-autosave.js
+              sha256: 8d2ea9629731e4a86e3dddb60c675b4755fa0aecfc915d2d12a343ce095118db
+              bytes: 3646
+            - path: /Users/tigger/code/tigoss/writeback/static/inline-comments.js
+              sha256: 5e1f6b809ef14ef2f703d10d3e2d95b2d1997fef3704a562a5526d53f55e1b9e
+              bytes: 44362
+          round: 4
+          updated: "2026-09-12T23:07:19Z"

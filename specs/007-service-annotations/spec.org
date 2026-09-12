@@ -34,6 +34,9 @@
   Go/Pandoc, browser-only JavaScript, existing reader controls and default-browser
   handoff on macOS, Linux and WSL.
 ** Edge cases
+:PROPERTIES:
+:CUSTOM_ID: synopsis-edge-cases
+:END:
 
 - *External edits, ambiguous targets, lost responses, interrupted
   appends, permissions, multiple tabs and service restart* retain saved history
