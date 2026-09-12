@@ -90,7 +90,7 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 	if int64(len(data)) > cfg.outputBytes-s.used {
 		return nil, 413
 	}
-	return &httpPage{data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants}, 200
+	return &httpPage{data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants, cap: cap, catalogueSensitive: p.catalogueSensitive}, 200
 }
 func renderStatus(ctx context.Context, err error) int {
 	if ctx.Err() != nil || errors.Is(err, context.DeadlineExceeded) {
@@ -136,6 +136,11 @@ func (service *previewService) resolveHTTP(ctx context.Context, s *session, p *p
 		}
 		if !r.local {
 			if r.id != "" {
+				p.catalogueSensitive = true
+				if target := service.knownOrgID(ctx, cap, p, r.id); target != "" {
+					setAttribute(n, "href", target)
+					continue
+				}
 				s.inactive(p, n, "href", "Unknown or ambiguous Org ID")
 			}
 			if r.url != nil && (r.url.Scheme == "data" || strings.HasPrefix(value, service.origin+"/")) {

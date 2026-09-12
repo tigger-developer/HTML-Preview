@@ -167,3 +167,27 @@
   Complete resource-limit coverage, CLI failure precedence and reader-catalogue
   ownership, fileless Org IDs, service packaging, full-suite qualification and
   the planned native/operator checks remain outstanding.
+
+* Client reader and Org catalogue checkpoint, 12 September 2026
+
+- Baseline :: =8711714= (bounded service cache and authorized assets), followed
+  by the implementation checkpoint containing this entry, in the same environment.
+- Reader RED/GREEN :: An isolated client PATH without Pandoc caused all HTTP
+  cases to fail before service discovery. Discovery now precedes local converter
+  setup; HTTP conversion and reader-extension validation belong to the running
+  service. The executable regression passed under race in *2.647 seconds*,
+  including exit 2 for unavailable readers and invalid extensions.
+- Fallback RED/GREEN :: Private registration initially returned =invalid_source=
+  for an unknown-format file outside all served roots. Root classification now
+  precedes service format detection, allowing the file route to apply its own
+  reader catalogue. A mixed HTTP/file batch verifies original opening order and
+  that both representations are available before desktop handoff.
+- Org ID RED/GREEN :: A unique ID remained inactive after its target had been
+  rendered. Resolution now consults only the bounded rendered catalogue and
+  reauthorizes and hashes candidate sources. The focused test passed under race
+  in *2.815 seconds*, including unknown-before-render, unique-after-render,
+  duplicate ambiguity, changed duplicate and changed target outcomes.
+- Combined development check :: The service regression subset passed under
+  race: internal preview *7.367 seconds*, integration *10.450 seconds*. This
+  checkpoint does not establish the remaining resource, WSL, packaging or native
+  qualification requirements.

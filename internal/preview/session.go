@@ -31,24 +31,19 @@ type session struct {
 }
 
 func execute(ctx context.Context, files, env []string, cfg config, host Host, log *console) (code int) {
-	pandoc, err := host.LookPath("pandoc")
-	if err != nil {
-		log.warn("install Pandoc 3.9.0.2 or a later 3.9 patch: %v", err)
-		return 1
-	}
-	if err := checkPandoc(ctx, host, pandoc); err != nil {
-		log.warn("Pandoc compatibility: %v", err)
-		return 1
-	}
-	cfg.formats, err = discoverFormats(ctx, host, pandoc)
+	connection, err := connectService(ctx, cfg.runtimePath)
 	if err != nil {
 		log.warn("%v", err)
 		return 1
 	}
-	if cfg.from != "" {
-		if err := cfg.formats.validateSelection(ctx, host, pandoc, cfg.from); err != nil {
-			log.warn("%v", err)
-			return 2
+	if connection != nil {
+		defer connection.client.CloseIdleConnections()
+	}
+	pandoc := ""
+	if connection == nil {
+		pandoc, err = localFormats(ctx, &cfg, host)
+		if err != nil {
+			return inputFailure(log, err)
 		}
 	}
 	sources, invalid, err := explicitSources(files, cfg, log)
@@ -64,17 +59,30 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 	if len(sources) == 0 {
 		return 1
 	}
+	if cfg.root != "" {
+		cfg.root = sources[0].root
+	}
 	allSources := sources
-	served, sources, err := prepareHTTP(ctx, sources, cfg, log)
+	served, sources, err := prepareHTTP(ctx, sources, cfg, connection, log)
 	if err != nil {
-		log.warn("%v", err)
-		return 1
+		return inputFailure(log, err)
 	}
 	if invalid {
 		served.invalid = true
 	}
 	if len(sources) == 0 {
 		return openHTTP(ctx, allSources, served, desktop, log)
+	}
+	if pandoc == "" {
+		pandoc, err = localFormats(ctx, &cfg, host)
+		if err != nil {
+			return inputFailure(log, err)
+		}
+		sources, invalid = resolveFallbackSources(sources, cfg, log)
+		served.invalid = served.invalid || invalid
+		if len(sources) == 0 {
+			return openHTTP(ctx, allSources, served, desktop, log)
+		}
 	}
 	cfg.totalBytes -= served.sources
 	cfg.outputBytes -= served.outputs
@@ -188,7 +196,10 @@ func explicitSources(files []string, cfg config, log *console) ([]sourceContext,
 	seen := make(map[string]bool)
 	invalid := false
 	for _, file := range files {
-		src, err := identifyFormat(file, root, cfg.from, cfg.formats)
+		src, err := identify(file, root)
+		if cfg.formats != nil {
+			src, err = identifyFormat(file, root, cfg.from, cfg.formats)
+		}
 		if err != nil {
 			log.warn("source %q: %v", file, err)
 			invalid = true
@@ -204,6 +215,51 @@ func explicitSources(files []string, cfg config, log *console) ([]sourceContext,
 		return nil, false, errors.New("explicit source contexts exceed HTMLPREVIEW_MAX_FILES")
 	}
 	return result, invalid, nil
+}
+
+func localFormats(ctx context.Context, cfg *config, host Host) (string, error) {
+	pandoc, err := host.LookPath("pandoc")
+	if err != nil {
+		return "", fmt.Errorf("install Pandoc 3.9.0.2 or a later 3.9 patch: %w", err)
+	}
+	if err = checkPandoc(ctx, host, pandoc); err != nil {
+		return "", fmt.Errorf("Pandoc compatibility: %w", err)
+	}
+	cfg.formats, err = discoverFormats(ctx, host, pandoc)
+	if err != nil {
+		return "", err
+	}
+	if cfg.from != "" {
+		if err = cfg.formats.validateSelection(ctx, host, pandoc, cfg.from); err != nil {
+			return "", &readerError{err}
+		}
+	}
+	return pandoc, nil
+}
+
+func inputFailure(log *console, err error) int {
+	log.warn("%v", err)
+	var invalid *readerError
+	if errors.As(err, &invalid) {
+		return 2
+	}
+	return 1
+}
+
+func resolveFallbackSources(sources []sourceContext, cfg config, log *console) ([]sourceContext, bool) {
+	var valid []sourceContext
+	invalid := false
+	for _, src := range sources {
+		input, err := cfg.formats.resolve(src.logical, cfg.from)
+		if err != nil {
+			log.warn("source %q: %v", src.logical, err)
+			invalid = true
+			continue
+		}
+		src.input, src.selected = input, cfg.from != ""
+		valid = append(valid, src)
+	}
+	return valid, invalid
 }
 
 func checkPandoc(ctx context.Context, host Host, path string) error {

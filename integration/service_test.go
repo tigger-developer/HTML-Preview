@@ -252,3 +252,109 @@ func TestRT006_1_AutomaticHTTPSelection(t *testing.T) {
 		t.Fatal("HTTP output lost source identity or document content")
 	}
 }
+
+func TestRT006_11_HTTPDoesNotRequireClientPandoc(t *testing.T) {
+	s := startService(t, serviceBinary(t))
+	for _, tc := range []struct {
+		name, body, from string
+		code             int
+	}{
+		{"notes.org", "* Service reader", "", 0},
+		{"selected.data", "# Selected reader", "markdown+smart", 0},
+		{"bad.data", "text", "markdown+not_a_real_extension", 2},
+		{"unknown.data", "text", "not_a_reader", 2},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			file := filepath.Join(s.root, tc.name)
+			if err := os.WriteFile(file, []byte(tc.body), 0600); err != nil {
+				t.Fatal(err)
+			}
+			args := []string{file}
+			if tc.from != "" {
+				args = append([]string{"--from=" + tc.from}, args...)
+			}
+			// #nosec G204 -- Test-built CLI and synthetic input; an empty PATH isolates client dependencies.
+			cmd := exec.Command(s.binary, args...)
+			bin := t.TempDir()
+			// The test desktop adapter captures this executable; it must never run.
+			// #nosec G306 -- Owner-only execute permission is required for LookPath in the isolated desktop fixture.
+			if err := os.WriteFile(filepath.Join(bin, "xdg-open"), []byte("#!/bin/sh\nexit 99\n"), 0700); err != nil {
+				t.Fatal(err)
+			}
+			cmd.Env = append(s.env, "PATH="+bin, "PREVIEW_TEST_CAPTURE="+t.TempDir())
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &stdout, &stderr
+			err := cmd.Run()
+			code := 0
+			if err != nil {
+				if exit, ok := err.(*exec.ExitError); ok {
+					code = exit.ExitCode()
+				} else {
+					t.Fatal(err)
+				}
+			}
+			if code != tc.code {
+				t.Fatalf("service-owned reader: status=%d expected=%d diagnostic=%s", code, tc.code, stderr.String())
+			}
+			if tc.code == 0 && !strings.HasPrefix(stdout.String(), s.origin+"/") {
+				t.Fatal("client did not open HTTP without local Pandoc")
+			}
+			if tc.code != 0 && stdout.Len() != 0 {
+				t.Fatal("invalid reader opened a browser")
+			}
+		})
+	}
+}
+
+func TestRT006_1_MixedHTTPAndFileFallback(t *testing.T) {
+	s := startService(t, serviceBinary(t))
+	inside := filepath.Join(s.root, "inside.md")
+	outside := filepath.Join(t.TempDir(), "outside.txt")
+	for path, body := range map[string]string{inside: "# Inside service", outside: "Outside literal"} {
+		if err := os.WriteFile(path, []byte(body), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	capture := t.TempDir()
+	// #nosec G204 -- Project executable and synthetic paths only.
+	cmd := exec.Command(s.binary, inside, outside)
+	cmd.Env = append(s.env, "PREVIEW_TEST_CAPTURE="+capture, "HTMLPREVIEW_GRACE=100ms")
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("mixed preview: %v %s", err, stderr.String())
+	}
+	urls := strings.Fields(stdout.String())
+	if len(urls) != 2 || !strings.HasPrefix(urls[0], s.origin+"/") || !strings.HasPrefix(urls[1], "file://") {
+		t.Fatalf("mixed handoff lost order or transport: %d URLs", len(urls))
+	}
+	entries, err := os.ReadDir(capture)
+	if err != nil || len(entries) != 2 {
+		t.Fatal("both entry previews were not ready at handoff")
+	}
+}
+
+func TestRT006_2_OutsideRootPrecedesServiceFormat(t *testing.T) {
+	s := startService(t, serviceBinary(t))
+	path := filepath.Join(t.TempDir(), "file.unknown")
+	if err := os.WriteFile(path, []byte("unknown input"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(map[string]any{"paths": []string{path}, "settings": map[string]any{}, "format_contract": 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := s.control.Post("http://control/v1/previews", "application/json", bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, readErr := io.ReadAll(io.LimitReader(response.Body, 65536))
+	closeErr := response.Body.Close()
+	if readErr != nil || closeErr != nil {
+		t.Fatal("control read failed")
+	}
+	var result struct{ Results []struct{ Error string } }
+	if response.StatusCode != 200 || json.Unmarshal(data, &result) != nil || len(result.Results) != 1 || result.Results[0].Error != "outside_root" {
+		t.Fatalf("outside-root fallback suppressed by service reader: %s", data)
+	}
+}

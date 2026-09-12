@@ -25,6 +25,35 @@ type httpPreviews struct {
 	invalid          bool
 }
 
+type serviceConnection struct {
+	client *http.Client
+	status serviceStatus
+}
+
+type readerError struct{ cause error }
+
+func (e *readerError) Error() string { return e.cause.Error() }
+func (e *readerError) Unwrap() error { return e.cause }
+
+func connectService(ctx context.Context, runtime string) (*serviceConnection, error) {
+	client, err := controlClient(runtime)
+	if err != nil {
+		if unavailableService(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("service discovery: %w", err)
+	}
+	status, err := serviceDiscovery(ctx, client)
+	if err != nil {
+		client.CloseIdleConnections()
+		if unavailableService(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &serviceConnection{client: client, status: status}, nil
+}
+
 func controlClient(runtime string) (*http.Client, error) {
 	if err := checkRuntime(runtime, false); err != nil {
 		return nil, err
@@ -99,25 +128,14 @@ func controlResponse(client *http.Client, request *http.Request) ([]byte, int, e
 	return data, resp.StatusCode, nil
 }
 
-func prepareHTTP(ctx context.Context, sources []sourceContext, cfg config, log *console) (httpPreviews, []sourceContext, error) {
+func prepareHTTP(ctx context.Context, sources []sourceContext, cfg config, connection *serviceConnection, log *console) (httpPreviews, []sourceContext, error) {
 	prepared := httpPreviews{urls: make(map[string]string)}
-	client, err := controlClient(cfg.runtimePath)
-	if err != nil {
-		if unavailableService(err) {
-			return prepared, sources, nil
-		}
-		return prepared, nil, fmt.Errorf("service discovery: %w", err)
+	if connection == nil {
+		return prepared, sources, nil
 	}
-	defer client.CloseIdleConnections()
+	client, status := connection.client, connection.status
 	controlCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	status, err := serviceDiscovery(controlCtx, client)
-	if err != nil {
-		if unavailableService(err) {
-			return prepared, sources, nil
-		}
-		return prepared, nil, err
-	}
 	request := previewRegistration{FormatContract: 1, From: cfg.from, Settings: wireSettings(cfg)}
 	for _, src := range sources {
 		request.Paths = append(request.Paths, src.logical)
@@ -136,6 +154,14 @@ func prepareHTTP(ctx context.Context, sources []sourceContext, cfg config, log *
 		return prepared, nil, errors.New("service registration failed")
 	}
 	var response registrationResponse
+	if code == 400 {
+		var failure struct {
+			Error string `json:"error"`
+		}
+		if decodeControl(data, &failure) == nil && failure.Error == "invalid_reader" {
+			return prepared, nil, &readerError{errors.New("invalid or unavailable --from reader; use --list-input-formats")}
+		}
+	}
 	if code != 200 || decodeControl(data, &response) != nil || response.Protocol != 1 || len(response.Results) != len(sources) {
 		return prepared, nil, errors.New("invalid service registration response")
 	}

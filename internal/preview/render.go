@@ -21,6 +21,7 @@ type page struct {
 	httpMedia                     map[string]servedRaster
 	assetGrants                   map[string]assetGrant
 	mediaGrants                   map[string]mediaGrant
+	catalogueSensitive            bool
 	dependencies                  map[string]assetRevision
 	uncacheable, resourceLimit    bool
 	media                         map[string]string

@@ -24,6 +24,8 @@ type httpPage struct {
 	media                 map[string]servedRaster
 	assetGrants           map[string]assetGrant
 	mediaGrants           map[string]mediaGrant
+	cap                   *readCapability
+	catalogueSensitive    bool
 	used                  uint64
 }
 type renderWork struct {
@@ -45,7 +47,7 @@ func (s *previewService) currentPage(ctx context.Context, cap *readCapability, s
 	s.mu.Lock()
 	cached := s.cache[key]
 	s.mu.Unlock()
-	if cached != nil && s.dependenciesCurrent(cached, cap) {
+	if cached != nil && !cached.catalogueSensitive && s.dependenciesCurrent(cached, cap) {
 		s.mu.Lock()
 		s.clock++
 		cached.used = s.clock

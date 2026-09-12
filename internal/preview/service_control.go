@@ -217,7 +217,7 @@ func (s *previewService) register(path, from string, cfg config) registrationRes
 		result.Error = "invalid_source"
 		return result
 	}
-	src, err := identifyFormat(path, cfg.root, from, s.base.formats)
+	src, err := identify(path, cfg.root)
 	if err != nil {
 		result.Error = "invalid_source"
 		return result
@@ -225,6 +225,10 @@ func (s *previewService) register(path, from string, cfg config) registrationRes
 	root := s.effectiveRoot(src.logical, src.canonical, cfg.root)
 	if root == "" {
 		result.Error = "outside_root"
+		return result
+	}
+	if _, err := s.base.formats.resolve(path, from); err != nil {
+		result.Error = "invalid_source"
 		return result
 	}
 	cap, err := s.capability(root, filepath.Dir(src.logical), cfg)
