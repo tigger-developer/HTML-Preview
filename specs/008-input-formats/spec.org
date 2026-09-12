@@ -1,36 +1,73 @@
 #+TITLE: W008 - Preview Pandoc documents, source code and plain text
+#+SCHEMA: 1
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PENDING
 #+OPERATOR_SIGNOFF: PENDING
 
-* Preview Pandoc documents, source code and plain text
+* Synopsis
 :PROPERTIES:
 :CUSTOM_ID: summary
 :END:
 
-- Outcome :: *Preview every installed Pandoc reader*, common source-code files,
-  plain text and passive native HTML from the same command.
-- Before :: Admission accepts only *.md, .markdown and .org*. Even .txt fails.
-- After :: A shared resolver selects *document conversion, an Org code wrapper,
-  a plaintext wrapper or native HTML*. Ordinary JSON is pretty-printed for
-  display while copying preserves its original contents.
-- Changes :: *Explicit reader selection and discoverable reader names* cover
-  ambiguous or uncommon formats. Binary snapshots and bounded embedded-media
-  handling support office documents. The exact wrapper and extension tables
-  below define code and text behaviour.
-- Unchanged :: *Go, Pandoc, local browser delivery and source preservation*.
-  Code never runs. No new CLI language runtime, system font installation or
-  external hosting is introduced.
-- Edge cases :: *Delimiter escaping, existing commas, invalid JSON, binary
-  containers, external resources, ambiguous extensions and resource limits*
-  have defined outcomes and traced tests.
-- Decisions :: The operator accepted *ordinary JSON display, exact copying,
-  explicit specialist reader selection and passive authored HTML* on
-  12 September 2026. TITLE and SCHEMA suffice for generated metadata.
-- Next step :: *Definition audit and overall operator sign-off*. This document
-  does not authorize implementation.
+** Outcome
+
+- *Preview every installed Pandoc reader*, common source-code files, plain text
+  and passive native HTML from the same command.
+
+** Before
+
+- Admission accepts only *.md, .markdown and .org*.
+- Even *.txt fails* the current extension check.
+
+** After
+
+- A shared resolver selects *document conversion, a code/text Org wrapper or
+  native HTML*.
+- Ordinary JSON displays *pretty-printed code* while copying retains its
+  original contents.
+- Native HTML retains *authored layout and permitted styling*, with supported
+  document links routed through W006 when serving.
+
+** Changes
+
+- *Explicit reader selection and reader listing* cover uncommon and ambiguous
+  formats, including the specialist Pandoc JSON AST.
+- *Binary snapshots and bounded embedded media* support office documents.
+- Code wrappers carry *filename and application-version metadata* with one
+  Source code heading; plaintext wrappers omit that heading.
+
+** Unchanged
+
+- *Go, Pandoc and the default browser* remain the runtime stack.
+- Sources remain *read-only*; code never executes.
+- Existing converted-page fonts, copying, navigation and file lifetimes remain.
+- Native HTML receives *no application reading chrome*. It permits no source
+  scripts, form submissions or automatic external requests.
+- Annotation writes remain limited to *genuine Org/Markdown sources*.
+
+** Edge cases
+:PROPERTIES:
+:CUSTOM_ID: synopsis-edge-cases
+:END:
+
+- *Delimiter-like text and existing commas* stay literal and copy unchanged.
+- *Malformed ordinary JSON* remains readable as source with a notice.
+- *Ambiguous extensions* have deterministic defaults and explicit selection.
+- *Damaged containers, denied resources and exhausted budgets* fail without
+  partial publication or an insecure conversion retry.
+
+** Decisions
+
+- On 12 September 2026, the operator accepted *ordinary JSON formatting with
+  original copying, specialist reader selection and passive authored HTML*.
+- *TITLE and SCHEMA suffice* for generated wrapper metadata.
+- *W008 delivers independently in file mode*; W006 consumes its format pipeline.
+
+** Next step
+
+- *Definition review, then overall operator sign-off* under
+  [[#delivery-handoff][Delivery Handoff]]. No implementation is authorized.
 
 -----
 
@@ -99,6 +136,9 @@
   Org comma escaping protects END_SRC; indentation alone terminates the block.
 
 ** Constraints and dependencies
+:PROPERTIES:
+:CUSTOM_ID: constraints-and-dependencies
+:END:
 
 - *W008 can be delivered independently in file mode*. Amended W006 requires
   the delivered W008 format boundary before its service integration is qualified.
@@ -120,20 +160,12 @@
   links while blocking scripts, form submissions and automatic external
   requests*. This intentionally allows bounded passive source styling, replacing
   the earlier blanket source-style prohibition for native HTML only.
-- Definition status :: Acceptance of these recommendations *resolves the product
+- Approval scope :: Acceptance of these recommendations *resolves the product
   questions*, not overall sign-off of this specification or permission to code.
 
 ** Unresolved blockers
 
 - None.
-
-* Hands-off mode decision log
-:PROPERTIES:
-:CUSTOM_ID: hands-off-mode-decision-log
-:VISIBILITY: folded
-:END:
-
-- *No hands-off invocation occurred* during definition.
 
 * Acceptance Criteria
 :PROPERTIES:
@@ -918,6 +950,10 @@ The application version is the same build version used by --version, including
 - Required reading :: The exact authorities and implementation boundaries named
   above; [[file:../006-local-preview-service/spec.org][W006 - Service integration]]
   only for the shared transport contract, not as permission to implement it.
+- Entry conditions :: *Explicit delivery authority and overall operator sign-off*;
+  read current definition evidence in =audits.yaml=. Verify the
+  [[#constraints-and-dependencies][dependency boundary]]: file-mode delivery is
+  independent of W006, and the service remains separately held.
 - First implementation step :: Write [[#rt-008-3][RT008.3 - Code and text wrapper
   presentation]] and observe .txt admission fail, then implement under TDD.
 - Definition evidence :: [[file:audits.yaml][audits.yaml]].
@@ -927,3 +963,11 @@ The application version is the same build version used by --version, including
   amended W006 boundary. Preserve historical narrower scope explicitly.
 - Delivery boundary :: *No implementation in this definition*. W008 file-mode
   delivery can precede W006; W006 owns served cross-format navigation tests.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:CUSTOM_ID: hands-off-mode-decision-log
+:VISIBILITY: folded
+:END:
+
+- *No hands-off invocation occurred* during definition.

@@ -1,51 +1,79 @@
 #+TITLE: W006 - Local preview service and automatic fallback
+#+SCHEMA: 1
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PENDING
 #+OPERATOR_SIGNOFF: PENDING
 
-* Local preview service and automatic fallback
+* Synopsis
 :PROPERTIES:
 :CUSTOM_ID: summary
 :END:
 
-- Outcome :: Readers *follow supported local document and code links on demand*, with a
-  *single-document fallback* when serving is unavailable or disallowed.
-- Before :: The command *opens temporary file URLs*. Optional linked browsing
-  pre-converts a bounded graph and occupies the terminal until interrupted.
-- After :: An optional *per-user Go service serves HTTP only on loopback*.
-  The command opens a *random-token/root-relative-path URL* for an eligible
-  source and then returns. No service, or a source outside configured trees,
-  selects the existing file preview and its quick/read retention policy, subject
-  to the existing explicit client-root restriction.
-- Changes :: *Configured roots, private service discovery, token authorization,
-  lazy rendering, bounded caching and relative asset delivery* join the existing
-  renderer. HTTP assets use a *specified raster/download allowlist* and must be
-  referenced by an authorized page. *W008 includes installed Pandoc readers,
-  code/plaintext wrappers and passive native HTML*. Native HTML keeps authored
-  appearance and its supported document links are rewritten.
-  Org heading/custom-ID searches resolve when
-  their target is visited.
-  Homebrew service support, a macOS LaunchAgent and a Linux user service are
-  packaged for explicit operator activation; WSL retains Windows-browser handoff.
-- Unchanged :: *Source files remain read-only*. The filename header, fonts,
-  navigation, metadata, drawers, highlighting, copying, licences and Pandoc
-  compatibility remain for converted pages. *Native HTML uses W008's authored
-  layout policy*, retaining passive styles but no source scripts.
-  JavaScript stays in the browser. *No remote bind option or TLS is provided*.
-- Edge cases :: *Escaped paths, symlinks, cross-root links, ambiguous Org targets,
-  stale service discovery, cache eviction, concurrent requests and restarts*
-  have explicit outcomes. Outside-root links are inactive in served pages;
-  conversion failures remain errors. WSL reachability failure selects fallback
-  without changing host networking. Tokens are excluded from routine logs.
-- Decisions :: The operator approved *HTTP, loopback-only serving, configured
-  trees, random URL tokens and automatic fallback* on 11 September 2026.
-  Design sign-off on 11 September 2026 includes *tokens lasting until service
-  restart*, *replacement of pre-generated linked browsing* and the asset contract.
-- Next step :: *Audit and sign off the format amendment*. The 11 September
-  approval remains history; the materially changed candidate requires renewed
-  sign-off. The operator's *implementation hold remains in force*.
+** Outcome
+
+- Readers *follow supported local document and code links on demand*, with
+  single-document fallback when serving is unavailable or disallowed.
+
+** Before
+
+- The command *opens temporary file URLs*.
+- Optional linked browsing *pre-converts a bounded graph* and occupies the
+  terminal until interrupted.
+
+** After
+
+- An optional *per-user Go service serves HTTP only on 127.0.0.1*.
+- Eligible inputs open *random-token/root-relative-path URLs* and the CLI returns.
+- Without a service, or outside its configured roots, the command uses the
+  existing file preview and quick/read lifetime, subject to explicit client-root
+  restrictions.
+
+** Changes
+
+- *Configured roots, private discovery and token authorization* govern serving.
+- *On-demand rendering, bounded caching and authorized assets* support browsing.
+- *All W008-supported formats* work for direct inputs and linked targets.
+- *Native HTML preserves passive authored appearance* and rewrites document links.
+- Org heading/custom-ID searches resolve when their targets are visited.
+- *Homebrew service support, a LaunchAgent and a Linux user service* are packaged
+  for explicit operator activation; WSL retains Windows-browser handoff.
+
+** Unchanged
+
+- Sources remain *read-only* and the default browser opens previews.
+- Converted pages retain source headers, fonts, navigation, metadata, drawers,
+  highlighting and copying; native HTML retains its own layout.
+- *No source scripts or automatic external requests* are permitted. Only native
+  HTML gains bounded passive source styling through W008.
+- *No remote bind option, TLS, implicit activation or directory listing* exists.
+
+** Edge cases
+:PROPERTIES:
+:CUSTOM_ID: synopsis-edge-cases
+:END:
+
+- *Escaped paths, symlink escapes and outside-root links* cannot bypass grants.
+- *Missing/ambiguous Org destinations* remain explained without disk indexing.
+- *Conversion errors* remain errors; they do not trigger successful fallback.
+- *Unavailable WSL loopback* selects file fallback without host-network changes.
+- *Restarts revoke tokens*; cache eviction preserves authorized URLs.
+- *Malformed format selectors and stale/foreign media* expose no denied bytes.
+
+** Decisions
+
+- The operator approved *HTTP, loopback, configured roots, random tokens and
+  fallback* on 11 September 2026, including restart-scoped tokens and replacement
+  of pre-generated browsing.
+- The 12 September amendment adds *W008 format routing and passive native HTML*.
+- The *previous approval remains history*; the amended candidate needs renewed
+  sign-off and the operator's implementation hold remains in force.
+
+** Next step
+
+- *Review the amended definition and obtain renewed sign-off* under
+  [[#delivery-handoff][Delivery Handoff]]. Native qualification remains delivery
+  work; an explicit instruction is required before implementation.
 
 -----
 
@@ -130,6 +158,9 @@
   [[https://pkg.go.dev/os#Root][Go rooted filesystem access]].
 
 ** Constraints and dependencies
+:PROPERTIES:
+:CUSTOM_ID: constraints-and-dependencies
+:END:
 
 - *W008's format pipeline must be delivered before W006 service integration is
   qualified*. [[file:../008-input-formats/spec.org][W008 - Input formats]] owns
@@ -150,6 +181,9 @@
 
 ** Decisions
 
+- Template conversion, 12 September 2026 :: The active amended candidate adopts
+  *template schema 1*, including Synopsis and harness-only audit state. This is
+  part of the authorized definition update; prior approval remains recorded.
 - Amendment, 12 September 2026 :: The operator requested *all Pandoc input formats
   and supported linked targets*, including W008 code/text and native HTML. They
   accepted ordinary JSON pretty printing with original-text copying, explicit
@@ -184,14 +218,6 @@
   the lifetime and migration proposals. *Implementation remains deferred* until
   a subsequent explicit instruction. *That prior approval predates the format
   amendment* and does not establish approval of the changed candidate.
-
-* Hands-off mode decision log
-:PROPERTIES:
-:CUSTOM_ID: hands-off-mode-decision-log
-:VISIBILITY: folded
-:END:
-
-- *No hands-off invocation occurred* during this definition.
 
 * Acceptance Criteria
 :PROPERTIES:
@@ -1385,6 +1411,11 @@ serve:
   *the named project authorities and
   affected baseline components*, plus the platform contracts linked above.
   Historical W001 graph tests must be reconciled explicitly, not silently dropped.
+- Entry conditions :: *Renewed operator sign-off and explicit release of the
+  implementation hold*; read current definition evidence in =audits.yaml=.
+  Verify [[#constraints-and-dependencies][W008's delivered format pipeline]]
+  using its committed implementation and recorded qualification before service
+  integration qualification. Design approval alone does not lift the hold.
 - First implementation step :: Write
   [[#rt-006-1][RT006.1 - Automatic transport selection]] and
   [[#rt-006-3][RT006.3 - Network and capability boundary]], *observe intended RED*,
@@ -1404,3 +1435,11 @@ serve:
   Activation on the operator's machine requires its own authority. Required RTs,
   implementation gate, browser/platform validation and operator closure remain
   distinct.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:CUSTOM_ID: hands-off-mode-decision-log
+:VISIBILITY: folded
+:END:
+
+- *No hands-off invocation occurred* during this definition.
