@@ -5,9 +5,10 @@
 * Planned qualification
 
 - Specification :: [[file:spec.org][W006 - Local preview service and automatic fallback]].
-- Evidence boundary :: *Definition only*. No service implementation or test
-  execution is claimed. Each result requires its candidate revision, exact
-  environment, observed evidence and, for user tests, human authority.
+- Evidence boundary :: Initial service implementation checks are recorded below.
+  They do not establish full service delivery or native qualification. Each
+  result requires its candidate revision, exact environment, observed evidence
+  and, for user tests, human authority.
 
 - Format amendment :: The *12 September 2026 W008 dependency* expands the
   pending qualification to all supported formats and passive native HTML.
@@ -96,3 +97,43 @@
   changed documentation; no persistent prose test is required.
 - Expected :: *Accurate two-mode guidance and preserved supersession history*,
   with explicit qualification limits and no remote-serving workaround.
+
+* Initial service boundary checkpoint, 12 September 2026
+
+- Baseline :: =d12ccdf= (input-format review and guidance qualification), followed
+  by the implementation checkpoint containing this entry. Environment: macOS
+  arm64, Go 1.26.8 and Pandoc 3.9.0.2. All service roots, configuration, sockets
+  and binaries used synthetic OS-temporary fixtures.
+- Intended RED :: The initial executable transport/network tests failed because
+  =--serve= was rejected with exit 2. The strict configuration cases independently
+  failed because startup did not reach configuration validation.
+- Focused GREEN :: =go test -race ./integration -run 'TestRT006_[123]_' -count=1=
+  passed in *4.036 seconds*. Cases cover a foreground service, private discovery,
+  kernel peer-UID authentication, capability URL shape, Host/Origin/fetch-site
+  refusals, response privacy headers, malformed configuration and automatic
+  HTTP CLI handoff for an Org source through the controlled desktop adapter.
+- Reconciliation :: The first network run exposed the system's /var logical
+  spelling versus /private/var canonical roots, and a second listener close
+  during shutdown. Root ancestor matching now preserves the logical spelling
+  while retaining canonical target checks. An already-closed listener is handled
+  as the expected shutdown result; unrelated cleanup errors still propagate.
+- Limit :: This focused subset does not establish full linked navigation,
+  Org lookup, cache/coalescing, assets, broad-format service coverage, complete
+  failure precedence, WSL handoff or packaging. The complete suite, static and
+  security checks, implementation review and all planned native tests remain.
+- Activation :: Only foreground fixture processes were started. No installed
+  launchd, Homebrew or systemd service was activated; no operator roots were granted.
+- Navigation RED/GREEN :: New lazy-link and Org-search cases first failed on
+  missing-target canonicalization and absent deferred lookup. After correction,
+  the navigation/root/reader-selector subset passed under the race detector in
+  *6.302 seconds*. It verifies late-created targets, cycles, unchanged external
+  anchors, malformed/traversal paths, denied symlinks, explicit reader queries,
+  GET/HEAD redirects to actual custom/heading anchors, and an unresolved-search
+  target with its explanation. Cache-backed fileless IDs remain outside this subset.
+- Licence RED/GREEN :: Staged installation initially omitted the new YAML
+  licence. The shared packaging inventory now includes it. The service startup
+  subset plus repeated prefix installation passed under race in *7.736 seconds*.
+- Static/security checkpoint :: =make lint= and =make vulncheck= passed after the
+  initial boundary implementation, before the subsequent navigation changes.
+  The scanner returned *No vulnerabilities found*. These are scoped development
+  checks; final candidate checks remain required.

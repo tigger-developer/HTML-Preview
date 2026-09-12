@@ -62,13 +62,27 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 	if len(sources) == 0 {
 		return 1
 	}
+	allSources := sources
+	served, sources, err := prepareHTTP(ctx, sources, cfg, log)
+	if err != nil {
+		log.warn("%v", err)
+		return 1
+	}
+	if invalid {
+		served.invalid = true
+	}
+	if len(sources) == 0 {
+		return openHTTP(ctx, allSources, served, desktop, log)
+	}
+	cfg.totalBytes -= served.sources
+	cfg.outputBytes -= served.outputs
 	path, err := host.Temp()
 	if err != nil {
 		log.warn("allocate private session: %v", err)
 		return 1
 	}
 	s := &session{path: path, pandoc: pandoc, host: host, desktop: desktop, cfg: cfg, log: log, byKey: make(map[string]*page)}
-	if invalid {
+	if invalid || served.invalid {
 		s.status = 1
 	}
 	defer func() {
@@ -116,14 +130,18 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 		return 1
 	}
 	opened := 0
-	for _, p := range s.pages {
-		if !p.source.explicit || !p.ready {
+	for _, src := range allSources {
+		target := served.urls[src.key]
+		if p := s.byKey[src.key]; p != nil && p.ready {
+			target = p.url
+		}
+		if target == "" {
 			continue
 		}
-		log.print("%s", p.url)
+		log.print("%s", target)
 		opened++
-		if err := desktop.open(ctx, p.url); err != nil {
-			log.warn("browser handoff for %q: %v", p.source.logical, err)
+		if err := desktop.open(ctx, target); err != nil {
+			log.warn("browser handoff for %q: %v", src.logical, err)
 			s.status = 1
 		}
 	}

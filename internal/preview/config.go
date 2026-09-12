@@ -10,6 +10,8 @@ import (
 )
 
 type config struct {
+	configPath, runtimePath              string
+	httpOrigin                           string
 	from, version                        string
 	formats                              *formatCatalogue
 	links                                bool
@@ -49,7 +51,7 @@ func arguments(args []string) ([]string, string, string, error) {
 				if from == "" {
 					return nil, "", "", fmt.Errorf("--from requires a reader")
 				}
-			} else if (arg == "-h" || arg == "--help" || arg == "--version" || arg == "--list-input-formats") && info == "" {
+			} else if (arg == "-h" || arg == "--help" || arg == "--version" || arg == "--list-input-formats" || arg == "--serve") && info == "" {
 				info = arg
 			} else {
 				return nil, "", "", fmt.Errorf("unknown or combined option %q", arg)
@@ -78,6 +80,10 @@ func settings(env []string) (config, error) {
 	}
 	for key, value := range values {
 		switch key {
+		case "HTMLPREVIEW_CONFIG":
+			c.configPath = value
+		case "HTMLPREVIEW_RUNTIME_DIR":
+			c.runtimePath = value
 		case "HTMLPREVIEW_TOC":
 			if value != "" && value != "0" && value != "1" {
 				return c, fmt.Errorf("%s must be 0 or 1", key)

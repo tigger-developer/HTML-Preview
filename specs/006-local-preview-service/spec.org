@@ -1445,3 +1445,28 @@ serve:
 :END:
 
 - *No hands-off invocation occurred* during this definition.
+
+** 2026-09-12T20:40:36Z :hands-off:review:
+
+*** Delivery admission and qualification boundary
+
+- The approved batch proceeds from W008's committed format implementation to
+  W006. W008's native browser matrix remains pending in its validation record;
+  W006 integration qualification must respect that predecessor boundary. W007
+  implementation still requires recorded W006 delivery and qualification.
+- Delivery remains on master with native goal mode off. Service regression
+  fixtures use temporary roots and foreground test processes; they do not
+  activate an installed user service or change the operator's configuration.
+
+*** YAML parser selection
+
+- Pin =go.yaml.in/yaml/v3= *3.0.5*, the YAML organization's stable security-
+  maintained API. The current v4 line is still release-candidate software;
+  the signed-off design calls for a stable supported API. The standard library
+  has no YAML parser. There are no module dependencies and no runtime executable.
+- The upstream licence combines MIT for the libyaml-derived files and Apache
+  2.0 for the remainder. Retain its full notice with distribution licences;
+  run the application vulnerability gate and measure the binary increment.
+- References :: [[https://github.com/yaml/go-yaml][YAML organization maintenance policy]],
+  [[https://github.com/yaml/go-yaml/releases/tag/v3.0.5][Stable release]],
+  [[https://raw.githubusercontent.com/yaml/go-yaml/v3.0.5/LICENSE][Licence]].

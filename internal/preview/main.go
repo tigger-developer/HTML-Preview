@@ -28,7 +28,7 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 	if info == "--list-input-formats" {
 		return listFormats(host, log)
 	}
-	if info != "" {
+	if info != "" && info != "--serve" {
 		log.print("%s", bundle.HelpText)
 		return log.status(0)
 	}
@@ -40,6 +40,15 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	cfg.from, cfg.version = from, version
+	svc, err := serviceSettings(cfg)
+	if err != nil {
+		log.warn("service configuration: %v", err)
+		return 2
+	}
+	if info == "--serve" {
+		return runService(ctx, cfg, svc, host, log)
+	}
+	cfg.runtimePath = svc.runtime
 	return execute(ctx, files, env, cfg, host, log)
 }
 

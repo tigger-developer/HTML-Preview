@@ -21,6 +21,8 @@ type sourceContext struct {
 	depth                         int64
 }
 
+func deviceOf(st os.FileInfo) string { return fmt.Sprint(st.Sys().(*syscall.Stat_t).Dev) }
+
 func contained(root, path string) bool {
 	rel, err := filepath.Rel(root, path)
 	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel)

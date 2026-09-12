@@ -29,6 +29,8 @@ type formatCatalogue struct {
 	listing            string
 }
 
+var readerSelectionPattern = regexp.MustCompile(`^[a-z][a-z0-9_]*([+-][a-z][a-z0-9_]*)*$`)
+
 func discoverFormats(ctx context.Context, host Host, pandoc string) (*formatCatalogue, error) {
 	readers, err := helper(ctx, host, pandoc, []string{"--list-input-formats"}, nil)
 	if err != nil {
@@ -61,7 +63,7 @@ func readerBase(value string) string {
 }
 
 func (c *formatCatalogue) validateSelection(ctx context.Context, host Host, pandoc, selection string) error {
-	if len(selection) > 256 || !regexp.MustCompile(`^[a-z][a-z0-9_]*([+-][a-z][a-z0-9_]*)*$`).MatchString(selection) {
+	if len(selection) > 256 || !readerSelectionPattern.MatchString(selection) {
 		return fmt.Errorf("invalid --from reader; use --list-input-formats")
 	}
 	base := readerBase(selection)

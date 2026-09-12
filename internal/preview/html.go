@@ -171,6 +171,9 @@ func (s *session) document(p *page) ([]byte, error) {
 		return nil, err
 	}
 	policy := fmt.Sprintf("default-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; script-src 'sha256-%s'; style-src 'sha256-%s'; font-src data:; img-src file: data:", hashBase64(script), hashBase64([]byte(css)))
+	if s.cfg.httpOrigin != "" {
+		policy = strings.Replace(policy, "img-src file: data:", "img-src "+s.cfg.httpOrigin+" data:", 1)
+	}
 	data := struct {
 		Policy, Name, Source, Directory, Startup, Title, Subtitle, Author, Date string
 		Format                                                                  string
