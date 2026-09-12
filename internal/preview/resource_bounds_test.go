@@ -5,8 +5,10 @@ package preview
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,6 +17,38 @@ import (
 	"sync/atomic"
 	"testing"
 )
+
+type cancelOnNotice struct{ cancel context.CancelFunc }
+
+func (w cancelOnNotice) Write(data []byte) (int, error) {
+	w.cancel()
+	return len(data), nil
+}
+
+func TestRT008_8_CancelDuringNativeAdmission(t *testing.T) {
+	// Conversion readiness is an internal boundary: cancellation during a
+	// diagnostic must prevent the page entering the later publication phase.
+	root := t.TempDir()
+	file := source(t, root, "cancel.html", "<script>inert()</script><p>Source</p>")
+	src, err := identify(file, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src.input = inputFormat{kind: "html", reader: "html"}
+	src.explicit = true
+	cfg, err := settings(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	s := &session{cfg: cfg, host: NativeHost(), log: &console{out: io.Discard, diagnostics: cancelOnNotice{cancel}}}
+	p := &page{source: src}
+	s.convert(ctx, p)
+	if ctx.Err() == nil || p.ready || s.status != 1 {
+		t.Fatalf("cancelled native conversion admitted: cancelled=%v ready=%v status=%d", ctx.Err(), p.ready, s.status)
+	}
+}
 
 func appendArchiveFixture(t *testing.T, original []byte, total int, extra *zip.FileHeader, contents []byte) []byte {
 	t.Helper()
@@ -151,5 +185,28 @@ func TestRT008_8_InflationChecksum(t *testing.T) {
 	r := run(t, root, nil, source(t, root, "crc.docx", string(data)))
 	if r.code != 1 || len(r.opens) != 0 || !strings.Contains(r.stderr, "archive") || !strings.Contains(r.stderr, "checksum") {
 		t.Fatalf("actual inflation checksum not enforced: %s", r.stderr)
+	}
+}
+
+func TestRT008_8_LocalRasterByteBoundary(t *testing.T) {
+	root := t.TempDir()
+	data := make([]byte, 10<<20)
+	copy(data, rasterFixture(t))
+	source(t, root, "limit.png", string(data))
+	source(t, root, "above.png", string(append(data, 0)))
+	input := `<img alt="at limit" src="limit.png"><img alt="above limit" src="above.png">`
+	r := run(t, root, nil, source(t, root, "limit.html", input))
+	success(t, r, 1)
+	images := nodes(r.pages[0], "img")
+	if len(images) != 1 || attr(images[0], "alt") != "at limit" {
+		t.Fatal("local raster byte boundary differs from 10 MiB inclusive")
+	}
+	encoded, ok := strings.CutPrefix(attr(images[0], "src"), "data:image/png;base64,")
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if !ok || err != nil || !bytes.Equal(decoded, data) {
+		t.Fatal("at-limit raster bytes changed")
+	}
+	if !strings.Contains(textOf(nodes(r.pages[0], "body")[0]), "above limit") || !strings.Contains(r.stderr, "byte limit") {
+		t.Fatal("oversized raster lacks its alternative and omission diagnostic")
 	}
 }

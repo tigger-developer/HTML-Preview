@@ -189,3 +189,31 @@ func TestRT008_6_LargeRasterData(t *testing.T) {
 		t.Fatal("valid bounded raster data lost to generic attribute limit")
 	}
 }
+
+func TestRT008_6_NativeEncodingAndRemoteBase(t *testing.T) {
+	root := t.TempDir()
+	source(t, root, "pixel.png", string(rasterFixture(t)))
+	for _, metadata := range []string{"", `<meta charset="windows-1252"><meta charset="utf-16">`} {
+		input := `<head>` + metadata + `<base href="https://example.invalid/docs/"><title>Taḋg</title></head><body><p>Éire</p><img alt="remote relative image" src="pixel.png"><a href="next.org">Next</a></body>`
+		r := run(t, root, nil, source(t, root, "unicode.html", input))
+		success(t, r, 1)
+		charsets := 0
+		for _, n := range nodes(r.pages[0], "meta") {
+			if attr(n, "charset") != "" {
+				charsets++
+				if attr(n, "charset") != "utf-8" {
+					t.Error("published encoding differs from actual UTF-8 bytes")
+				}
+			}
+		}
+		if charsets != 1 || textOf(nodes(r.pages[0], "title")[0]) != "Taḋg" {
+			t.Error("native UTF-8 representation lacks one unambiguous encoding declaration")
+		}
+		if len(nodes(r.pages[0], "img")) != 0 || len(nodes(r.pages[0], "base")) != 0 {
+			t.Error("remote base authorized local image or survived publication")
+		}
+		if attr(nodes(r.pages[0], "a")[0], "href") != "https://example.invalid/docs/next.org" {
+			t.Error("remote base changed explicit ordinary navigation")
+		}
+	}
+}

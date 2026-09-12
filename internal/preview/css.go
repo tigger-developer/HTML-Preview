@@ -30,9 +30,20 @@ func (s *session) passiveCSS(p *page, input string, inline bool, base string) st
 		switch kind {
 		case css.BeginAtRuleGrammar, css.BeginRulesetGrammar:
 			accept := suppressed == 0 && !inline
+			var prelude strings.Builder
+			for _, token := range parser.Values() {
+				prelude.Write(token.Data)
+			}
+			cleanPrelude := prelude.String()
 			if kind == css.BeginAtRuleGrammar {
 				name := strings.ToLower(decodeCSS(string(data)))
 				accept = accept && (name == "@media" || name == "@supports" || name == "@layer")
+				if accept {
+					cleanPrelude, accept = s.cssValue(p, cleanPrelude, base)
+					if !accept {
+						s.log.notice("%q: unsupported conditional CSS resource omitted", p.source.logical)
+					}
+				}
 			}
 			allowed = append(allowed, accept)
 			if !accept {
@@ -43,9 +54,7 @@ func (s *session) passiveCSS(p *page, input string, inline bool, base string) st
 				out.Write(data)
 				out.WriteByte(' ')
 			}
-			for _, token := range parser.Values() {
-				out.Write(token.Data)
-			}
+			out.WriteString(cleanPrelude)
 			out.WriteByte('{')
 		case css.EndAtRuleGrammar, css.EndRulesetGrammar:
 			if len(allowed) == 0 {

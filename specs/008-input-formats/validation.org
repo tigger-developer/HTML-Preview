@@ -139,3 +139,45 @@
   full race/static/security checks, reader/help guidance, implementation review
   and native qualification. *No implementation-gate or user-test result is
   inferred* from these development runs.
+
+* Boundary-review checkpoint, 12 September 2026
+
+- Revision :: Mapping checkpoint =37b170f= (cover format mappings and resource
+  admission), followed by the commit containing this record. Environment remains
+  macOS arm64, Go 1.26.8 and Pandoc 3.9.0.2.
+- Additional RED :: Conditional CSS retained an unadmitted remote URL and did
+  not embed its permitted local raster. Cancellation during native admission
+  left the page ready for publication. Native HTML with no charset or duplicate
+  declarations lacked one unambiguous UTF-8 declaration. Each regression was
+  observed before its corresponding production correction.
+- Focused race GREEN :: The conditional CSS, cancellation/resource and existing
+  reference/lifecycle subset passed in *60.096 seconds*. The subsequent native
+  encoding and remote-base case passed in *3.798 seconds*.
+- Additional corpus GREEN :: Container aliases, read-only directories, distinct
+  media and file graph on/off for DOCX/ODT/EPUB, plus the 256/257-character
+  selection boundary and option-shaped filename, passed in *7.611 seconds*.
+  A local raster of exactly 10 MiB was retained byte-for-byte and a one-byte
+  oversize raster was omitted with alternative text; that check passed in
+  *0.557 seconds*.
+- Suite diagnostics :: The original complete race run timed out after ten
+  minutes while executing source/output limits. That named test passed alone
+  in *4.78 seconds*. A second timed run again reached the aggregate ten-minute
+  limit while progressing, this time within the installed-reader corpus. Its
+  timed events recorded no earlier assertion failure. The test-package timeout
+  is now *twenty minutes*, with application limits unchanged. A current full
+  race/coverage run remains pending at this checkpoint.
+- Static/security evidence :: Current =make lint= passed after replacing a
+  flagged integer conversion in synthetic fixture colours with typed values.
+  =make vulncheck= returned *No vulnerabilities found*.
+- Dependency size evidence :: A bounded macOS arm64 =go build -trimpath=
+  comparison measured *8,506,802 bytes* at =5fa833a= (input selection and literal
+  wrappers) and *8,969,378 bytes* for the native HTML development candidate.
+  The 462,576-byte increase includes archive/media/HTML code and is not an
+  isolated attribution to the CSS parser. Both binaries used Go 1.26.8.
+- Coverage probe :: The existing subprocess boundary records instrumented child
+  execution: the focused wrapper cases reported *40.4% package coverage*.
+  This demonstrates collection only, not achievement of the new-code coverage
+  floor. The complete candidate run supplies that measurement.
+- Remaining :: Collect the complete current suite/coverage result, perform the
+  composite implementation review, and execute final guidance/native checks.
+  UT008.1 and OT008.1 retain their planned qualification status above.

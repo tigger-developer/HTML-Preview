@@ -230,7 +230,9 @@ make vulncheck
 
 `make test` uses Go's race detector, real Pandoc conversion, subprocess tests,
 and controlled desktop boundaries. It also checks staged installation and
-cross-compiled archives. Cross-compilation and doubles do not establish native
+cross-compiled archives. Its per-package timeout is twenty minutes for the full
+reader and filename-mapping corpus; application deadlines remain separate.
+Cross-compilation and doubles do not establish native
 execution on another OS or actual browser behaviour.
 
 Provision development tools separately: golangci-lint 1.64.8, StyLua 2.5.2,

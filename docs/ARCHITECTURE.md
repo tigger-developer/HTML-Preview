@@ -125,6 +125,13 @@ use the standard library; its declared test helper is not linked into the
 application. It adds no runtime executable or service. Dependency scanning and
 binary-size comparison remain required candidate verification.
 
+A 12 September macOS arm64 comparison with Go 1.26.8 and `-trimpath` measured
+8,506,802 bytes at the input-selection checkpoint and 8,969,378 bytes after the
+container, raster and native HTML implementation. The combined increase was
+462,576 bytes (5.4%); this includes the surrounding implementation and is not
+an isolated measurement of the CSS dependency. Candidate verification is
+recorded in [the input-format validation record](../specs/008-input-formats/validation.org).
+
 `htmlpreview` is a local Go command-line application that uses Pandoc to render
 Markdown and Org as HTML, repairs references for temporary output, and opens
 the result in a browser. [VISION.md](VISION.md) defines the product intent.

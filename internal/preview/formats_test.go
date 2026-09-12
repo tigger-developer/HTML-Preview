@@ -142,3 +142,25 @@ func TestRT008_2_ReaderSelection(t *testing.T) {
 		t.Fatal("unknown suffix lacks selection guidance")
 	}
 }
+
+func TestRT008_2_ReaderSelectionLengthAndLiteralFilename(t *testing.T) {
+	root := t.TempDir()
+	path := source(t, root, "document.unknown", "# Bounded reader\n")
+	valid := "markdown" + strings.Repeat("+smart", 40) + "+raw_tex"
+	oversized := "markdown" + strings.Repeat("+smart", 40) + "+raw_html"
+	if len(valid) != 256 || len(oversized) != 257 {
+		t.Fatal("fixture no longer exercises the reader length boundary")
+	}
+	r := run(t, root, nil, "--from="+valid, path)
+	success(t, r, 1)
+	r = run(t, root, nil, "--from="+oversized, path)
+	if r.code != 2 || len(r.opens) != 0 || !strings.Contains(r.stderr, "invalid --from") {
+		t.Fatal("oversized otherwise valid reader selection accepted")
+	}
+	source(t, root, "--literal.txt", "Literal option-shaped filename")
+	r = run(t, root, nil, "--", "--literal.txt")
+	success(t, r, 1)
+	if textOf(nodes(documentNode(t, r.pages[0], "hp-document"), "pre")[0]) != "Literal option-shaped filename" {
+		t.Fatal("option-shaped filename was not previewed literally")
+	}
+}

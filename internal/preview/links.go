@@ -128,22 +128,6 @@ func (s *session) resolve(ctx context.Context, p *page) error {
 			s.inactive(p, n, key, "unsupported or malformed reference")
 			continue
 		}
-		if n.Data == "img" && !r.local {
-			if allowedRaster(value) {
-				continue
-			}
-			if r.url != nil && (r.url.Scheme == "http" || r.url.Scheme == "https") {
-				n.Data = "a"
-				n.DataAtom = 0
-				removeAttribute(n, "src")
-				setAttribute(n, "href", value)
-				n.AppendChild(nodeText("[Remote image: " + attribute(n, "alt") + "]"))
-				s.log.notice("%q: remote image retained as a link", p.source.logical)
-			} else {
-				s.inactive(p, n, key, "unsupported image reference")
-			}
-			continue
-		}
 		if !r.local && r.id == "" {
 			if r.url != nil && r.url.Scheme == "data" {
 				s.inactive(p, n, key, "data anchors are unsupported")
@@ -232,15 +216,6 @@ func (s *session) target(p *page, r reference) (*page, string) {
 		return target, ids[0]
 	}
 	return nil, ""
-}
-func allowedRaster(value string) bool {
-	lower := strings.ToLower(value)
-	for _, mime := range []string{"png", "jpeg", "gif", "webp", "avif"} {
-		if strings.HasPrefix(lower, "data:image/"+mime+";base64,") {
-			return true
-		}
-	}
-	return false
 }
 func (s *session) inactive(p *page, n *html.Node, key, reason string) {
 	removeAttribute(n, key)

@@ -53,6 +53,8 @@ func (s *session) renderNativeHTML(p *page, data []byte) error {
 	head := element(doc, "head")
 	policy := &html.Node{Type: html.ElementNode, Data: "meta", Attr: []html.Attribute{{Key: "http-equiv", Val: "Content-Security-Policy"}, {Key: "content", Val: nativePolicy}}}
 	head.InsertBefore(policy, head.FirstChild)
+	charset := &html.Node{Type: html.ElementNode, Data: "meta", Attr: []html.Attribute{{Key: "charset", Val: "utf-8"}}}
+	head.InsertBefore(charset, head.FirstChild)
 	p.ids = make(map[string][]string)
 	p.headings = make(map[string][]string)
 	p.orgIDs = make(map[string][]string)
@@ -91,10 +93,8 @@ func (s *session) cleanNativeNode(p *page, n *html.Node, base string) {
 	}
 	if n.Data == "meta" {
 		name := strings.ToLower(attribute(n, "name"))
-		if attribute(n, "http-equiv") != "" || (attribute(n, "charset") == "" && name != "viewport" && name != "description") {
+		if attribute(n, "http-equiv") != "" || attribute(n, "charset") != "" || (name != "viewport" && name != "description") {
 			n.Parent.RemoveChild(n)
-		} else if attribute(n, "charset") != "" {
-			n.Attr = []html.Attribute{{Key: "charset", Val: "utf-8"}}
 		} else {
 			n.Attr = []html.Attribute{{Key: "name", Val: name}, {Key: "content", Val: attribute(n, "content")}}
 		}

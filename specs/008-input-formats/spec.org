@@ -1129,3 +1129,19 @@ authorization and HTTP headers; its implementation is not a W008 prerequisite.
   as a filesystem output path and no resource-fetch API is invoked.
 - Native CSS uses the *pinned maintained parser* documented in Architecture.
   Its dependency licence is included in installation and release notices.
+
+** 2026-09-12T18:35:13Z :hands-off:review:
+
+*** Regression-suite execution budget
+
+- The full race-enabled suite exceeded Go's default ten-minute package timeout
+  while continuing through independent real-Pandoc conversions. The repeated
+  diagnostic reached a different test before the same aggregate timeout;
+  the earlier named test passed independently. *The test-suite timeout is now
+  twenty minutes*. Application conversion, source, output and traversal limits
+  retain their approved values. No test or race check is disabled.
+- Native HTML receives one *owned UTF-8 declaration*, matching its validated
+  source bytes. Source charset declarations cannot conflict with it. Conditional
+  CSS resource tokens undergo the same admission as declaration values.
+- A page whose conversion context expires or is cancelled during native
+  processing is *not admitted to publication*.

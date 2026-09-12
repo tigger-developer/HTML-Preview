@@ -6,9 +6,11 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/base64"
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -56,6 +58,11 @@ func readerFixture(t *testing.T, root, reader string, media bool) []byte {
 	if media {
 		text += "\n![fixture image](data:image/png;base64," + base64.StdEncoding.EncodeToString(rasterFixture(t)) + ")\n"
 	}
+	return writeReaderFixture(t, root, reader, text)
+}
+
+func writeReaderFixture(t *testing.T, root, reader, text string) []byte {
+	t.Helper()
 	host := NativeHost()
 	pandoc, err := host.LookPath("pandoc")
 	if err != nil {
@@ -66,6 +73,74 @@ func readerFixture(t *testing.T, root, reader string, media bool) []byte {
 		t.Fatalf("generate %s fixture: %v", reader, err)
 	}
 	return output
+}
+
+func TestRT008_7_ContainerAliasesAndFileGraph(t *testing.T) {
+	for _, reader := range []string{"docx", "odt", "epub"} {
+		t.Run(reader, func(t *testing.T) {
+			root := t.TempDir()
+			var expected []string
+			var paths []string
+			colours := []uint8{30, 31}
+			for i, folder := range []string{"left", "right"} {
+				imageURL := "data:image/png;base64," + base64.StdEncoding.EncodeToString(colourRasterFixture(t, colours[i]))
+				body := "# Separate media\n\n![image](" + imageURL + ")\n"
+				data := writeReaderFixture(t, root, reader, body)
+				paths = append(paths, source(t, root, folder+"/shared."+reader, string(data)))
+				expected = append(expected, imageURL)
+			}
+			alias := filepath.Join(root, "alias."+reader)
+			if err := os.Symlink(paths[0], alias); err != nil {
+				t.Fatal(err)
+			}
+			paths = append(paths, alias)
+			expected = append(expected, expected[0])
+			// #nosec G302 -- Read-only owned directory retains traversal for the fixture.
+			if err := os.Chmod(filepath.Dir(paths[0]), 0500); err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() {
+				// #nosec G302 -- Restore owner traversal and writes solely for cleanup.
+				if err := os.Chmod(filepath.Dir(paths[0]), 0700); err != nil {
+					t.Error(err)
+				}
+			})
+			entry := source(t, root, "index.md", "[left](left/shared."+reader+") [right](right/shared."+reader+") [alias](alias."+reader+")")
+			for _, enabled := range []bool{false, true} {
+				env := []string{"HTMLPREVIEW_ROOT=" + root}
+				count := 1
+				if enabled {
+					env = append(env, "HTMLPREVIEW_LINKS=1")
+					count = 4
+				}
+				r := run(t, t.TempDir(), env, entry)
+				success(t, r, count)
+				links := nodes(documentNode(t, r.pages[0], "hp-document"), "a")
+				if len(links) != 3 {
+					t.Fatal("container graph lost document links")
+				}
+				for i, a := range links {
+					if !enabled {
+						if attr(a, "href") != fileReference(paths[i]) {
+							t.Error("disabled graph changed original container destination")
+						}
+						continue
+					}
+					if attr(a, "href") != r.opens[0].URL[:strings.LastIndex(r.opens[0].URL, "/")+1]+fmt.Sprintf("%04d.html", i+2) {
+						t.Error("container link does not target its generated page")
+					}
+					page := r.pages[i+1]
+					if attr(documentNode(t, page, "hp-source"), "data-hp-source") != paths[i] {
+						t.Error("container alias lost logical source identity")
+					}
+					images := nodes(page, "img")
+					if len(images) != 1 || attr(images[0], "src") != expected[i] {
+						t.Error("container media collided across original source contexts")
+					}
+				}
+			}
+		})
+	}
 }
 
 func rasterFixture(t *testing.T) []byte {

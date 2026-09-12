@@ -258,6 +258,9 @@ func (s *session) convert(ctx context.Context, p *page) {
 		s.sourceUsed += int64(len(data))
 		err = s.render(ctx, p, data)
 	}
+	if err == nil {
+		err = ctx.Err()
+	}
 	if err != nil {
 		s.log.warn("source %q: %v", p.source.logical, err)
 		if p.source.explicit {
