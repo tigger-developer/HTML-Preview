@@ -117,12 +117,19 @@ func (s *session) cssValue(p *page, value, base string) (string, bool) {
 		case css.BadURLToken, css.BadStringToken, css.AtKeywordToken, css.LeftBraceToken, css.RightBraceToken, css.SemicolonToken:
 			return "", false
 		case css.URLToken:
-			open := strings.IndexByte(decoded, '(')
-			if open < 0 || !strings.HasSuffix(decoded, ")") {
+			raw := string(data)
+			open := strings.IndexByte(raw, '(')
+			if open < 0 || !strings.HasSuffix(raw, ")") {
 				return "", false
 			}
-			value := strings.TrimSpace(decoded[open+1 : len(decoded)-1])
-			value = strings.Trim(value, "\"'")
+			value := strings.TrimSpace(raw[open+1 : len(raw)-1])
+			if len(value) >= 2 && (value[0] == '\'' || value[0] == '"') {
+				if value[len(value)-1] != value[0] {
+					return "", false
+				}
+				value = value[1 : len(value)-1]
+			}
+			value = decodeCSS(value)
 			resolved := resolveHTMLReference(base, value)
 			image, err := s.imageURL(p, resolved, "")
 			if err != nil {

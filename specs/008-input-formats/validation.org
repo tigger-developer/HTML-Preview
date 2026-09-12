@@ -181,3 +181,33 @@
 - Remaining :: Collect the complete current suite/coverage result, perform the
   composite implementation review, and execute final guidance/native checks.
   UT008.1 and OT008.1 retain their planned qualification status above.
+
+* Full-suite and installation evidence, 12 September 2026
+
+- Revision :: =8d416a7= (native resource and cancellation boundaries), with the
+  subsequent quoted-filename correction and installed-format regression in the
+  commit containing this entry. macOS arm64, Go 1.26.8 and Pandoc 3.9.0.2.
+- Complete suite :: =make test= with an OS-temporary coverage output passed;
+  the target ran =go test -race -timeout=20m ./...=. The preview package took
+  *648.901 seconds* and reported *88.4% statement coverage*. The integration
+  package, including repeated prefix installation and licence checks, passed
+  in *15.321 seconds*. No test was disabled.
+- Follow-up RED/GREEN :: A quoted CSS raster filename beginning with an
+  apostrophe was omitted because delimiter removal also removed filename text.
+  The added public-CLI regression failed before correction. Delimiters are now
+  removed as one matching pair before escape decoding. The complete native
+  HTML group passed under the race detector in *18.338 seconds* afterwards.
+- Installed format coverage :: A separate staged-install regression passed in
+  *4.187 seconds* under the race detector. It opened .txt, Go, ordinary JSON,
+  native HTML, DOCX and ODT through a PATH symlink from another cwd; verified
+  original input hashes, source identity, packaged fonts and native HTML's own
+  presentation. Its desktop boundary captures output; it does not establish
+  native browser behaviour.
+- New-module coverage :: Go's statement counters covered *515 of 592 statements
+  (87.0%)* across archive, CSS, format selection, media, native HTML and wrappers.
+  Every module exceeded 80%. The calculation uses the full-suite profile for
+  unchanged modules and the subsequent complete native HTML group's profile for
+  the changed CSS module. This does not substitute for behavioural assertions.
+- Qualification boundary :: Final guidance review and all four native browser
+  environments remain pending as recorded above. Implementation review uses
+  the separate harness-owned evidence record.

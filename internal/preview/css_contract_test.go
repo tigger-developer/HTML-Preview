@@ -33,3 +33,16 @@ func TestRT008_6_ConditionalCSSResources(t *testing.T) {
 		t.Error("permitted conditional layout was removed")
 	}
 }
+
+func TestRT008_6_CSSQuotedRasterFilename(t *testing.T) {
+	root := t.TempDir()
+	png := rasterFixture(t)
+	source(t, root, "'leading.png", string(png))
+	input := `<style>.quoted {background-image:url("'leading.png");color:navy}</style><p class="quoted">Quoted filename</p>`
+	r := run(t, root, nil, source(t, root, "quoted.html", input))
+	success(t, r, 1)
+	style := textOf(nodes(r.pages[0], "style")[0])
+	if !strings.Contains(style, "data:image/png;base64,"+base64.StdEncoding.EncodeToString(png)) {
+		t.Fatalf("quoted filename changed during CSS resource resolution: %s", r.stderr)
+	}
+}
