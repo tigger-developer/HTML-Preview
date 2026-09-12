@@ -1,7 +1,7 @@
 #+TITLE: Project Work Ledger
 #+STARTUP: overview
 #+TODO: TODO ACTIVE BLOCKED REVIEW | DONE ABANDONED
-#+TYP_TODO: PENDING FAILING SUPERSEDED | HOLD ASSUMED_PASS
+#+TYP_TODO: PENDING FAILING SUPERSEDED | VALID ASSUMED_PASS
 #+TAGS: feature defect maintenance migration legacy
 #+OPTIONS: toc:2 num:nil
 
@@ -42,7 +42,7 @@ section defines their meanings.
 - =PENDING= :: The requirement or some required evidence remains unverified.
 - =FAILING= :: Current evidence shows that the requirement does not hold.
 - =SUPERSEDED= :: A named later requirement replaces or retires it.
-- =HOLD= :: The requirement remains current and its recorded evidence passes.
+- =VALID= :: The requirement remains current and its recorded evidence passes.
 - =ASSUMED_PASS= :: Migration inferred delivery under a recorded heuristic; it
   is not a contemporaneous test result.
 
