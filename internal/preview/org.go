@@ -31,6 +31,12 @@ type metadataField struct {
 }
 
 func preserveOrg(data []byte, token string) (preservation, error) {
+	return preserveOrgCode(data, token, nil)
+}
+
+// A wrapper supplies its original display payload only after its generated
+// boundaries have been parsed. Ordinary Org input never supplies this authority.
+func preserveOrgCode(data []byte, token string, wrapperDisplay *string) (preservation, error) {
 	source := strings.ReplaceAll(string(data), "\r\n", "\n")
 	prefix := "HTMLPREVIEW_DRAWER_" + token
 	p := preservation{startup: "showall", fragments: make(map[string]string)}
@@ -99,6 +105,13 @@ func preserveOrg(data []byte, token string) (preservation, error) {
 			}
 			if kind == "SRC" {
 				codeCount++
+				if wrapperDisplay != nil {
+					if codeCount != 1 {
+						return p, fmt.Errorf("wrapper contains multiple code blocks")
+					}
+					literal.Reset()
+					literal.WriteString(*wrapperDisplay)
+				}
 				language := ""
 				if parts := strings.Fields(trim); len(parts) > 1 {
 					language = parts[1]

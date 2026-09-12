@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"html/template"
 	"path/filepath"
@@ -133,6 +134,12 @@ func (s *session) document(p *page) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if p.copyOriginal != nil {
+		body, err = attachCopyPayload(body, p.copyOriginal)
+		if err != nil {
+			return nil, err
+		}
+	}
 	toc := ""
 	if p.toc != nil {
 		toc, err = sanitizeDocument(p.toc)
@@ -179,6 +186,35 @@ func (s *session) document(p *page) ([]byte, error) {
 		return nil, err
 	}
 	return output.Bytes(), nil
+}
+
+// Only the owned wrapper may attach a clipboard payload, after source HTML has
+// passed sanitization. Source-authored data attributes cannot enter this channel.
+func attachCopyPayload(body string, original []byte) (string, error) {
+	doc, err := html.Parse(strings.NewReader(body))
+	if err != nil {
+		return "", err
+	}
+	var code *html.Node
+	for n := range doc.Descendants() {
+		if n.Data == "code" && n.Parent.Data == "pre" {
+			if code != nil {
+				return "", errors.New("wrapper has multiple displayed code blocks")
+			}
+			code = n
+		}
+	}
+	if code == nil {
+		return "", errors.New("wrapper has no displayed code block")
+	}
+	setAttribute(code, "data-hp-copy-base64", base64.StdEncoding.EncodeToString(original))
+	var out strings.Builder
+	for n := element(doc, "body").FirstChild; n != nil; n = n.NextSibling {
+		if err := html.Render(&out, n); err != nil {
+			return "", err
+		}
+	}
+	return out.String(), nil
 }
 
 func hashBase64(data []byte) string {

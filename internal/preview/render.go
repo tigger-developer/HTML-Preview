@@ -18,6 +18,7 @@ import (
 )
 
 type page struct {
+	copyOriginal                  []byte
 	frontmatter                   []metadataField
 	source                        sourceContext
 	name, url, startup            string
@@ -32,6 +33,11 @@ type page struct {
 }
 
 func (s *session) render(ctx context.Context, p *page, data []byte) error {
+	if !p.source.input.binary() {
+		if err := validateText(data); err != nil {
+			return err
+		}
+	}
 	token, err := transportToken(data)
 	if err != nil {
 		return err
@@ -42,11 +48,18 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	}
 	format := strings.TrimSpace(string(dialect))
 	p.format = "markdown"
+	if p.source.selected || p.source.input.reader != "markdown" {
+		format = p.source.input.reader
+	}
 	preserved := preservation{startup: "showall"}
-	if strings.EqualFold(filepath.Ext(p.source.logical), ".org") {
-		format = "org"
+	if p.source.input.kind == "org" || p.source.input.wrapped() {
 		p.format = "org"
-		preserved, err = preserveOrg(data, token)
+		if p.source.input.wrapped() {
+			format = "org"
+			preserved, err = s.preserveWrapper(p, data, token)
+		} else {
+			preserved, err = preserveOrg(data, token)
+		}
 		if err != nil {
 			return err
 		}

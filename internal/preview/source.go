@@ -10,23 +10,17 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-	"unicode/utf8"
 )
 
 type sourceContext struct {
+	input                         inputFormat
+	selected                      bool
 	logical, canonical, key, root string
 	device                        string
 	explicit                      bool
 	depth                         int64
 }
 
-func supported(path string) bool {
-	switch strings.ToLower(filepath.Ext(path)) {
-	case ".md", ".markdown", ".org":
-		return true
-	}
-	return false
-}
 func contained(root, path string) bool {
 	rel, err := filepath.Rel(root, path)
 	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel)
@@ -39,9 +33,6 @@ func identify(path, root string) (sourceContext, error) {
 		return s, err
 	}
 	s.logical = filepath.Clean(absolute)
-	if !supported(s.logical) {
-		return s, errors.New("expected a .md, .markdown, or .org file")
-	}
 	s.canonical, err = filepath.EvalSymlinks(s.logical)
 	if err != nil {
 		return s, err
@@ -104,9 +95,6 @@ func snapshot(s sourceContext, limit int64) (data []byte, err error) {
 	}
 	if after.Size() != st.Size() || after.ModTime() != st.ModTime() {
 		return nil, errors.New("source changed during snapshot")
-	}
-	if !utf8.Valid(data) {
-		return nil, errors.New("source is not valid UTF-8")
 	}
 	return data, nil
 }

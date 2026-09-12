@@ -14,7 +14,7 @@ import (
 // Main runs one command and returns its public exit status.
 func Main(args, env []string, out, diagnostics io.Writer, version, revision string, host Host) int {
 	log := &console{out: out, diagnostics: diagnostics}
-	files, info, err := arguments(args)
+	files, info, from, err := arguments(args)
 	if err != nil {
 		log.warn("%v", err)
 		return 2
@@ -22,6 +22,9 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 	if info == "--version" {
 		log.print("htmlpreview %s (%s)", version, revision)
 		return log.status(0)
+	}
+	if info == "--list-input-formats" {
+		return listFormats(host, log)
 	}
 	if info != "" {
 		log.print("%s", helpText)
@@ -34,7 +37,27 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	cfg.from, cfg.version = from, version
 	return execute(ctx, files, env, cfg, host, log)
+}
+
+func listFormats(host Host, log *console) int {
+	ctx := context.Background()
+	path, err := host.LookPath("pandoc")
+	if err == nil {
+		err = checkPandoc(ctx, host, path)
+	}
+	if err != nil {
+		log.warn("Pandoc input-format listing: %v", err)
+		return 1
+	}
+	catalogue, err := discoverFormats(ctx, host, path)
+	if err != nil {
+		log.warn("%v", err)
+		return 1
+	}
+	log.print("%s", catalogue.listing)
+	return log.status(0)
 }
 
 type console struct {

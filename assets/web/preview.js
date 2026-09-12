@@ -132,7 +132,8 @@ async function enhanceCode(main, copyValue, controller, dispose) {
     if (code.parentElement.closest('code')) continue;
     // Capture before any controls are inserted; never derive this from a class,
     // source attribute, control label or highlighted span.
-    const value = code.textContent;
+    const encoded = code.getAttribute('data-hp-copy-base64');
+    const value = encoded === null ? code.textContent : new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0)));
     const label = pre ? 'Code block ' + (++blockNumber) : 'Inline code ' + (++inlineNumber);
     if (value === '') continue;
     const button = document.createElement('button');

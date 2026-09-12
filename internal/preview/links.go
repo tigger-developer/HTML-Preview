@@ -25,10 +25,13 @@ func (s *session) discover(p *page) {
 			continue
 		}
 		r, err := parseReference(attribute(n, "href"), filepath.Dir(p.source.logical))
-		if err != nil || !r.local || !supported(r.path) {
+		if err != nil || !r.local {
 			continue
 		}
-		src, err := identify(r.path, p.source.root)
+		if _, err := s.cfg.formats.resolve(r.path, ""); err != nil {
+			continue
+		}
+		src, err := identifyFormat(r.path, p.source.root, "", s.cfg.formats)
 		if err != nil {
 			s.log.notice("%q: linked target skipped %q: %v", p.source.logical, r.path, err)
 			continue
@@ -199,7 +202,7 @@ func (s *session) target(p *page, r reference) (*page, string) {
 		}
 		return nil, ""
 	}
-	src, err := identify(r.path, "")
+	src, err := identifyFormat(r.path, "", "", s.cfg.formats)
 	if err != nil {
 		return nil, ""
 	}

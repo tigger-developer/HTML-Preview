@@ -10,6 +10,8 @@ import (
 )
 
 type config struct {
+	from, version                        string
+	formats                              *formatCatalogue
 	links                                bool
 	toc                                  bool
 	tocDepth                             int
@@ -19,32 +21,50 @@ type config struct {
 	sourceBytes, totalBytes, outputBytes int64
 }
 
-func arguments(args []string) ([]string, string, error) {
+func arguments(args []string) ([]string, string, string, error) {
 	var files []string
 	info := ""
+	from := ""
 	options := true
-	for _, arg := range args {
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
 		if options && arg == "--" {
 			options = false
 			continue
 		}
 		if options && strings.HasPrefix(arg, "-") {
-			if (arg == "-h" || arg == "--help" || arg == "--version") && info == "" {
+			if arg == "--from" || strings.HasPrefix(arg, "--from=") {
+				if from != "" {
+					return nil, "", "", fmt.Errorf("--from may be supplied only once")
+				}
+				if arg == "--from" {
+					i++
+					if i >= len(args) {
+						return nil, "", "", fmt.Errorf("--from requires a reader")
+					}
+					from = args[i]
+				} else {
+					from = strings.TrimPrefix(arg, "--from=")
+				}
+				if from == "" {
+					return nil, "", "", fmt.Errorf("--from requires a reader")
+				}
+			} else if (arg == "-h" || arg == "--help" || arg == "--version" || arg == "--list-input-formats") && info == "" {
 				info = arg
 			} else {
-				return nil, "", fmt.Errorf("unknown or combined option %q", arg)
+				return nil, "", "", fmt.Errorf("unknown or combined option %q", arg)
 			}
 		} else {
 			files = append(files, arg)
 		}
 	}
 	if info != "" && len(args) != 1 {
-		return nil, "", fmt.Errorf("informational options must be used alone")
+		return nil, "", "", fmt.Errorf("informational options must be used alone")
 	}
 	if info == "" && len(files) == 0 {
-		return nil, "", fmt.Errorf("provide at least one Markdown or Org file; see --help")
+		return nil, "", "", fmt.Errorf("provide at least one input file; see --help")
 	}
-	return files, info, nil
+	return files, info, from, nil
 }
 
 func settings(env []string) (config, error) {

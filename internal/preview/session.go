@@ -29,11 +29,6 @@ type session struct {
 }
 
 func execute(ctx context.Context, files, env []string, cfg config, host Host, log *console) (code int) {
-	sources, invalid, err := explicitSources(files, cfg, log)
-	if err != nil {
-		log.warn("%v", err)
-		return 2
-	}
 	pandoc, err := host.LookPath("pandoc")
 	if err != nil {
 		log.warn("install Pandoc 3.9.0.2 or a later 3.9 patch: %v", err)
@@ -42,6 +37,22 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 	if err := checkPandoc(ctx, host, pandoc); err != nil {
 		log.warn("Pandoc compatibility: %v", err)
 		return 1
+	}
+	cfg.formats, err = discoverFormats(ctx, host, pandoc)
+	if err != nil {
+		log.warn("%v", err)
+		return 1
+	}
+	if cfg.from != "" {
+		if err := cfg.formats.validateSelection(ctx, host, pandoc, cfg.from); err != nil {
+			log.warn("%v", err)
+			return 2
+		}
+	}
+	sources, invalid, err := explicitSources(files, cfg, log)
+	if err != nil {
+		log.warn("%v", err)
+		return 2
 	}
 	desktop, err := selectDesktop(host, env)
 	if err != nil {
@@ -157,7 +168,7 @@ func explicitSources(files []string, cfg config, log *console) ([]sourceContext,
 	seen := make(map[string]bool)
 	invalid := false
 	for _, file := range files {
-		src, err := identify(file, root)
+		src, err := identifyFormat(file, root, cfg.from, cfg.formats)
 		if err != nil {
 			log.warn("source %q: %v", file, err)
 			invalid = true

@@ -5,8 +5,9 @@
 * Planned qualification
 
 - Specification :: [[file:spec.org][W008 - Preview Pandoc documents, source code and plain text]].
-- Evidence boundary :: *Definition only*. No application implementation or
-  qualification is claimed. Record the exact revision, platform and evidence.
+- Evidence boundary :: Definition feasibility and a *partial implementation
+  checkpoint* are recorded separately below. No completed implementation or
+  native qualification is claimed.
 
 ** UT008.1 - Native format reading
 :PROPERTIES:
@@ -72,3 +73,33 @@
 - Language probe :: Compared every source-block language in the common-code
   table against =pandoc --list-highlight-languages=. *All non-plaintext names
   were present*; plaintext deliberately selects an unhighlighted block.
+
+* Partial delivery checkpoint, 12 September 2026
+
+- Baseline :: Approval checkpoint =fd4421f= (record delivery authority), followed
+  by the implementation checkpoint containing this record, on macOS arm64 with
+  Go 1.26.8 and Pandoc 3.9.0.2. Go caches were confined to OS temporary storage.
+- Intended RED :: =go test ./internal/preview -run 'TestRT008_[2345]' -count=1=
+  failed on the baseline: code/text/JSON inputs were refused by the extension
+  check; explicit --from was refused by the option parser.
+- Focused GREEN :: The same command passed after adding format selection,
+  wrapper generation, original-payload restoration, token-preserving JSON
+  formatting and the owned clipboard payload. Observed package duration:
+  *10.734 seconds*.
+- Evidence limit :: These cases exercise the CLI boundary with real Pandoc and
+  captured browser handoff. They do not establish actual browser clipboard
+  behaviour, complete mapping coverage, binary conversion or passive HTML.
+- Broader regression result :: =go test ./internal/preview -count=1= *failed*
+  after 38.364 seconds. RT002.2 passive-highlighting resource failure observed
+  status 1, no browser opens and no cleanup timestamp. RT001.11 device-boundary
+  testing then panicked when a directly constructed session reached format
+  resolution with a nil catalogue. The run terminated; remaining package cases
+  and the complete repository suite are unverified. Diagnose and reconcile these
+  cases before continuing implementation.
+- Remaining delivery :: Complete reader fixtures and mapping cases, binary
+  snapshots/media and archive bounds, passive HTML/CSS/raster policy, graph and
+  compatibility reconciliation, help/format documentation, static and security
+  checks, and composite implementation audit. UT008.1 and OT008.1 remain pending.
+- Continuation :: The native goal reached its *100,000-token budget* during
+  delivery. W006 local service and W007 annotations have not been implemented
+  under this invocation; their dependency and admission conditions remain.
