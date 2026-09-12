@@ -1148,7 +1148,9 @@ JSON_EVENT
 - Accessibility :: Annotation controls retain *keyboard access, visible focus,
   accessible names and polite textual save status* through autosave and refresh.
   Browser regressions verify mechanical behaviour; human screen-reader and
-  visual usability qualification remains required under AC007.19 and UT007.6.
+  visual usability qualification remains required under
+  [[#ac-007-19][AC007.19 - Accessible browser interaction]] and
+  [[#ut-007-6][UT007.6 - Accessible and safe presentation]].
 - Maintainability :: Keep event codec, rooted append policy, anchors, HTTP adapter,
   composer state and DOM mapping as independently testable responsibilities.
   Go/HTML/CSS/browser JS suffice; justify any Go dependency before introduction.
