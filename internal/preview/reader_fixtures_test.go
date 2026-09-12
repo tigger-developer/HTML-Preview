@@ -109,11 +109,12 @@ func TestRT008_7_ContainerAliasesAndFileGraph(t *testing.T) {
 			for _, enabled := range []bool{false, true} {
 				env := []string{"HTMLPREVIEW_ROOT=" + root}
 				count := 1
+				entries := []string{entry}
 				if enabled {
-					env = append(env, "HTMLPREVIEW_LINKS=1")
 					count = 4
+					entries = append(entries, paths...)
 				}
-				r := run(t, t.TempDir(), env, entry)
+				r := run(t, t.TempDir(), env, entries...)
 				success(t, r, count)
 				links := nodes(documentNode(t, r.pages[0], "hp-document"), "a")
 				if len(links) != 3 {

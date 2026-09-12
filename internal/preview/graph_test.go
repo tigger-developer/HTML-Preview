@@ -1,4 +1,4 @@
-// ABOUTME: Exercises bounded graph admission, aliases, and outline metadata.
+// ABOUTME: Exercises graph-option migration, aliases, and outline metadata.
 // ABOUTME: Reading sessions end only after the retention state is observable.
 package preview
 
@@ -11,7 +11,8 @@ import (
 	"golang.org/x/net/html"
 )
 
-func TestRT001_10_LinkedBreadthFirst(t *testing.T) {
+// W006 supersedes RT001.10's breadth-first graph contract with on-demand HTTP.
+func TestRT006_1_LegacyGraphSettingsDoNotPreGenerate(t *testing.T) {
 	root := t.TempDir()
 	a := source(t, root, "a.md", "# A\n\n[b](b.org) [c](c.md) [missing](missing.md)\n")
 	source(t, root, "b.org", "* B\n[[file:a.md][cycle]] [[file:d.md][d]]\n")
@@ -20,26 +21,29 @@ func TestRT001_10_LinkedBreadthFirst(t *testing.T) {
 	r := run(t, root, nil, a)
 	success(t, r, 1)
 	r = run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, a)
-	success(t, r, 4)
+	success(t, r, 1)
 	if len(r.opens) != 1 {
 		t.Fatalf("opened linked pages: %d", len(r.opens))
 	}
-	for i, title := range []string{"a.md", "b.org", "c.md", "d.md"} {
+	for i, title := range []string{"a.md"} {
 		if got := textOf(nodes(r.pages[i], "title")[0]); got != title {
-			t.Errorf("BFS page %d=%s", i, got)
+			t.Errorf("entry page %d=%s", i, got)
 		}
 	}
 	for _, link := range nodes(r.pages[0], "a") {
 		if textOf(link) == "b" {
 			u, err := url.Parse(attr(link, "href"))
-			if err != nil || !strings.HasSuffix(u.Path, "0002.html") {
+			if err != nil || u.Path != filepath.Join(root, "b.org") {
 				t.Fatalf("linked preview URL: %s", attr(link, "href"))
 			}
 		}
 	}
+	if strings.Count(r.stderr, "deprecated") != 1 {
+		t.Fatal("legacy setting lacks one migration notice")
+	}
 }
 
-func TestRT001_11_GraphCountDepthRoot(t *testing.T) {
+func TestRT006_2_LegacyDepthAndExplicitBatchLimit(t *testing.T) {
 	root := t.TempDir()
 	a := source(t, root, "docs/a.md", "[b](b.md) [outside](../outside.md)\n")
 	source(t, root, "docs/b.md", "[c](c.md)\n")
@@ -51,9 +55,9 @@ func TestRT001_11_GraphCountDepthRoot(t *testing.T) {
 	}{
 		{[]string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_MAX_FILES=1"}, 1},
 		{[]string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_MAX_DEPTH=0"}, 1},
-		{[]string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_MAX_DEPTH=1"}, 2},
-		{[]string{"HTMLPREVIEW_LINKS=1"}, 3},
-		{[]string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_ROOT=" + root}, 4},
+		{[]string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_MAX_DEPTH=1"}, 1},
+		{[]string{"HTMLPREVIEW_LINKS=1"}, 1},
+		{[]string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_ROOT=" + root}, 1},
 	} {
 		r := run(t, root, tc.env, a)
 		success(t, r, tc.pages)

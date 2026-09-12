@@ -191,3 +191,33 @@
   race: internal preview *7.367 seconds*, integration *10.450 seconds*. This
   checkpoint does not establish the remaining resource, WSL, packaging or native
   qualification requirements.
+
+* Connection, WSL and graph migration checkpoint, 12 September 2026
+
+- Baseline :: =0f31542= (service reader ownership and known Org IDs), followed
+  by the implementation checkpoint containing this entry.
+- Connection RED/GREEN :: A socket-level test initially received a health
+  response on its 129th concurrent public connection. The public listener now
+  admits at most 128 active connections and reuses a slot after a peer closes.
+- WSL RED/GREEN :: The command initially handed HTTP URLs to the Windows bridge
+  without any health probe. It now uses the fixed bounded PowerShell health
+  bridge and checks instance/protocol before handoff. A process-boundary double
+  verifies matching, wrong-instance, unavailable and malformed results; the
+  connection and WSL subset passed under race in *3.063 seconds*. This does not
+  execute PowerShell or establish native Windows networking compatibility.
+- Graph migration RED/GREEN :: Updated migration tests observed four implicit
+  pages instead of one, continued depth-based admission, and an implicit JSON
+  wrapper despite single-file fallback. The application no longer discovers
+  linked files in file mode. Legacy values retain their validation ranges and
+  produce one migration notice; they no longer choose reading-session retention.
+- Historical reconciliation :: RT001.10 breadth-first traversal and RT001.11
+  graph count/depth expectations are superseded by RT006.1 and RT006.2 migration
+  checks. Their identifiers remain reserved in the original specifications and
+  history. WSL, symlink-origin, formatted-search, navigation, mixed-format and
+  office-media assertions now use explicit batches where they previously relied
+  on graph discovery. The device-boundary regression now verifies the opened
+  source handle, independent of removed traversal. Service reader non-inheritance
+  remains covered by RT006.11 cross-format navigation.
+- Focused GREEN :: The migration and affected presentation/navigation subset
+  passed under race in *66.759 seconds*. Full-suite development verification is
+  being run separately; this focused result does not qualify service packaging.

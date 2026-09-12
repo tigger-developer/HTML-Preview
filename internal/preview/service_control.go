@@ -161,7 +161,6 @@ func uniqueJSON(decoder *json.Decoder, depth int) error {
 
 func (settings previewSettings) apply(base config) (config, error) {
 	c := base
-	c.links = false
 	c.sourceBytes = min(c.sourceBytes, 10*1024*1024)
 	c.outputBytes = min(c.outputBytes, 50*1024*1024)
 	c.deadline = min(c.deadline, time.Minute)

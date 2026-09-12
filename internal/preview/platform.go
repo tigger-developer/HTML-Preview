@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"time"
 	"unicode"
 
 	bundle "github.com/tigger-developer/HTML-Preview"
@@ -20,6 +21,28 @@ type desktop struct {
 	wsl                bool
 	translator, distro string
 	urls               map[string]string
+}
+
+func (d *desktop) serviceAvailable(ctx context.Context, status serviceStatus) bool {
+	if !d.wsl {
+		return true
+	}
+	script, err := bundle.Assets.ReadFile("assets/platform/health.ps1")
+	if err != nil {
+		return false
+	}
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	data, err := d.host.Execute(ctx, Command{Path: d.opener, Args: []string{"-NoLogo", "-NoProfile", "-NonInteractive", "-Command", string(script)}, Input: []byte(status.Origin + "/_health"), Limit: 1024})
+	if err != nil {
+		return false
+	}
+	var health struct {
+		Protocol int    `json:"protocol"`
+		Instance string `json:"instance"`
+		Ready    bool   `json:"ready"`
+	}
+	return len(data) <= 1024 && decodeControl(data, &health) == nil && health.Protocol == status.Protocol && health.Instance == status.Instance && health.Ready
 }
 
 func selectDesktop(host Host, env []string) (*desktop, error) {

@@ -35,7 +35,7 @@ func TestRT003_1_FormatContentsDefaults(t *testing.T) {
 			t.Run(fmt.Sprintf("%s/entries-%d", setting.name, i), func(t *testing.T) {
 				env := append([]string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_ROOT=" + root}, setting.env...)
 				r := run(t, t.TempDir(), env, entries...)
-				success(t, r, 3)
+				success(t, r, len(entries))
 				seen := make(map[string]bool)
 				for _, doc := range r.pages {
 					path := attr(nodes(doc, "h1")[0], "data-hp-source")

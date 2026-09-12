@@ -14,17 +14,15 @@ import (
 	"syscall"
 	"testing"
 	"time"
-
-	"golang.org/x/net/html"
 )
 
-func TestRT001_17_WSLCommandGraph(t *testing.T) {
+func TestRT001_17_WSLExplicitBatch(t *testing.T) {
 	root := t.TempDir()
 	a := source(t, root, "a.md", "[next](b.org#target) [forged](file://wsl.localhost/Ubuntu/secret.md)\n\n![bad](bad%3Aname.png)\n")
-	source(t, root, "b.org", "* Target\n:PROPERTIES:\n:CUSTOM_ID: target\n:END:\n")
-	r := run(t, root, []string{"PREVIEW_TEST_PLATFORM=wsl", "WSL_DISTRO_NAME=Ubuntu", "HTMLPREVIEW_LINKS=1"}, a)
+	b := source(t, root, "b.org", "* Target\n:PROPERTIES:\n:CUSTOM_ID: target\n:END:\n")
+	r := run(t, root, []string{"PREVIEW_TEST_PLATFORM=wsl", "WSL_DISTRO_NAME=Ubuntu"}, a, b)
 	success(t, r, 2)
-	if len(r.opens) != 1 || filepath.Base(r.opens[0].Tool) != "powershell.exe" || !strings.HasPrefix(r.stdout, "file://wsl.localhost/Ubuntu/") {
+	if len(r.opens) != 2 || filepath.Base(r.opens[0].Tool) != "powershell.exe" || !strings.HasPrefix(r.stdout, "file://wsl.localhost/Ubuntu/") {
 		t.Fatal("WSL handoff was not the Windows bridge")
 	}
 	for _, link := range nodes(r.pages[0], "a") {
@@ -46,7 +44,7 @@ func TestRT001_17_WSLCommandGraph(t *testing.T) {
 	if attr(nodes(r.pages[0], "h1")[0], "data-hp-source") != a {
 		t.Fatal("WSL copy value ceased to be the Linux source path")
 	}
-	r = run(t, root, []string{"PREVIEW_TEST_PLATFORM=wsl", "WSL_DISTRO_NAME=Ubuntu", "HTMLPREVIEW_LINKS=1", "PREVIEW_TEST_FAULT=page-translation"}, a)
+	r = run(t, root, []string{"PREVIEW_TEST_PLATFORM=wsl", "WSL_DISTRO_NAME=Ubuntu", "PREVIEW_TEST_FAULT=page-translation"}, a, b)
 	if r.code != 1 || len(r.opens) != 0 {
 		t.Fatal("failed generated translation opened partial output")
 	}
@@ -70,8 +68,8 @@ func TestRT001_9_AllSettingBoundaries(t *testing.T) {
 		}
 	}
 	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_MODE=quick"}, p)
-	if r.code != 2 {
-		t.Fatal("linked quick mode accepted")
+	if r.code != 0 || strings.Count(r.stderr, "deprecated") != 1 {
+		t.Fatal("legacy option still controls file retention or lacks a migration notice")
 	}
 }
 
@@ -90,7 +88,7 @@ func TestRT001_10_SymlinkOriginsAndEscape(t *testing.T) {
 	if err := os.Symlink(outside, filepath.Join(root, "escape.md")); err != nil {
 		t.Fatal(err)
 	}
-	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, a)
+	r := run(t, root, []string{"HTMLPREVIEW_ROOT=" + root}, a, filepath.Join(root, "one/alias.md"), filepath.Join(root, "two/alias.md"))
 	success(t, r, 3)
 	for i := range 2 {
 		images := nodes(r.pages[i+1], "img")
@@ -98,7 +96,8 @@ func TestRT001_10_SymlinkOriginsAndEscape(t *testing.T) {
 			t.Fatal("symlink contexts merged or used the canonical parent")
 		}
 	}
-	if !strings.Contains(r.stderr, "outside") {
+	r = run(t, root, []string{"HTMLPREVIEW_ROOT=" + root}, filepath.Join(root, "escape.md"))
+	if r.code != 1 || len(r.opens) != 0 || !strings.Contains(r.stderr, "outside") {
 		t.Fatal("escape not diagnosed")
 	}
 }
@@ -151,15 +150,8 @@ func TestRT001_11_DeviceBoundary(t *testing.T) {
 		t.Fatal(err)
 	}
 	src.device = "deliberately-different-device"
-	s := &session{cfg: cfg, host: host, log: &console{out: os.Stdout, diagnostics: os.Stderr}, byKey: make(map[string]*page)}
-	p := s.admit(src)
-	p.dom, err = html.Parse(strings.NewReader(`<a href="b.md">B</a>`))
-	if err != nil {
-		t.Fatal(err)
-	}
-	s.discover(p)
-	if len(s.pages) != 1 {
-		t.Fatal("different device admitted")
+	if _, err := snapshot(src, 1024); err == nil {
+		t.Fatal("different device handle admitted")
 	}
 }
 

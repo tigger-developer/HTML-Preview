@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"golang.org/x/net/netutil"
 )
 
 type previewService struct {
@@ -100,7 +102,7 @@ func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, c
 	public := serviceHTTPServer(http.HandlerFunc(s.serveHTTP), ctx, 70*time.Second)
 	control := serviceHTTPServer(http.HandlerFunc(s.serveControl), ctx, 5*time.Second)
 	done := make(chan error, 2)
-	go func() { done <- public.Serve(listener) }()
+	go func() { done <- public.Serve(netutil.LimitListener(listener, 128)) }()
 	go func() { done <- control.Serve(privateListener{runtime.listener}) }()
 	remaining := 2
 	select {

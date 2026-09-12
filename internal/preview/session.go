@@ -63,6 +63,10 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 		cfg.root = sources[0].root
 	}
 	allSources := sources
+	if connection != nil && !desktop.serviceAvailable(ctx, connection.status) {
+		log.warn("Windows-side loopback health probe unavailable; using file preview")
+		connection = nil
+	}
 	served, sources, err := prepareHTTP(ctx, sources, cfg, connection, log)
 	if err != nil {
 		return inputFailure(log, err)
@@ -120,12 +124,8 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 	for _, src := range sources {
 		s.admit(src)
 	}
-	for i := 0; i < len(s.pages); i++ {
-		p := s.pages[i]
+	for _, p := range s.pages {
 		s.convert(conversion, p)
-		if cfg.links && p.ready && conversion.Err() == nil {
-			s.discover(p)
-		}
 	}
 	cancel()
 	if ctx.Err() != nil {

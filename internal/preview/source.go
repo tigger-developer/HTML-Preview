@@ -18,7 +18,6 @@ type sourceContext struct {
 	logical, canonical, key, root string
 	device                        string
 	explicit                      bool
-	depth                         int64
 }
 
 func deviceOf(st os.FileInfo) string { return fmt.Sprint(st.Sys().(*syscall.Stat_t).Dev) }

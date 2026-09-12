@@ -34,8 +34,8 @@ func TestRT001_7_BareHTMLHeadings(t *testing.T) {
 func TestRT001_7_FormattedOrgHeadingSearch(t *testing.T) {
 	root := t.TempDir()
 	a := source(t, root, "a.org", "[[file:b.org::*A formatted title][next]]\n")
-	source(t, root, "b.org", "* TODO [#A] A /formatted/ *title* :tag:\nBody\n")
-	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, a)
+	b := source(t, root, "b.org", "* TODO [#A] A /formatted/ *title* :tag:\nBody\n")
+	r := run(t, root, nil, a, b)
 	success(t, r, 2)
 	for _, a := range nodes(r.pages[0], "a") {
 		if textOf(a) == "next" {

@@ -21,6 +21,7 @@ import (
 type runningTestService struct {
 	client, control *http.Client
 	root, origin    string
+	runtime         string
 	stop            func() int
 }
 
@@ -89,7 +90,7 @@ func startTestService(t *testing.T, host Host, extraRoots ...string) *runningTes
 			public := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 10 * time.Second}
 			t.Cleanup(client.CloseIdleConnections)
 			t.Cleanup(public.CloseIdleConnections)
-			return &runningTestService{client: public, control: client, root: root, origin: status.Origin, stop: stop}
+			return &runningTestService{client: public, control: client, root: root, origin: status.Origin, runtime: runtime, stop: stop}
 		}
 	}
 }

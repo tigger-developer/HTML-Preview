@@ -38,6 +38,9 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 		return 2
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	if cfg.legacyGraph {
+		log.warn("HTMLPREVIEW_LINKS and HTMLPREVIEW_MAX_DEPTH are deprecated; linked previews use the optional local service")
+	}
 	defer stop()
 	cfg.from, cfg.version = from, version
 	svc, err := serviceSettings(cfg)

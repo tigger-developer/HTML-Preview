@@ -14,12 +14,12 @@ type config struct {
 	httpOrigin                           string
 	from, version                        string
 	formats                              *formatCatalogue
-	links                                bool
+	legacyGraph                          bool
 	toc                                  bool
 	tocDepth                             int
 	mode, root                           string
 	grace, deadline                      time.Duration
-	files, depth                         int64
+	files                                int64
 	sourceBytes, totalBytes, outputBytes int64
 }
 
@@ -70,7 +70,7 @@ func arguments(args []string) ([]string, string, string, error) {
 }
 
 func settings(env []string) (config, error) {
-	c := config{toc: true, tocDepth: 3, mode: "quick", grace: 3 * time.Second, deadline: time.Minute, files: 50, depth: 3, sourceBytes: 10485760, totalBytes: 52428800, outputBytes: 104857600}
+	c := config{toc: true, tocDepth: 3, mode: "quick", grace: 3 * time.Second, deadline: time.Minute, files: 50, sourceBytes: 10485760, totalBytes: 52428800, outputBytes: 104857600}
 	values := make(map[string]string)
 	for _, entry := range env {
 		key, value, _ := strings.Cut(entry, "=")
@@ -102,7 +102,7 @@ func settings(env []string) (config, error) {
 			if value != "" && value != "0" && value != "1" {
 				return c, fmt.Errorf("%s must be 0 or 1", key)
 			}
-			c.links = value == "1"
+			c.legacyGraph = c.legacyGraph || value != ""
 		case "HTMLPREVIEW_MODE":
 			if value != "" && value != "quick" && value != "read" {
 				return c, fmt.Errorf("%s must be quick or read", key)
@@ -149,7 +149,7 @@ func settings(env []string) (config, error) {
 			case "HTMLPREVIEW_MAX_FILES":
 				c.files = n
 			case "HTMLPREVIEW_MAX_DEPTH":
-				c.depth = n
+				c.legacyGraph = true
 			case "HTMLPREVIEW_MAX_SOURCE_BYTES":
 				c.sourceBytes = n
 			case "HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES":
@@ -161,14 +161,8 @@ func settings(env []string) (config, error) {
 			return c, fmt.Errorf("unknown setting %s", key)
 		}
 	}
-	if c.links {
-		c.mode = "read"
-	}
 	if value := values["HTMLPREVIEW_MODE"]; value != "" {
 		c.mode = value
-	}
-	if c.links && c.mode == "quick" {
-		return c, fmt.Errorf("HTMLPREVIEW_LINKS=1 requires HTMLPREVIEW_MODE=read")
 	}
 	return c, nil
 }

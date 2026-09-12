@@ -19,39 +19,6 @@ type reference struct {
 	local            bool
 }
 
-func (s *session) discover(p *page) {
-	for n := range p.dom.Descendants() {
-		if n.Type != html.ElementNode || n.Data != "a" || p.resourceLinks[n] {
-			continue
-		}
-		r, err := parseReference(attribute(n, "href"), filepath.Dir(p.source.logical))
-		if err != nil || !r.local {
-			continue
-		}
-		if _, err := s.cfg.formats.resolve(r.path, ""); err != nil {
-			continue
-		}
-		src, err := identifyFormat(r.path, p.source.root, "", s.cfg.formats)
-		if err != nil {
-			s.log.notice("%q: linked target skipped %q: %v", p.source.logical, r.path, err)
-			continue
-		}
-		if _, exists := s.byKey[src.key]; exists {
-			continue
-		}
-		if src.device != p.source.device {
-			s.log.notice("%q: linked target is on another filesystem %q", p.source.logical, r.path)
-			continue
-		}
-		if p.source.depth >= s.cfg.depth || int64(len(s.pages)) >= s.cfg.files {
-			s.log.notice("%q: linked target exceeds depth/count limit %q", p.source.logical, r.path)
-			continue
-		}
-		src.depth = p.source.depth + 1
-		s.admit(src)
-	}
-}
-
 func parseReference(value, parent string) (reference, error) {
 	r := reference{}
 	if strings.HasPrefix(value, "id:") {

@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -116,7 +117,8 @@ func TestRT008_6_RasterSignatures(t *testing.T) {
 	}
 }
 
-func TestRT008_9_MixedFileGraph(t *testing.T) {
+// W006 replaces implicit graph generation; explicit mixed batches retain these routes.
+func TestRT008_9_MixedExplicitFileBatch(t *testing.T) {
 	root := t.TempDir()
 	source(t, root, "text.txt", "* Literal\n[not a link](never.md)")
 	source(t, root, "code.go", "package main\n")
@@ -127,11 +129,14 @@ func TestRT008_9_MixedFileGraph(t *testing.T) {
 	for _, enabled := range []bool{false, true} {
 		env := []string{}
 		count := 1
+		entries := []string{entry}
 		if enabled {
-			env = append(env, "HTMLPREVIEW_LINKS=1")
 			count = 6
+			for _, name := range []string{"text.txt", "code.go", "data.json", "native.html", "other.org"} {
+				entries = append(entries, filepath.Join(root, name))
+			}
 		}
-		r := run(t, root, env, entry)
+		r := run(t, root, env, entries...)
 		success(t, r, count)
 		main := documentNode(t, r.pages[0], "hp-document")
 		for _, a := range nodes(main, "a") {
@@ -149,9 +154,9 @@ func TestRT008_9_MixedFileGraph(t *testing.T) {
 func TestRT008_6_BaseAndEscapedCSS(t *testing.T) {
 	root := t.TempDir()
 	source(t, root, "nested/pixel.png", string(rasterFixture(t)))
-	source(t, root, "nested/child.org", "* Linked heading\n")
+	child := source(t, root, "nested/child.org", "* Linked heading\n")
 	input := `<head><base href="nested/"><base href="https://example.invalid/"><meta charset="utf-8" onload="bad()"><style>.a{background:u\72l(pixel.png)} .b{background:url("pixel.png")} .c{background:URL(https://example.invalid/x)} @\69mport "https://example.invalid/remote"; @media(max-width:30rem){.a{display:block}} @font-face{font-family:bad;src:url(pixel.png)}</style></head><body><a href="child.org">Child</a><img alt="responsive" src="pixel.png" srcset="pixel.png 1x, https://example.invalid/x 2x"></body>`
-	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, source(t, root, "base.html", input))
+	r := run(t, root, nil, source(t, root, "base.html", input), child)
 	success(t, r, 2)
 	style := ""
 	for _, n := range nodes(r.pages[0], "style") {

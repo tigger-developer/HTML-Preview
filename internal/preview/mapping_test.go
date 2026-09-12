@@ -3,6 +3,7 @@
 package preview
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -165,12 +166,14 @@ func TestRT008_2_SelectionDoesNotPropagate(t *testing.T) {
 	parent := source(t, root, "parent.json", "[self](parent.json) [child](child.org)\n")
 	source(t, root, "child.org", "* Org child\n")
 	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, "--from=markdown", parent)
-	success(t, r, 3)
-	if len(r.wrappers) != 1 || !strings.Contains(r.wrappers[0], "#+BEGIN_SRC json") {
-		t.Fatal("selected entry reader leaked into linked representation")
+	success(t, r, 1)
+	if len(r.wrappers) != 0 {
+		t.Fatal("single-file fallback generated an implicit linked representation")
 	}
-	if !strings.Contains(textOf(documentNode(t, r.pages[2], "hp-document")), "Org child") {
-		t.Fatal("linked Org reader lost")
+	for _, link := range nodes(documentNode(t, r.pages[0], "hp-document"), "a") {
+		if textOf(link) == "child" && attr(link, "href") != fileReference(filepath.Join(root, "child.org")) {
+			t.Fatal("file fallback changed the original linked Org destination")
+		}
 	}
 }
 
