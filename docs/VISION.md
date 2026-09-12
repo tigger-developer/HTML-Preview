@@ -56,6 +56,10 @@ service uses the same format contract and rewrites supported document links,
 including links from native HTML. W008 can be delivered independently in file
 mode; W006 service integration depends on that format pipeline.
 
+Before W006 replaces graph pre-generation, W008 admits all newly supported
+formats to the existing opt-in file graph under its unchanged depth, count and
+byte limits. With graph mode off, links retain original-file destinations.
+
 The operator accepted these format recommendations on 12 September 2026.
 Overall sign-off of W008 and the materially amended W006 is pending; W006's
 previous design approval remains history and its implementation hold remains.

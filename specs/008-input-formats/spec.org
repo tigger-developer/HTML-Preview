@@ -42,6 +42,7 @@
 - *Go, Pandoc and the default browser* remain the runtime stack.
 - Sources remain *read-only*; code never executes.
 - Existing converted-page fonts, copying, navigation and file lifetimes remain.
+- *File graph mode stays opt-in*: otherwise links retain original-file destinations.
 - Native HTML receives *no application reading chrome*. It permits no source
   scripts, form submissions or automatic external requests.
 - Annotation writes remain limited to *genuine Org/Markdown sources*.
@@ -63,7 +64,8 @@
   original copying, specialist reader selection and passive authored HTML*.
 - *TITLE and SCHEMA suffice* for generated wrapper metadata.
 - *W008 delivers independently in file mode*; W006 consumes its format pipeline.
-- *File-mode graph admission awaits a decision* before renewed definition review.
+- The operator approved *all supported kinds in the existing opt-in file graph*,
+  retaining its depth, file-count and byte limits.
 
 ** Next step
 
@@ -163,15 +165,16 @@
   links while blocking scripts, form submissions and automatic external
   requests*. This intentionally allows bounded passive source styling, replacing
   the earlier blanket source-style prohibition for native HTML only.
+- Operator, 12 September 2026 :: *Every newly supported kind joins the existing
+  opt-in file graph*, retaining current depth, count and byte limits. With graph
+  mode off, links retain original-file destinations. This applies before W006
+  replaces graph mode; it does not reinstate graph mode in delivered W006.
 - Approval scope :: Acceptance of these recommendations *resolves the product
   questions*, not overall sign-off of this specification or permission to code.
 
 ** Unresolved blockers
 
-- *File-mode graph admission awaits the operator's decision*: extend the existing
-  opt-in graph to every newly supported kind under unchanged traversal budgets,
-  or retain some kinds as original-file references. Resolve this question in
-  AC008.11 and RT008.9 before definition sign-off.
+- None.
 
 * Acceptance Criteria
 :PROPERTIES:
@@ -325,6 +328,19 @@
   readers, code/plaintext wrappers, passive HTML and service-only link conversion.
 - Proven by :: [[#ut-008-1][UT008.1 - Native format reading]], [[#ot-008-1][OT008.1 - Guidance
   and reader coverage review]].
+
+** AC008.14 - File graph mode includes every supported kind
+:PROPERTIES:
+:CUSTOM_ID: ac-008-14
+:END:
+
+- Criterion :: With *HTMLPREVIEW_LINKS=1*, eligible linked targets of every
+  automatically supported document, code, plaintext and native HTML kind become
+  generated nodes under existing root, filesystem, depth, count and byte limits.
+  With graph mode off, links retain original-file destinations. Unsupported,
+  denied or over-budget targets retain established explained skip behaviour;
+  literal code never creates document links.
+- Proven by :: [[#rt-008-9][RT008.9 - Compatibility and transport handoff]].
 
 * Test Definitions
 :PROPERTIES:
@@ -522,6 +538,7 @@
 
 - Covers :: [[#ac-008-11][AC008.11 - Existing previews and lifetimes remain compatible]],
   [[#ac-008-12][AC008.12 - Format routing is reusable without enabling annotation writes]].
+- Additional coverage :: [[#ac-008-14][AC008.14 - File graph mode includes every supported kind]].
 - Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
   opening captured at the existing OS boundary.
 - Setup :: Use existing real Org/Markdown presentation fixtures plus code, text, native HTML and
@@ -537,6 +554,20 @@
   source-kind cases fail on the baseline.
 - Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
   external API participates.
+
+*** Graph cases
+
+Use real Pandoc and the existing file publication boundary for these cases.
+
+| Case | Input/action | Observable expected result |
+|------+--------------+----------------------------|
+| Graph disabled | Link DOCX, ODT, code, text, JSON and HTML from a single preview | Original-file destinations remain; no linked target is converted |
+| Graph enabled | Open the same graph with HTMLPREVIEW_LINKS=1, including HTML-authored anchors | Every eligible target becomes a generated node; anchors point to its preview |
+| Cycles and kinds | Include repeats, cycles and an explicitly selected entry reader | Equivalent source/format nodes deduplicate; children resolve independently; literal code is not traversed |
+| Limits | Reach each existing depth, count and source/output-byte limit, then exceed it | Existing explained skip behaviour applies without increasing limits; admitted pages remain usable |
+| Confinement | Link across roots/filesystems or to unreadable/unsupported targets | Existing denial/original-reference behaviour remains; no denied bytes are read |
+
+- Case coverage :: All cases prove [[#ac-008-14][AC008.14 - File graph mode includes every supported kind]].
 
 ** UT008.1 - Native format reading
 :PROPERTIES:
@@ -937,8 +968,9 @@ authorization and HTTP headers; its implementation is not a W008 prerequisite.
   first valid base href, then remove the base element. A remote base cannot
   authorize local reads or automatic remote loads. In-root document anchors are
   available to W006's normal conversion router, including HTML-to-HTML links.
-  In file mode, references retain their source meaning; this work does not add
-  an HTTP service or on-click file-mode converter.
+  File-mode anchors use [[#file-graph][the existing graph setting]]: generated
+  targets when enabled and eligible, original-file destinations otherwise.
+  This adds no HTTP service or on-click file-mode converter.
 - Policy :: Native HTML receives CSP default-src 'none', script-src 'none',
   style-src 'unsafe-inline', form-action 'none', base-uri 'none', object-src
   'none', font-src 'none', and only transport-authorized raster image sources.
@@ -948,6 +980,33 @@ authorization and HTTP headers; its implementation is not a W008 prerequisite.
 - Identity :: The native HTML keeps its own title and layout. Its URL/publication
   record retains original source identity; no synthetic Org title or source-copy
   header is added. Converted documents retain the established visible header.
+
+*** Existing file-mode graph
+:PROPERTIES:
+:CUSTOM_ID: file-graph
+:END:
+
+- Admission :: Before W006's replacement is delivered, *HTMLPREVIEW_LINKS=1
+  admits every automatically supported W008 kind*, including native HTML and
+  binary documents. No new file-mode selector syntax is introduced; W006 owns
+  the target-specific query selector. Explicit --from applies to entry inputs.
+- Publication :: Resolve anchors from original logical locations and rewrite
+  admitted targets to generated pages. Native HTML participates without the
+  application template. Code/plaintext payloads contribute no document links.
+- Identity :: Keys include *original source context and resolved format*.
+  Equivalent nodes deduplicate; different readers are distinct representations.
+  Every kind counts towards MAX_FILES and depth limits; snapshots, wrappers,
+  media and HTML count towards existing byte budgets and stricter W008 ceilings.
+- Boundaries :: Preserve root, same-filesystem, cycle, alias, traversal and
+  explained skip/partial-failure behaviour. *No numeric default or limit changes*.
+- Graph off :: No linked conversion; original-file destinations and existing
+  unresolved-search diagnostics remain.
+- Regression reconciliation :: Extend =internal/preview/graph_test.go= and
+  reference/lifecycle fixtures for broader admission. Preserve Org/Markdown,
+  budget and retention assertions; change only narrowed-extension expectations.
+- W006 migration :: Delivered W006's graph-option deprecation and on-demand
+  service/fallback contract supersede this compatibility requirement.
+  *W008 does not add a third W006 transport*.
 
 *** Data and state
 
