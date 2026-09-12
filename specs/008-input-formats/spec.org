@@ -281,8 +281,9 @@
   references from their original locations. Supported container-owned raster
   media survives conversion. If sandbox-safe extraction is unavailable, return
   an explicit *dependency error before publication*, never an insecure retry or
-  silent omission of otherwise supported media. Temporary paths never become
-  source identity or browser-facing links.
+  silent omission of otherwise supported media. Source identity and source-file
+  links never expose wrapper or extraction paths; generated-page and admitted
+  raster URLs may refer to owned session outputs.
 - Proven by :: [[#rt-008-7][RT008.7 - Binary resources and original identity]].
 
 ** AC008.10 - Hostile inputs stay bounded and passive
@@ -625,8 +626,9 @@ Use real Pandoc and the existing file publication boundary for these cases.
 ** Literal delimiters and encoding
 
 - Condition :: Content includes *END_SRC, leading commas, invalid UTF-8 or NUL*.
-- Required behaviour :: Escape syntax for transport without changing copy text;
-  reject binary content only on text/code routes, not container readers.
+- Required behaviour :: Keep wrapper escaping invisible in displayed text and
+  preserve original copy content under AC008.6's explicit display exceptions.
+  Reject binary content only on text/code routes, not container readers.
 - Covered by :: [[#ac-008-6][AC008.6 - Wrappers preserve original content]],
   [[#rt-008-4][RT008.4 - Literal payload preservation]].
 

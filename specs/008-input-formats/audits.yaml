@@ -4,56 +4,41 @@ audits:
       gate: definition
       session_id: 9e09e1c6-dcc9-4ae8-aaf6-4ddc65be5d6c
       harness: claude
-      external_round: 2
-      status: active
-      updated: "2026-09-12T15:33:45Z"
-      revision: specs/008-input-formats/spec.org @ sha256 b14af6a313820b1b4a7a6fd13ed1d8c6323cb4729a475111ecf17e5610d36f6a
-      verdict: FAIL
+      external_round: 3
+      status: passed
+      updated: "2026-09-12T15:52:00Z"
+      revision: specs/008-input-formats/spec.org @ sha256 e71b6bcabcdccd655167beb9f206f92b3103503103b72c99d5130196d4c3bc8e
+      verdict: PROVISIONAL PASS
       response: |-
         GATE: definition
-        REVISION: specs/008-input-formats/spec.org @ sha256 b14af6a313820b1b4a7a6fd13ed1d8c6323cb4729a475111ecf17e5610d36f6a
-        VERDICT: FAIL
+        REVISION: specs/008-input-formats/spec.org @ sha256 e71b6bcabcdccd655167beb9f206f92b3103503103b72c99d5130196d4c3bc8e
+        VERDICT: PROVISIONAL PASS
 
-        **Scope note:** W006 (sha256 5c35141e…) was inspected for handoff coherence only. Its selector grammar, `format_contract:1`, media route, asset allowlist and dependency direction agree with W008's stated boundary; no W006 verdict is returned. No audit state is duplicated in either spec, so the duplication rule is not triggered.
+        **Scope note:** W006 (sha256 5c35141e…, unchanged) was reread only for handoff coherence. Its asset contract, selector grammar, `format_contract:1` and media route still agree with W008's boundary, and W008's new raster table matches W006's signature rules exactly. No W006 verdict is returned and its separate harness problem was not investigated. Neither spec duplicates audit findings, verdicts, revisions, rounds or session identity; `OPERATOR_SIGNOFF: PENDING` and the per-test `RESULT: PENDING` entries are template and validation state, not audit state.
 
-        ## Findings requiring remediation
+        ## Prior findings, all verified closed
 
-        **F1. AC008.1 contradicts the native HTML route and its own test.**
-        AC008.1 requires that for *every* built-in reader reported by the installed Pandoc an explicit input "produces a preview using that reader's supported content model". The design states that native `html` selects the passive route "because no Pandoc HTML reader is invoked", and RT008.1 exempts it ("Native HTML follows its special route"). The criterion is therefore false for a reader the spec itself expects to appear in the reported list.
-        *Required:* bound AC008.1 to exclude the natively handled HTML route, and state in the criterion (not only in design prose) what `--from=html` produces and that its extension qualifiers are refused.
+        - **F1 closed.** AC008.1 now excludes native HTML, defines `--from=html` as the passive route and refuses HTML reader extension qualifiers. RT008.2 carries reciprocal coverage of AC008.1 and requires exit 2 for `--from=html+raw_html` with no browser call.
+        - **F2 closed.** The operator decision is recorded with its date in Context, Synopsis and both authorities. AC008.14 states graph-on admission, graph-off original-file destinations and unchanged limits; RT008.9 adds five named graph cases with observable results and an explicit case-to-AC mapping; the new file-graph design section names `internal/preview/graph_test.go` and the reference and lifecycle fixtures for reconciliation, and preserves "no numeric default or limit changes". The supplied `graph_test.go:42-66` count, depth and root expectations and `references_test.go:119-129` narrowed-extension expectation confirm the reconciliation targets are real.
+        - **F3 closed.** `validation.org` records a bounded 12 September probe: encoder-generated 73-byte PNG in DOCX, ODT and EPUB, owned defaults with `sandbox: true`, isolated empty data directory, an owned Lua filter over `pandoc.mediabag.items()`, identical exported bytes with a recorded SHA-256, plus an honest limit statement and disclosure of the discarded CRC-faulty earlier fixture. AC008.9 and RT008.7 now require a named dependency error before publication with no sandbox-disabled retry, and the design repeats it. The claim is scoped as feasibility evidence, not qualification.
+        - **F4 closed.** AC008.6 requires exact displayed characters with only the BOM and newline exceptions and invisible wrapper escapes; RT008.4 compares rendered DOM text independently of the copy payload and asserts no visible escape comma; the new "Display authority" design bullet names the prepass restoration boundary that `internal/preview/org.go` makes necessary.
+        - **F5 closed.** The addressable raster-admission contract is now owned by W008, with suffix, MIME and bounded-header signature per type, the 10 MiB ceiling, root and same-filesystem checks, refusal behaviour and an explicit statement that W006's implementation is not a prerequisite. RT008.6 exercises every row with matching, truncated and conflicting headers.
+        - **F6 closed.** `validation.org` lists all five UT008.1 requirements with descriptors matching the AC headlines, and the local AC references in Edge Cases now use full descriptors.
+        - **F7 closed.** `-f` is refused as an unknown option with exit 2 and is asserted in RT008.2.
+        - **Highlighter note closed.** Every non-plaintext code-table identifier was compared against `--list-highlight-languages` with the result recorded, and OT008.1 now requires that comparison per candidate.
 
-        **F2. File-mode linked-target admission is undefined although the change necessarily broadens it.**
-        `supported()` at `internal/preview/source.go:23` gates both explicit admission and graph traversal at `internal/preview/links.go:29-30`. Broadening admission mechanically broadens `HTMLPREVIEW_LINKS=1` traversal, yet no AC or test states whether a linked `.docx`, `.go`, `.json` or `.html` target becomes a converted graph node or remains an original-file link in file mode. RT008.9 asserts that "the shared format resolver independently classifies each linked target" without an observable file-mode expectation, and the passive HTML section covers only HTML-authored references. AC008.11 simultaneously claims existing presentation, navigation and lifetimes "remain intact".
-        *Required:* an operator-level decision recorded as a criterion: which newly supported kinds are admitted as file-mode graph nodes, which remain original-file references, and how depth, count and byte budgets apply to them. Add the corresponding expectation to RT008.9 and reconcile the existing graph regressions explicitly.
+        ## Bounded follow-up, reversible and not blocking sign-off
 
-        **F3. Sandbox retention and container media extraction are asserted together without evidence or a fallback.**
-        AC008.9 requires embedded raster media to survive binary/container conversion. AC008.10 and the design require `--sandbox` to stay enabled with "never retry without the sandbox", while the media mechanism is described only as "an owned bounded media-bag export" that deliberately avoids `--extract-media`. Unlike the spec's other dependency facts (reader list, JSON AST failure, Org comma behaviour), this combination carries no recorded probe, and no behaviour is defined if extraction is unavailable under the sandbox. A delivery agent meeting that case must either breach AC008.10 or silently drop media.
-        *Required:* record the definition probe establishing extraction under the enabled sandbox with the owned defaults and data directory, or define the required outcome when it is unavailable (visible omission notice, conversion error, or explicit dependency error), so AC008.9 and AC008.10 cannot conflict. Add the chosen outcome to RT008.7.
-
-        **F4. Escaped delimiter lines have no defined displayed text, which is the operator's stated requirement.**
-        The wrapper contract requires comma escaping "where required" and guarantees only that escaping occurs "without changing copy text"; AC008.6 and RT008.4 constrain the copy payload and line-ending display, not the rendered characters of an escaped line. Current evidence shows the escape would reach display: the Org prepass terminates a source block on a trimmed `#+END_SRC` and copies each intervening line verbatim into the transported literal (`internal/preview/org.go:88-119`), and `restoreCode` then reinstates that transported text (`internal/preview/transport.go:206-218`). A conforming implementation could therefore render `,#+END_SRC`, defeating the accepted decision to protect literal `END_SRC`.
-        *Required:* state in AC008.6 that the rendered code block displays each original line exactly, escaping included or removed invisibly, and add that observable expectation to RT008.4 alongside the existing copy-payload comparison.
-
-        **F5. Native HTML raster admission is delegated to an unapproved, undelivered specification.**
-        The passive HTML resources contract admits local rasters "using W006's matching format/signature rules", and the CSP bullet defers image sources to "transport-authorized" sources. W008 is required to deliver independently in file mode, and W006 is itself pending renewed sign-off with its implementation held.
-        *Required:* W008 owns the format boundary, so state the admitted raster types and the signature rule it applies in file mode (or bind it explicitly to the existing file-mode image policy), leaving only the HTTP-specific headers and routes to W006.
-
-        **F6. Test-definition traceability drifts between the spec and validation.org.**
-        `validation.org` records UT008.1 as proving only AC008.13, whereas the spec's UT008.1 covers AC008.6, AC008.7, AC008.8, AC008.11 and AC008.13, and it names AC008.13 with a different descriptor ("Installed portability and guidance" against "Installed use remains portable and documented"). UT008.1's own "Covers" list also uses shortened descriptors that do not match the AC headlines.
-        *Required:* align the descriptors and the recorded requirement coverage in both files, so the planned qualification record matches the definition.
-
-        **F7. Documentary correction.** "No `-f` alias is required" is not a falsifiable interface statement. State whether `-f` is accepted or refused, given that the current parser rejects unknown options (`internal/preview/config.go:31-36`).
-
-        ## Bounded item that would not, alone, have blocked sign-off
-
-        - The common code table asserts 60-odd "Pandoc highlighting identifiers" with no probe and no check against `pandoc --list-highlight-languages`; OT008.1 reviews mappings but compares only against `--list-input-formats`. The defined literal-text fallback and RT008.3's unavailable-language probe make this reversible. Extending OT008.1's comparison to the installed highlighter catalogue would close it.
+        1. **AC008.9's closing sentence now forbids what the raster contract permits.** AC008.9 states "Temporary paths never become source identity or browser-facing links", while the raster-admission section allows file mode to publish "owned copies within the session directory" as image sources, and every generated page is already a session file URL. The evident intent is that temporary paths must not become source identity or document destinations. Restore that bound to the criterion, or drop the session-copy alternative, so the chosen mechanism is not forbidden by its own AC. Either reading is secure and testable, so this does not reopen an operator decision.
+        2. **The "Literal delimiters and encoding" edge case still restates the pre-remediation rule** ("Escape syntax for transport without changing copy text"), which is now narrower than AC008.6's display requirement it links to. Align the wording.
 
         ## Assessed as sound
 
-        - Reciprocal AC to test tracing is complete in the spec: all thirteen ACs name a test, and every RT, UT and OT names the ACs it covers.
-        - Classification and TDD suitability are honest: nine persistent RTs with intended RED statements and real Pandoc, one operator UT with a platform matrix, one bounded OT with invocation limits and no metered dependency. No test relies on source-text greps.
-        - Detection precedence, compound-suffix handling, the `CMakeLists.txt` exception, exit-status split (2 for invocation, 1 per source) and the JSON token-preserving contract are deterministic and falsifiable, and the exit statuses agree with the documented interface in `README.md`.
-        - Security impact, resource bounds, archive limits and the "no insecure fallback" rule are present and specific, and the W006 handoff, dependency direction and W007 annotation exclusion are stated consistently across the two active drafts, `docs/work.org`, `docs/VISION.md` and `docs/ARCHITECTURE.md`.
+        - Fourteen ACs, nine RTs, one UT and one OT trace reciprocally in both directions, including the new AC008.14 and the second RT008.2 coverage line.
+        - Classification remains honest: persistent RTs with real Pandoc, stated intended RED and no metered dependency; an operator UT across the four environments; a bounded OT with invocation limits and no persistent prose test. No test relies on source-text greps.
+        - The TDD entry point is genuine: RT008.3 with `.txt` admission failing is confirmed by the current `supported()` check and the existing `other.txt` expectation in the regression pack.
+        - Detection precedence, compound suffixes, the `.json` against `.csl.json` rule, selection grammar, exit-status split and JSON token preservation remain deterministic and falsifiable, and agree with the documented interface in `README.md`.
+        - Security impact, sandbox retention, archive limits, "no insecure fallback", the distinct native HTML policy and the W007 annotation exclusion are stated consistently across the spec, `docs/VISION.md`, `docs/ARCHITECTURE.md` and `docs/work.org`.
       history:
         - incident: start-failed
           evidence:
@@ -244,3 +229,116 @@ audits:
             - Detection precedence, compound-suffix handling, the `CMakeLists.txt` exception, exit-status split (2 for invocation, 1 per source) and the JSON token-preserving contract are deterministic and falsifiable, and the exit statuses agree with the documented interface in `README.md`.
             - Security impact, resource bounds, archive limits and the "no insecure fallback" rule are present and specific, and the W006 handoff, dependency direction and W007 annotation exclusion are stated consistently across the two active drafts, `docs/work.org`, `docs/VISION.md` and `docs/ARCHITECTURE.md`.
           updated: "2026-09-12T15:28:06Z"
+        - evidence:
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: b0800882299429a3a74d2d890d8a0d819843f9c11bc13108beb88ad1290885c9
+              bytes: 13907
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 0e6de8724dda2dc757a697b798bc33ea9ea1fa216a03461dd3158d0209706f2b
+              bytes: 15157
+            - path: /Users/tigger/.agents/skills/define-change/SKILL.md
+              sha256: 6d07891195c9991682c921a9ffe7485d0d40e19f8c8a214cede22d3574f2fb82
+              bytes: 3738
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: deb17b7b7d26e652fdd152c1e004ae5822e2c655d576a88b6cbcc5f213cc3943
+              bytes: 12402
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/defaults.yaml
+              sha256: e3923660d8e18ab21f235fa6be295cc20a3b848d5ed5f3cae4b41ede8c24eaab
+              bytes: 277
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 78e05147ec656c1c932600ecec79052ed25e568c6a97e35d3240088ce0d773e5
+              bytes: 40087
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: dca2c3de9c952842bd588c19794dc8559b037a877241a65feb52388a75c41a9c
+              bytes: 12220
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: a4e986fe001ff82bcbe73d85a34cf092f5c5432acb4863dd08bba3cc0f2948c4
+              bytes: 10014
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/code_outline_test.go
+              sha256: 1ebebdfebe2a7b1a7424aa0c9cddbd5d7f7f8ea0457398ad3596273cc6c7107c
+              bytes: 14284
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/config.go
+              sha256: 56f464b8c74b1799f4b98e29ed0dfc07b5f7a2668907ccf6a5bd5867b3c063ef
+              bytes: 4233
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contracts_test.go
+              sha256: 9e5c16dd882f1658219270c73f47f339b2868275835cd79d1e5d5809819710b2
+              bytes: 6448
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/graph_test.go
+              sha256: 0cfcf3067ec78e35606910344469c7e545af85e41543ec5d3fe99c00a3a92530
+              bytes: 9973
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 9e31521d91b4c07aa1fa9bd841dfa8662407bc92b80fa6851db544480eb236a3
+              bytes: 8210
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/lifecycle_test.go
+              sha256: 8c1b03c0b7cafbb7f395d3155c6bb5af9a39575a668c8fdec51ba394bcc06c9d
+              bytes: 7079
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/links.go
+              sha256: b40b583599e016ec5e5da8de365900f340319d296f5d5c054cedd6327a87cf27
+              bytes: 6371
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/org.go
+              sha256: 02c348c7b50dd0da8ec26e759d61534d4278059466cb4db1a3adc93baebc129e
+              bytes: 8309
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/references_test.go
+              sha256: 9c3db99743fe663d5df46fcc81aae709238ac96b54296fbbf173619b4b9b5749
+              bytes: 5377
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: c28861bc20ae2ee86afaa7f83c3b2cbbaa5e8e61d569d30efe1ead36df417c18
+              bytes: 12173
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/source.go
+              sha256: 83f37b504c268dcf7346529f58dfbe387cf3a843eaed9186859747e9941446e9
+              bytes: 2878
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
+              sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
+              bytes: 7425
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: 5c35141eb9bda5ae4ab88a29445335bd20f78bcdbf470197ee4229abc32f81d6
+              bytes: 82832
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/validation.org
+              sha256: 0e592b953a72d97fee341702b69770d3b77a97e0044d6ab63be519abcf2d7ee3
+              bytes: 5021
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+              sha256: d27ab9adc4ef0b9a2856cd0e33c14c9d4f9a9c401f92e2c2a5c662cf38ae1bc7
+              bytes: 78471
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+              sha256: e71b6bcabcdccd655167beb9f206f92b3103503103b72c99d5130196d4c3bc8e
+              bytes: 55410
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/validation.org
+              sha256: 0fc22dd62b1318a15cb410211e88bf0ac49544a68a46165627f85f0a1f688027
+              bytes: 3963
+          round: 3
+          revision: specs/008-input-formats/spec.org @ sha256 e71b6bcabcdccd655167beb9f206f92b3103503103b72c99d5130196d4c3bc8e
+          verdict: PROVISIONAL PASS
+          response: |-
+            GATE: definition
+            REVISION: specs/008-input-formats/spec.org @ sha256 e71b6bcabcdccd655167beb9f206f92b3103503103b72c99d5130196d4c3bc8e
+            VERDICT: PROVISIONAL PASS
+
+            **Scope note:** W006 (sha256 5c35141e…, unchanged) was reread only for handoff coherence. Its asset contract, selector grammar, `format_contract:1` and media route still agree with W008's boundary, and W008's new raster table matches W006's signature rules exactly. No W006 verdict is returned and its separate harness problem was not investigated. Neither spec duplicates audit findings, verdicts, revisions, rounds or session identity; `OPERATOR_SIGNOFF: PENDING` and the per-test `RESULT: PENDING` entries are template and validation state, not audit state.
+
+            ## Prior findings, all verified closed
+
+            - **F1 closed.** AC008.1 now excludes native HTML, defines `--from=html` as the passive route and refuses HTML reader extension qualifiers. RT008.2 carries reciprocal coverage of AC008.1 and requires exit 2 for `--from=html+raw_html` with no browser call.
+            - **F2 closed.** The operator decision is recorded with its date in Context, Synopsis and both authorities. AC008.14 states graph-on admission, graph-off original-file destinations and unchanged limits; RT008.9 adds five named graph cases with observable results and an explicit case-to-AC mapping; the new file-graph design section names `internal/preview/graph_test.go` and the reference and lifecycle fixtures for reconciliation, and preserves "no numeric default or limit changes". The supplied `graph_test.go:42-66` count, depth and root expectations and `references_test.go:119-129` narrowed-extension expectation confirm the reconciliation targets are real.
+            - **F3 closed.** `validation.org` records a bounded 12 September probe: encoder-generated 73-byte PNG in DOCX, ODT and EPUB, owned defaults with `sandbox: true`, isolated empty data directory, an owned Lua filter over `pandoc.mediabag.items()`, identical exported bytes with a recorded SHA-256, plus an honest limit statement and disclosure of the discarded CRC-faulty earlier fixture. AC008.9 and RT008.7 now require a named dependency error before publication with no sandbox-disabled retry, and the design repeats it. The claim is scoped as feasibility evidence, not qualification.
+            - **F4 closed.** AC008.6 requires exact displayed characters with only the BOM and newline exceptions and invisible wrapper escapes; RT008.4 compares rendered DOM text independently of the copy payload and asserts no visible escape comma; the new "Display authority" design bullet names the prepass restoration boundary that `internal/preview/org.go` makes necessary.
+            - **F5 closed.** The addressable raster-admission contract is now owned by W008, with suffix, MIME and bounded-header signature per type, the 10 MiB ceiling, root and same-filesystem checks, refusal behaviour and an explicit statement that W006's implementation is not a prerequisite. RT008.6 exercises every row with matching, truncated and conflicting headers.
+            - **F6 closed.** `validation.org` lists all five UT008.1 requirements with descriptors matching the AC headlines, and the local AC references in Edge Cases now use full descriptors.
+            - **F7 closed.** `-f` is refused as an unknown option with exit 2 and is asserted in RT008.2.
+            - **Highlighter note closed.** Every non-plaintext code-table identifier was compared against `--list-highlight-languages` with the result recorded, and OT008.1 now requires that comparison per candidate.
+
+            ## Bounded follow-up, reversible and not blocking sign-off
+
+            1. **AC008.9's closing sentence now forbids what the raster contract permits.** AC008.9 states "Temporary paths never become source identity or browser-facing links", while the raster-admission section allows file mode to publish "owned copies within the session directory" as image sources, and every generated page is already a session file URL. The evident intent is that temporary paths must not become source identity or document destinations. Restore that bound to the criterion, or drop the session-copy alternative, so the chosen mechanism is not forbidden by its own AC. Either reading is secure and testable, so this does not reopen an operator decision.
+            2. **The "Literal delimiters and encoding" edge case still restates the pre-remediation rule** ("Escape syntax for transport without changing copy text"), which is now narrower than AC008.6's display requirement it links to. Align the wording.
+
+            ## Assessed as sound
+
+            - Fourteen ACs, nine RTs, one UT and one OT trace reciprocally in both directions, including the new AC008.14 and the second RT008.2 coverage line.
+            - Classification remains honest: persistent RTs with real Pandoc, stated intended RED and no metered dependency; an operator UT across the four environments; a bounded OT with invocation limits and no persistent prose test. No test relies on source-text greps.
+            - The TDD entry point is genuine: RT008.3 with `.txt` admission failing is confirmed by the current `supported()` check and the existing `other.txt` expectation in the regression pack.
+            - Detection precedence, compound suffixes, the `.json` against `.csl.json` rule, selection grammar, exit-status split and JSON token preservation remain deterministic and falsifiable, and agree with the documented interface in `README.md`.
+            - Security impact, sandbox retention, archive limits, "no insecure fallback", the distinct native HTML policy and the W007 annotation exclusion are stated consistently across the spec, `docs/VISION.md`, `docs/ARCHITECTURE.md` and `docs/work.org`.
+          updated: "2026-09-12T15:49:38Z"
