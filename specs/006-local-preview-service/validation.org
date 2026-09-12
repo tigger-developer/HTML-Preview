@@ -9,6 +9,27 @@
   execution is claimed. Each result requires its candidate revision, exact
   environment, observed evidence and, for user tests, human authority.
 
+- Format amendment :: The *12 September 2026 W008 dependency* expands the
+  pending qualification to all supported formats and passive native HTML.
+  Earlier planned Org/Markdown checks remain required.
+
+** UT006.3 - Cross-format browser reading
+:PROPERTIES:
+:CUSTOM_ID: ut-006-3
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Requirements :: [[file:spec.org::#ac-006-32][AC006.32 - Supported linked formats]],
+  [[file:spec.org::#ac-006-34][AC006.34 - Passive native HTML and owned media]].
+- Procedure :: Follow the specification's Org/Markdown/HTML links to office
+  documents, source code, plain text and JSON on macOS/Safari, Linux/Firefox and
+  Windows/Edge through WSL1 and WSL2. Exercise the specialist JSON selector,
+  keyboard, Back/refresh, fragments and JavaScript-disabled navigation.
+- Expected :: *Correct previews and permitted authored HTML appearance*, with
+  no source scripts, form submissions or automatic external requests.
+- Per-platform result :: *All four environments remain pending*.
+
 ** UT006.1 - Linked reading across platforms
 :PROPERTIES:
 :CUSTOM_ID: ut-006-1

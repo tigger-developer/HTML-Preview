@@ -2,15 +2,15 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PASS
-#+OPERATOR_SIGNOFF: Taḋg, 2026-09-11: design approved; implementation explicitly deferred
+#+DEFINITION_GATE: PENDING
+#+OPERATOR_SIGNOFF: PENDING
 
 * Local preview service and automatic fallback
 :PROPERTIES:
 :CUSTOM_ID: summary
 :END:
 
-- Outcome :: Readers *follow local Org and Markdown links on demand*, with a
+- Outcome :: Readers *follow supported local document and code links on demand*, with a
   *single-document fallback* when serving is unavailable or disallowed.
 - Before :: The command *opens temporary file URLs*. Optional linked browsing
   pre-converts a bounded graph and occupies the terminal until interrupted.
@@ -22,13 +22,17 @@
 - Changes :: *Configured roots, private service discovery, token authorization,
   lazy rendering, bounded caching and relative asset delivery* join the existing
   renderer. HTTP assets use a *specified raster/download allowlist* and must be
-  referenced by an authorized page. Org heading/custom-ID searches resolve when
+  referenced by an authorized page. *W008 includes installed Pandoc readers,
+  code/plaintext wrappers and passive native HTML*. Native HTML keeps authored
+  appearance and its supported document links are rewritten.
+  Org heading/custom-ID searches resolve when
   their target is visited.
   Homebrew service support, a macOS LaunchAgent and a Linux user service are
   packaged for explicit operator activation; WSL retains Windows-browser handoff.
 - Unchanged :: *Source files remain read-only*. The filename header, fonts,
-  navigation, metadata, drawers, highlighting, copying, passive-content policy,
-  licences and Pandoc compatibility remain as specified by their current work.
+  navigation, metadata, drawers, highlighting, copying, licences and Pandoc
+  compatibility remain for converted pages. *Native HTML uses W008's authored
+  layout policy*, retaining passive styles but no source scripts.
   JavaScript stays in the browser. *No remote bind option or TLS is provided*.
 - Edge cases :: *Escaped paths, symlinks, cross-root links, ambiguous Org targets,
   stale service discovery, cache eviction, concurrent requests and restarts*
@@ -39,9 +43,9 @@
   trees, random URL tokens and automatic fallback* on 11 September 2026.
   Design sign-off on 11 September 2026 includes *tokens lasting until service
   restart*, *replacement of pre-generated linked browsing* and the asset contract.
-- Next step :: *Await an explicit instruction to implement*. The operator approved
-  the design but deferred implementation. Native platform and browser
-  qualification remain delivery work.
+- Next step :: *Audit and sign off the format amendment*. The 11 September
+  approval remains history; the materially changed candidate requires renewed
+  sign-off. The operator's *implementation hold remains in force*.
 
 -----
 
@@ -127,6 +131,11 @@
 
 ** Constraints and dependencies
 
+- *W008's format pipeline must be delivered before W006 service integration is
+  qualified*. [[file:../008-input-formats/spec.org][W008 - Input formats]] owns
+  detection, reader selection, code/text wrappers, JSON display, binary resources
+  and passive HTML. W006 owns HTTP delivery and linked navigation; W008 can be
+  delivered in file mode without W006 or W007.
 - *Bind only to literal IPv4 loopback, 127.0.0.1*. An OS-assigned port avoids
   collisions. Neither a flag, environment value nor config key can change the
   address. This operator requirement overrides the generic configurable-address
@@ -141,6 +150,14 @@
 
 ** Decisions
 
+- Amendment, 12 September 2026 :: The operator requested *all Pandoc input formats
+  and supported linked targets*, including W008 code/text and native HTML. They
+  accepted ordinary JSON pretty printing with original-text copying, explicit
+  specialist reader selection and passive authored HTML.
+- Supersession :: This amendment replaces *Org/Markdown-only document admission*
+  and the earlier download-only treatment of .txt, .csv, .json, .yaml, .yml,
+  .html, .htm, .css and .js. These use W008's defined routes. The former list
+  and prior approval remain recorded here as history, not current policy.
 - Operator direction, 11 September 2026 :: *Prefer an existing service*, otherwise
   perform a single-file conversion. *Configured trees are the serving boundary*;
   sources outside them use the same fallback. HTTP and random tokens are approved.
@@ -159,13 +176,14 @@
 
 ** Unresolved blockers
 
-- *No technical blocker has been established*. The candidate lifetime and
-  migration are fully specified proposals requiring operator sign-off.
+- *No unresolved product question remains*. Overall sign-off of the amended
+  candidate is pending; acceptance of the recommendations does not waive it.
 - Sign-off resolution :: On *11 September 2026*, Taḋg approved the design after
   clarification of its asset restrictions: "makes sense. design is approved but
   don't implement yet". This resolves the sign-off requirement above, including
   the lifetime and migration proposals. *Implementation remains deferred* until
-  a subsequent explicit instruction.
+  a subsequent explicit instruction. *That prior approval predates the format
+  amendment* and does not establish approval of the changed candidate.
 
 * Hands-off mode decision log
 :PROPERTIES:
@@ -224,8 +242,8 @@
 :PROPERTIES:
 :CUSTOM_ID: ac-006-5
 :END:
-- Criterion :: An eligible Org or Markdown request *returns styled HTML at the
-  original source extension*. Following a new local link renders that target
+- Criterion :: An eligible W008-supported request *returns its preview at the original
+  source extension*, using conversion or passive native HTML as appropriate. Following a new local link renders that target
   when requested. Cycles and repeated names retain the correct source context.
 - Proven by :: [[#rt-006-5][RT006.5 - Lazy mixed-document navigation]],
   [[#ut-006-1][UT006.1 - Linked reading across platforms]].
@@ -259,8 +277,9 @@
 :CUSTOM_ID: ac-006-8
 :END:
 - Criterion :: *Both transports preserve the inherited presentation contract*
-  enumerated under RT006.7 - HTTP content and assets, with the original logical
-  source path rather than the HTTP route as document identity.
+  for converted pages, enumerated under RT006.7 - HTTP content and assets, with
+  original logical source identity. Native HTML preserves its own layout under
+  W008's passive HTML contract, without injected application chrome.
 - Proven by :: [[#rt-006-7][RT006.7 - HTTP content and assets]],
   [[#ut-006-1][UT006.1 - Linked reading across platforms]].
 
@@ -480,6 +499,50 @@
   a subsequent authorized request re-renders the source through the same URL.
 - Proven by :: [[#rt-006-8][RT006.8 - Cache, concurrency and resource limits]].
 
+** AC006.31 - All supported input kinds use the same service route
+:PROPERTIES:
+:CUSTOM_ID: ac-006-31
+:END:
+
+- Criterion :: *Every W008-supported input kind* can be registered for HTTP
+  preview, including an explicit installed Pandoc reader. Service unavailability
+  or a service-root exclusion retains that format in the single-file fallback.
+- Proven by :: [[#rt-006-11][RT006.11 - Cross-format service navigation]].
+
+** AC006.32 - Supported linked targets render on demand
+:PROPERTIES:
+:CUSTOM_ID: ac-006-32
+:END:
+
+- Criterion :: Following a supported *relative document anchor in any rendered
+  format, including native HTML*, produces the target preview. Ordinary JSON
+  displays formatted code; an explicit htmlpreview-format=json selector renders
+  a Pandoc AST document. The target never inherits its parent's selected reader.
+- Proven by :: [[#rt-006-11][RT006.11 - Cross-format service navigation]],
+  [[#ut-006-3][UT006.3 - Cross-format browser reading]].
+
+** AC006.33 - Format selection never expands authorization
+:PROPERTIES:
+:CUSTOM_ID: ac-006-33
+:END:
+
+- Criterion :: *Reader selection cannot create a root or asset grant, run code,
+  bypass confinement or change another target's interpretation*. Malformed,
+  duplicate or unsupported selectors are rejected under the protocol below.
+- Proven by :: [[#rt-006-11][RT006.11 - Cross-format service navigation]].
+
+** AC006.34 - Native HTML and extracted media obey the passive contract
+:PROPERTIES:
+:CUSTOM_ID: ac-006-34
+:END:
+
+- Criterion :: *Native HTML preserves permitted appearance and rewritten links*
+  without scripts, form submissions or automatic external requests. Container
+  media is served only through its parent document's authorization and revision;
+  it cannot expose temporary paths or become an arbitrary asset endpoint.
+- Proven by :: [[#rt-006-12][RT006.12 - Native HTML and container media]],
+  [[#ut-006-3][UT006.3 - Cross-format browser reading]].
+
 * Test Definitions
 :PROPERTIES:
 :CUSTOM_ID: test-definitions
@@ -625,12 +688,12 @@
   download names. Include malicious scripts/attributes, remote images, source-authored service
   URLs, includes, attachment type spoofing and unsupported raw reference forms.
 - Expected :: *The inherited invariants below hold*, local rasters load, attachments
-  have download disposition, HTML/SVG never execute as service-origin content,
+  have download disposition, native HTML remains script-free and SVG remains a download,
   owned CSP and privacy headers are present on successes and errors. No source
   content, permissions or unrelated files change. HTTP pages contain no file URLs
   for denied resources and no source-originated automatic network access.
   HEAD matches the corresponding GET status/representation headers and has
-  no body, including document, raster, download, lookup, health and error routes.
+  no body, including document, media, raster, download, lookup, health and error routes.
 - Inherited DOM invariants :: *Original logical source identity*, all six embedded
   font faces/notices, passive Markdown structure and Org task/tag/drawer values
   (W001); literal code bytes, highlighting spans, unique heading IDs and TOC
@@ -785,6 +848,70 @@
 - Bounds :: One review per final candidate; *no new persistent prose tests*.
 - Record :: Dated result in [[file:validation.org][W006 - Service validation]].
 
+** RT006.11 - Cross-format service navigation
+:PROPERTIES:
+:CUSTOM_ID: rt-006-11
+:END:
+
+- Covers :: [[#ac-006-31][AC006.31 - Service format admission]],
+  [[#ac-006-32][AC006.32 - Linked formats]],
+  [[#ac-006-33][AC006.33 - Selection confinement]].
+- Boundary :: *CLI registration and actual returned HTTP anchors*, real Pandoc.
+- Setup :: Reuse W008's valid fixture for every installed reader. Link a synthetic
+  Org/Markdown/HTML entry to those fixtures using natural mapped suffixes or an
+  explicit selector. Include code, .txt, ordinary JSON, Pandoc AST JSON, cycles,
+  cross-root links, an unreadable target and an unvisited malformed container.
+- Action :: Register inputs and follow returned anchors. Repeat registration
+  with unavailable service/outside service roots and explicit --from. Test
+  duplicate/empty/invalid/unknown selectors, reader paths and query encoding,
+  escaped filenames, fragments and a format-contract mismatch.
+- Expected :: *On-demand preview and source identity match W008*, no eager
+  conversion, no parent-reader inheritance, no download substitution for known
+  formats. Authorized alternate readers produce distinct cache results.
+  Existing bounds, denied-root behaviour and fallback precedence remain.
+- Intended RED :: The current application has no HTTP registration/rendering;
+  the original W006 definition also omitted broad format/selector routing.
+- Retention :: Persistent under =make test=; *TDD before service implementation*.
+
+** RT006.12 - Native HTML and container media
+:PROPERTIES:
+:CUSTOM_ID: rt-006-12
+:END:
+
+- Covers :: [[#ac-006-34][AC006.34 - Passive native HTML and owned media]].
+- Boundary :: *Returned HTTP DOM, CSP, asset bytes and cache revalidation*.
+- Setup :: W008 native-HTML hostile fixture with in-root stylesheet/raster and
+  document anchors; DOCX/ODT/EPUB with embedded rasters, duplicate media names,
+  rejected SVG and references outside the configured root.
+- Action :: Follow HTML document links; fetch extracted media with GET/HEAD,
+  guessed IDs, other document/token ownership and stale revisions. Change the
+  source and the inlined local stylesheet separately; repeat requests.
+- Expected :: *Passive native appearance, correct links and fresh permitted
+  assets*. No raw script endpoint or conversion-side network fetch; stylesheet
+  changes invalidate output. No stale/foreign media is served. Existing resource
+  and response limits apply before publication; denied assets expose no bytes.
+- Intended RED :: No native HTML service representation or scoped media route
+  exists on the current implementation.
+- Retention :: Persistent under =make test=; native browser checks are UT006.3.
+
+** UT006.3 - Cross-format browser reading
+:PROPERTIES:
+:CUSTOM_ID: ut-006-3
+:END:
+
+- Covers :: [[#ac-006-32][AC006.32 - Linked formats]],
+  [[#ac-006-34][AC006.34 - Passive native HTML and owned media]].
+- Reviewer :: Operator.
+- Procedure :: On the same four environments as UT006.1, follow Org/Markdown
+  links to DOCX, ODT, code, .txt, ordinary JSON and authored HTML. From HTML,
+  follow relative document links and a specialist Pandoc JSON AST selector.
+  Exercise Back/refresh, fragments, keyboard and JavaScript-disabled navigation.
+  Inspect the browser network panel on the hostile HTML fixture.
+- Expected :: *Readable target previews, original source identity and permitted
+  HTML styling*, without source script execution, form submissions or automatic
+  external requests. The WSL browser remains the Windows default.
+- Record :: [[file:validation.org][validation.org]], per native environment.
+
 * Edge Cases
 :PROPERTIES:
 :CUSTOM_ID: edge-cases
@@ -897,11 +1024,14 @@ serve:
   user as well as checking directory ownership. No TCP registration endpoint,
   PID scan, port scan, service autostart or environment-proxy use is permitted.
 - Control protocol :: HTTP over that Unix socket, *version 1*, with JSON bodies.
-  =GET /v1/status= returns ={protocol:1,instance,origin,ready}=; =instance= is a
+  =GET /v1/status= returns ={protocol:1,instance,origin,ready,format_contract:1,input_formats:[...]}=;
+  input_formats contains the installed reader names. =instance= is a
   non-secret random instance ID and =origin= is the bound loopback HTTP origin.
-  =POST /v1/previews= accepts ={paths:[absolute logical paths],settings:{...}}=
+  =POST /v1/previews= accepts ={paths:[absolute logical paths],settings:{...},from:optional-reader,format_contract:1}=
   with up to the existing MAX_FILES limit, a 64 KiB request body and 256 KiB
-  response. Reject unknown/duplicate fields and wrong types. The settings object
+  response. The optional from value uses W008's validated reader grammar and
+  applies only to explicit registered inputs. Reject unknown/duplicate fields
+  and wrong types. The settings object
   contains only toc, toc_depth, source/output byte limits, deadline and optional
   narrowing root; arbitrary environment or Pandoc arguments are rejected.
 - Registration response :: HTTP 200 returns ={protocol:1,results:[...]}= in input
@@ -922,7 +1052,8 @@ serve:
   and fragment before filesystem resolution; reject malformed encoding, decoded
   separators, NUL, invalid UTF-8, absolute paths and decoded dot segments.
   Renderer-generated parent links are normalized into a root-relative route
-  before output. Ordinary source query strings are preserved as inert data.
+  before output. Ordinary source query strings remain inert except the reserved
+  htmlpreview-format key defined below; fragments retain their anchor meaning.
 - Org lookup route :: A file-search link uses
   =/<token>/_org?path=<encoded-root-relative-path>&search=<encoded-selector>=.
   The reserved route is processed before content paths; a source named =_org=
@@ -980,18 +1111,73 @@ serve:
   disagree returns *415 with no file bytes*. Truncated signature data fails the
   same way. The browser retains the image's alternative text; a failed linked
   image does not invalidate the containing document's successful response.
-- Download allowlist :: Registered anchor targets ending in =.pdf=, =.txt=,
-  =.csv=, =.json=, =.yaml=, =.yml=, =.html=, =.htm=, =.svg=, =.css= or =.js=
-  are *downloads only*: application/octet-stream, nosniff and Content-Disposition:
+- Download allowlist :: Registered anchor targets ending in =.pdf= or =.svg=
+  are *downloads only* unless an explicitly selected installed reader accepts
+  that target under W008. Without a supported document route, use application/octet-stream, nosniff and Content-Disposition:
   attachment. Use safe quoted ASCII filename plus RFC 5987 filename* encoding
   for Unicode; reject CR/LF rather than allowing header injection. No content
   sniffing promotes these files to inline executable content.
 - Other references :: Raster anchors use the verified inline-image policy;
-  Org/Markdown anchors use document conversion. Unsupported image/download
+  W008-supported anchors use their selected document/code/text/native HTML route. Unsupported image/download
   extensions are *inactive with an explanation* during rewriting, and direct
   registered requests return 415. Directory references never list contents.
   An allowed extension does not bypass registration, containment or file-size
   limits. This explicit HTTP subset leaves file-preview references unchanged.
+
+*** Format routing and extracted resources
+:PROPERTIES:
+:CUSTOM_ID: format-routing
+:END:
+
+- Shared contract :: *W008 classifies each original source independently*.
+  Its reader/language/native HTML policy, binary-safe snapshots and bounded
+  media extraction apply before publication. The service owns the installed
+  reader catalogue; the client must not assume another Pandoc installation
+  has matching capabilities.
+- Compatibility :: The private status and registration protocol require
+  *format_contract:1*. An absent/different contract returns 409 and a restart/
+  upgrade diagnostic, not fallback. No service implementation precedes this
+  amendment, so this extends the proposed version-1 schema without a migration
+  of deployed state. Reader names are bounded to 256 entries of 128 bytes each;
+  discovery exceeding the existing control-response limit fails startup.
+- Selector :: Exactly one =htmlpreview-format= query value uses W008's validated
+  reader grammar, maximum 256 UTF-8 bytes after URL decoding. Decode once using
+  URL-query rules; a literal plus in reader extensions must be encoded as %2B.
+  Empty/duplicate/invalid values return 400, an unavailable reader or unsupported
+  reader extension returns 415, and invalid document data returns 422.
+  Preserve unrelated query parameters and fragments, but never forward any
+  query as Pandoc options or a remote fetch instruction.
+- Entry selection :: A registered explicit reader is encoded in the returned
+  entry URL using that selector; it is not made the token's default reader.
+  Cache keys include the resolved reader/extensions or source language.
+  Reserved Org searches carry an optional validated format selector through
+  the lookup URL and its redirect; do not reinterpret genuine Org search syntax
+  as a filesystem path or propagate the parent reader to the target.
+- Source links :: Rewrite document anchors *before returning HTML*, so navigation
+  works with JavaScript disabled. Source-authored service URLs remain untrusted.
+  Resolve local links relative to the original document (or admitted HTML base);
+  use existing configured-root and cross-root rules. The reserved selector
+  changes representation only, never authority or allowed trees.
+- HTML styling :: Inline only *sanitized authorized local CSS*, resolving its
+  raster URLs from the stylesheet's original directory under existing root and
+  same-filesystem checks. Do not serve raw stylesheets from a generic endpoint.
+  Track at most 256 inlined resource dependencies per page, within 8192 total
+  registered assets. Hash and reauthorize dependencies before cache reuse.
+- Media route :: =/<token>/_media/<document-id>/<source-revision>/<asset-id>=
+  returns an admitted embedded raster from a registered converted document.
+  IDs are opaque service-owned identifiers, never disk/extraction paths.
+  Registration binds token, logical source, resolved format, source SHA-256
+  and media ID. Reauthorize/re-read the parent source on GET/HEAD; a changed or
+  unavailable parent revokes old media (404). Guessing/unregistered IDs returns
+  404; signature/type failure returns 415. Paths beginning with _media use
+  the existing _file escape route for real source-name collisions.
+- Media lifetime :: Cache admitted bytes within *existing cache and scratch
+  ceilings*. If evicted while the parent revision is unchanged, a request may
+  reconvert under the same two-worker/deadline budgets. Stable media IDs derive
+  from the parent conversion and bounded media content, so that URL remains
+  usable after cache eviction. No route reads arbitrary scratch files.
+- Original kind :: *Generated Org wrappers are not Org source documents*.
+  They and non-Org/Markdown readers remain outside W007's annotation-store scope.
 
 *** Capabilities and bounded state
 
@@ -1000,7 +1186,7 @@ serve:
   filename hash, encryption scheme or configurable entropy policy. Tokens map
   in memory to canonical root, logical context and immutable rendering settings.
   Reuse a token for equivalent root/context/settings within one service lifetime.
-- Scope :: A token grants *rendering of regular Org/Markdown files in its root*,
+- Scope :: A token grants *previewing regular W008-supported files in its root*,
   not listing or arbitrary raw-file retrieval. Non-document assets must first
   be registered by an authorized rendered document reference. A cross-root link
   may mint/reuse a separate token only for another configured, permitted root.
@@ -1015,7 +1201,9 @@ serve:
   survive a symlink rename between checking and opening.
 - Cache :: Cache *rendered document plus its destination catalogue*, keyed by
   capability, logical path, SHA-256 of the bounded current source snapshot and
-  application asset revision. Re-read/hash on every request before reusing output;
+  application asset revision, resolved reader/extensions or source language and
+  format-contract revision. Revalidate inlined stylesheet dependencies and media
+  ownership before reusing output. Re-read/hash on every request before reuse;
   mtime alone is insufficient. Assets are read through authorization each time.
   Evict least-recently-used entries within 50 pages and 100 MiB of cached bytes.
 - Org IDs :: *Fileless ID lookup covers only the current bounded catalogue* of
@@ -1076,17 +1264,20 @@ serve:
   explicit foreign/null Origin. Reject Sec-Fetch-Site: cross-site; allow absent
   fetch metadata for ordinary navigation/compatible clients. No wildcard CORS,
   proxy forwarding trust or service-directed network fetch is enabled.
-- Browser policy :: Preserve *only hash-authorized packaged scripts/styles*;
+- Browser policy :: For converted pages preserve *only hash-authorized packaged scripts/styles*;
   change HTTP image permission to the service origin and raster data. Strip
   source-authored service-origin URLs so only owned rewriting creates automatic
   local requests. Retain disabled includes, source-script removal and no remote
-  automatic loading. No generic file server serves active source HTML.
+  automatic loading. Native HTML instead uses W008's *script-free authored-layout
+  policy*, including bounded sanitized source CSS. No source scripts execute.
 - Response protection :: All HTTP responses send *Referrer-Policy: no-referrer*,
   *Cache-Control: no-store*, X-Content-Type-Options: nosniff and CSP frame-ancestors
   'none'. Source images require matching approved raster type/signature. Other
-  registered regular-file links use application/octet-stream and attachment
-  disposition with an escaped filename; raw HTML/SVG/CSS/JS cannot execute as
-  same-origin content. The original source header deliberately remains visible.
+  registered download links use application/octet-stream and attachment
+  disposition with an escaped filename. Native HTML is passive; source SVG and
+  JavaScript never execute. CSS source anchors render as code, while admitted
+  native-HTML stylesheets are sanitized and inlined. Converted pages retain the
+  deliberately visible original source header.
 - Authorization renewal :: *Every request revalidates the allowed root and source
   handle*. Configuration changes take effect on restart; old tokens then fail.
   Allowed roots are explicit user grants, not inferred cwd/home/repository scans.
@@ -1190,7 +1381,8 @@ serve:
 :CUSTOM_ID: delivery-handoff
 :END:
 
-- Required reading :: This specification, *the named project authorities and
+- Required reading :: This specification, [[file:../008-input-formats/spec.org][W008 - Input formats]],
+  *the named project authorities and
   affected baseline components*, plus the platform contracts linked above.
   Historical W001 graph tests must be reconciled explicitly, not silently dropped.
 - First implementation step :: Write
@@ -1207,8 +1399,8 @@ serve:
 - Artefact inventory :: Deliver the *four named service source/guide files*,
   generated archive/install destinations and Homebrew service block specified
   under Packaging layout and manager contracts; do not invent another layout.
-- Closure boundary :: *Design approval is recorded; implementation is explicitly
-  deferred*. A subsequent operator instruction is required to begin delivery.
+- Closure boundary :: *Prior design approval is retained as history; the amended
+  candidate needs renewed sign-off*. Implementation is explicitly deferred. A subsequent operator instruction is required to begin delivery.
   Activation on the operator's machine requires its own authority. Required RTs,
   implementation gate, browser/platform validation and operator closure remain
   distinct.

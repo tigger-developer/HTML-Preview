@@ -1,0 +1,25 @@
+# Canonical audit state. Do not duplicate these fields in spec sheets or tickets.
+version: 1
+audits:
+  - work_item: W008-input-formats
+    gate: definition                 # definition or implementation
+    session_id: ""                   # harness-issued external session
+    harness: ""                      # adapter owning the native session
+    external_round: 0                 # invocations, including timeouts, starting at 1
+    status: active                    # active, running, passed, timed-out, incident, identity-missing, exhausted
+    revision: ""                     # exact audited revision or digest
+    verdict: ""                      # PASS, PROVISIONAL PASS, or FAIL
+    findings: []                      # every finding for the current revision
+    remediation: []                   # remediation applied before the next round
+    response: ""                     # exact composite response, for provenance
+    history: []                       # attempts, including incidents, never deleted
+    # A timeout has incident: timeout, no verdict, and the supplied evidence.
+    # running + incident: interrupted is checkpointed before provider execution.
+    # A missing native ID remains empty; never substitute a generated placeholder.
+    # Each harness-written history entry also contains evidence, for example:
+    # evidence:
+    #   - path: /absolute/project/specs/W001-descriptor/spec.org
+    #     sha256: <SHA-256 of the original file>
+    #     bytes: 1234
+    # Evidence is stored once per round, not copied to a top-level field.
+    # Old history entries without evidence remain valid historical records.

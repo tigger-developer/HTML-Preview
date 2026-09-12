@@ -42,6 +42,26 @@ W007 also supersedes the earlier live-reload exclusion below for service preview
 bounded polling refresh is part of annotation autosave. Recursive filesystem
 watchers and file-mode live reload remain excluded.
 
+## Input format proposal - 12 September 2026
+
+[W008 - Preview Pandoc documents, source code and plain text](../specs/008-input-formats/spec.org)
+extends the initial Org/Markdown scope to every installed Pandoc built-in reader,
+common source-code files, plain text and passive native HTML. Code and text use
+temporary Org wrappers with filename and application-version metadata. Ordinary
+JSON is pretty-printed for reading while copying preserves its original text.
+
+Native HTML keeps its authored layout and permitted styling. Scripts, form
+submissions and automatic external requests remain blocked. The amended W006
+service uses the same format contract and rewrites supported document links,
+including links from native HTML. W008 can be delivered independently in file
+mode; W006 service integration depends on that format pipeline.
+
+The operator accepted these format recommendations on 12 September 2026.
+Overall sign-off of W008 and the materially amended W006 is pending; W006's
+previous design approval remains history and its implementation hold remains.
+The older narrower descriptions below record the original scope. This proposal
+does not extend annotation writes beyond genuine Org/Markdown sources.
+
 ## Purpose
 
 `htmlpreview` makes local Markdown and Org documents comfortable to read in a

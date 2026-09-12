@@ -1,0 +1,40 @@
+#+TITLE: W008 - Input format validation
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* Planned qualification
+
+- Specification :: [[file:spec.org][W008 - Preview Pandoc documents, source code and plain text]].
+- Evidence boundary :: *Definition only*. No application implementation or
+  qualification is claimed. Record the exact revision, platform and evidence.
+
+** UT008.1 - Native format reading
+:PROPERTIES:
+:CUSTOM_ID: ut-008-1
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Requirements :: [[file:spec.org::#ac-008-13][AC008.13 - Installed portability and guidance]].
+- Procedure :: Follow the specification's DOCX/ODT/code/JSON/text/native HTML
+  workflow through the installed command on macOS/Safari, Linux/Firefox and
+  Windows/Edge via WSL1 and WSL2. Check layout, keyboard, copy, print and passive
+  browser requests, including another cwd and PATH symlink invocation.
+- Expected :: *Readable previews, exact original copy text and no source
+  execution or automatic external requests*.
+- Per-platform result :: *All four environments remain pending* until observed.
+
+** OT008.1 - Guidance and reader coverage review
+:PROPERTIES:
+:CUSTOM_ID: ot-008-1
+:CATEGORY: ONE-OFF
+:RESULT: PENDING
+:END:
+
+- Requirements :: [[file:spec.org::#ac-008-13][AC008.13 - Installed portability and guidance]].
+- Procedure :: Compare reader listing with the fixture catalogue and candidate
+  guidance; inspect every mapping, selection example, licence/provenance and
+  file/service distinction as specified in OT008.1.
+- Bounds :: One local review per candidate, no external API or service activation.
+- Expected :: *All installed readers accounted for and guidance matching the
+  candidate's public behaviour*.

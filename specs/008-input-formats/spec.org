@@ -1,0 +1,929 @@
+#+TITLE: W008 - Preview Pandoc documents, source code and plain text
+#+SUBTITLE: Unified change specification
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+DEFINITION_GATE: PENDING
+#+OPERATOR_SIGNOFF: PENDING
+
+* Preview Pandoc documents, source code and plain text
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+- Outcome :: *Preview every installed Pandoc reader*, common source-code files,
+  plain text and passive native HTML from the same command.
+- Before :: Admission accepts only *.md, .markdown and .org*. Even .txt fails.
+- After :: A shared resolver selects *document conversion, an Org code wrapper,
+  a plaintext wrapper or native HTML*. Ordinary JSON is pretty-printed for
+  display while copying preserves its original contents.
+- Changes :: *Explicit reader selection and discoverable reader names* cover
+  ambiguous or uncommon formats. Binary snapshots and bounded embedded-media
+  handling support office documents. The exact wrapper and extension tables
+  below define code and text behaviour.
+- Unchanged :: *Go, Pandoc, local browser delivery and source preservation*.
+  Code never runs. No new CLI language runtime, system font installation or
+  external hosting is introduced.
+- Edge cases :: *Delimiter escaping, existing commas, invalid JSON, binary
+  containers, external resources, ambiguous extensions and resource limits*
+  have defined outcomes and traced tests.
+- Decisions :: The operator accepted *ordinary JSON display, exact copying,
+  explicit specialist reader selection and passive authored HTML* on
+  12 September 2026. TITLE and SCHEMA suffice for generated metadata.
+- Next step :: *Definition audit and overall operator sign-off*. This document
+  does not authorize implementation.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+- The operator reports a *.txt preview failure*. The current extension check in
+  =internal/preview/source.go= rejects everything except Org and Markdown.
+- Local document collections also contain *office documents and source files*.
+  A Pandoc dependency should make its supported document readers available.
+
+** Outcome
+
+- *One bounded format pipeline* accepts Pandoc's installed built-in readers and
+  the explicitly defined text/code routes. W006 reuses it for HTTP delivery.
+
+** Scope
+
+*** In scope
+
+- *Reader discovery, selection, binary-safe snapshots, source wrapping, JSON
+  display, passive HTML and bounded resource handling* in single-file delivery.
+- A *shared format contract* consumed by the separately amended W006 service.
+
+*** Out of scope
+
+- *Implementing or activating W006*, annotation writes, custom Lua readers,
+  user filters, code execution, external resource fetching and PDF input where
+  the installed Pandoc has no PDF reader.
+- *Exact word-processor page layout*, editing office formats or reproducing
+  functionality beyond Pandoc's supported document model.
+
+*** Unchanged
+
+- *Original source files remain untouched*. Existing read-only, root, lifetime,
+  default-browser, font, copy, folding and navigation contracts continue for
+  application-rendered previews.
+- *Native HTML retains its own layout*. Application chrome and typography are
+  not imposed on it.
+
+** Authority and starting point
+
+- Project profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product authority :: [[file:../../docs/VISION.md][Vision]], reading experience
+  and temporary output, amended by this definition's broader format scope.
+- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture]],
+  source confinement, owned conversion and browser delivery.
+- Service integration :: [[file:../006-local-preview-service/spec.org][W006 - Local preview
+  service]],
+  which owns HTTP format selection, rewritten links and service qualification.
+- Annotation boundary :: [[file:../007-service-annotations/spec.org][W007 - Service annotations]],
+  whose source-store scope remains genuine Org/Markdown documents.
+- Current implementation :: [[file:../../internal/preview/source.go][Source admission]],
+  [[file:../../internal/preview/render.go][Rendering]],
+  [[file:../../internal/preview/html.go][HTML policy]] and
+  [[file:../../assets/pandoc/defaults.yaml][Owned Pandoc defaults]].
+- External reference :: [[https://pandoc.org/MANUAL.html][Pandoc manual]],
+  input formats, sandbox, media extraction and security. Reader availability
+  comes from the installed executable, not a permanently copied web list.
+- Definition probes :: Installed Pandoc 3.9.0.2 reports DOCX, ODT, EPUB, PPTX and
+  XLSX readers. Ordinary JSON fails its AST reader without pandoc-api-version.
+  Org comma escaping protects END_SRC; indentation alone terminates the block.
+
+** Constraints and dependencies
+
+- *W008 can be delivered independently in file mode*. Amended W006 requires
+  the delivered W008 format boundary before its service integration is qualified.
+  There is no dependency cycle and no W008 dependency on W007's browser runner.
+- *Pandoc remains the only additional conversion executable*. Only bundled,
+  owned Lua transformations run; installed user defaults/plugins are not loaded.
+- *All built-in readers are selectable*, subject to valid input and existing
+  security/resource bounds. A sandbox/data-file incompatibility is an actionable
+  dependency error; never retry without the sandbox.
+
+** Decisions
+
+- Operator, 12 September 2026 :: *Use temporary Org wrappers* for common code
+  extensions and .txt with the exact metadata and heading difference below.
+- Operator, 12 September 2026 :: *Ordinary JSON is code*, pretty-printed for
+  display with original-text copying. The specialist Pandoc AST interpretation
+  requires explicit selection.
+- Operator, 12 September 2026 :: *Preserve HTML appearance and rewrite document
+  links while blocking scripts, form submissions and automatic external
+  requests*. This intentionally allows bounded passive source styling, replacing
+  the earlier blanket source-style prohibition for native HTML only.
+- Definition status :: Acceptance of these recommendations *resolves the product
+  questions*, not overall sign-off of this specification or permission to code.
+
+** Unresolved blockers
+
+- None.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:CUSTOM_ID: hands-off-mode-decision-log
+:VISIBILITY: folded
+:END:
+
+- *No hands-off invocation occurred* during definition.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC008.1 - Installed Pandoc readers are selectable
+:PROPERTIES:
+:CUSTOM_ID: ac-008-1
+:END:
+
+- Criterion :: For every *built-in reader reported by the installed Pandoc*, an explicit valid
+  input produces a preview using that reader's supported content model. Binary documents are
+  admitted as bytes; malformed, encrypted or unsupported documents produce an actionable error
+  rather than a misleading successful preview.
+- Proven by :: [[#rt-008-1][RT008.1 - Every installed reader at the CLI boundary]].
+
+** AC008.2 - Automatic detection has deterministic precedence
+:PROPERTIES:
+:CUSTOM_ID: ac-008-2
+:END:
+
+- Criterion :: An *unqualified filename selects exactly one route* using the detection contract:
+  native HTML, text, code or a document reader. Unknown suffixes receive an explanation and
+  reader-selection guidance; they are not silently treated as Markdown.
+- Proven by :: [[#rt-008-2][RT008.2 - Detection and explicit reader selection]].
+
+** AC008.3 - Explicit reader selection is bounded
+:PROPERTIES:
+:CUSTOM_ID: ac-008-3
+:END:
+
+- Criterion :: The *--from selection applies to explicit inputs only*. Its base reader must
+  occur in Pandoc's reported list; supported reader extensions may qualify it. Custom-reader
+  paths, executable filters and arbitrary Pandoc arguments are refused. Informational listing
+  exposes available readers without opening a browser.
+- Proven by :: [[#rt-008-2][RT008.2 - Detection and explicit reader selection]].
+
+** AC008.4 - Code wrappers supply source context
+:PROPERTIES:
+:CUSTOM_ID: ac-008-4
+:END:
+
+- Criterion :: A mapped *code file renders through the specified temporary Org wrapper*, with a
+  filename title, application-version schema and one Source code heading. The source-language
+  identifier controls local highlighting; an unavailable highlighter falls back to literal
+  unhighlighted text with a concise notice.
+- Proven by :: [[#rt-008-3][RT008.3 - Code and text wrapper presentation]].
+
+** AC008.5 - Plain text has no synthetic section heading
+:PROPERTIES:
+:CUSTOM_ID: ac-008-5
+:END:
+
+- Criterion :: A *.txt input renders a plaintext source block* with TITLE and SCHEMA but without
+  a Source code heading. Text resembling Org, Markdown or HTML remains literal.
+- Proven by :: [[#rt-008-3][RT008.3 - Code and text wrapper presentation]].
+
+** AC008.6 - Wrappers preserve original content
+:PROPERTIES:
+:CUSTOM_ID: ac-008-6
+:END:
+
+- Criterion :: *Delimiter-like lines, leading commas, tabs and line endings cannot escape the
+  wrapper*. Code copying supplies the original decoded UTF-8 text, including its original
+  whitespace, to the clipboard operation. No wrapper framing or indentation is copied.
+- Proven by :: [[#rt-008-4][RT008.4 - Literal payload preservation]],
+  [[#ut-008-1][UT008.1 - Native format reading]].
+
+** AC008.7 - Ordinary JSON is readable without changing its source
+:PROPERTIES:
+:CUSTOM_ID: ac-008-7
+:END:
+
+- Criterion :: An unqualified *.json input displays indented, highlighted JSON* when
+  syntactically valid, preserving object-member order and number lexemes. Copying retains the
+  original text. Invalid JSON remains readable as literal highlighted source with a diagnostic;
+  it is not rejected as a Pandoc AST.
+- Proven by :: [[#rt-008-5][RT008.5 - JSON display and exact copy payload]],
+  [[#ut-008-1][UT008.1 - Native format reading]].
+
+** AC008.8 - HTML retains passive authored presentation
+:PROPERTIES:
+:CUSTOM_ID: ac-008-8
+:END:
+
+- Criterion :: A native *HTML preview retains its authored document structure, title and
+  permitted styling*, without a Pandoc round trip or injected application reading template. The
+  passive HTML contract blocks source scripts, submissions and automatic external requests while
+  retaining ordinary hyperlinks.
+- Proven by :: [[#rt-008-6][RT008.6 - Passive HTML without layout replacement]],
+  [[#ut-008-1][UT008.1 - Native format reading]].
+
+** AC008.9 - Conversion preserves identity and resources
+:PROPERTIES:
+:CUSTOM_ID: ac-008-9
+:END:
+
+- Criterion :: A converted document *retains its original logical source-path header* and
+  resolves references from the original source location. Supported embedded raster media survive
+  binary/container conversion. Temporary wrapper or extraction paths never become source
+  identity or browser-facing links.
+- Proven by :: [[#rt-008-7][RT008.7 - Binary resources and original identity]].
+
+** AC008.10 - Hostile inputs stay bounded and passive
+:PROPERTIES:
+:CUSTOM_ID: ac-008-10
+:END:
+
+- Criterion :: Every input route *preserves root confinement, non-execution and finite resource
+  limits*. Includes, external entities, archive traversal and referenced remote resources cannot
+  disclose other files or trigger converter-side network access. Failure publishes no partial
+  page and cleans only owned temporary state.
+- Proven by :: [[#rt-008-8][RT008.8 - Input and resource confinement]].
+
+** AC008.11 - Existing previews and lifetimes remain compatible
+:PROPERTIES:
+:CUSTOM_ID: ac-008-11
+:END:
+
+- Criterion :: Existing *Org and Markdown presentation, source copying, navigation and file
+  lifetimes remain intact*. Other converted documents use the existing Markdown-style responsive
+  navigation; generated code/text wrappers use the Org presentation. Native HTML retains its own
+  layout.
+- Proven by :: [[#rt-008-9][RT008.9 - Compatibility and transport handoff]],
+  [[#ut-008-1][UT008.1 - Native format reading]].
+
+** AC008.12 - Format routing is reusable without enabling annotation writes
+:PROPERTIES:
+:CUSTOM_ID: ac-008-12
+:END:
+
+- Criterion :: The format boundary *distinguishes original format from rendering intermediates*.
+  W006 can use the same resolution, snapshot and rendering contract; generated Org wrappers and
+  non-Org/Markdown sources are never treated as editable annotation stores by W007.
+- Proven by :: [[#rt-008-9][RT008.9 - Compatibility and transport handoff]].
+
+** AC008.13 - Installed use remains portable and documented
+:PROPERTIES:
+:CUSTOM_ID: ac-008-13
+:END:
+
+- Criterion :: The installed command *provides the same format behaviour on macOS, Linux and
+  WSL*, through a PATH symlink and from another directory. Guidance distinguishes Pandoc
+  readers, code/plaintext wrappers, passive HTML and service-only link conversion.
+- Proven by :: [[#ut-008-1][UT008.1 - Native format reading]], [[#ot-008-1][OT008.1 - Guidance
+  and reader coverage review]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT008.1 - Every installed reader at the CLI boundary
+:PROPERTIES:
+:CUSTOM_ID: rt-008-1
+:END:
+
+- Covers :: [[#ac-008-1][AC008.1 - Installed Pandoc readers are selectable]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Use real installed Pandoc and one small, licensable valid fixture per reader returned
+  by --list-input-formats. A maintained fixture catalogue records each fixture's format,
+  provenance and expected body or metadata; aliases may share a fixture. Cover DOCX, ODT, EPUB,
+  PPTX and XLSX with container fixtures containing text, and representative embedded media. A
+  newly reported reader without a fixture fails with its name rather than silently skipping it.
+- Action :: Invoke the command with --from for each reader and inspect the captured browser
+  output and parsed document. Native HTML follows its special route. Metadata-oriented readers,
+  including bibliography formats, must expose their parsed entries as readable content or
+  structured frontmatter rather than an unexplained blank preview. Include malformed and
+  encrypted containers.
+- Expected :: Each reader's expected text/metadata appears, binary inputs are not
+  UTF-8-rejected, and invalid documents fail without a success URL.
+- Intended RED :: The current CLI rejects --from and non-Org/Markdown sources.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** RT008.2 - Detection and explicit reader selection
+:PROPERTIES:
+:CUSTOM_ID: rt-008-2
+:END:
+
+- Covers :: [[#ac-008-2][AC008.2 - Automatic detection has deterministic precedence]],
+  [[#ac-008-3][AC008.3 - Explicit reader selection is bounded]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Create fixtures for every extension and basename in the two mapping tables, mixed
+  case, compound suffixes, extensionless input, misleading filenames and ambiguous JSON/XML. Use
+  real Pandoc for actual conversions; exercise parser errors through the public CLI.
+- Action :: Invoke automatic detection, --from=reader, --from reader, extension-qualified
+  readers and --list-input-formats. Cover mixed batches, --, invalid names, duplicate selection,
+  reader paths, unsupported extensions and missing Pandoc.
+- Expected :: Chosen routes match the tables; explicit readers apply only to the supplied batch,
+  not discovered links. Invalid flags exit 2 before publication; unsupported file/conversion
+  errors retain per-input status 1. Listing returns the installed reader names, exit 0 and no
+  browser call.
+- Intended RED :: Current options reject reader selection and mapped source inputs.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** RT008.3 - Code and text wrapper presentation
+:PROPERTIES:
+:CUSTOM_ID: rt-008-3
+:END:
+
+- Covers :: [[#ac-008-4][AC008.4 - Code wrappers supply source context]], [[#ac-008-5][AC008.5 -
+  Plain text has no synthetic section heading]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Use small source files across the common-language table and .txt with markup
+  lookalikes, an empty file and a filename containing Unicode, spaces and newline. Capture
+  generated Org through the conversion boundary as well as rendered output.
+- Action :: Preview each file using real Pandoc. Compare wrapper metadata and block language,
+  headings, highlighting and title against the original file and the executable's reported
+  application version. Probe a language unavailable in the installed highlighter catalogue.
+- Expected :: Code has exactly one Source code section; plaintext has none. TITLE and SCHEMA are
+  consolidated metadata, and filename controls cannot introduce extra Org fields. Missing
+  highlighting preserves literal text.
+- Intended RED :: Baseline rejects .go and .txt before generating a wrapper.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** RT008.4 - Literal payload preservation
+:PROPERTIES:
+:CUSTOM_ID: rt-008-4
+:END:
+
+- Covers :: [[#ac-008-6][AC008.6 - Wrappers preserve original content]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Use a corpus containing END_SRC in mixed case, leading spaces/tabs, comma-prefixed
+  directives/headings, consecutive commas, wrapper-token lookalikes, CRLF/LF, tabs, BOM, no
+  final newline and embedded HTML/script text.
+- Action :: Round-trip the actual wrapper/preservation/Pandoc pipeline. Decode the page's public
+  copy payload and compare it to the original decoded input, separately from displayed
+  line-ending normalization. Include .txt and code inputs.
+- Expected :: Exactly one code block contains every input line; no payload becomes metadata,
+  headings, links or executable HTML. Copy payload matches the original. NUL or invalid UTF-8 is
+  explicitly rejected for these text routes.
+- Intended RED :: Baseline cannot wrap these inputs; a naive delimiter/indentation wrapper also
+  fails this corpus.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** RT008.5 - JSON display and exact copy payload
+:PROPERTIES:
+:CUSTOM_ID: rt-008-5
+:END:
+
+- Covers :: [[#ac-008-7][AC008.7 - Ordinary JSON is readable without changing its source]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Use compact/nested JSON, long numbers, exponents, negative zero, duplicate keys,
+  ordered members, whitespace, JSON strings containing braces/escaped quotes and malformed JSON.
+- Action :: Preview ordinary .json and separately --from=json with an actual Pandoc JSON AST.
+  Inspect displayed tokens and copy payload.
+- Expected :: Pretty printing changes whitespace only outside strings, with two-space
+  indentation. Numbers, member order and duplicates survive; copy retains original text.
+  Malformed ordinary JSON remains literal with a notice; explicit AST input uses the document
+  reader.
+- Intended RED :: Baseline rejects both ordinary .json and --from=json.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** RT008.6 - Passive HTML without layout replacement
+:PROPERTIES:
+:CUSTOM_ID: rt-008-6
+:END:
+
+- Covers :: [[#ac-008-8][AC008.8 - HTML retains passive authored presentation]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Use an authored full HTML page and fragment with title, headings, local stylesheet,
+  inline CSS, local rasters, relative/absolute/base-relative anchors, scripts, event handlers,
+  forms, refresh, iframes, remote resources, srcset and CSS URL/import escape cases.
+- Action :: Preview native HTML and inspect DOM, rewritten URLs and CSP. A local canary HTTP
+  endpoint observes that converter execution makes no requests; UT008.1 observes actual browser
+  behaviour. Exercise malformed HTML through the maintained parser.
+- Expected :: Authored permitted styles and structure remain, without application chrome. All
+  active/automatic request forms obey the HTML contract. Relative resource identity survives
+  movement into OS temp.
+- Intended RED :: Baseline rejects .html; its normal sanitizer also removes authored styles.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** RT008.7 - Binary resources and original identity
+:PROPERTIES:
+:CUSTOM_ID: rt-008-7
+:END:
+
+- Covers :: [[#ac-008-9][AC008.9 - Conversion preserves identity and resources]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Use DOCX/ODT/EPUB with embedded PNG plus a relative document anchor; include
+  duplicate media basenames, read-only source directories, symlink entry aliases and two
+  documents in different directories.
+- Action :: Convert with real Pandoc; open generated asset references and compare raster bytes
+  to fixture assets. Inspect source header, link resolution and cleanup.
+- Expected :: Original logical paths remain visible and copyable, admitted raster bytes match,
+  media from different source revisions do not collide, and no temporary path is exposed as
+  source context.
+- Intended RED :: Baseline rejects containers and cannot extract their embedded media.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** RT008.8 - Input and resource confinement
+:PROPERTIES:
+:CUSTOM_ID: rt-008-8
+:END:
+
+- Covers :: [[#ac-008-10][AC008.10 - Hostile inputs stay bounded and passive]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Create synthetic allowed roots and out-of-root canary files; fixtures contain include
+  directives, XML external entities, remote URLs, ZIP traversal/absolute names, symlink entries,
+  conflicting entry names, expansion bombs and oversized media.
+- Action :: Exercise CLI conversion under tight limits and cancellation; monitor only owned
+  canary files/endpoints and output. Include all resource-boundary values at limit and one
+  above.
+- Expected :: No escaped reads, writes or network requests; size/time errors are explicit, no
+  partial success is opened, and unrelated scratch survives. Sandbox stays enabled even when a
+  reader lacks required packaged data.
+- Intended RED :: Baseline lacks generalized reader/container paths; adding them without
+  confinement fails the canary assertions.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** RT008.9 - Compatibility and transport handoff
+:PROPERTIES:
+:CUSTOM_ID: rt-008-9
+:END:
+
+- Covers :: [[#ac-008-11][AC008.11 - Existing previews and lifetimes remain compatible]],
+  [[#ac-008-12][AC008.12 - Format routing is reusable without enabling annotation writes]].
+- Boundary :: *Public CLI and published HTML/resource representation*; real Pandoc, with browser
+  opening captured at the existing OS boundary.
+- Setup :: Use existing real Org/Markdown presentation fixtures plus code, text, native HTML and
+  binary inputs. Keep the current file publication/browser capture boundary and both file
+  retention modes.
+- Action :: Run mixed batches through a PATH symlink from another cwd. Inspect source-kind
+  metadata, rendering results, source hashes and cleanup; verify that the shared format resolver
+  independently classifies each linked target without inheriting an explicit parent reader.
+- Expected :: Existing tests remain valid except documented broader admission. Sources are
+  unchanged, type identity survives wrappers, and the format result is usable by W006 without
+  making W008 depend on a running service.
+- Intended RED :: Existing file previews pass as regression controls; mixed-format and
+  source-kind cases fail on the baseline.
+- Retention :: Persistent under =make test=; *TDD before implementation*. No metered service or
+  external API participates.
+
+** UT008.1 - Native format reading
+:PROPERTIES:
+:CUSTOM_ID: ut-008-1
+:END:
+
+- Covers :: [[#ac-008-13][AC008.13 - Installed portability]],
+  [[#ac-008-6][AC008.6 - Original copying]], [[#ac-008-7][AC008.7 - JSON display]],
+  [[#ac-008-8][AC008.8 - Passive HTML]], [[#ac-008-11][AC008.11 - Compatible presentation]].
+- Reviewer :: Operator.
+- Procedure :: On macOS/Safari, Linux/Firefox and Windows/Edge via WSL1 and WSL2,
+  open a DOCX, ODT, code file, compact JSON, .txt and authored HTML from another
+  directory through the installed command. Check narrow/wide views, keyboard
+  access, print, source copying, code copying and supported embedded images.
+  Inspect browser requests on the hostile HTML fixture; no remote automatic
+  request or source script may run. Compare native HTML's permitted layout with
+  the source using a synthetic reference page.
+- Expected :: *Readable, accessible content and accurate original-text copying*;
+  WSL opens the Windows default browser. Native HTML retains permitted appearance
+  and ordinary links, without active content. No editor or runtime executes code.
+- Record :: Dated environment, revision, observed result and operator authority
+  in [[file:validation.org][validation.org]]. Unavailable environments remain pending.
+
+** OT008.1 - Guidance and reader coverage review
+:PROPERTIES:
+:CUSTOM_ID: ot-008-1
+:END:
+
+- Covers :: [[#ac-008-13][AC008.13 - Installed use remains portable and documented]].
+- Boundary :: Candidate help, README and format documentation.
+- Procedure :: Compare --list-input-formats with the fixture catalogue; review
+  every mapping, explicit selection example, binary limitation, HTML restriction,
+  generated metadata and file/service distinction. Check licence/provenance of
+  retained fixtures and sanitize technical documentation.
+- Expected :: *Every installed reader is accounted for* and documented behaviour
+  matches the implemented public interface.
+- Bounds :: One local review per release candidate; no external API, no service
+  activation and no automated persistent prose test.
+- Record :: [[file:validation.org][validation.org]].
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** Ambiguous JSON, XML and unfamiliar extensions
+
+- Condition :: A suffix can mean *source data or a Pandoc document representation*.
+- Required behaviour :: Tables determine the default. Explicit --from selects a
+  built-in reader; an unknown extension is never guessed as Markdown.
+- Covered by :: [[#ac-008-2][AC008.2 - Detection]], [[#ac-008-3][AC008.3 - Selection]]
+  and [[#rt-008-2][RT008.2 - Detection and explicit reader selection]].
+
+** Literal delimiters and encoding
+
+- Condition :: Content includes *END_SRC, leading commas, invalid UTF-8 or NUL*.
+- Required behaviour :: Escape syntax for transport without changing copy text;
+  reject binary content only on text/code routes, not container readers.
+- Covered by :: [[#ac-008-6][AC008.6 - Literal preservation]],
+  [[#rt-008-4][RT008.4 - Literal payload preservation]].
+
+** Damaged containers and external content
+
+- Condition :: Malformed archives, external references or resource expansion
+  exceed *authorized files or finite budgets*.
+- Required behaviour :: Fail locally with no partial publication; unsafe media
+  receives a visible omission notice without loading it.
+- Covered by :: [[#ac-008-9][AC008.9 - Resources]], [[#ac-008-10][AC008.10 - Confinement]],
+  [[#rt-008-7][RT008.7 - Binary resources]], [[#rt-008-8][RT008.8 - Confinement]].
+
+** JSON values and native HTML
+
+- Condition :: JSON contains duplicate keys or large numbers; HTML contains
+  *active content interspersed with authored styling*.
+- Required behaviour :: JSON formatting preserves lexical values and member
+  order. HTML keeps permitted appearance while enforcing its passive contract.
+- Covered by :: [[#ac-008-7][AC008.7 - JSON]], [[#ac-008-8][AC008.8 - HTML]],
+  [[#rt-008-5][RT008.5 - JSON]], [[#rt-008-6][RT008.6 - Passive HTML]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Components :: Separate *source identity and bounded snapshots*, *format
+  resolution*, *conversion* and *transport-specific URL publication* within the
+  owned Go application. Preserve the existing Org prepass and copy transport.
+- Ownership :: htmlpreview owns wrapper generation and passive HTML treatment;
+  Pandoc owns document parsing. *W006 owns HTTP endpoints and capability grants*.
+- Existing pattern :: Reuse bundled fonts, defaults and Lua for converted pages.
+  *Native HTML uses its authored layout* and a distinct passive sanitizer policy.
+
+** High-level design
+
+*** Flow
+
+1. Discover *installed built-in readers and highlighting languages* once per
+   invocation; W006 snapshots them once per service instance.
+2. Resolve the input using explicit selection or the filename contract, then
+   read a bounded, stable snapshot through the existing rooted file boundary.
+3. Convert documents with *sandboxed Pandoc*, create code/text Org wrappers,
+   or parse and preserve passive native HTML without conversion.
+4. Resolve media and links from *original source context*. Publish only after
+   conversion, validation and all output-budget checks succeed.
+5. Open the default browser using the existing lifecycle. Delete only the
+   invocation's owned output according to its selected retention mode.
+
+*** Interfaces and configuration
+
+- CLI :: =htmlpreview [--from FORMAT] FILE [FILE ...]=; accept the equivalent
+  =--from=FORMAT= spelling. At most one selection applies to all explicit inputs.
+  =--= retains literal filename handling. No -f alias is required.
+- Reader listing :: =htmlpreview --list-input-formats= is a sole informational
+  operation and prints the installed Pandoc reader list. Missing/incompatible
+  Pandoc exits 1. Help and --version remain independent of Pandoc.
+- Selection grammar :: A reported base reader with optional Pandoc
+  =+extension= / =-extension= qualifiers. Validate syntax and the installed
+  reader's extension support; no paths, whitespace, shell fragments or arbitrary
+  options. Native =html= selects the passive HTML route; its extension qualifiers
+  are rejected because no Pandoc HTML reader is invoked.
+- Precedence :: *Explicit reader; native HTML; exact named code basename;
+  longest matching suffix across both tables and .txt; exact installed reader
+  name as suffix; otherwise error*. The code table wins any equal-length suffix
+  conflict. Suffix matching is case-insensitive. Named code basenames use the
+  exact spellings in the table. No shebang execution or content sniffing changes
+  the chosen type.
+- Default Markdown :: Automatic .md/.markdown retains the bundled dialect;
+  explicit reader selection uses its validated named reader/extensions.
+- Specialist JSON :: =--from=json= expects Pandoc AST JSON. An ordinary .json
+  path without selection always chooses the source-code route.
+- Linked selection :: W006 reserves the query key =htmlpreview-format= for the
+  same reader grammar. It applies to that target only. Ordinary .json anchors
+  need no key. W008 exposes the format resolver; W006 implements query parsing.
+- Error behaviour :: Invalid invocation/settings exit 2; per-source admission,
+  encoding or conversion failures exit 1 while retaining valid batch results.
+  Diagnostics identify the explicit original input and selected format.
+- New settings :: *No persistent configuration key or runtime executable* is
+  added. Reader selection is a per-invocation operation.
+
+*** Document alias table
+
+The installed reader list is *authoritative for availability*. A mapped reader
+absent from it produces an actionable unavailable-reader error. Every installed
+reader is also selectable explicitly, including readers added after this table.
+
+| Filename suffix | Reader |
+|-----------------+--------|
+| .md, .markdown, .mdown, .mkd, .mkdn | markdown |
+| .org | org |
+| .adoc, .asciidoc | asciidoc |
+| .bib, .bibtex | bibtex |
+| .biblatex | biblatex |
+| .bits | bits |
+| .commonmark | commonmark |
+| .commonmark_x | commonmark_x |
+| .creole | creole |
+| .csl.json | csljson |
+| .csv | csv |
+| .tsv | tsv |
+| .dj, .djot | djot |
+| .dbk, .docbook | docbook |
+| .docx | docx |
+| .dokuwiki | dokuwiki |
+| .endnote.xml, .endnotexml | endnotexml |
+| .epub | epub |
+| .fb2 | fb2 |
+| .gfm | gfm |
+| .haddock | haddock |
+| .ipynb | ipynb |
+| .jats, .jats.xml | jats |
+| .jira | jira |
+| .tex, .latex, .ltx | latex |
+| .man, .1, .2, .3, .4, .5, .6, .7, .8, .9 | man |
+| .mdoc | mdoc |
+| .mediawiki, .wiki | mediawiki |
+| .muse | muse |
+| .native | native |
+| .odt | odt |
+| .opml | opml |
+| .pod | pod |
+| .pptx | pptx |
+| .ris | ris |
+| .rst, .rest | rst |
+| .rtf | rtf |
+| .t2t | t2t |
+| .textile | textile |
+| .tikiwiki | tikiwiki |
+| .twiki | twiki |
+| .typ, .typst | typst |
+| .vimwiki | vimwiki |
+| .xlsx | xlsx |
+
+Compound document suffixes in this table take precedence over their shorter
+code suffixes: *.csl.json is a bibliography; .json is ordinary JSON code*.
+Generic .xml is source code; explicit --from=docbook, --from=jats or --from=xml
+selects the intended document representation. .html, .htm and .xhtml always
+default to native HTML, not a source-code wrapper.
+
+*** Common code table
+
+Language names are *Pandoc highlighting identifiers*, not executable commands.
+A missing highlighter never prevents a literal preview.
+
+| Suffix or exact basename | Source-block language |
+|--------------------------+-----------------------|
+| .sh, .bash | bash |
+| .zsh | zsh |
+| .fish | plaintext |
+| .pl, .pm | perl |
+| .py, .pyw | python |
+| .go | go |
+| .java | java |
+| .js, .mjs, .cjs | javascript |
+| .jsx | javascriptreact |
+| .ts, .tsx | typescript |
+| .lua | lua |
+| .c, .h | c |
+| .cc, .cpp, .cxx, .hh, .hpp, .hxx | cpp |
+| .cs | cs |
+| .rs | rust |
+| .rb, .rake, Rakefile, Gemfile | ruby |
+| .php | php |
+| .swift | swift |
+| .kt, .kts | kotlin |
+| .scala, .sc | scala |
+| .r | r |
+| .jl | julia |
+| .dart | dart |
+| .ex, .exs | elixir |
+| .erl, .hrl | erlang |
+| .hs | haskell |
+| .clj, .cljs, .cljc, .edn | clojure |
+| .lisp, .lsp | commonlisp |
+| .scm, .ss | scheme |
+| .ml, .mli | ocaml |
+| .fs, .fsx | fsharp |
+| .sql | sql |
+| .ps1, .psm1, .psd1 | powershell |
+| .bat, .cmd | dosbat |
+| .css | css |
+| .scss | scss |
+| .sass | sass |
+| .json | json |
+| .yaml, .yml | yaml |
+| .toml | toml |
+| .ini, .cfg, .conf | ini |
+| .xml, .xsd, .xsl, .xslt | xml |
+| .graphql, .gql | graphql |
+| .proto | protobuf |
+| .tf, .tfvars | terraform |
+| .nix | nix |
+| .cmake, CMakeLists.txt | cmake |
+| .mk, Makefile, makefile, GNUmakefile | makefile |
+| Dockerfile, Containerfile, .dockerfile | dockerfile |
+| .diff, .patch | diff |
+| .vim | plaintext |
+| .zig | zig |
+| .nim | nim |
+| .tcl | tcl |
+| .f90, .f95, .f03, .f08 | fortranfree |
+
+The named code basename *CMakeLists.txt precedes the generic .txt rule*.
+.pl means Perl; ambiguous .m is deliberately unmapped. Nothing reads environment
+files implicitly. The command handles only the explicit input or authorized
+references; there is no configuration-directory discovery.
+
+*** Wrapper and literal-content contract
+
+For code, create a private temporary Org file with the following logical
+structure. Bracketed terms here denote substituted values, not literal brackets.
+
+#+begin_example
+#+TITLE: [original basename]
+#+SCHEMA: HTML-Preview version [application version]
+
+* Source code
+#+BEGIN_SRC [mapped language]
+[original contents, protected for Org transport]
+#+END_SRC
+#+end_example
+
+For .txt, *omit the Source code heading* and use =plaintext= as the language.
+The application version is the same build version used by --version, including
+=dev= for a development build. Do not add guessed author/date or file timestamps.
+
+- Metadata :: Render the basename as *literal text*. Escape CR/LF/control and Org
+  metasyntax for the generated header; keep the original path separately for the
+  source-copy control. Restore the exact visible basename through owned metadata
+  transport rather than allowing a filename to introduce a directive.
+- Escaping :: *Comma-escape Org delimiter and heading syntax where required*.
+  Verify the installed Org reader's treatment of existing commas. If transparent
+  escaping cannot represent a line losslessly, use the existing owned code
+  transport to carry that payload through Pandoc; do not indent or alter source.
+  The temporary Org wrapper remains a real artefact with owned block boundaries.
+- Copy authority :: Preserve *original decoded text separately from formatted
+  display*. Existing random, collision-checked transport and safe encoding carry
+  it into the page's copy control, never into executable source HTML.
+- Encoding :: Wrappers require valid UTF-8 without NUL. A leading UTF-8 BOM is
+  omitted from display but retained in the original copy payload. CRLF may become
+  LF for browser display; clipboard input retains the original decoded text.
+- JSON :: Use a *token-preserving formatter*, not a map/float decode-reencode
+  cycle. Indent two spaces without sorting members, collapsing duplicate keys or
+  rounding numbers. Malformed JSON keeps its original display text and a notice.
+
+*** Binary documents and media
+
+- Snapshots :: Read *raw bounded bytes*, maintaining original logical/canonical
+  context and stable-read checks. Apply text validation only to text routes.
+  Reader inputs may use owned temporary files where Pandoc needs seekable input.
+- Pandoc :: Keep *--sandbox*, owned defaults, HTML5 standalone output, trusted
+  bundled Lua and the existing 512 MiB heap and conversion deadlines. Disable
+  user configuration/filter loading; no source file controls command options.
+- Media :: Extract only *container-owned media* into the conversion's private
+  directory. Do not enable generic remote/local resource fetching through
+  --extract-media. Use the sandbox and an owned bounded media-bag export, then
+  independently validate output paths and raster types before publication.
+  Source-relative external files are separately admitted by the URL resolver.
+- Archives :: Before a known ZIP-container reader, validate member names and
+  declared/actual inflation using Go's bounded archive reader: no absolute,
+  traversal, duplicate normalized names, symlinks or non-regular entries.
+  Limits are *4096 entries, 100 MiB total inflated data and 10 MiB per media
+  asset*. Stream counting enforces actual sizes; invalid archives fail before
+  Pandoc. Other readers remain under the same conversion/output bounds.
+- Output :: Existing stricter configured limits win. Temporary snapshots,
+  wrappers, expanded content and media count against owned scratch limits;
+  application output including embedded assets remains bounded. Container media
+  never expands access to adjacent files.
+- Metadata-only readers :: Use the parsed document's metadata as *readable
+  structured frontmatter*, including bibliographic entries, if it has no body.
+  Do not invent content or invoke remote citation services to fill an empty page.
+
+*** Passive native HTML
+:PROPERTIES:
+:CUSTOM_ID: passive-html
+:END:
+
+- Fidelity :: *No Pandoc round trip, application title block or reading chrome*.
+  Parse HTML with the maintained HTML5 parser and retain the document title,
+  structural elements, anchors and permitted inline/embedded/local CSS.
+  HTML fragments receive only the document structure required by a browser.
+  This is visual preservation, not byte-identical output.
+- Blocking :: Remove scripts, inline event handlers, javascript URLs, forms'
+  submission capability, refresh directives, frames, objects/embeds, active SVG
+  and automatic resource forms not expressly supported below. Form field text
+  may remain inert. No source JavaScript receives a CSP exception.
+- CSS :: Use a maintained CSS parser, not regex replacement. Preserve static
+  layout/colour/typography declarations. Remove imports and unsupported at-rules;
+  inspect decoded CSS tokens, including escapes. Every url() is either an
+  admitted local raster or removed. No remote fonts, fetches or stylesheet chain.
+  Local stylesheets referenced by the page may be read under its existing root,
+  10 MiB asset limit and aggregate budget, sanitized and inlined. Relative CSS
+  URLs resolve against that stylesheet's original directory.
+- Resources :: Admit local raster images and valid raster data using W006's
+  matching format/signature rules. Rewrite img/srcset and CSS image URLs through
+  the transport's authorized resolver. Unsupported/remote automatic resources
+  remain inactive with a concise omission notice; ordinary external anchors
+  remain explicit user navigation with no referrer/opener propagation.
+- Base and anchors :: Resolve source-relative anchors/resources against the
+  first valid base href, then remove the base element. A remote base cannot
+  authorize local reads or automatic remote loads. In-root document anchors are
+  available to W006's normal conversion router, including HTML-to-HTML links.
+  In file mode, references retain their source meaning; this work does not add
+  an HTTP service or on-click file-mode converter.
+- Policy :: Native HTML receives CSP default-src 'none', script-src 'none',
+  style-src 'unsafe-inline', form-action 'none', base-uri 'none', object-src
+  'none', font-src 'none', and only transport-authorized raster image sources.
+  HTTP additionally uses W006's frame-ancestors, no-store, no-referrer and nosniff.
+  The inline-style allowance is confined to this *script-free authored page*;
+  it does not relax the normal generated-page policy.
+- Identity :: The native HTML keeps its own title and layout. Its URL/publication
+  record retains original source identity; no synthetic Org title or source-copy
+  header is added. Converted documents retain the established visible header.
+
+*** Data and state
+
+- Format result :: Carry *original kind, selected reader and extensions, code
+  language, logical source context and transformation version* separately.
+  Generated Org is an intermediate, never evidence that the original is Org.
+- Persistence :: *Only private temporary output* is added. No source migration,
+  file rewrite, formatter writeback, stored reader preference or annotation
+  record is introduced.
+- Service contract :: W006 keys conversion/cache results by source revision and
+  resolved format as well as existing context/settings. Links resolve their own
+  format; an explicit parent reader never propagates to children.
+
+*** Failure behaviour
+
+- *Errors identify the original source*, selected route and useful remedy.
+  Unknown suffixes suggest --from and reader listing; invalid JSON display is
+  a notice, while invalid explicit Pandoc AST input is a conversion error.
+- *No insecure fallback*: a failed reader, sandbox or resource check cannot
+  silently become raw HTML, a download or an unsandboxed retry.
+
+** Architecture impact
+
+*** Security impact
+
+- Threat boundary :: *More document parsers and passive authored CSS* process
+  untrusted local files. Source code remains data; generated wrappers must not
+  grant source directives or attributes trusted application status.
+- Data and secrets :: Original source paths/content remain local and read-only.
+  Private scratch holds snapshots; external references do not gain filesystem
+  access. Routine logs never contain service credentials or document bodies.
+- Access :: *Existing roots and opened-handle checks remain mandatory* for every
+  format and resource. W006 retains token and loopback requirements; HTML
+  rewriting does not create new roots.
+- Conclusion :: Retain sandboxing, bounded archive/media operations and distinct
+  passive HTML policy. Tests cover actual boundary effects, not source greps.
+
+*** Other relevant qualities
+
+- Reliability :: *Deterministic classification and explicit failures* prevent
+  accidental Markdown fallback or silent corruption of JSON/code.
+- Performance :: Reader discovery runs once per invocation/instance; limits
+  cover wrappers, archives, media and resulting HTML. No recursive pre-index.
+- Operability :: Help and reader listing expose dependency capability; errors
+  distinguish missing reader, invalid source and denied resource.
+- Accessibility :: Converted pages retain existing keyboard/copy/navigation
+  controls. Native HTML retains authored semantics; omitted content gets readable
+  notices. Native browser qualification checks contrast, focus and narrow layouts.
+- Portability :: *macOS, Linux and WSL* retain default-browser adapters; no new
+  runtime executable, JavaScript CLI or system-font dependency.
+- Maintainability :: Shared classification avoids CLI/service drift. Reader and
+  language tables are separate; original source type survives every intermediate.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: The exact authorities and implementation boundaries named
+  above; [[file:../006-local-preview-service/spec.org][W006 - Service integration]]
+  only for the shared transport contract, not as permission to implement it.
+- First implementation step :: Write [[#rt-008-3][RT008.3 - Code and text wrapper
+  presentation]] and observe .txt admission fail, then implement under TDD.
+- Definition evidence :: [[file:audits.yaml][audits.yaml]].
+- Validation evidence :: [[file:validation.org][validation.org]].
+- Documentation impact :: Update README/help and add =docs/FORMATS.md= at delivery;
+  maintain the proposed broad-format sections in Vision/Architecture and the
+  amended W006 boundary. Preserve historical narrower scope explicitly.
+- Delivery boundary :: *No implementation in this definition*. W008 file-mode
+  delivery can precede W006; W006 owns served cross-format navigation tests.

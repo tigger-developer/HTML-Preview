@@ -60,6 +60,34 @@ claimed. The source-preservation rule gains an explicit exception only for
 annotation records. A future Exodan deployment would require its own definition
 over server-owned documents and storage, never a client's personal filesystem.
 
+## Input format proposal - 12 September 2026
+
+[W008 - Input formats](../specs/008-input-formats/spec.org) introduces a shared
+format resolver ahead of the existing conversion and publication boundaries.
+It discovers installed Pandoc readers, admits binary snapshots, creates literal
+Org wrappers for code/text, formats ordinary JSON without changing copy content,
+and handles bounded container-owned media. Original source identity remains
+separate from any generated Org intermediate.
+
+Native HTML bypasses Pandoc and the application reading template. A distinct
+passive policy preserves authored structure and sanitized local/inline CSS while
+blocking source scripts, form submissions and automatic external requests.
+This supersedes the blanket source-style prohibition only for native HTML;
+ordinary converted pages retain their current presentation and CSP.
+
+The amended [W006 service](../specs/006-local-preview-service/spec.org) consumes
+this format contract for explicit inputs and linked targets. Reader selectors
+are validated representation choices, never filesystem grants. Scoped embedded
+media and inlined stylesheet dependencies participate in authorization, cache
+revalidation and resource budgets. Link rewriting happens before publication,
+including native HTML, so document navigation needs no browser JavaScript.
+
+W008 file-mode delivery precedes W006 format integration without a dependency
+cycle. W007 annotation storage remains limited to genuine Org/Markdown sources.
+These are definition amendments awaiting overall sign-off, not implementation
+claims. The 11 September W006 approval is retained as history; its implementation
+hold remains effective while the changed definition receives renewed review.
+
 ## System shape
 
 The implementation uses `cmd/htmlpreview`, `internal/preview`, a root Go asset

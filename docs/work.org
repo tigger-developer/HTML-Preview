@@ -142,7 +142,7 @@ classification; it is provenance, not current state.
   supported recovery requires runner repair or an operator-authorized fresh
   session; the application changes and verification checkpoints are retained.
 
-** ACTIVE W006 - Local preview service and automatic fallback :feature:
+** REVIEW W006 - Local preview service and automatic fallback :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-006
 :PRIORITY: P1
@@ -158,6 +158,12 @@ classification; it is provenance, not current state.
   service packaging. *Definition only*; existing delivery records remain separate.
 - Delivery instruction :: *Design approved by Taḋg on 11 September 2026;
   implementation explicitly deferred*. Await a subsequent instruction to begin.
+- Amendment :: On *12 September 2026*, the operator requested support for W008's
+  complete format contract in direct service inputs and linked targets, including
+  passive native HTML. *Renewed definition sign-off is required*; the prior
+  approval remains history and the implementation hold remains in force.
+- Dependency :: [[file:../specs/008-input-formats/spec.org][W008 - Input formats]]
+  supplies the format pipeline before W006 service integration is qualified.
 
 ** REVIEW W007 - Attributed autosaved annotations in service previews :feature:
 :PROPERTIES:
@@ -175,6 +181,25 @@ classification; it is provenance, not current state.
 - Dependency :: *W006 delivery and recorded service qualification precede W007
   implementation*. W006 design approval alone is insufficient; its implementation
   hold remains in force. This work is *definition only*.
+
+** REVIEW W008 - Preview Pandoc documents, source code and plain text :feature:defect:
+:PROPERTIES:
+:CUSTOM_ID: w-008
+:PRIORITY: P1
+:SOURCE: operator define-change
+:CREATED: 2026-09-12
+:END:
+
+- Specification :: [[file:../specs/008-input-formats/spec.org][W008 - Preview Pandoc documents, source code and plain text]].
+- Audit evidence :: [[file:../specs/008-input-formats/audits.yaml][W008 - Definition audit record]].
+- Validation :: [[file:../specs/008-input-formats/validation.org][W008 - Format and browser qualification]].
+- Scope :: *All installed Pandoc readers*, common code/plaintext Org wrappers,
+  literal copying, ordinary JSON pretty printing and passive authored HTML.
+- Dependency direction :: W008 can be delivered in file mode independently;
+  amended W006 consumes its format contract for *on-demand linked navigation*.
+  W007's annotation writes remain restricted to genuine Org/Markdown sources.
+- Instruction :: *Definition only*. Accepted format recommendations resolve
+  design questions; overall specification sign-off and delivery remain separate.
 
 * Migration record
 :PROPERTIES:
