@@ -2,7 +2,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PENDING
+#+DEFINITION_GATE: PASS
 #+OPERATOR_SIGNOFF: PENDING
 
 * Attributed autosaved annotations in service previews
@@ -1145,6 +1145,10 @@ JSON_EVENT
 - Portability :: macOS, Linux and WSL retain the system default browser; actual
   filesystem support is qualified rather than inferred. No network configuration
   change or non-loopback fallback is permitted.
+- Accessibility :: Annotation controls retain *keyboard access, visible focus,
+  accessible names and polite textual save status* through autosave and refresh.
+  Browser regressions verify mechanical behaviour; human screen-reader and
+  visual usability qualification remains required under AC007.19 and UT007.6.
 - Maintainability :: Keep event codec, rooted append policy, anchors, HTTP adapter,
   composer state and DOM mapping as independently testable responsibilities.
   Go/HTML/CSS/browser JS suffice; justify any Go dependency before introduction.

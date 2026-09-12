@@ -159,7 +159,7 @@ classification; it is provenance, not current state.
 - Delivery instruction :: *Design approved by Taḋg on 11 September 2026;
   implementation explicitly deferred*. Await a subsequent instruction to begin.
 
-** TODO W007 - Attributed autosaved annotations in service previews :feature:
+** REVIEW W007 - Attributed autosaved annotations in service previews :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-007
 :PRIORITY: P1
