@@ -1,5 +1,5 @@
 #+TITLE: W006 - Local preview service and automatic fallback
-#+SCHEMA: 1
+#+SCHEMA: 5
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
@@ -180,6 +180,11 @@
 
 ** Decisions
 
+- Template update, 13 September 2026 :: The operator requested the current
+  *architecture standard and solution-design template*. Schema 5 adds explicit
+  responsibilities, reuse, rationale, verification and routine-detail boundaries.
+  *Approved behaviour and delivery authority remain unchanged*; schema 1 and
+  its approval history below remain historical provenance.
 - Template conversion, 12 September 2026 :: The active amended candidate adopts
   *template schema 1*, including Synopsis and harness-only audit state. This is
   part of the authorized definition update; prior approval remains recorded.
@@ -999,6 +1004,25 @@
 
 ** High-level design
 
+*** Responsibilities and reuse
+
+- CLI :: Own *input validation, private service selection and batch handoff*.
+  Reuse the existing file-session lifecycle only for fallback entries. The CLI
+  never supervises or starts the service.
+- Service :: Own the *startup configuration snapshot, listeners and capability
+  registry*. Private control admits explicit sources; public handlers resolve
+  only previously authorized requests. Both use the same rooted source boundary.
+- Renderer :: Reuse *W008 format resolution and rendering* with explicit source
+  context, settings and URL resolvers. HTTP adds authorization and publication;
+  it does not add another Pandoc pipeline or per-format route implementation.
+- Request state :: The service owns *in-flight work, cache and asset grants*;
+  each conversion owns its scratch directory. Completed immutable results pass
+  to HTTP publication only after validation and owned cleanup. Cache eviction
+  drops render data, not live authorization.
+- Packaging :: Extend the existing *Go buildtool and native templates*.
+  Service managers own supervision only. No router framework, background index,
+  persistence layer or generic resource manager is introduced.
+
 *** Flow
 
 1. The operator *starts the optional service explicitly*. It validates its config,
@@ -1018,6 +1042,9 @@
    manager ends it, invalidating capabilities and cleaning owned scratch data.
 
 *** Interfaces and configuration
+:PROPERTIES:
+:CUSTOM_ID: service-interfaces
+:END:
 
 - Commands :: Preserve =htmlpreview FILE [FILE ...]= and add
   =htmlpreview --serve= as a sole operation. =--= still permits a literal
@@ -1120,6 +1147,9 @@ serve:
   service logs contain only operation, status, duration and a safe request ID.
 
 *** Asset contract
+:PROPERTIES:
+:CUSTOM_ID: asset-contract
+:END:
 
 - Registration :: *Only a rewritten local anchor or image in an authorized
   rendered document registers an asset*. Registration records capability,
@@ -1208,6 +1238,9 @@ serve:
   They and non-Org/Markdown readers remain outside W007's annotation-store scope.
 
 *** Capabilities and bounded state
+:PROPERTIES:
+:CUSTOM_ID: bounded-state
+:END:
 
 - Capabilities :: Generate *32 random bytes with crypto/rand*, encoded as
   unpadded base64url (43 characters). This is a chosen 256-bit secret, not a
@@ -1256,6 +1289,9 @@ serve:
   or deletion by filename prefix is introduced.
 
 *** Failure behaviour
+:PROPERTIES:
+:CUSTOM_ID: failure-behaviour
+:END:
 
 - Public HTTP :: *404* for absent/unknown token/path; *403* for known-capability
   denied content, Host/Origin/peer violations; *400* for malformed URL/search;
@@ -1277,6 +1313,45 @@ serve:
   instance/protocol from the private socket before passing a token URL to the
   Windows browser. Probe failure is diagnosed unavailability and uses file
   fallback; it never changes the loopback-only bind requirement.
+
+** Design decisions and verification
+:PROPERTIES:
+:CUSTOM_ID: design-verification
+:END:
+
+The protocol and state contracts above own the exact values and outcomes.
+Implementation review checks *conformance to those choices*, not a replacement
+architecture suggested by the reviewer.
+
+| Decision | Rationale | Verification |
+|----------+-----------+--------------|
+| Private registration plus hardcoded loopback and capability URLs | Loopback alone does not establish the invoking user or filesystem grant | [[#rt-006-3][RT006.3 - Network boundary]], [[#rt-006-4][RT006.4 - Rooted access]], [[#rt-006-9][RT006.9 - Lifecycle]]; review checks crypto/rand and grant ownership |
+| Shared renderer with transport-specific URL resolution | HTTP changes delivery, not document interpretation | [[#rt-006-7][RT006.7 - Content and assets]], [[#rt-006-11][RT006.11 - Cross-format navigation]]; review checks reuse of W008 and original source context |
+| Lazy links and bounded rendered Org catalogue | Navigation needs requested targets, not a filesystem index | [[#rt-006-5][RT006.5 - Lazy navigation]], [[#rt-006-6][RT006.6 - Org destinations]] |
+| Separate cache lifetime from authorization lifetime | Eviction must not break valid links; restart deliberately revokes them | [[#rt-006-8][RT006.8 - Cache and limits]], [[#rt-006-9][RT006.9 - Lifecycle]] |
+| Shared conversion admission and per-conversion cleanup | Bound long-running work without duplicating conversions or leaking scratch | [[#rt-006-8][RT006.8 - Cache and limits]], [[#rt-006-9][RT006.9 - Lifecycle]]; review checks one owner and cancellation path for each resource |
+| Classified file fallback and inactive service packaging | Preserve one-off use without hiding conversion errors or changing host state | [[#rt-006-1][RT006.1 - Transport selection]], [[#rt-006-2][RT006.2 - Configuration]], [[#rt-006-10][RT006.10 - Packaged artefacts]] |
+
+- Observability :: *Real local HTTP, Unix sockets, temporary files and Pandoc*
+  expose the required outcomes. Existing host/process boundaries control stalls,
+  disconnects, cleanup faults and unavailable peers. Assert status, returned
+  bytes and resource lifetime, not helper names or source text. Actual service
+  managers and Windows loopback remain [[#ot-006-1][OT006.1 - Native qualification]];
+  browser judgement remains the defined user tests.
+- Proportionality :: *One service in the existing binary* and bounded in-memory
+  maps satisfy the current feature. The cache and worker limits address repeated
+  browser requests; no durable cache, generalized job scheduler or filesystem
+  watcher is needed. File fallback and HTTP are the final two transports;
+  the legacy graph's retirement is already defined above.
+
+** Routine details left to implementation
+
+- *Private helper names, file grouping and standard-library data structures*
+  may follow existing conventions. These are responsibilities, not one package
+  per row or a requirement for new interfaces around every operation.
+- Concrete error wrapping and test fixture names remain routine. *Wire errors,
+  authorization, deadlines, capacity and fallback classification are fixed*
+  by the contracts above; delivery must not silently adjust them.
 
 ** Architecture impact
 
@@ -1354,6 +1429,9 @@ serve:
   application logic, routing framework, CLI JS or persistent browser harness.
 
 *** Packaging layout and manager contracts
+:PROPERTIES:
+:CUSTOM_ID: packaging-contract
+:END:
 
 - Maintained sources :: Add =packaging/service/org.htmlpreview.agent.plist.tmpl=,
   =packaging/service/htmlpreview.service.tmpl=,

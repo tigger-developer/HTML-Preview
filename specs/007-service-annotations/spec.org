@@ -1,37 +1,55 @@
 #+TITLE: W007 - Attributed autosaved annotations in service previews
+#+SCHEMA: 5
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
 #+OPERATOR_SIGNOFF: Taḋg, 2026-09-12: full W007 design approved; delivery authorized after W008 and delivered, qualified W006.
 
-* Attributed autosaved annotations in service previews
+* Synopsis
 :PROPERTIES:
 :CUSTOM_ID: summary
 :END:
 
-- Outcome :: *Annotate local Org and Markdown while reading*, with named comments
+** Outcome
+
+- *Annotate local Org and Markdown while reading*, with named comments
   restored on later visits.
-- Before :: The reader preserves source bytes; the approved W006 service design
+** Before
+
+- The reader preserves source bytes; the approved W006 service design
   is *not evidence of service delivery*. Its former implementation hold was
   released by the operator's 12 September delivery instruction.
-- After :: Once W006 is delivered, *service previews autosave comments* into
+** After
+
+- Once W006 is delivered, *service previews autosave comments* into
   semantically identified source records, or adjacent Org sidecars for read-only
   sources. File previews retain their reading-only behaviour.
-- Changes :: *Automatic source refresh*, passage anchors, author/date display,
+** Changes
+
+- *Automatic source refresh*, passage anchors, author/date display,
   append-only persistence, visible save/recovery state and substantial browser tests.
-- Unchanged :: *Hardcoded loopback*, configured roots, passive source content,
+** Unchanged
+
+- *Hardcoded loopback*, configured roots, passive source content,
   Go/Pandoc, browser-only JavaScript, existing reader controls and default-browser
   handoff on macOS, Linux and WSL.
-- Edge cases :: *External edits, ambiguous targets, lost responses, interrupted
+** Edge cases
+
+- *External edits, ambiguous targets, lost responses, interrupted
   appends, permissions, multiple tabs and service restart* retain saved history
   and distinguish unsaved text.
-- Decisions :: The operator selected *append-only comments and autosave*.
+** Decisions
+
+- The operator selected *append-only comments and autosave*.
   The candidate reconciles these through *autosaved revisions while composing*;
   closing freezes a comment, and later corrections create another comment.
   The CLI resolves =HTMLPREVIEW_USER_DISPLAY_NAME=, then =USER=.
 - Dependency :: *W006 delivery and recorded service qualification precede W007
   implementation*. The released hold does not waive that dependency.
-- Next step :: *Deliver after qualified W006*, under the operator's explicit
+
+** Next step
+
+- *Deliver after qualified W006*, under the operator's explicit
   12 September 2026 instruction.
 
 -----
@@ -111,6 +129,9 @@ UX verification; the earlier documents remain historical baseline evidence.
   under Architecture impact; *no external checkout is needed to deliver W007*.
 
 ** Constraints and dependencies
+:PROPERTIES:
+:CUSTOM_ID: constraints-and-dependencies
+:END:
 
 - *W006 must be delivered first*, with its candidate revision, required automated
   service evidence and platform/user qualification recorded. A definition PASS or
@@ -128,6 +149,15 @@ UX verification; the earlier documents remain historical baseline evidence.
 
 ** Decisions
 
+- Template update, 13 September 2026 :: The operator requested the current
+  *architecture standard and solution-design template*. Schema 5 adds explicit
+  ownership, reuse, rationale and verification, with routine choices bounded.
+  Synopsis adopts the eight template categories; the empty historical decision
+  log moves to the end. *Approved annotation behaviour and authority remain*.
+- Prerequisite representation :: The former administrative AC007.1 - Service
+  prerequisite moves to [[#constraints-and-dependencies][Context's prerequisites]]
+  and the delivery handoff. Its identifier remains reserved below; the required
+  dependency and its existing one-off evidence are *not waived*.
 - Operator, 12 September 2026 :: *Append-only initially; autosave rather than
   explicit Save; inspect Writeback; automatically refresh changed base files*.
 - Previously agreed scope :: *Service mode only after W006*, embedded by default,
@@ -152,14 +182,6 @@ design ("ok, 006 007 008 approved") and authorized delivery
 qualified W006*. The retired copied gate directive is preserved in Git history;
 current audit evidence has its sole home in [[file:audits.yaml][the audit record]].
 
-* Hands-off mode decision log
-:PROPERTIES:
-:CUSTOM_ID: hands-off-mode-decision-log
-:VISIBILITY: folded
-:END:
-
-*No hands-off invocation*. This definition is attended.
-
 * Acceptance Criteria
 :PROPERTIES:
 :CUSTOM_ID: acceptance-criteria
@@ -170,8 +192,10 @@ current audit evidence has its sole home in [[file:audits.yaml][the audit record
 :CUSTOM_ID: ac-007-1
 :END:
 
-- Criterion :: *W007 delivery begins only after W006 is delivered and its required service qualification is recorded*. Approval of W006's design alone does not satisfy this dependency.
-- Proven by :: [[#ot-007-1][OT007.1 - Dependency and delivered guidance]].
+- Reserved identifier :: *Administrative prerequisite, moved without waiver*
+  to [[#constraints-and-dependencies][Context]] on 13 September 2026. It is not
+  a product acceptance criterion. [[#ot-007-1][OT007.1 - Dependency and delivered
+  guidance]] retains the pre-implementation evidence check.
 
 ** AC007.2 - Service-only annotation
 :PROPERTIES:
@@ -648,7 +672,9 @@ from another platform. Use synthetic documents, not personal reviews.
 :CUSTOM_ID: ot-007-1
 :END:
 
-- Covers :: [[#ac-007-1][AC007.1 - Service prerequisite]], [[#ac-007-23][AC007.23 - Documented ownership limits]].
+- Covers :: [[#ac-007-23][AC007.23 - Documented ownership limits]].
+- Prerequisite :: [[#constraints-and-dependencies][Delivered and qualified W006]],
+  formerly represented by [[#ac-007-1][AC007.1 - Service prerequisite]].
 - Boundary :: *Delivery prerequisite evidence and operator-facing documentation*.
 - Procedure :: Before W007 coding, verify the delivered W006 revision and its
   required qualification. At W007 validation, compare implemented CLI/API and
@@ -756,6 +782,27 @@ from another platform. Use synthetic documents, not personal reviews.
 
 ** High-level design
 
+*** Responsibilities and reuse
+
+- Event codec :: Own *recognition, framing, validation and projection* of the
+  defined record format. Org and Markdown vary only in literal-context handling
+  and frame envelopes; they share the JSON event schema and sequence rules.
+- Store operation :: Own *one read/validate/append/synchronize path*, supplied
+  with the selected embedded or sidecar destination. Destination selection is
+  separate from writing; no duplicate autosave implementation exists per format.
+- Service adapter :: Reuse *W006 admission, rooted handles and rendering*.
+  Adapt validated HTTP requests to annotation operations; it owns ephemeral
+  grants, composer admission and the shared polling snapshot. Durable records,
+  rather than cache or browser state, remain the saved-history authority.
+- Browser modules :: The *composer owns text and acknowledgement state*; target
+  mapping owns canonical text/DOM positions; presentation owns controls and
+  region replacement. Refresh invokes those boundaries without replacing the
+  composer or duplicating copying/folding behaviour.
+- Dependency direction :: The domain accepts explicit validated values and
+  owned filesystem/clock/randomness operations; it does not call HTTP handlers,
+  browser code or a service manager. *No database, event bus, general editor or
+  synchronization framework* is needed.
+
 *** Flow
 
 1. CLI validates inputs/settings and *captures the display name*. It registers
@@ -773,6 +820,9 @@ from another platform. Use synthetic documents, not personal reviews.
    *Reopening is read-only*; later comments add records.
 
 *** Identity and private registration
+:PROPERTIES:
+:CUSTOM_ID: annotation-registration
+:END:
 
 - Resolution :: The initiating CLI trims Unicode whitespace from
   =HTMLPREVIEW_USER_DISPLAY_NAME=; empty/unset falls back to trimmed =USER=.
@@ -797,6 +847,9 @@ from another platform. Use synthetic documents, not personal reviews.
   A display name is *a label, not proof of identity or permission*.
 
 *** Browser HTTP interfaces
+:PROPERTIES:
+:CUSTOM_ID: annotation-http
+:END:
 
 - Paths :: =/_annotations/v1/<read-token>/<encoded-root-relative-document-path>=
   is the annotation state/event route. Reuse W006's canonical decoding, admission
@@ -858,6 +911,9 @@ from another platform. Use synthetic documents, not personal reviews.
   but cannot append further revisions to that recovered annotation.
 
 *** Autosave and automatic refresh
+:PROPERTIES:
+:CUSTOM_ID: autosave-refresh
+:END:
 
 - State :: Track *local revision, acknowledged revision, in-flight snapshot,
   queued newest snapshot and error* separately per composer. Keep at most one
@@ -925,6 +981,9 @@ from another platform. Use synthetic documents, not personal reviews.
   Pandoc conversion if raw source and sidecar revisions are unchanged.
 
 *** Persisted format and storage
+:PROPERTIES:
+:CUSTOM_ID: annotation-storage
+:END:
 
 *The semantic format is htmlpreview-annotations version 1*. A store consists
 of a header frame followed by zero or more event frames, contiguous at EOF.
@@ -1007,6 +1066,9 @@ JSON_EVENT
   independent storage locations even if their initial document IDs match.
 
 *** Append safety and interruption
+:PROPERTIES:
+:CUSTOM_ID: append-safety
+:END:
 
 - Admission :: Reuse W006 rooted handles, canonical identity, regular-file and
   filesystem checks for both source and sidecar. *No symlink sidecar* and no
@@ -1041,6 +1103,9 @@ JSON_EVENT
   are *part of the document's data*, not confidential hidden browser state.
 
 *** Targets and reattachment
+:PROPERTIES:
+:CUSTOM_ID: annotation-targets
+:END:
 
 - Types :: ={type:"document"}= or ={type:"text", body_revision, exact, prefix,
   suffix, start, end, heading_id}=. Text indices count *Unicode scalar values*;
@@ -1080,6 +1145,9 @@ JSON_EVENT
   follows files outside admitted roots.
 
 *** Browser interaction
+:PROPERTIES:
+:CUSTOM_ID: annotation-browser
+:END:
 
 - Entry :: An *Annotations* toolbar button opens the list and Add comment action.
   A retained selection inside authored content targets that passage; without one,
@@ -1105,6 +1173,45 @@ JSON_EVENT
   on process termination; [[https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event][the
   browser event documentation]] records this limitation. Auto-refresh and autosave
   do not change it.
+
+** Design decisions and verification
+:PROPERTIES:
+:CUSTOM_ID: design-verification
+:END:
+
+The detailed contracts above define the protocol, storage and interaction.
+These checks connect their *important decisions to existing evidence types*.
+
+| Decision | Rationale | Verification |
+|----------+-----------+--------------|
+| Separate annotation domain from read rendering and HTTP adaptation | Writing carries a different trust and durability boundary from previewing | [[#rt-007-1][RT007.1 - Protocol compatibility]], [[#rt-007-7][RT007.7 - Write security]]; review checks dependencies and that read rendering cannot append |
+| One event codec and append operation across embedded/sidecar stores | Keep byte preservation and sequence semantics identical across destinations | [[#rt-007-3][RT007.3 - Embedded preservation]], [[#rt-007-4][RT007.4 - Sidecar transitions]], [[#rt-007-6][RT007.6 - Durability faults]]; review checks shared ownership |
+| Autosaved draft events followed by a close event | Reconcile autosave with the approved append-only comment lifecycle | [[#rt-007-5][RT007.5 - Autosave protocol]], [[#ut-007-3][UT007.3 - Composition]] |
+| Distinct source, body and full-store revisions | Other comments must not stale an authored-source precondition | [[#rt-007-5][RT007.5 - Autosave protocol]], [[#rt-007-11][RT007.11 - Refresh coordination]] |
+| Unique verified passage matching and a stable composer region | Refresh must not misattach comments or discard unsaved text | [[#rt-007-9][RT007.9 - Anchors]], [[#rt-007-11][RT007.11 - Refresh coordination]], [[#ut-007-5][UT007.5 - Selection]] |
+| Small Go/native-browser fixture runner | JavaScript timing and DOM interactions need execution without adding a CLI JavaScript runtime | Browser portions of [[#rt-007-5][RT007.5 - Autosave]], [[#rt-007-8][RT007.8 - Controls]], [[#rt-007-9][RT007.9 - Anchors]] and [[#rt-007-11][RT007.11 - Refresh]]; review checks it loads actual packaged modules |
+
+- Observability :: Keep *clock, jitter, request transport and write/sync faults*
+  controllable at the named owned boundaries. Browser fixtures execute the real
+  composer and DOM modules; Go tests exercise real temporary stores and HTTP.
+  Shared text fixtures compare Go/browser results. Native locking/durability
+  remains [[#ot-007-2][OT007.2 - Filesystem qualification]]; visual and assistive
+  usability remains the defined user tests. No imitation of an arbitrary editor
+  or browser replaces those observations.
+- Proportionality :: The *append history* follows the operator's storage and
+  lifecycle choice; it is not a general event-sourcing platform. Bounded polling
+  reuses the service rather than adding watchers or push infrastructure. The
+  accepted consequence is growing history and a visible capacity stop; any
+  compaction or editable-comment feature requires a later approved change.
+
+** Routine details left to implementation
+
+- *Private names, package/file grouping and CSS values* may follow the existing
+  project, within the specified dependency, accessibility and layout boundaries.
+- Fixture organization and narrow function signatures remain routine. *Event
+  framing, identity, revision rules, matching semantics, retry schedules and
+  save/close behaviour are already decided* above. They are not left open for
+  a delivery agent to redesign.
 
 ** Architecture impact
 
@@ -1190,3 +1297,11 @@ JSON_EVENT
   Preserve strict invalid-setting exit behaviour. Requalify affected reader controls.
 - Authority :: *Design and delivery were authorized on 12 September 2026*.
   The W006 delivery and qualification prerequisite remains mandatory.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:CUSTOM_ID: hands-off-mode-decision-log
+:VISIBILITY: folded
+:END:
+
+*No hands-off invocation*. This definition is attended.

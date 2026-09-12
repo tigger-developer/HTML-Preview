@@ -1,5 +1,5 @@
 #+TITLE: W008 - Preview Pandoc documents, source code and plain text
-#+SCHEMA: 1
+#+SCHEMA: 5
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
@@ -156,6 +156,11 @@
 
 ** Decisions
 
+- Template update, 13 September 2026 :: The operator requested the current
+  *architecture standard and solution-design template*. Schema 5 makes shared
+  responsibilities, rationale, verification and routine choices explicit.
+  *Approved format behaviour and delivery authority remain unchanged*; the
+  preceding schema-1 definition remains in Git history.
 - Operator, 12 September 2026 :: *Use temporary Org wrappers* for common code
   extensions and .txt with the exact metadata and heading difference below.
 - Operator, 12 September 2026 :: *Ordinary JSON is code*, pretty-printed for
@@ -669,6 +674,23 @@ Use real Pandoc and the existing file publication boundary for these cases.
 
 ** High-level design
 
+*** Responsibilities and reuse
+
+- Classification :: *One resolver* consumes the installed reader catalogue and
+  the two mapping tables. Reader, language and original source kind are data;
+  adding a suffix does not add another conversion coordinator.
+- Rendering :: Reuse *one bounded snapshot and publication pipeline*. Document
+  readers differ by validated Pandoc arguments; code/plaintext share the wrapper
+  operation, with heading and language parameters. Native HTML has a separate
+  preparation path because Pandoc would replace its authored layout.
+- Resources :: The *same raster admission* handles container, local-file and
+  data-URI bytes. Their acquisition differs; content validation does not.
+  File publication and W006 HTTP publication provide their own authorized URL
+  resolution without duplicating conversion or source-identity policy.
+- Ownership :: Keep these operations in the established private Go code and
+  bundled Pandoc assets. *No reader plugin framework*, configurable policy layer
+  or service dependency is needed for this change.
+
 *** Flow
 
 1. Discover *installed built-in readers and highlighting languages* once per
@@ -683,6 +705,9 @@ Use real Pandoc and the existing file publication boundary for these cases.
    invocation's owned output according to its selected retention mode.
 
 *** Interfaces and configuration
+:PROPERTIES:
+:CUSTOM_ID: format-interfaces
+:END:
 
 - CLI :: =htmlpreview [--from FORMAT] FILE [FILE ...]=; accept the equivalent
   =--from=FORMAT= spelling. At most one selection applies to all explicit inputs.
@@ -843,6 +868,9 @@ files implicitly. The command handles only the explicit input or authorized
 references; there is no configuration-directory discovery.
 
 *** Wrapper and literal-content contract
+:PROPERTIES:
+:CUSTOM_ID: wrapper-contract
+:END:
 
 For code, create a private temporary Org file with the following logical
 structure. Bracketed terms here denote substituted values, not literal brackets.
@@ -1031,6 +1059,42 @@ authorization and HTTP headers; its implementation is not a W008 prerequisite.
   a notice, while invalid explicit Pandoc AST input is a conversion error.
 - *No insecure fallback*: a failed reader, sandbox or resource check cannot
   silently become raw HTML, a download or an unsandboxed retry.
+
+** Design decisions and verification
+:PROPERTIES:
+:CUSTOM_ID: design-verification
+:END:
+
+The existing detailed contracts above remain authoritative. This table links
+their significant choices to *behavioural evidence and structural review*.
+
+| Decision | Rationale | Verification |
+|----------+-----------+--------------|
+| One resolver with data-driven format variations | Prevent CLI and later HTTP classification from drifting | [[#rt-008-1][RT008.1 - Installed readers]], [[#rt-008-2][RT008.2 - Detection]]; implementation review checks callers reuse the resolver and retain original kind |
+| Separate original copy text from wrapper display | Org escaping and JSON indentation must not alter copied source | [[#rt-008-3][RT008.3 - Wrappers]], [[#rt-008-4][RT008.4 - Literal preservation]], [[#rt-008-5][RT008.5 - JSON]] |
+| Distinct native HTML preparation, shared resource admission | Preserve authored layout without allowing active content | [[#rt-008-6][RT008.6 - Passive HTML]]; review confirms maintained HTML/CSS parsers and one raster policy |
+| Sandboxed conversion and bounded container media | Office media must work without granting arbitrary resource reads | [[#rt-008-7][RT008.7 - Binary resources]], [[#rt-008-8][RT008.8 - Confinement]] |
+| File publication remains independent of service delivery | W008 is the reusable predecessor, not another service | [[#rt-008-9][RT008.9 - Compatibility]]; review checks dependency direction and the stated W006 graph retirement |
+
+- Observability :: Use *real installed Pandoc and published DOM/bytes* for reader,
+  wrapper and media behaviour. The existing process/desktop boundaries allow
+  controlled dependency failure, cancellation and opening capture. No simulated
+  document parser or new test framework is required. Native browser appearance
+  and clipboard behaviour retain [[#ut-008-1][UT008.1 - Native format reading]].
+- Proportionality :: *Three preparation routes suffice*: document, wrapper and
+  passive HTML. Parser dependencies earn their place through document fidelity
+  and untrusted syntax; they do not justify a general transformation framework.
+  Preserve the stated limits and compatibility transition rather than adding
+  pre-indexing, background work or more configuration.
+
+** Routine details left to implementation
+
+- *Private helper names, file grouping and table representation* may follow the
+  existing code. They cannot change mapping precedence, admitted content,
+  resource budgets, source identity or public settings.
+- Use the *existing owned literal transport* and maintained JSON formatting
+  facilities where they satisfy the byte-preservation contract. No new parser
+  or transport abstraction is needed merely to separate similar input suffixes.
 
 ** Architecture impact
 
