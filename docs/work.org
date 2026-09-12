@@ -185,7 +185,7 @@ classification; it is provenance, not current state.
 - Authority :: *Design and delivery approved on 12 September 2026* by Taḋg,
   after W008 input formats and qualified W006 local service.
 
-** ACTIVE W008 - Preview Pandoc documents, source code and plain text :feature:defect:
+** REVIEW W008 - Preview Pandoc documents, source code and plain text :feature:defect:
 :PROPERTIES:
 :CUSTOM_ID: w-008
 :PRIORITY: P1
@@ -194,7 +194,7 @@ classification; it is provenance, not current state.
 :END:
 
 - Specification :: [[file:../specs/008-input-formats/spec.org][W008 - Preview Pandoc documents, source code and plain text]].
-- Audit evidence :: [[file:../specs/008-input-formats/audits.yaml][W008 - Definition audit record]].
+- Audit evidence :: [[file:../specs/008-input-formats/audits.yaml][W008 - Definition and implementation audit record]].
 - Validation :: [[file:../specs/008-input-formats/validation.org][W008 - Format and browser qualification]].
 - Scope :: *All installed Pandoc readers*, common code/plaintext Org wrappers,
   literal copying, ordinary JSON pretty printing and passive authored HTML.
