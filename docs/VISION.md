@@ -38,6 +38,10 @@ previews remain non-mutating. Stored comments, names and draft history travel
 with shared files. W007 remains a definition proposal awaiting overall sign-off;
 it does not authorize implementation or lift W006's implementation hold.
 
+W007 also supersedes the earlier live-reload exclusion below for service previews:
+bounded polling refresh is part of annotation autosave. Recursive filesystem
+watchers and file-mode live reload remain excluded.
+
 ## Purpose
 
 `htmlpreview` makes local Markdown and Org documents comfortable to read in a

@@ -47,6 +47,14 @@ narrowly extend its GET/HEAD-only HTTP contract. File previews do not annotate.
 Append history and refresh do not prevent an unrelated editor from later saving
 an old buffer over newer file contents; the specification states that limit.
 
+The proposed polling refresh supersedes the earlier live-reload exclusion for
+service previews. Its Go runner with browser-native JavaScript assertions also
+supersedes the unselected browser-harness baseline below and W006's persistent
+browser-harness exclusion. This narrowly scoped test runner supports the required
+autosave and refresh regressions without Node/npm. Headless CI retains Go tests;
+actual browser qualification is required on the supported native matrix before
+the implementation gate, with unavailable browsers reported as unexecuted failures.
+
 This is a definition proposal, with no annotation implementation or qualification
 claimed. The source-preservation rule gains an explicit exception only for
 annotation records. A future Exodan deployment would require its own definition
