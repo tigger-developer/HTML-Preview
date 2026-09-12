@@ -8,9 +8,9 @@ audits:
       configured:
         harness: claude
         model: claude-opus-5
-      external_round: 4
-      status: incident
-      updated: "2026-09-12T23:08:38Z"
+      external_round: 5
+      status: exhausted
+      updated: "2026-09-12T23:37:59Z"
       history:
         - incident: start-failed
           evidence:
@@ -460,6 +460,152 @@ audits:
               bytes: 14659
           round: 4
           updated: "2026-09-12T23:07:19Z"
+        - cache_key: sha256:d0734c0c09dfea4b512a48fead37c5cd11bdaae04d1b2b5fe618b9079bf224a0
+          session_id: 9e09e1c6-dcc9-4ae8-aaf6-4ddc65be5d6c
+          harness: claude
+          model: claude-opus-5
+          incident: resume-failed
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 925830eba0f760dffd25e0657e61822e67efbf16b0480cd7e13d9a7893f7fcb5
+              bytes: 11082
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: bd32656992311c5b4da2f83ac154bfcb073a71fe987a8bf0d7618b05e7e5cf2c
+              bytes: 3994
+            - path: /Users/tigger/.agents/sdlc/GIT.md
+              sha256: 97bbf89af1c65d159688b452a0434e77d9775f7a98dd1c822ffd264b41012bbb
+              bytes: 7807
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: 8545a6297e21423a9ed1797bc3b6f90ac4425600606ae20152252d2da3c0cc42
+              bytes: 16332
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 833de19319224d80f95ad94ab6923b3d4b1255d13a11bac50b07553efa675fc4
+              bytes: 11310
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: 59522d1f15d3d204a9a3e3a648e5eca106344aa87e6b6302077fd2af6e177d83
+              bytes: 2813
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 5ed902d49dbb8321ea093fd60db68d5195e59c95c763c02e4ca0c09f6fa1e932
+              bytes: 13561
+            - path: /Users/tigger/.agents/sdlc/technologies/API.md
+              sha256: 617a6fed7544d449204f0d79426d91a1d4571a084770e6f4589929cf88856fff
+              bytes: 10905
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/LUA.md
+              sha256: 83386b235c96e1ee1209e854764c41c604196db62c6db729a1641bd61027bae1
+              bytes: 10768
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 5f8e42f83ff183e91e2e4af1e3b27f22d9b8082866cdb6932aa1e3f0386d7be7
+              bytes: 18411
+            - path: /Users/tigger/.agents/skills/define-change/SKILL.md
+              sha256: 64351c54bb17460f0f7ac4e62550a8f4867b6cf252f6ef050689cfc0bbd8dfa2
+              bytes: 4252
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: e67175e91bba0175fa123d72cd6396a85b9fa3311615526f8bab65368054700c
+              bytes: 13613
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/defaults.yaml
+              sha256: e3923660d8e18ab21f235fa6be295cc20a3b848d5ed5f3cae4b41ede8c24eaab
+              bytes: 277
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 21cd51bb05ab890816ea1a2698b33272d0b554b48f3ba6b36fca1702662d16a0
+              bytes: 41278
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 80b3da38f7adbc56ba52ad50032b528e3b1900381d25eb6ef82d4ff90c479b84
+              bytes: 12379
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: b30df09b06d3139897cc2287400a586ce4789c317e70f349870727f38d1e637f
+              bytes: 10174
+            - path: /Users/tigger/code/tigoss/html-preview/integration/service_test.go
+              sha256: 3f8b8428fb3538a15080d1acec90f688a9c6458d26c19feb1476e3d047790df7
+              bytes: 13188
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/code_outline_test.go
+              sha256: 667d669cb0ede02503a69253f4ded400135f971250536580c3e4c274c53cbb94
+              bytes: 14264
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/config.go
+              sha256: 19859b981951d1935026756492ebedf819883b6628a98497895ae86438c96752
+              bytes: 4983
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contracts_test.go
+              sha256: c828ec1f16836b3a4b90060f8b59d082b53620fa0e7869da216c6eef5b9392ee
+              bytes: 6875
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats.go
+              sha256: 3154a18d48461d2a5fee934395767ad56422061cf695d12217ed33e729225350
+              bytes: 7853
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/graph_test.go
+              sha256: e0b12b394763748f8f6155fed844a56400847c4d2ed0c5823a20a14ce9b9c62d
+              bytes: 10163
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 5ffca01b74f63cf719f9dc3d460a369a86ceb775a1921d5c20298ae7ce36678d
+              bytes: 9652
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/lifecycle_test.go
+              sha256: 8c1b03c0b7cafbb7f395d3155c6bb5af9a39575a668c8fdec51ba394bcc06c9d
+              bytes: 7079
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/links.go
+              sha256: f298df9d14d7ba7eb43519e9d6d0627984d057ad923042920ab6fd6ddef22e13
+              bytes: 4950
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/org.go
+              sha256: 21a455d41f600fd3f517e0f160824079de3207efa91d97c8a4717337f9c20ccf
+              bytes: 8808
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/references_test.go
+              sha256: fe3826d160c9615687bd86ff6edd470cd94e1db756c518a6126e89e6cfb6344b
+              bytes: 5577
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 69fe2f0500876cba19b15955940e03122494494c6f53019f71cd47b15d24e278
+              bytes: 13436
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache.go
+              sha256: 2d05e1d437d8dbb7e44f806c1869f451ddc5e459ec5564c587a6d90764cb11ae
+              bytes: 4689
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_render.go
+              sha256: 10955fb10b6dce5a0d856702cb573934a8e7d5e24277f72925ade599855a609c
+              bytes: 6505
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/source.go
+              sha256: 1ff1e81cbfac5dcd085d5619b5f53d50d0fad549658eb108c3f0467d2156fa0d
+              bytes: 2798
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
+              sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
+              bytes: 7425
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/wrapper.go
+              sha256: 2edf25380ec636b0e1b8881e92e2d8dd1911eb181d49763b82faf561b5e89410
+              bytes: 2463
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: f827b45366bd0f7133c7fa055d35fa2cacc70194d86237e405b650609450a9ea
+              bytes: 89536
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/validation.org
+              sha256: a9901445ee0b7eeb5acea2ad0c7b4a0ff69ad792df6a442e7b124ce4536fd195
+              bytes: 15702
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+              sha256: 0eb664c555aa16ea530dcbb2b61e6fea71df762123fed4739aa08c7818a8fe28
+              bytes: 84731
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+              sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
+              bytes: 62969
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/validation.org
+              sha256: d6a67c173bab3cf706248b496d8c58ed8bac2aeec0094fb34f953007eac3336c
+              bytes: 14659
+          round: 5
+          updated: "2026-09-12T23:37:56Z"
     - work_item: W008-input-formats
       gate: implementation
       session_id: 20260912_213004_a1306f
