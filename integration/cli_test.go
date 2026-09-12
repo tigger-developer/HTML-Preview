@@ -50,7 +50,7 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 	if output, err := cmd.CombinedOutput(); err != nil || len(output) == 0 {
 		t.Fatalf("installed symlink invocation: %v %s", err, output)
 	}
-	for _, path := range []string{"LICENSE", "THIRD_PARTY_NOTICES.md", "asap-OFL.txt", "iosevka-custom-OFL.md"} {
+	for _, path := range []string{"LICENSE", "THIRD_PARTY_NOTICES.md", "asap-OFL.txt", "iosevka-custom-OFL.md", "tdewolff-parse-LICENSE.md"} {
 		// #nosec G304 -- Reads a fixed licence name within the test-owned installation prefix.
 		data, err := os.ReadFile(filepath.Join(stage, "htmlpreview-test/share/licenses/htmlpreview", path))
 		if err != nil || len(data) == 0 {

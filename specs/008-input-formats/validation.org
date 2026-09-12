@@ -103,3 +103,39 @@
 - Continuation :: The native goal reached its *100,000-token budget* during
   delivery. W006 local service and W007 annotations have not been implemented
   under this invocation; their dependency and admission conditions remain.
+
+* Resumed delivery checkpoint, 12 September 2026
+
+- Environment :: macOS arm64, Go 1.26.8, Pandoc 3.9.0.2; Go and linter caches
+  remain in the invocation's OS temporary directory. Native goal mode is off
+  under the operator's instruction.
+- Regression reconciliation :: The two initial failures were isolated to the
+  fault adapter intercepting capability queries and the device-boundary fixture
+  omitting the new format catalogue. Their focused run passed in 11.136 seconds.
+  The next broader run reached only the superseded .txt rejection; that fixture
+  now uses an unsupported suffix.
+- Reader/resource RED :: The new catalogue initially exposed five hidden
+  bibliography results, an unsupported inline-string spreadsheet fixture, three
+  missing container images and absent archive admission. Native HTML tests
+  independently failed on replaced layout and unvalidated raster headers.
+- Reader/resource GREEN :: The reader, media and archive subset passed in
+  *25.982 seconds*, covering every installed reader, DOCX/ODT/EPUB PNG bytes and
+  the initial archive path cases. Shared-string XLSX passed independently.
+- Native HTML GREEN :: Initial structure, passive styling, raster-signature and
+  mixed-graph cases passed in *6.137 seconds*. Subsequent escaped-URL,
+  metadata-event and large-data-image cases first failed as intended, then
+  passed with the missing-export case in *1.506 seconds*.
+- Broad regression evidence :: The preview package passed in *121.644 seconds*
+  before the subsequent escaped-CSS, metadata and large-image corrections.
+  That result is historical coverage, not the final full-suite result.
+- Static evidence :: =go vet ./...= and the latest =make lint= passed. StyLua
+  2.5.2 was provisioned only in OS temporary storage; its macOS arm64 release
+  archive matched upstream SHA-256
+  =92ff0889e16324801bc072692974bb67f8161e62010fc90f96c62a17f81f32c7=.
+- Packaging RED :: The prefix-install test confirmed the new parser licence
+  was missing. The installer now includes it; final packaging verification
+  remains outstanding.
+- Remaining :: Complete mapping and adversarial boundary coverage, current
+  full race/static/security checks, reader/help guidance, implementation review
+  and native qualification. *No implementation-gate or user-test result is
+  inferred* from these development runs.

@@ -23,7 +23,7 @@ func TestRT008_6_PassiveNativeHTML(t *testing.T) {
 	source(t, root, "styles/local.css", `.layout { display:grid; color:rgb(12,34,56); background-image:url(pixel.png) } @import "`+server.URL+`/remote.css";`)
 	source(t, root, "child.org", "* Child\n")
 	body := `<!doctype html><html><head><title>Authored title</title><link rel="stylesheet" href="styles/local.css"><style>.inline{padding:2rem;background:url(` + server.URL + `/image.png)}</style><meta http-equiv="refresh" content="0;url=` + server.URL + `/refresh"></head><body><article class="layout"><h1>Authored heading</h1><p class="inline" style="font-weight:bold;color:navy" onclick="bad()">Styled text</p><img alt="local" src="styles/pixel.png"><a href="child.org">Child</a><a href="` + server.URL + `/external" ping="` + server.URL + `/ping" target="_blank">External</a><script src="` + server.URL + `/script.js">bad()</script><form action="` + server.URL + `/submit"><input value="Inert value"><button>Submit</button></form><iframe src="` + server.URL + `/frame"></iframe><svg><script>bad()</script></svg></article></body></html>`
-	r := run(t, root, nil, source(t, root, "page.html", body))
+	r := run(t, root, []string{"PREVIEW_TEST_FAULT=native-no-conversion"}, source(t, root, "page.html", body))
 	success(t, r, 1)
 	doc := r.pages[0]
 	if textOf(nodes(doc, "title")[0]) != "Authored title" || textOf(nodes(doc, "h1")[0]) != "Authored heading" || len(nodes(doc, "article")) != 1 {
@@ -143,5 +143,49 @@ func TestRT008_9_MixedFileGraph(t *testing.T) {
 				t.Fatal("graph-off lost original target")
 			}
 		}
+	}
+}
+
+func TestRT008_6_BaseAndEscapedCSS(t *testing.T) {
+	root := t.TempDir()
+	source(t, root, "nested/pixel.png", string(rasterFixture(t)))
+	source(t, root, "nested/child.org", "* Linked heading\n")
+	input := `<head><base href="nested/"><base href="https://example.invalid/"><meta charset="utf-8" onload="bad()"><style>.a{background:u\72l(pixel.png)} .b{background:url("pixel.png")} .c{background:URL(https://example.invalid/x)} @\69mport "https://example.invalid/remote"; @media(max-width:30rem){.a{display:block}} @font-face{font-family:bad;src:url(pixel.png)}</style></head><body><a href="child.org">Child</a><img alt="responsive" src="pixel.png" srcset="pixel.png 1x, https://example.invalid/x 2x"></body>`
+	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, source(t, root, "base.html", input))
+	success(t, r, 2)
+	style := ""
+	for _, n := range nodes(r.pages[0], "style") {
+		style += textOf(n)
+	}
+	if strings.Count(style, "data:image/png;base64,") != 2 || strings.Contains(style, "example.invalid") || strings.Contains(style, "font-face") || !strings.Contains(style, "display:block") {
+		t.Errorf("escaped/static stylesheet handling: %s", style)
+	}
+	for n := range r.pages[0].Descendants() {
+		for _, a := range n.Attr {
+			if strings.HasPrefix(a.Key, "on") {
+				t.Fatal("native metadata retained event handler")
+			}
+		}
+	}
+	img := nodes(r.pages[0], "img")[0]
+	if !strings.Contains(attr(img, "srcset"), "data:image/png;base64,") || strings.Contains(attr(img, "srcset"), "example.invalid") {
+		t.Fatal("srcset resources not admitted individually")
+	}
+	for _, a := range nodes(r.pages[0], "a") {
+		if textOf(a) == "Child" && !strings.Contains(attr(a, "href"), "0002.html") {
+			t.Fatal("first base lost child context")
+		}
+	}
+}
+
+func TestRT008_6_LargeRasterData(t *testing.T) {
+	root := t.TempDir()
+	data := append(rasterFixture(t), bytes.Repeat([]byte{0}, 70<<10)...)
+	value := "data:image/png;base64," + base64.StdEncoding.EncodeToString(data)
+	r := run(t, root, nil, source(t, root, "large.md", "![large]("+value+")\n"))
+	success(t, r, 1)
+	images := nodes(r.pages[0], "img")
+	if len(images) != 1 || attr(images[0], "src") != value {
+		t.Fatal("valid bounded raster data lost to generic attribute limit")
 	}
 }

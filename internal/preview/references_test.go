@@ -3,6 +3,7 @@
 package preview
 
 import (
+	"encoding/base64"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -11,7 +12,7 @@ import (
 
 func TestRT001_6_ReferenceEncoding(t *testing.T) {
 	root := t.TempDir()
-	asset := source(t, root, "notes/a  Taḋg %#?.png", "image")
+	asset := source(t, root, "notes/a  Taḋg %#?.png", string(rasterFixture(t)))
 	encoded := (&url.URL{Path: filepath.Base(asset)}).String()
 	p := source(t, root, "notes/doc.md", "# Heading\n\n[local]("+encoded+"?q=1#part)\n\n![alt]("+encoded+")\n\n[here](#heading) [web](https://example.invalid/a?q=1#f) [mail](mailto:a@example.invalid)\n")
 	r := run(t, root, nil, p)
@@ -28,8 +29,8 @@ func TestRT001_6_ReferenceEncoding(t *testing.T) {
 	if len(want) != 0 {
 		t.Fatalf("missing links %v", want)
 	}
-	u, err := url.Parse(attr(nodes(r.pages[0], "img")[0], "src"))
-	if err != nil || u.Path != asset {
+	images := nodes(r.pages[0], "img")
+	if len(images) != 1 || attr(images[0], "src") != "data:image/png;base64,"+base64.StdEncoding.EncodeToString(rasterFixture(t)) {
 		t.Fatal("image origin or encoding")
 	}
 }
@@ -119,8 +120,9 @@ func TestRT001_13_PassiveSource(t *testing.T) {
 func TestRT001_15_InputCompatibility(t *testing.T) {
 	root := t.TempDir()
 	source(t, root, "bad.md", string([]byte{0xff}))
-	source(t, root, "other.txt", "text")
-	for _, name := range []string{"bad.md", "other.txt", "absent.md", "."} {
+	// W008 admits .txt; retain the unsupported-input check with an unmapped suffix.
+	source(t, root, "other.unsupported", "text")
+	for _, name := range []string{"bad.md", "other.unsupported", "absent.md", "."} {
 		r := run(t, root, nil, name)
 		if r.code != 1 || len(r.opens) != 0 {
 			t.Errorf("input %s status=%d", name, r.code)

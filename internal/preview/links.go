@@ -114,6 +114,15 @@ func (s *session) resolve(ctx context.Context, p *page) error {
 		if value == "" {
 			continue
 		}
+		if n.Data == "img" {
+			image, err := s.imageURL(p, value, filepath.Dir(p.source.logical))
+			if err != nil {
+				s.inactive(p, n, key, err.Error())
+			} else {
+				setAttribute(n, key, image)
+			}
+			continue
+		}
 		r, err := parseReference(value, filepath.Dir(p.source.logical))
 		if err != nil {
 			s.inactive(p, n, key, "unsupported or malformed reference")

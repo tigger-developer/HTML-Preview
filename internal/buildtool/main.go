@@ -81,7 +81,7 @@ func build(path, goos, arch, version string) error {
 }
 
 func licenceFiles() map[string]string {
-	return map[string]string{"LICENSE": "LICENSE", "THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md", "asap-OFL.txt": "assets/fonts/asap/OFL.txt", "iosevka-custom-OFL.md": "assets/fonts/iosevka-custom/OFL.md", "golang-x-net-LICENSE": "assets/licenses/golang-x-net-LICENSE", "bluemonday-LICENSE.md": "assets/licenses/bluemonday-LICENSE.md", "douceur-LICENSE": "assets/licenses/douceur-LICENSE", "gorilla-css-LICENSE": "assets/licenses/gorilla-css-LICENSE"}
+	return map[string]string{"LICENSE": "LICENSE", "THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md", "asap-OFL.txt": "assets/fonts/asap/OFL.txt", "iosevka-custom-OFL.md": "assets/fonts/iosevka-custom/OFL.md", "golang-x-net-LICENSE": "assets/licenses/golang-x-net-LICENSE", "bluemonday-LICENSE.md": "assets/licenses/bluemonday-LICENSE.md", "douceur-LICENSE": "assets/licenses/douceur-LICENSE", "gorilla-css-LICENSE": "assets/licenses/gorilla-css-LICENSE", "tdewolff-parse-LICENSE.md": "assets/licenses/tdewolff-parse-LICENSE.md"}
 }
 func copyFile(from, to string, mode fs.FileMode) error {
 	if info, err := os.Lstat(to); err == nil && info.Mode()&os.ModeSymlink != 0 {
@@ -208,5 +208,5 @@ func lint() error {
 	if err := command(nil, "stylua", "--check", "assets/pandoc"); err != nil {
 		return err
 	}
-	return command(nil, "pandoc", "--from=markdown", "--to=html5", "--sandbox", "--metadata=htmlpreview-code-token:0123456789abcdef0123456789abcdef", "--lua-filter=assets/pandoc/fidelity.lua", "--output="+os.DevNull, "assets/pandoc/empty.md")
+	return command(nil, "pandoc", "--from=markdown", "--to=html5", "--sandbox", "--metadata=htmlpreview-code-token:0123456789abcdef0123456789abcdef", "--metadata=htmlpreview-media-budget:0", "--lua-filter=assets/pandoc/fidelity.lua", "--output="+os.DevNull, "assets/pandoc/empty.md")
 }

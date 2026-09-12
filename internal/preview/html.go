@@ -84,7 +84,7 @@ func (s *session) scrub(root *html.Node, p *page) {
 				s.log.notice("%q: unsupported attribute %s removed", p.source.logical, a.Key)
 				continue
 			}
-			if len(a.Val) > 65536 {
+			if len(a.Val) > 65536 && !(n.Data == "img" && a.Key == "src" && int64(len(a.Val)) <= 4*(maxAssetBytes+2)/3+128) {
 				s.log.notice("%q: oversized attribute removed", p.source.logical)
 				continue
 			}
@@ -130,6 +130,13 @@ func sanitizeDocument(body *html.Node) (string, error) {
 }
 
 func (s *session) document(p *page) ([]byte, error) {
+	if p.source.input.kind == "html" {
+		var output bytes.Buffer
+		if err := html.Render(&output, p.dom); err != nil {
+			return nil, err
+		}
+		return output.Bytes(), nil
+	}
 	body, err := sanitizeDocument(p.dom)
 	if err != nil {
 		return nil, err

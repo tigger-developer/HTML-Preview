@@ -42,11 +42,41 @@ local function mark_inlines(inlines)
   return out
 end
 
+local function metadata_blocks(value, depth)
+  if depth > 64 then
+    error("document metadata exceeds nesting limit")
+  end
+  local kind = pandoc.utils.type(value)
+  if kind ~= "table" and kind ~= "List" then
+    return { pandoc.Para({ pandoc.Str(pandoc.utils.stringify(value)) }) }
+  end
+  local keys = {}
+  for key in pairs(value) do
+    keys[#keys + 1] = key
+  end
+  table.sort(keys, function(a, b)
+    return tostring(a) < tostring(b)
+  end)
+  local entries = {}
+  for _, key in ipairs(keys) do
+    entries[#entries + 1] = {
+      { pandoc.Str(tostring(key)) },
+      { metadata_blocks(value[key], depth + 1) },
+    }
+  end
+  return { pandoc.DefinitionList(entries) }
+end
+
 local function display_metadata(doc)
   local prefix = pandoc.List()
   local org_preview = doc.meta["htmlpreview-org"]
   doc.meta["htmlpreview-org"] = nil
   if org_preview then
+    doc.meta = {}
+    return doc
+  end
+  if #doc.blocks == 0 then
+    doc.blocks = { pandoc.Div(metadata_blocks(doc.meta, 0), pandoc.Attr("", { "frontmatter" })) }
     doc.meta = {}
     return doc
   end
@@ -63,6 +93,40 @@ local function display_metadata(doc)
   return doc
 end
 
+-- Export only bytes already owned by the reader's media bag. Hex is a bounded
+-- binary transport inside the private conversion output, never a resource fetch.
+local function export_media(doc, token, budget)
+  if budget == 0 then
+    return doc
+  end
+  local result = { status = "ok", items = {} }
+  if not pandoc.mediabag or type(pandoc.mediabag.items) ~= "function" then
+    result.status = "sandbox-safe media export unavailable"
+  else
+    local total = 0
+    for name, mime, data in pandoc.mediabag.items() do
+      total = total + #data
+      if #result.items >= 4096 or #data > 10485760 or total * 2 > budget then
+        result.status = "container media exceeds export byte budget"
+        result.items = {}
+        break
+      end
+      local encoded = data:gsub(".", function(c)
+        return string.format("%02x", c:byte())
+      end)
+      result.items[#result.items + 1] = { name = name, mime = mime, hex = encoded }
+    end
+  end
+  if #result.items == 0 then
+    result.items = nil
+  end
+  local record = pandoc.json.encode(result):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+  doc.blocks:insert(
+    pandoc.RawBlock("html", '<pre id="htmlpreview-media-' .. token .. '">' .. record .. "</pre>")
+  )
+  return doc
+end
+
 -- The unpredictable channel is supplied only by the command. It owns records,
 -- never source HTML, and is consumed by Go before the passive-content policy.
 local function preserve_values(doc)
@@ -71,6 +135,11 @@ local function preserve_values(doc)
     error("missing or malformed htmlpreview transport token")
   end
   doc.meta["htmlpreview-code-token"] = nil
+  local media_budget = tonumber(pandoc.utils.stringify(doc.meta["htmlpreview-media-budget"]))
+  doc.meta["htmlpreview-media-budget"] = nil
+  if not media_budget or media_budget < 0 then
+    error("invalid owned media budget")
+  end
   local code_prefix = "htmlpreview-code-" .. token .. "-"
   local heading_prefix = "htmlpreview-heading-" .. token .. "-"
   local raw_format = "htmlpreview-code-" .. token
@@ -150,7 +219,7 @@ local function preserve_values(doc)
       return { header, record("heading", headings, { id = id, originalID = original }) }
     end,
   })
-  return display_metadata(doc)
+  return export_media(display_metadata(doc), token, media_budget)
 end
 
 return { { Inlines = mark_inlines }, { Pandoc = preserve_values } }

@@ -69,9 +69,13 @@ func readerFixture(t *testing.T, root, reader string, media bool) []byte {
 }
 
 func rasterFixture(t *testing.T) []byte {
+	return colourRasterFixture(t, 30)
+}
+
+func colourRasterFixture(t *testing.T, red uint8) []byte {
 	t.Helper()
 	img := image.NewNRGBA(image.Rect(0, 0, 1, 1))
-	img.SetNRGBA(0, 0, color.NRGBA{R: 30, G: 70, B: 110, A: 255})
+	img.SetNRGBA(0, 0, color.NRGBA{R: red, G: 70, B: 110, A: 255})
 	var data bytes.Buffer
 	if err := png.Encode(&data, img); err != nil {
 		t.Fatal(err)
@@ -103,8 +107,9 @@ func spreadsheetFixture(t *testing.T) []byte {
 		"[Content_Types].xml":        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`,
 		"_rels/.rels":                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
 		"xl/workbook.xml":            `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Fixture" sheetId="1" r:id="rId1"/></sheets></workbook>`,
-		"xl/_rels/workbook.xml.rels": `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`,
-		"xl/worksheets/sheet1.xml":   `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>Reader fixture</t></is></c></row></sheetData></worksheet>`,
+		"xl/_rels/workbook.xml.rels": `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>`,
+		"xl/sharedStrings.xml":       `<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="1" uniqueCount="1"><si><t>Reader fixture</t></si></sst>`,
+		"xl/worksheets/sheet1.xml":   `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c></row></sheetData></worksheet>`,
 	})
 }
 
@@ -173,5 +178,14 @@ func TestRT008_8_ArchiveAdmission(t *testing.T) {
 	r := run(t, root, nil, source(t, root, "duplicate.docx", string(input)))
 	if r.code != 1 || !strings.Contains(r.stderr, "duplicate") {
 		t.Fatal("duplicate normalized names not rejected")
+	}
+}
+
+func TestRT008_7_UnavailableMediaExport(t *testing.T) {
+	root := t.TempDir()
+	file := source(t, root, "media.docx", string(readerFixture(t, root, "docx", true)))
+	r := run(t, root, []string{"PREVIEW_TEST_FAULT=media-export-unavailable"}, file)
+	if r.code != 1 || len(r.opens) != 0 || !strings.Contains(r.stderr, "dependency lacks sandbox-safe media export") {
+		t.Fatalf("missing export must fail before publication: %s", r.stderr)
 	}
 }

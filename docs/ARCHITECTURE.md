@@ -116,6 +116,15 @@ tracked; the two transitive CSS-parser dependencies and their licences are
 recorded in [the notices](../THIRD_PARTY_NOTICES.md). No source CSS is enabled
 merely because the sanitizer contains a CSS parser.
 
+W008's native HTML implementation selects `github.com/tdewolff/parse/v2`
+2.8.16 for its CSS grammar and token parser. The standard library has no CSS
+parser; the existing transitive sanitizer parsers do not supply this boundary's
+modern grammar handling. The selected release was published on 11 August 2026
+and uses the MIT licence, retained with the distribution. Its runtime packages
+use the standard library; its declared test helper is not linked into the
+application. It adds no runtime executable or service. Dependency scanning and
+binary-size comparison remain required candidate verification.
+
 `htmlpreview` is a local Go command-line application that uses Pandoc to render
 Markdown and Org as HTML, repairs references for temporary output, and opens
 the result in a browser. [VISION.md](VISION.md) defines the product intent.

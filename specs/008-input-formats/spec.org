@@ -1105,3 +1105,27 @@ authorization and HTTP headers; its implementation is not a W008 prerequisite.
   and dependency checks. Delivery remains on the current master branch.
 - Human-only browser/platform qualification stays *pending until observed*.
 - Native continuation was explicitly authorized with a *100,000-token budget*.
+
+** 2026-09-12T18:03:46Z :hands-off:review:
+
+*** Resumed delivery and native continuation
+
+- The operator *resumed deliver-change* after explicitly requesting removal of
+  goal mode. Delivery continues in the approved order with *native goals off*;
+  the earlier goal budget remains historical evidence.
+
+*** Raster and reader fixture reconciliation
+
+- W008's *validated embedded raster policy supersedes original-file image URLs*.
+  Existing relative-path and symlink tests retain their behavioural purpose by
+  comparing the admitted bytes from distinct valid images. Missing images now
+  fail admission before Windows URL translation.
+- The spreadsheet fixture uses *shared strings*, which the installed Pandoc
+  reader supports. The prior inline-string fixture returned an empty cell;
+  this does not authorize htmlpreview to implement a separate spreadsheet reader.
+- Container media uses a *hex-encoded owned record in private staged HTML*.
+  The bounded Lua export reads only existing media-bag contents; Go validates
+  names and raster bytes before emitting data URLs. No archive member is used
+  as a filesystem output path and no resource-fetch API is invoked.
+- Native CSS uses the *pinned maintained parser* documented in Architecture.
+  Its dependency licence is included in installation and release notices.

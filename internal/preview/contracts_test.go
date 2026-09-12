@@ -4,6 +4,7 @@ package preview
 
 import (
 	"context"
+	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -38,8 +39,9 @@ func TestRT001_17_WSLCommandGraph(t *testing.T) {
 			}
 		}
 	}
-	if len(nodes(r.pages[0], "img")) != 0 || !strings.Contains(r.stderr, "cannot be represented") {
-		t.Fatal("unrepresentable original image was not inactive")
+	// W008 publishes admitted bytes, so missing assets are rejected before URL translation.
+	if len(nodes(r.pages[0], "img")) != 0 || !strings.Contains(r.stderr, "image omitted") {
+		t.Fatal("missing original image was not inactive")
 	}
 	if attr(nodes(r.pages[0], "h1")[0], "data-hp-source") != a {
 		t.Fatal("WSL copy value ceased to be the Linux source path")
@@ -77,8 +79,9 @@ func TestRT001_10_SymlinkOriginsAndEscape(t *testing.T) {
 	root := t.TempDir()
 	a := source(t, root, "a.md", "[one](one/alias.md) [two](two/alias.md) [escape](escape.md)\n")
 	target := source(t, root, "shared/doc.md", "![relative](image.png)\n")
-	for _, dir := range []string{"one", "two"} {
-		source(t, root, dir+"/image.png", "image")
+	colours := []uint8{1, 2}
+	for i, dir := range []string{"one", "two"} {
+		source(t, root, dir+"/image.png", string(colourRasterFixture(t, colours[i])))
 		if err := os.Symlink(target, filepath.Join(root, dir, "alias.md")); err != nil {
 			t.Fatal(err)
 		}
@@ -89,8 +92,9 @@ func TestRT001_10_SymlinkOriginsAndEscape(t *testing.T) {
 	}
 	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, a)
 	success(t, r, 3)
-	for i, dir := range []string{"one", "two"} {
-		if !strings.Contains(attr(nodes(r.pages[i+1], "img")[0], "src"), "/"+dir+"/image.png") {
+	for i := range 2 {
+		images := nodes(r.pages[i+1], "img")
+		if len(images) != 1 || attr(images[0], "src") != "data:image/png;base64,"+base64.StdEncoding.EncodeToString(colourRasterFixture(t, colours[i])) {
 			t.Fatal("symlink contexts merged or used the canonical parent")
 		}
 	}

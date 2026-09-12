@@ -50,6 +50,7 @@ They accompany prefix installations, release archives, and embedded HTML.
 | `github.com/microcosm-cc/bluemonday` | 1.0.27 | Passive HTML policy engine | [BSD 3-Clause](assets/licenses/bluemonday-LICENSE.md) |
 | `github.com/aymerick/douceur` | 0.2.0 | Transitive sanitizer dependency | [MIT](assets/licenses/douceur-LICENSE) |
 | `github.com/gorilla/css` | 1.0.1 | Transitive sanitizer dependency | [BSD 3-Clause](assets/licenses/gorilla-css-LICENSE) |
+| `github.com/tdewolff/parse/v2` | 2.8.16 | Native HTML CSS grammar and tokens | [MIT](assets/licenses/tdewolff-parse-LICENSE.md) |
 
 Go 1.26.8 is the reviewed delivery toolchain. Pandoc is separately installed
 and is not bundled or relicensed by this project.

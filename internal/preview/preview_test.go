@@ -73,6 +73,11 @@ func TestMain(m *testing.M) {
 	}
 	write := host.Write
 	host.Write = func(path string, data []byte) error {
+		if strings.HasSuffix(path, ".wrapper.org") {
+			if err := os.WriteFile(filepath.Join(os.Getenv("PREVIEW_TEST_CAPTURE"), filepath.Base(path)), data, 0600); err != nil {
+				return err
+			}
+		}
 		if fault == "publication-timeout" && strings.HasSuffix(path, "0001.html") {
 			time.Sleep(5100 * time.Millisecond)
 		}
@@ -96,6 +101,35 @@ func TestMain(m *testing.M) {
 			return []byte(strings.ReplaceAll(strings.TrimPrefix(cmd.Args[1], `\\wsl.localhost\Ubuntu`), `\`, "/")), nil
 		}
 		if filepath.Base(cmd.Path) == "pandoc" {
+			if len(cmd.Args) == 1 && cmd.Args[0] == "--list-highlight-languages" && fault == "missing-highlighter" {
+				return []byte("plaintext\n"), nil
+			}
+			if len(cmd.Args) > 0 && strings.HasPrefix(cmd.Args[0], "--defaults=") {
+				if fault == "native-no-conversion" {
+					return nil, fmt.Errorf("native HTML must not use Pandoc conversion")
+				}
+				if fault == "media-export-unavailable" {
+					output, err := actual(ctx, cmd)
+					if err != nil {
+						return nil, err
+					}
+					doc, err := html.Parse(bytes.NewReader(output))
+					if err != nil {
+						return nil, err
+					}
+					for n := range doc.Descendants() {
+						if strings.HasPrefix(attribute(n, "id"), "htmlpreview-media-") {
+							n.Parent.RemoveChild(n)
+							break
+						}
+					}
+					var changed bytes.Buffer
+					if err := html.Render(&changed, doc); err != nil {
+						return nil, err
+					}
+					return changed.Bytes(), nil
+				}
+			}
 			if len(cmd.Args) == 1 && cmd.Args[0] == "--version" {
 				if fault == "preflight-stall" || fault == "preflight-flood" {
 					exe, err := os.Executable()
@@ -454,6 +488,7 @@ func TestRT001_2_Ownership(t *testing.T) {
 
 func TestRT001_3_Markdown(t *testing.T) {
 	root := t.TempDir()
+	source(t, root, "image.png", string(rasterFixture(t)))
 	p := source(t, root, "doc.md", "# Heading\n\nParagraph *emphasis* **strong** `code`.\n\n> Quote\n\n- first\n    - nested\n\n1. ordered\n\n| Head | Other |\n|---|---|\n| cell | value |\n\n```text\n\ttabbed\n```\n\n![alt](image.png)\n\nFootnote.[^n]\n\n[^n]: Note\n")
 	r := run(t, root, nil, p)
 	success(t, r, 1)

@@ -18,6 +18,8 @@ import (
 )
 
 type page struct {
+	media                         map[string]string
+	images                        map[string]string
 	copyOriginal                  []byte
 	frontmatter                   []metadataField
 	source                        sourceContext
@@ -33,10 +35,20 @@ type page struct {
 }
 
 func (s *session) render(ctx context.Context, p *page, data []byte) error {
+	if p.source.input.binary() {
+		expanded, err := validateArchive(ctx, data, s.cfg.outputBytes-s.used-int64(len(data)))
+		if err != nil {
+			return err
+		}
+		s.used += expanded
+	}
 	if !p.source.input.binary() {
 		if err := validateText(data); err != nil {
 			return err
 		}
+	}
+	if p.source.input.kind == "html" {
+		return s.renderNativeHTML(p, data)
 	}
 	token, err := transportToken(data)
 	if err != nil {
@@ -75,9 +87,13 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		return errors.New("HTMLPREVIEW_MAX_OUTPUT_BYTES exhausted by conversion input")
 	}
 	s.used += int64(len(data))
+	mediaBudget := int64(0)
+	if p.source.input.binary() {
+		mediaBudget = s.cfg.outputBytes - s.used
+	}
 	args := []string{"--defaults=" + filepath.Join(s.path, "defaults.yaml"), "--data-dir=" + s.path, "--from=" + format,
 		"--lua-filter=" + filepath.Join(s.path, "fidelity.lua"), "--template=" + filepath.Join(s.path, "page.html5"),
-		"--metadata=htmlpreview-code-token:" + token, "--variable=htmlpreview-toc-token:" + token,
+		"--metadata=htmlpreview-code-token:" + token, "--metadata=htmlpreview-media-budget:" + strconv.FormatInt(mediaBudget, 10), "--variable=htmlpreview-toc-token:" + token,
 		"--toc=" + strconv.FormatBool(s.cfg.toc), "--toc-depth=" + strconv.Itoa(s.cfg.tocDepth)}
 	if format == "org" {
 		args = append(args, "--metadata=htmlpreview-org:true")
@@ -97,6 +113,11 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	doc, err := html.Parse(bytes.NewReader(output))
 	if err != nil {
 		return err
+	}
+	if p.source.input.binary() {
+		if err := s.restoreMedia(doc, p, token); err != nil {
+			return err
+		}
 	}
 	headings, err := s.restoreTransport(doc, p, token)
 	if err != nil {
