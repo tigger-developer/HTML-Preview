@@ -1,0 +1,4 @@
+# No directories are served until the user supplies explicit absolute roots.
+version: 1
+serve:
+  roots: []

@@ -1,7 +1,7 @@
 # ABOUTME: Installs the macOS archive and declares the Pandoc dependency.
 # ABOUTME: Release generation supplies verified archive locations and hashes.
 class Htmlpreview < Formula
-  desc "Preview local Markdown and Org in the default browser"
+  desc "Preview local documents and source code in the default browser"
   homepage "https://github.com/tigger-developer/HTML-Preview"
   version {{.Version}}
   license "Apache-2.0"
@@ -20,7 +20,15 @@ class Htmlpreview < Formula
     bin.install "htmlpreview"
     pkgshare.install "LICENSE", "THIRD_PARTY_NOTICES.md", "asap-OFL.txt",
                      "iosevka-custom-OFL.md", "golang-x-net-LICENSE",
-                     "bluemonday-LICENSE.md", "douceur-LICENSE", "gorilla-css-LICENSE"
+                     "bluemonday-LICENSE.md", "douceur-LICENSE", "gorilla-css-LICENSE",
+                     "tdewolff-parse-LICENSE.md", "go-yaml-LICENSE"
+    pkgshare.install Dir["share/htmlpreview/*"]
+  end
+
+  service do
+    run [opt_bin/"htmlpreview", "--serve"]
+    keep_alive successful_exit: false
+    environment_variables PATH: std_service_path_env
   end
 
   test do

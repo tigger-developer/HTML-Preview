@@ -84,15 +84,19 @@ func licenceFiles() map[string]string {
 	return map[string]string{"LICENSE": "LICENSE", "THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md", "asap-OFL.txt": "assets/fonts/asap/OFL.txt", "iosevka-custom-OFL.md": "assets/fonts/iosevka-custom/OFL.md", "golang-x-net-LICENSE": "assets/licenses/golang-x-net-LICENSE", "bluemonday-LICENSE.md": "assets/licenses/bluemonday-LICENSE.md", "douceur-LICENSE": "assets/licenses/douceur-LICENSE", "gorilla-css-LICENSE": "assets/licenses/gorilla-css-LICENSE", "tdewolff-parse-LICENSE.md": "assets/licenses/tdewolff-parse-LICENSE.md", "go-yaml-LICENSE": "assets/licenses/go-yaml-LICENSE"}
 }
 func copyFile(from, to string, mode fs.FileMode) error {
+	// #nosec G304 -- Callers select repository package assets or the binary just built.
+	data, err := os.ReadFile(from)
+	if err != nil {
+		return err
+	}
+	return writePackage(to, data, mode)
+}
+
+func writePackage(to string, data []byte, mode fs.FileMode) error {
 	if info, err := os.Lstat(to); err == nil && info.Mode()&os.ModeSymlink != 0 {
 		return fmt.Errorf("refusing to copy through symlink %q; move it aside and retry", to)
 	} else if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return fmt.Errorf("inspect copy destination %q: %w", to, err)
-	}
-	// #nosec G304 -- Callers select repository licence files or the binary just built.
-	data, err := os.ReadFile(from)
-	if err != nil {
-		return err
 	}
 	// #nosec G301 -- Prefix installation deliberately creates traversable public package directories.
 	if err := os.MkdirAll(filepath.Dir(to), 0755); err != nil {
@@ -127,7 +131,7 @@ func install() error {
 			return err
 		}
 	}
-	return nil
+	return installService(filepath.Join(root, "share/htmlpreview"), filepath.Join(prefix, "bin/htmlpreview"), runtime.GOOS)
 }
 
 func installLink(stage string) error {
@@ -162,6 +166,9 @@ func installLink(stage string) error {
 		if readErr != nil || existing != target {
 			return fmt.Errorf("installation destination %q already exists; move it aside and retry: %w", link, err)
 		}
+	}
+	if err := installService(filepath.Join(stage, userHome, ".local/share/htmlpreview"), target, runtime.GOOS); err != nil {
+		return err
 	}
 	_, err = fmt.Fprintf(os.Stdout, "%s -> %s\n", link, target)
 	return err

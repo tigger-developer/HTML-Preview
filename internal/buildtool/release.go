@@ -62,7 +62,7 @@ func release() (err error) {
 		}
 		name := "htmlpreview-" + v + "-" + target + ".tar.gz"
 		path := filepath.Join("dist", name)
-		if err := archive(path, binary); err != nil {
+		if err := archive(path, binary, goos); err != nil {
 			return err
 		}
 		// #nosec G304 -- The path is an archive generated from the validated version and fixed target list.
@@ -97,7 +97,7 @@ func release() (err error) {
 	return formula(v, hashes, urls)
 }
 
-func archive(path, binary string) (err error) {
+func archive(path, binary, goos string) (err error) {
 	// #nosec G304 -- The caller constructs an archive path under dist from a validated version.
 	f, err := os.Create(path)
 	if err != nil {
@@ -107,6 +107,13 @@ func archive(path, binary string) (err error) {
 	tw := tar.NewWriter(gz)
 	defer func() { err = errors.Join(err, tw.Close(), gz.Close(), f.Close()) }()
 	files := licenceFiles()
+	service, err := serviceFiles(goos)
+	if err != nil {
+		return err
+	}
+	for name, source := range service {
+		files["share/htmlpreview/"+name] = source
+	}
 	files["htmlpreview"] = binary
 	names := make([]string, 0, len(files))
 	for name := range files {

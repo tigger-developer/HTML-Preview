@@ -170,8 +170,13 @@ func stagedInstall(t *testing.T, stage string, args ...string) ([]byte, error) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
+	makeArgs := append([]string{"install", "DESTDIR=" + stage}, args...)
+	// Make expands command-line variable values even though exec passes literal argv.
+	for i, arg := range makeArgs {
+		makeArgs[i] = strings.ReplaceAll(arg, "$", "$$")
+	}
 	// #nosec G204 -- Fixed make target; destinations are test-owned or deliberately rejected relative paths.
-	cmd := exec.CommandContext(ctx, "make", append([]string{"install", "DESTDIR=" + stage}, args...)...)
+	cmd := exec.CommandContext(ctx, "make", makeArgs...)
 	cmd.Dir = ".."
 	for _, setting := range os.Environ() {
 		key, _, _ := strings.Cut(setting, "=")

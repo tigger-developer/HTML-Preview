@@ -1,0 +1,15 @@
+# ABOUTME: Runs the optional preview service under the current user's manager.
+# ABOUTME: Installed values are quoted data; no shell or runtime command discovery is used.
+[Unit]
+Description=Local HTML document preview
+
+[Service]
+Type=simple
+ExecStart={{.Executable}} --serve
+Environment={{.Config}}
+Environment={{.Path}}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

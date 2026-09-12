@@ -221,3 +221,30 @@
 - Focused GREEN :: The migration and affected presentation/navigation subset
   passed under race in *66.759 seconds*. Full-suite development verification is
   being run separately; this focused result does not qualify service packaging.
+
+* Packaging development checkpoint, 12 September 2026
+
+- Baseline :: =b35c3fd= (connection bounds, WSL selection and graph migration),
+  followed by the implementation checkpoint containing this entry.
+- Staging RED/GREEN :: The new staged-install regression initially found no
+  service configuration example. Source and prefix installation now package the
+  empty-root example, service guide and native template, expanding fixed
+  executable, configuration and Pandoc PATH values without activating a manager.
+  The staged subset passed under race in *1.846 seconds*.
+- Literal-path diagnostic :: The first punctuation case passed a dollar sign
+  through Make variable assignments without Make-level escaping. Its output
+  appeared under transformed temporary-directory names, outside the fixture's
+  expected directory. The test invocation now doubles dollar signs in Make
+  assignments; generated plist paths retain the intended literal characters.
+  The three identified test-owned leftovers were moved into the allocated
+  delivery scratch directory. No active user installation or service was touched.
+- Archive/install GREEN :: The service staging, default installation/conflict,
+  prefix-symlink and four-archive checks passed under race in *27.434 seconds*.
+  Darwin/Linux archives contain their corresponding native template, shared
+  examples/guidance and dependency licences. Structural checks parse the generated
+  LaunchAgent and YAML. These checks do not activate launchd, systemd or Homebrew.
+- Full regression checkpoint :: =make test= passed on the pre-packaging runtime
+  checkpoint: internal preview *729.923 seconds*, integration *36.902 seconds*,
+  with the race detector and 20-minute package deadline. Subsequent packaging
+  changes are covered by the focused result
+  above and remain subject to final candidate qualification.

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>org.htmlpreview.agent</string>
+  <key>ProgramArguments</key>
+  <array><string>{{.Executable}}</string><string>--serve</string></array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HTMLPREVIEW_CONFIG</key><string>{{.Config}}</string>
+    <key>PATH</key><string>{{.Path}}</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
+  <key>ThrottleInterval</key><integer>5</integer>
+</dict>
+</plist>

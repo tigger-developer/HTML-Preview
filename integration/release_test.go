@@ -61,10 +61,18 @@ func TestRT001_14_ReleaseArchives(t *testing.T) {
 		if err := gz.Close(); err != nil {
 			t.Fatal(err)
 		}
-		for _, file := range []string{"htmlpreview", "LICENSE", "THIRD_PARTY_NOTICES.md", "asap-OFL.txt", "iosevka-custom-OFL.md", "golang-x-net-LICENSE", "bluemonday-LICENSE.md", "douceur-LICENSE", "gorilla-css-LICENSE"} {
+		for _, file := range []string{"htmlpreview", "LICENSE", "THIRD_PARTY_NOTICES.md", "asap-OFL.txt", "iosevka-custom-OFL.md", "golang-x-net-LICENSE", "bluemonday-LICENSE.md", "douceur-LICENSE", "gorilla-css-LICENSE", "tdewolff-parse-LICENSE.md", "go-yaml-LICENSE", "share/htmlpreview/config.example.yaml", "share/htmlpreview/SERVICE.md"} {
 			if len(seen[file]) == 0 {
 				t.Errorf("%s lacks %s", name, file)
 			}
+		}
+		template := "share/htmlpreview/service/htmlpreview.service.tmpl"
+		other := "share/htmlpreview/service/org.htmlpreview.agent.plist.tmpl"
+		if strings.HasPrefix(target, "darwin") {
+			template, other = other, template
+		}
+		if len(seen[template]) == 0 || len(seen[other]) != 0 {
+			t.Fatal("archive service template does not match its native platform")
 		}
 		if strings.HasPrefix(target, "darwin") {
 			f, err := macho.NewFile(bytes.NewReader(seen["htmlpreview"]))
