@@ -273,7 +273,7 @@ remain reviewable design proposals; overall sign-off remains pending.
 :END:
 
 - Criterion :: *A new annotation can target the whole document or a selected passage*, including selections spanning inline markup, literal code and visible drawer contents, without changing the selected source text.
-- Proven by :: [[#rt-007-9][RT007.9 - Anchors and document identity]], [[#rt-007-11][RT007.11 - Refresh and autosave coordination]], [[#ut-007-5][UT007.5 - Selection and changed documents]], [[#ut-007-9][UT007.9 - Live refresh while annotating]].
+- Proven by :: [[#rt-007-9][RT007.9 - Anchors and document identity]], [[#ut-007-5][UT007.5 - Selection and changed documents]].
 
 ** AC007.16 - Deterministic reattachment
 :PROPERTIES:
@@ -281,7 +281,7 @@ remain reviewable design proposals; overall sign-off remains pending.
 :END:
 
 - Criterion :: *An annotation attaches only to a verified current target*. Missing or ambiguous matches remain visible in an unresolved list with their original excerpt; they are never silently attached to the first similar passage.
-- Proven by :: [[#rt-007-9][RT007.9 - Anchors and document identity]], [[#ut-007-5][UT007.5 - Selection and changed documents]].
+- Proven by :: [[#rt-007-9][RT007.9 - Anchors and document identity]], [[#rt-007-11][RT007.11 - Refresh and autosave coordination]], [[#ut-007-5][UT007.5 - Selection and changed documents]], [[#ut-007-9][UT007.9 - Live refresh while annotating]].
 
 ** AC007.17 - Readable stored metadata
 :PROPERTIES:
