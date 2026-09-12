@@ -18,6 +18,11 @@ import (
 )
 
 type page struct {
+	httpMedia                     map[string]servedRaster
+	assetGrants                   map[string]assetGrant
+	mediaGrants                   map[string]mediaGrant
+	dependencies                  map[string]assetRevision
+	uncacheable, resourceLimit    bool
 	media                         map[string]string
 	images                        map[string]string
 	copyOriginal                  []byte

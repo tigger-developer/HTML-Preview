@@ -23,6 +23,12 @@ type sourceContext struct {
 
 func deviceOf(st os.FileInfo) string { return fmt.Sprint(st.Sys().(*syscall.Stat_t).Dev) }
 
+type sourceLimitError struct{ limit int64 }
+
+func (e *sourceLimitError) Error() string {
+	return fmt.Sprintf("source exceeds remaining byte limit %d", e.limit)
+}
+
 func contained(root, path string) bool {
 	rel, err := filepath.Rel(root, path)
 	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel)
@@ -85,7 +91,7 @@ func snapshot(s sourceContext, limit int64) (data []byte, err error) {
 		return nil, errors.New("source handle changed type or filesystem")
 	}
 	if st.Size() > limit {
-		return nil, fmt.Errorf("source exceeds remaining byte limit %d", limit)
+		return nil, &sourceLimitError{limit}
 	}
 	data = make([]byte, st.Size())
 	if _, err := io.ReadFull(f, data); err != nil {

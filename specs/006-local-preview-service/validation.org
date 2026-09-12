@@ -137,3 +137,33 @@
   initial boundary implementation, before the subsequent navigation changes.
   The scanner returned *No vulnerabilities found*. These are scoped development
   checks; final candidate checks remain required.
+
+* Cache and asset development checkpoint, 12 September 2026
+
+- Baseline :: =5082ab1= (service admission and document navigation), followed by
+  the implementation checkpoint containing this entry. Same macOS arm64,
+  Go 1.26.8 and Pandoc 3.9.0.2 environment; synthetic temporary sources only.
+- Cache RED/GREEN :: Unchanged requests initially converted twice; a third
+  distinct request was not rejected while two conversions were occupied.
+  Source hashing, stylesheet dependency revalidation, two-worker admission and
+  duplicate request sharing passed under race in *2.160 seconds*.
+- Asset RED/GREEN :: Unregistered image requests initially returned 403, while
+  container images retained data URLs. The initial registered asset and media
+  route subset passed under race in *4.375 seconds*, covering raster bytes and
+  HEAD, PDF/SVG downloads, native HTML links and images, and parent revision
+  checks for DOCX, ODT and EPUB embedded media.
+- Publication RED/GREEN :: A page rejected by its output limit left a raster
+  grant accessible. Asset grants now publish together only after rendering and
+  scratch cleanup succeed. A separate failing cross-root fixture established
+  that an explicitly configured second root's stylesheet was omitted. The
+  corrected asset/cache subset passed under race in *4.679 seconds*.
+- Shutdown RED/GREEN :: A blocked cleanup fixture observed successful service
+  return before the conversion had removed its scratch directory. Shutdown now
+  cancels and joins conversion workers within its existing deadline. The current
+  service regression subset passed under race: internal preview *5.571 seconds*,
+  integration *7.796 seconds*. It also checks eviction after 50 cached pages and
+  re-rendering through the original live capability URL.
+- Scope :: These are development checks for implemented service boundaries.
+  Complete resource-limit coverage, CLI failure precedence and reader-catalogue
+  ownership, fileless Org IDs, service packaging, full-suite qualification and
+  the planned native/operator checks remain outstanding.

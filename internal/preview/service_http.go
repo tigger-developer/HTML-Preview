@@ -70,6 +70,9 @@ func (s *previewService) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	} else if parts[0] == "_org" && len(parts) == 1 {
 		s.serveOrgLookup(w, r, cap)
 		return
+	} else if parts[0] == "_media" {
+		s.serveMedia(w, r, cap)
+		return
 	}
 	if len(parts) == 0 {
 		publicError(w, r, 404, "Not found")
@@ -87,6 +90,10 @@ func (s *previewService) serveDocument(w http.ResponseWriter, r *http.Request, c
 	path := filepath.Join(append([]string{cap.logicalRoot}, parts...)...)
 	if len(path) > 4096 {
 		publicError(w, r, 400, "Document path exceeds limit")
+		return
+	}
+	if kind, _ := linkedAssetType(path); from == "" && kind != "" {
+		s.serveAsset(w, r, cap, path)
 		return
 	}
 	src, err := identifyFormat(path, cap.root, from, s.base.formats)
@@ -167,6 +174,9 @@ func sourceHTTPStatus(err error) int {
 }
 
 func publicError(w http.ResponseWriter, r *http.Request, status int, message string) {
+	if status == 503 {
+		w.Header().Set("Retry-After", "1")
+	}
 	publicResponse(w, r, status, "text/html; charset=utf-8", []byte("<!doctype html><meta charset=utf-8><title>Preview unavailable</title><p>"+html.EscapeString(message)+"</p>"))
 }
 

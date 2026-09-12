@@ -10,12 +10,12 @@ import (
 
 type orgLookup struct{ search, fragment string }
 
-func orgAnchor(p *page, search string) string {
+func catalogueAnchor(custom, headings map[string][]string, search string) string {
 	var ids []string
 	if id, ok := strings.CutPrefix(search, "#"); ok {
-		ids = p.ids[id]
+		ids = custom[id]
 	} else if title, ok := strings.CutPrefix(search, "*"); ok {
-		ids = p.headings[strings.Join(strings.Fields(title), " ")]
+		ids = headings[strings.Join(strings.Fields(title), " ")]
 	}
 	if len(ids) == 1 {
 		return ids[0]

@@ -4,6 +4,7 @@ package preview
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
@@ -127,21 +128,41 @@ func (s *session) restoreMedia(doc *html.Node, p *page, token string) error {
 	return nil
 }
 
-func (s *session) localAsset(p *page, name string) ([]byte, error) {
+func (s *session) localAsset(p *page, name string) (data []byte, err error) {
+	if s.cfg.httpOrigin != "" {
+		defer func() {
+			if err != nil {
+				p.uncacheable = true
+			}
+		}()
+		if p.dependencies == nil {
+			p.dependencies = make(map[string]assetRevision)
+		}
+		if _, exists := p.dependencies[name]; !exists && len(p.dependencies) >= 256 {
+			p.resourceLimit = true
+			return nil, errors.New("inlined dependency limit exceeded")
+		}
+	}
 	src, err := identify(name, p.source.root)
+	if s.assetSource != nil {
+		src, err = s.assetSource(name)
+	}
 	if err != nil {
 		return nil, err
 	}
-	if src.device != p.source.device {
+	if s.assetSource == nil && src.device != p.source.device {
 		return nil, errors.New("asset is on another filesystem")
 	}
 	limit := min(maxAssetBytes, s.cfg.sourceBytes, s.cfg.totalBytes-s.sourceUsed, s.cfg.outputBytes-s.used)
-	data, err := snapshot(src, limit)
+	data, err = snapshot(src, limit)
 	if err != nil {
 		return nil, err
 	}
 	s.sourceUsed += int64(len(data))
 	s.used += int64(len(data))
+	if s.cfg.httpOrigin != "" {
+		p.dependencies[name] = assetRevision{source: src, sum: sha256.Sum256(data)}
+	}
 	return data, nil
 }
 
@@ -156,6 +177,20 @@ func (s *session) imageURL(p *page, value, parent string) (string, error) {
 	if media, ok := p.media[path.Clean(value)]; ok {
 		if media == "" {
 			return "", errors.New("container image omitted by raster policy")
+		}
+		if s.imageResolver != nil {
+			_, encoded, _ := strings.Cut(media, ",")
+			data, err := base64.StdEncoding.DecodeString(encoded)
+			if err != nil {
+				return "", err
+			}
+			result, err := s.imageResolver(p, "", rasterMIME(data), data)
+			if err != nil {
+				return "", err
+			}
+			p.images[key] = result
+			p.images[parent+"\x00"+result] = result
+			return result, nil
 		}
 		return media, nil
 	}
@@ -191,6 +226,12 @@ func (s *session) imageURL(p *page, value, parent string) (string, error) {
 	result, err := rasterURL(data, name, mime)
 	if err != nil {
 		return "", err
+	}
+	if s.imageResolver != nil {
+		result, err = s.imageResolver(p, name, rasterMIME(data), data)
+		if err != nil {
+			return "", err
+		}
 	}
 	p.images[key] = result
 	// Repeated publication passes recognize the already-owned representation.

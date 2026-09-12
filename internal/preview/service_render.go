@@ -3,6 +3,7 @@
 package preview
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -14,29 +15,57 @@ import (
 	"golang.org/x/net/html"
 )
 
-func (service *previewService) renderHTTP(ctx context.Context, cap *readCapability, src sourceContext, lookup *orgLookup) (data []byte, status int) {
-	ctx, cancel := context.WithTimeout(ctx, cap.settings.deadline)
-	defer cancel()
-	input, err := snapshot(src, min(cap.settings.sourceBytes, cap.settings.totalBytes))
-	if err != nil {
-		if strings.Contains(err.Error(), "byte limit") {
-			return nil, 413
-		}
-		return nil, sourceHTTPStatus(err)
+func (service *previewService) renderHTTP(ctx context.Context, cap *readCapability, src sourceContext, lookup *orgLookup) ([]byte, int) {
+	result, status := service.currentPage(ctx, cap, src)
+	if status != 200 {
+		return nil, status
 	}
+	if lookup == nil {
+		return result.data, 200
+	}
+	lookup.fragment = catalogueAnchor(result.ids, result.headings, lookup.search)
+	if lookup.fragment != "" {
+		return result.data, 200
+	}
+	doc, err := html.Parse(bytes.NewReader(result.data))
+	if err != nil {
+		return nil, 422
+	}
+	notice := &html.Node{Type: html.ElementNode, Data: "p"}
+	notice.AppendChild(nodeText("Org search not resolved: " + lookup.search))
+	body := element(doc, "body")
+	body.InsertBefore(notice, body.FirstChild)
+	var output bytes.Buffer
+	if err = html.Render(&output, doc); err != nil {
+		return nil, 422
+	}
+	if int64(output.Len()) > cap.settings.outputBytes {
+		return nil, 413
+	}
+	return output.Bytes(), 200
+}
+
+func (service *previewService) buildHTTP(ctx context.Context, cap *readCapability, src sourceContext, input []byte) (result *httpPage, status int) {
 	path, err := service.host.Temp()
 	if err != nil {
 		return nil, 503
 	}
 	defer func() {
 		if err := service.host.Remove(path); err != nil {
-			data = nil
+			result = nil
 			status = 503
 		}
 	}()
 	cfg := cap.settings
 	cfg.httpOrigin = service.origin
 	s := &session{path: path, pandoc: service.pandoc, host: service.host, cfg: cfg, log: &console{out: io.Discard, diagnostics: io.Discard}, byKey: make(map[string]*page), sourceUsed: int64(len(input))}
+	revision := digestText(input)
+	s.imageResolver = func(p *page, name, kind string, data []byte) (string, error) {
+		return service.registerImage(cap, p, revision, name, kind, data)
+	}
+	s.assetSource = func(name string) (sourceContext, error) {
+		return service.localAssetSource(cap, name)
+	}
 	if err = s.extract(); err != nil {
 		return nil, 503
 	}
@@ -48,31 +77,21 @@ func (service *previewService) renderHTTP(ctx context.Context, cap *readCapabili
 	if err = service.resolveHTTP(ctx, s, p, cap); err != nil {
 		return nil, renderStatus(ctx, err)
 	}
-	if lookup != nil {
-		lookup.fragment = orgAnchor(p, lookup.search)
-		if lookup.fragment == "" {
-			notice := &html.Node{Type: html.ElementNode, Data: "p"}
-			notice.AppendChild(nodeText("Org search not resolved: " + lookup.search))
-			body := p.dom
-			if body.Type == html.DocumentNode {
-				body = element(body, "body")
-			}
-			body.InsertBefore(notice, body.FirstChild)
-		}
-	}
 	if err = ctx.Err(); err != nil {
 		return nil, 504
 	}
-	data, err = s.document(p)
+	if p.resourceLimit {
+		return nil, 413
+	}
+	data, err := s.document(p)
 	if err != nil {
 		return nil, 422
 	}
 	if int64(len(data)) > cfg.outputBytes-s.used {
 		return nil, 413
 	}
-	return data, 200
+	return &httpPage{data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants}, 200
 }
-
 func renderStatus(ctx context.Context, err error) int {
 	if ctx.Err() != nil || errors.Is(err, context.DeadlineExceeded) {
 		return 504
@@ -139,6 +158,14 @@ func (service *previewService) resolveHTTP(ctx context.Context, s *session, p *p
 			from = r.url.Query().Get("htmlpreview-format")
 		}
 		if _, err := service.base.formats.resolve(r.path, from); err != nil {
+			kind, download := linkedAssetType(r.path)
+			if from == "" && kind != "" {
+				value, err := service.registerAsset(cap, p, r.path, kind, download)
+				if err == nil {
+					setAttribute(n, "href", value)
+					continue
+				}
+			}
 			s.inactive(p, n, "href", "Unsupported linked format")
 			continue
 		}

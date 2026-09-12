@@ -51,7 +51,11 @@ func (s *session) renderNativeHTML(p *page, data []byte) error {
 	p.dom = doc
 	s.cleanNativeChildren(p, doc, base)
 	head := element(doc, "head")
-	policy := &html.Node{Type: html.ElementNode, Data: "meta", Attr: []html.Attribute{{Key: "http-equiv", Val: "Content-Security-Policy"}, {Key: "content", Val: nativePolicy}}}
+	contentPolicy := nativePolicy
+	if s.cfg.httpOrigin != "" {
+		contentPolicy = strings.Replace(contentPolicy, "img-src data:", "img-src "+s.cfg.httpOrigin+" data:", 1)
+	}
+	policy := &html.Node{Type: html.ElementNode, Data: "meta", Attr: []html.Attribute{{Key: "http-equiv", Val: "Content-Security-Policy"}, {Key: "content", Val: contentPolicy}}}
 	head.InsertBefore(policy, head.FirstChild)
 	charset := &html.Node{Type: html.ElementNode, Data: "meta", Attr: []html.Attribute{{Key: "charset", Val: "utf-8"}}}
 	head.InsertBefore(charset, head.FirstChild)

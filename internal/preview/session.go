@@ -17,6 +17,8 @@ import (
 )
 
 type session struct {
+	imageResolver    func(*page, string, string, []byte) (string, error)
+	assetSource      func(string) (sourceContext, error)
 	path, pandoc     string
 	host             Host
 	desktop          *desktop

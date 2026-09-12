@@ -17,6 +17,7 @@ import (
 
 type previewService struct {
 	mu                       sync.Mutex
+	workers                  sync.WaitGroup
 	ctx                      context.Context
 	config                   serviceConfig
 	base                     config
@@ -24,6 +25,12 @@ type previewService struct {
 	pandoc, origin, instance string
 	capabilities             map[string]*readCapability
 	contexts                 map[string]*readCapability
+	cache                    map[string]*httpPage
+	inflight                 map[string]*renderWork
+	cacheBytes               int64
+	clock                    uint64
+	assets                   map[string]assetGrant
+	media                    map[string]mediaGrant
 }
 
 type readCapability struct {
@@ -40,6 +47,8 @@ func randomCapability() (string, error) {
 }
 
 func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, console *console) (code int) {
+	ctx, stop := context.WithCancel(ctx)
+	defer stop()
 	pandoc, err := host.LookPath("pandoc")
 	if err == nil {
 		err = checkPandoc(ctx, host, pandoc)
@@ -84,6 +93,10 @@ func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, c
 		return 1
 	}
 	s := &previewService{ctx: ctx, config: svc, base: cfg, host: host, pandoc: pandoc, origin: "http://" + listener.Addr().String(), instance: instance, capabilities: make(map[string]*readCapability), contexts: make(map[string]*readCapability)}
+	s.cache = make(map[string]*httpPage)
+	s.inflight = make(map[string]*renderWork)
+	s.assets = make(map[string]assetGrant)
+	s.media = make(map[string]mediaGrant)
 	public := serviceHTTPServer(http.HandlerFunc(s.serveHTTP), ctx, 70*time.Second)
 	control := serviceHTTPServer(http.HandlerFunc(s.serveControl), ctx, 5*time.Second)
 	done := make(chan error, 2)
@@ -101,6 +114,7 @@ func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, c
 	}
 	shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	stop()
 	for _, server := range []*http.Server{public, control} {
 		if err := server.Shutdown(shutdown); err != nil {
 			console.warn("service shutdown deadline exceeded")
@@ -114,6 +128,14 @@ func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, c
 		if err := <-done; !errors.Is(err, http.ErrServerClosed) {
 			code = 1
 		}
+	}
+	workersDone := make(chan struct{})
+	go func() { s.workers.Wait(); close(workersDone) }()
+	select {
+	case <-workersDone:
+	case <-shutdown.Done():
+		console.warn("service conversion cleanup deadline exceeded")
+		code = 1
 	}
 	return code
 }
