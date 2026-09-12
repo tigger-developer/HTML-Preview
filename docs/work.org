@@ -159,6 +159,23 @@ classification; it is provenance, not current state.
 - Delivery instruction :: *Design approved by Taḋg on 11 September 2026;
   implementation explicitly deferred*. Await a subsequent instruction to begin.
 
+** TODO W007 - Attributed autosaved annotations in service previews :feature:
+:PROPERTIES:
+:CUSTOM_ID: w-007
+:PRIORITY: P1
+:SOURCE: operator define-change
+:CREATED: 2026-09-12
+:END:
+
+- Specification :: [[file:../specs/007-service-annotations/spec.org][W007 - Attributed autosaved annotations in service previews]].
+- Audit evidence :: [[file:../specs/007-service-annotations/audits.yaml][W007 - Retained definition audit]].
+- Validation :: [[file:../specs/007-service-annotations/validation.org][W007 - Browser and filesystem qualification]].
+- Scope :: *Service-only autosave and source refresh*, embedded annotation history,
+  read-only sidecars, author attribution and append-only closed comments.
+- Dependency :: *W006 delivery and recorded service qualification precede W007
+  implementation*. W006 design approval alone is insufficient; its implementation
+  hold remains in force. This work is *definition only*.
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

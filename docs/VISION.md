@@ -21,6 +21,23 @@ sections remain history. The existing reader, source-preservation and platform
 requirements remain. Its specification records the approved token lifetime,
 compatibility and asset contracts; runtime qualification remains future work.
 
+## Annotation proposal - 12 September 2026
+
+[W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)
+proposes named comments in service mode after W006 is delivered and qualified.
+Comments autosave into semantically identified source records, with adjacent Org
+sidecars for read-only sources. Open previews refresh when the source changes,
+preserving the active composer and pausing saves when its target is unresolved.
+The active composer autosaves draft revisions; closing freezes the comment and
+later corrections create new comments. The CLI uses
+`HTMLPREVIEW_USER_DISPLAY_NAME`, falling back to `USER`.
+
+This proposal adds a narrow exception to the source-untouched reading contract
+below: annotation composition writes its own records. Reading and file-mode
+previews remain non-mutating. Stored comments, names and draft history travel
+with shared files. W007 remains a definition proposal awaiting overall sign-off;
+it does not authorize implementation or lift W006's implementation hold.
+
 ## Purpose
 
 `htmlpreview` makes local Markdown and Org documents comfortable to read in a

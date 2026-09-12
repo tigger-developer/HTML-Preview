@@ -1,0 +1,1106 @@
+#+TITLE: W007 - Attributed autosaved annotations in service previews
+#+SUBTITLE: Unified change specification
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+DEFINITION_GATE: PENDING
+#+OPERATOR_SIGNOFF: PENDING
+
+* Attributed autosaved annotations in service previews
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+- Outcome :: *Annotate local Org and Markdown while reading*, with named comments
+  restored on later visits.
+- Before :: The reader preserves source bytes; the approved W006 service design
+  is *not evidence of service delivery*. It currently carries an implementation hold.
+- After :: Once W006 is delivered, *service previews autosave comments* into
+  semantically identified source records, or adjacent Org sidecars for read-only
+  sources. File previews retain their reading-only behaviour.
+- Changes :: *Automatic source refresh*, passage anchors, author/date display,
+  append-only persistence, visible save/recovery state and substantial browser tests.
+- Unchanged :: *Hardcoded loopback*, configured roots, passive source content,
+  Go/Pandoc, browser-only JavaScript, existing reader controls and default-browser
+  handoff on macOS, Linux and WSL.
+- Edge cases :: *External edits, ambiguous targets, lost responses, interrupted
+  appends, permissions, multiple tabs and service restart* retain saved history
+  and distinguish unsaved text.
+- Decisions :: The operator selected *append-only comments and autosave*.
+  The candidate reconciles these through *autosaved revisions while composing*;
+  closing freezes a comment, and later corrections create another comment.
+  The CLI resolves =HTMLPREVIEW_USER_DISPLAY_NAME=, then =USER=.
+- Dependency :: *W006 delivery and recorded service qualification precede W007
+  implementation*. W007 definition does not lift W006's implementation hold.
+- Next step :: *Definition gate, then operator sign-off*. No implementation is
+  authorized by this document's preparation.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+*Comments made while reading need durable context and attribution*. Browser-only
+state loses them, while file-mode output has no authorized local write service.
+Sources can change in an external editor during a review, so *autosave must
+refresh and verify the current source*, rather than write against an old page.
+
+** Outcome
+
+The reader can *add, revisit and understand attributed comments* without a Save
+button, manual page reload or silent source replacement. Ambiguous anchors and
+failed persistence remain visible, with the user's current text recoverable.
+
+** Scope
+
+*** In scope
+
+- *Whole-document and selected-passage comments* in W007 service previews.
+- *Embedded versioned records*, read-only sidecars, autosaved composer revisions,
+  automatic refresh, append-only closed comments, author and UTC timestamp.
+- *Strict write admission, concurrency, interruption recovery and resource limits*.
+- *Persistent browser regressions plus extensive human UX qualification*.
+
+*** Out of scope
+
+- *Editing/deleting closed comments*, threaded discussions, moderation, accounts,
+  collaboration servers, rich-text comments, attachment uploads and PDF regions.
+- *File-mode annotation*, a generic file editor, automatic source reformatting,
+  automatic history compaction or external-editor synchronization.
+- *Exodan deployment*, remote serving, database introduction and browser extensions.
+
+*** Unchanged
+
+*Reading alone does not write source or sidecar files*. W006's loopback/root
+rules, source confinement, asset restrictions, private registration socket and
+file fallback remain authoritative except for the narrow extensions named below.
+
+** Authority and starting point
+
+- Project profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product authority :: [[file:../../docs/VISION.md][Vision]], service proposal and
+  W007 proposal notice.
+- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture]],
+  service transport and W007 proposal notice.
+- Prerequisite :: [[file:../006-local-preview-service/spec.org][W006 - Local
+  preview service and automatic fallback]], including its
+  [[file:../006-local-preview-service/validation.org][service qualification]].
+- Current implementation :: [[file:../../internal/preview/source.go][Source
+  snapshots]], [[file:../../internal/preview/render.go][rendering pipeline]] and
+  [[file:../../assets/web/preview.js][browser controls]] provide the read path;
+  this definition introduces a *separate annotation write boundary*.
+- Prior art :: Writeback's =static/inline-comments.js= and
+  =static/feedback-autosave.js=, assessed on 12 September 2026; the relevant
+  findings and adopted behaviour are reproduced under Solution Design.
+- Conceptual reference :: [[https://www.w3.org/TR/annotation-model/#text-quote-selector][W3C
+  Text Quote Selector]]. The project adopts quote/context ideas, *not a claim
+  of implementing the full Web Annotation protocol or JSON-LD format*.
+- Future external owner :: Exodan's =deploy/docs/PROJECT-INTEGRATION.md= owns a
+  possible future hosting contract. Its current relevant boundary is reproduced
+  under Architecture impact; *no external checkout is needed to deliver W007*.
+
+** Constraints and dependencies
+
+- *W006 must be delivered first*, with its candidate revision, required automated
+  service evidence and platform/user qualification recorded. A definition PASS or
+  design approval is insufficient. Do not fold W006 implementation into W007.
+- *Definition remains on the current branch*. W006's implementation hold and
+  existing work-item evidence are preserved.
+- *No JavaScript runtime on the CLI*. Browser tests use native browser JavaScript
+  with a Go fixture runner; no Node/npm or new web framework is introduced.
+- Source writes *never widen filesystem permissions or configured roots*.
+  This is a local single-user application; display names are not authentication.
+- *No arbitrary editor can be forced to honour a lock*. Auto-refresh reduces
+  stale-view time, but an external editor can later save an older buffer over
+  acknowledged changes. Document this limit; do not claim atomic cooperation
+  with every editor or filesystem.
+
+** Decisions
+
+- Operator, 12 September 2026 :: *Append-only initially; autosave rather than
+  explicit Save; inspect Writeback; automatically refresh changed base files*.
+- Previously agreed scope :: *Service mode only after W006*, embedded by default,
+  sidecar for read-only sources, displayed username and substantial JavaScript UT.
+- Operator-confirmed interaction :: *An active composer may revise its autosaved draft*;
+  its event history is append-only. Closing freezes it; reopening is read-only.
+  The first acknowledged snapshot already survives a crash. This is the explicit
+  interpretation of append-only plus autosave accepted by the operator on
+  12 September 2026, with later iteration after observing the feature.
+- Naming :: *HTMLPREVIEW_USER_DISPLAY_NAME*, with USER fallback; no additional
+  persistent identity setting or account system.
+- Storage proposal :: *Namespaced comment frames with JSON events* for both
+  formats. Sidecars append =-annotations.org= to the *full source basename*,
+  e.g. =work.org-annotations.org= and =work.md-annotations.org=, avoiding
+  same-stem collisions.
+
+** Unresolved blockers
+
+*No unresolved definition blocker*. Implementation is gated by W006 delivery
+and a subsequent delivery instruction. The detailed storage and API choices
+remain reviewable design proposals; overall sign-off remains pending.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:CUSTOM_ID: hands-off-mode-decision-log
+:VISIBILITY: folded
+:END:
+
+*No hands-off invocation*. This definition is attended.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC007.1 - Service prerequisite
+:PROPERTIES:
+:CUSTOM_ID: ac-007-1
+:END:
+
+- Criterion :: *W007 delivery begins only after W006 is delivered and its required service qualification is recorded*. Approval of W006's design alone does not satisfy this dependency.
+- Proven by :: [[#ot-007-1][OT007.1 - Dependency and delivered guidance]].
+
+** AC007.2 - Service-only annotation
+:PROPERTIES:
+:CUSTOM_ID: ac-007-2
+:END:
+
+- Criterion :: *Annotation controls and APIs operate only in authorized HTTP previews*. File previews, old read-only clients and JavaScript-disabled pages remain readable and perform no annotation writes.
+- Proven by :: [[#rt-007-1][RT007.1 - Transport and protocol compatibility]], [[#ut-007-8][UT007.8 - Service boundary and lifecycle]].
+
+** AC007.3 - Attribution
+:PROPERTIES:
+:CUSTOM_ID: ac-007-3
+:END:
+
+- Criterion :: *Every persisted annotation displays the initiating CLI's resolved name*: trimmed HTMLPREVIEW_USER_DISPLAY_NAME, otherwise trimmed USER. Existing records retain their recorded author.
+- Proven by :: [[#rt-007-2][RT007.2 - Author capture]], [[#ut-007-1][UT007.1 - Attributed persistence]].
+
+** AC007.4 - Missing or invalid identity
+:PROPERTIES:
+:CUSTOM_ID: ac-007-4
+:END:
+
+- Criterion :: *Missing identity disables annotation creation without blocking reading*. An explicitly non-empty invalid name is diagnosed and cannot silently acquire another identity.
+- Proven by :: [[#rt-007-2][RT007.2 - Author capture]], [[#ut-007-1][UT007.1 - Attributed persistence]].
+
+** AC007.5 - Embedded persistence
+:PROPERTIES:
+:CUSTOM_ID: ac-007-5
+:END:
+
+- Criterion :: Given a safely writable Org or Markdown source, *autosaved annotation events are appended to that source in the versioned semantic format* and reload reproduces the recorded comments.
+- Proven by :: [[#rt-007-3][RT007.3 - Embedded format and byte preservation]], [[#ut-007-1][UT007.1 - Attributed persistence]].
+
+** AC007.6 - Read-only sidecar
+:PROPERTIES:
+:CUSTOM_ID: ac-007-6
+:END:
+
+- Criterion :: Given a read-only source, *autosaves use its adjacent, format-disambiguated Org sidecar*. Source bytes remain unchanged; an unavailable sidecar destination produces a visible unsaved failure.
+- Proven by :: [[#rt-007-4][RT007.4 - Sidecars and storage transitions]], [[#ut-007-2][UT007.2 - Read-only and sidecar workflow]].
+
+** AC007.7 - Append-only comments
+:PROPERTIES:
+:CUSTOM_ID: ac-007-7
+:END:
+
+- Criterion :: *Closed comments cannot be edited or deleted through the application*. During one active composer, autosave appends draft revisions without overwriting previous events; corrections to a closed comment are new annotations.
+- Proven by :: [[#rt-007-5][RT007.5 - Append-only autosave protocol]], [[#ut-007-3][UT007.3 - Autosave and append-only composition]].
+
+** AC007.8 - Autosave and acknowledgement
+:PROPERTIES:
+:CUSTOM_ID: ac-007-8
+:END:
+
+- Criterion :: *Changed valid composer text is automatically submitted after 300 ms of inactivity*, with a two-second maximum wait during continuous input outside IME composition. A saved indication describes only the latest acknowledged revision.
+- Proven by :: [[#rt-007-5][RT007.5 - Append-only autosave protocol]], [[#ut-007-3][UT007.3 - Autosave and append-only composition]], [[#ut-007-4][UT007.4 - Failure and navigation recovery]].
+
+** AC007.9 - Ordered and idempotent writes
+:PROPERTIES:
+:CUSTOM_ID: ac-007-9
+:END:
+
+- Criterion :: *Retries preserve one logical event per operation ID*, and a delayed response cannot erase or falsely acknowledge newer text. Other annotations and concurrent tabs retain their own records.
+- Proven by :: [[#rt-007-5][RT007.5 - Append-only autosave protocol]], [[#ut-007-4][UT007.4 - Failure and navigation recovery]].
+
+** AC007.10 - Source preservation
+:PROPERTIES:
+:CUSTOM_ID: ac-007-10
+:END:
+
+- Criterion :: *Annotation writing preserves all pre-existing bytes and file permissions*. No source conversion, truncation, normalization, whole-file replacement or automatic history compaction occurs.
+- Proven by :: [[#rt-007-3][RT007.3 - Embedded format and byte preservation]], [[#rt-007-6][RT007.6 - Conflicts and durability faults]], [[#ot-007-2][OT007.2 - Native filesystem qualification]].
+
+** AC007.11 - Conflicts and interrupted writes
+:PROPERTIES:
+:CUSTOM_ID: ac-007-11
+:END:
+
+- Criterion :: *A detected stale source, replaced target or incomplete annotation tail prevents further append*. Failure never reports unacknowledged text as saved; previously valid events remain available.
+- Proven by :: [[#rt-007-6][RT007.6 - Conflicts and durability faults]], [[#rt-007-11][RT007.11 - Refresh and autosave coordination]], [[#ut-007-4][UT007.4 - Failure and navigation recovery]], [[#ut-007-5][UT007.5 - Selection and changed documents]], [[#ut-007-9][UT007.9 - Live refresh while annotating]], [[#ot-007-2][OT007.2 - Native filesystem qualification]].
+
+** AC007.12 - Constrained write authority
+:PROPERTIES:
+:CUSTOM_ID: ac-007-12
+:END:
+
+- Criterion :: *A write capability authorizes annotation events for one already authorized document and captured author only*. Escaped paths, other documents, symlink or hard-link aliases outside the safe write contract, and arbitrary file writes are refused.
+- Proven by :: [[#rt-007-7][RT007.7 - Write security]], [[#ot-007-2][OT007.2 - Native filesystem qualification]].
+
+** AC007.13 - Cross-origin rejection
+:PROPERTIES:
+:CUSTOM_ID: ac-007-13
+:END:
+
+- Criterion :: *Mutation requires the exact service Origin, a valid document write capability and application/json*. Cross-origin, missing/null Origin, missing capability and foreign Host requests cannot write.
+- Proven by :: [[#rt-007-7][RT007.7 - Write security]].
+
+** AC007.14 - Passive annotation content
+:PROPERTIES:
+:CUSTOM_ID: ac-007-14
+:END:
+
+- Criterion :: *Comment text, names and selector excerpts render as text*. Stored strings cannot create executable markup, source directives, outbound requests or forged application controls.
+- Proven by :: [[#rt-007-8][RT007.8 - Passive rendering and existing controls]], [[#ut-007-6][UT007.6 - Accessible and safe presentation]].
+
+** AC007.15 - Document and passage targets
+:PROPERTIES:
+:CUSTOM_ID: ac-007-15
+:END:
+
+- Criterion :: *A new annotation can target the whole document or a selected passage*, including selections spanning inline markup, literal code and visible drawer contents, without changing the selected source text.
+- Proven by :: [[#rt-007-9][RT007.9 - Anchors and document identity]], [[#rt-007-11][RT007.11 - Refresh and autosave coordination]], [[#ut-007-5][UT007.5 - Selection and changed documents]], [[#ut-007-9][UT007.9 - Live refresh while annotating]].
+
+** AC007.16 - Deterministic reattachment
+:PROPERTIES:
+:CUSTOM_ID: ac-007-16
+:END:
+
+- Criterion :: *An annotation attaches only to a verified current target*. Missing or ambiguous matches remain visible in an unresolved list with their original excerpt; they are never silently attached to the first similar passage.
+- Proven by :: [[#rt-007-9][RT007.9 - Anchors and document identity]], [[#ut-007-5][UT007.5 - Selection and changed documents]].
+
+** AC007.17 - Readable stored metadata
+:PROPERTIES:
+:CUSTOM_ID: ac-007-17
+:END:
+
+- Criterion :: *Owned annotation records are excluded from the document body, navigation and frontmatter display*. Valid stored comments appear in the annotation view; malformed or unsupported records produce a bounded diagnostic without silent data loss.
+- Proven by :: [[#rt-007-3][RT007.3 - Embedded format and byte preservation]], [[#rt-007-8][RT007.8 - Passive rendering and existing controls]], [[#ut-007-6][UT007.6 - Accessible and safe presentation]].
+
+** AC007.18 - Draft recovery and navigation
+:PROPERTIES:
+:CUSTOM_ID: ac-007-18
+:END:
+
+- Criterion :: *Acknowledged drafts survive reload and service restart as read-only recovered comments*. Application-controlled close/navigation waits for the current text's acknowledgement; failed unsaved text stays available with retry and explicit copy actions.
+- Proven by :: [[#rt-007-5][RT007.5 - Append-only autosave protocol]], [[#ut-007-4][UT007.4 - Failure and navigation recovery]], [[#ut-007-8][UT007.8 - Service boundary and lifecycle]].
+
+** AC007.19 - Accessible browser interaction
+:PROPERTIES:
+:CUSTOM_ID: ac-007-19
+:END:
+
+- Criterion :: *Annotation creation, reading, status and recovery are usable with keyboard and assistive technology*. Focus, selection, narrow layouts and status text follow the browser interaction contract below.
+- Proven by :: [[#ut-007-5][UT007.5 - Selection and changed documents]], [[#ut-007-6][UT007.6 - Accessible and safe presentation]].
+
+** AC007.20 - Reader compatibility
+:PROPERTIES:
+:CUSTOM_ID: ac-007-20
+:END:
+
+- Criterion :: *Annotations preserve folding bars, heading clicks, relative navigation, source-path copying, literal code copying and responsive navigation*. Print includes closed/latest saved comments in a labelled appendix, excluding controls and unsaved text.
+- Proven by :: [[#rt-007-8][RT007.8 - Passive rendering and existing controls]], [[#ut-007-7][UT007.7 - Reader and print regression]].
+
+** AC007.21 - Resource bounds
+:PROPERTIES:
+:CUSTOM_ID: ac-007-21
+:END:
+
+- Criterion :: *Oversized requests, full stores, busy writers and unavailable persistence fail within documented bounds*, retaining previously saved events and the browser's unsaved text.
+- Proven by :: [[#rt-007-10][RT007.10 - Budgets and bounded failure]], [[#ut-007-4][UT007.4 - Failure and navigation recovery]].
+
+** AC007.22 - Document and sidecar identity
+:PROPERTIES:
+:CUSTOM_ID: ac-007-22
+:END:
+
+- Criterion :: *Canonical aliases share one stored annotation history*, while work.org and work.md use distinct sidecars. Permission changes preserve the union of valid embedded and sidecar events without automatic relocation.
+- Proven by :: [[#rt-007-4][RT007.4 - Sidecars and storage transitions]], [[#rt-007-9][RT007.9 - Anchors and document identity]], [[#ut-007-2][UT007.2 - Read-only and sidecar workflow]].
+
+** AC007.23 - Documented ownership limits
+:PROPERTIES:
+:CUSTOM_ID: ac-007-23
+:END:
+
+- Criterion :: *Delivered guidance explains autosave, attribution, embedded sharing, read-only fallback, external-editor conflicts, recovery and the W006 prerequisite*. Hosted deployment remains a separately defined Exodan integration over server-owned files.
+- Proven by :: [[#ot-007-1][OT007.1 - Dependency and delivered guidance]].
+
+** AC007.24 - Automatic source refresh
+:PROPERTIES:
+:CUSTOM_ID: ac-007-24
+:END:
+
+- Criterion :: *An open service preview automatically refreshes after an on-disk source change*, preserving composer text and restoring compatible reading state. Autosave rebases only onto a freshly verified, uniquely matching target; unresolved targets pause saving.
+- Proven by :: [[#rt-007-11][RT007.11 - Refresh and autosave coordination]], [[#ut-007-9][UT007.9 - Live refresh while annotating]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+*No implementation tests have run during definition*. All delivery results start
+PENDING. Each regression first demonstrates its intended failure on the
+*delivered W006 baseline*; absent W006 infrastructure is not valid RED evidence.
+
+Go regressions join =make test=. Browser regressions join =make test-browser=:
+a Go test runner serves isolated fixtures and the real packaged browser modules
+on *127.0.0.1*, opens the system default browser, and receives native JavaScript
+assertion results using a one-run random capability. It exits non-zero on failed
+assertion or a *120-second timeout*. It accepts no public listener setting,
+stores fixtures/results only in its OS temporary directory and shuts down its
+own listener on exit. No metered provider or hosted service is involved.
+Browser RTs use controlled clocks/network adapters at *owned module boundaries*;
+they do not replace human UT, source-text greps do not prove interaction, and
+normal verification includes both commands.
+
+For every UT below, record *candidate revision, OS/browser/version, steps,
+observations, result and human reviewer*. The required matrix is
+*macOS/Safari, Linux/Firefox, WSL1/Windows Edge and WSL2/Windows Edge*.
+UT007.6 additionally records VoiceOver/Safari and NVDA/Edge keyboard/screen-reader
+results. Missing platform or accessibility evidence remains PENDING, not inferred
+from another platform. Use synthetic documents, not personal reviews.
+
+** RT007.1 - Transport and protocol compatibility
+:PROPERTIES:
+:CUSTOM_ID: rt-007-1
+:END:
+
+- Covers :: [[#ac-007-2][AC007.2 - Service-only annotation]].
+- Boundary :: CLI, private control protocol and loopback HTTP.
+- Setup :: Use a delivered W006 service, a W007 candidate service, two configured roots and one excluded source.
+- Action :: Invoke the candidate CLI against each service; open allowed/excluded files; request the annotation API in read-only contexts.
+- Expected :: W007 negotiates the new registration endpoint; W006's endpoint remains compatible and read-only. Only authorized W007 HTTP previews enable annotations; file fallback never calls a write API.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.2 - Author capture
+:PROPERTIES:
+:CUSTOM_ID: rt-007-2
+:END:
+
+- Covers :: [[#ac-007-3][AC007.3 - Attribution]], [[#ac-007-4][AC007.4 - Missing or invalid identity]].
+- Boundary :: CLI environment through persisted API response.
+- Setup :: Use distinct CLI/service USER values, Unicode display names and one active old tab.
+- Action :: Register with override, fallback, blanks, missing values, invalid controls and over-limit names; change the CLI environment and register again.
+- Expected :: Override then USER precedence is exact; author comes from registration, not browser JSON or daemon environment. Old contexts keep their names; empty identity reads without write controls; invalid explicit values report the named setting.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.3 - Embedded format and byte preservation
+:PROPERTIES:
+:CUSTOM_ID: rt-007-3
+:END:
+
+- Covers :: [[#ac-007-5][AC007.5 - Embedded persistence]], [[#ac-007-10][AC007.10 - Source preservation]], [[#ac-007-17][AC007.17 - Readable stored metadata]].
+- Boundary :: Public HTTP against real Org/Markdown files and real Pandoc.
+- Setup :: Use both formats, LF/CRLF, UTF-8 BOM, no final newline, metadata, drawers, literal marker examples and existing event tails.
+- Action :: Autosave two draft revisions and close, append another comment, restart and render; compare each saved file with its previous byte prefix.
+- Expected :: Events parse and reload, prior bytes and mode remain exact, source metadata is unchanged and owned records are absent from body/TOC. Unsupported or malformed owned tails disable mutation with diagnostics.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.4 - Sidecars and storage transitions
+:PROPERTIES:
+:CUSTOM_ID: rt-007-4
+:END:
+
+- Covers :: [[#ac-007-6][AC007.6 - Read-only sidecar]], [[#ac-007-22][AC007.22 - Document and sidecar identity]].
+- Boundary :: Public HTTP and rooted filesystem.
+- Setup :: Use read-only sources in writable/unwritable parents, same stems with different extensions, existing foreign sidecars and canonical symlink aliases.
+- Action :: Save and reload; change source permissions; request through aliases; try a colliding or escaped sidecar.
+- Expected :: Only the specified adjacent sidecar is created for a read-only source; foreign files and escaped aliases are untouched. Source remains exact; read unions both stores, deduplicates identical events and rejects conflicting IDs.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.5 - Append-only autosave protocol
+:PROPERTIES:
+:CUSTOM_ID: rt-007-5
+:END:
+
+- Covers :: [[#ac-007-7][AC007.7 - Append-only comments]], [[#ac-007-8][AC007.8 - Autosave and acknowledgement]], [[#ac-007-9][AC007.9 - Ordered and idempotent writes]], [[#ac-007-18][AC007.18 - Draft recovery and navigation]].
+- Boundary :: HTTP event API, persistent files and a browser-run regression page.
+- Setup :: Use one document, two composers/tabs, delayed responses, acknowledged drafts and a service restart.
+- Action :: Create/open composer, submit increasing event sequences, retry an accepted event after a lost reply, attempt sequence replay/change, close, restart and attempt editing the old annotation.
+- Expected :: One durable event per operation ID; only the active composer may append its next draft. Closed/recovered comments reject mutation. Browser checks verify debounce/max-wait, IME, single-flight coalescing and latest-version status without source-text assertions.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.6 - Conflicts and durability faults
+:PROPERTIES:
+:CUSTOM_ID: rt-007-6
+:END:
+
+- Covers :: [[#ac-007-10][AC007.10 - Source preservation]], [[#ac-007-11][AC007.11 - Conflicts and interrupted writes]].
+- Boundary :: Public HTTP with real files and controlled I/O boundary faults.
+- Setup :: Use synthetic sources; substitute exact write/sync faults at the owned filesystem adapter, and perform external rename/truncate before commit.
+- Action :: Submit stale revisions; cause short append, failed sync, lost reply and target replacement; restart and retry.
+- Expected :: Known conflicts return 409 without append; partial tails are preserved, diagnosed and block new writes. Complete matching events are synchronized before retry success; no truncation/rollback overwrites external edits.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.7 - Write security
+:PROPERTIES:
+:CUSTOM_ID: rt-007-7
+:END:
+
+- Covers :: [[#ac-007-12][AC007.12 - Constrained write authority]], [[#ac-007-13][AC007.13 - Cross-origin rejection]].
+- Boundary :: Real loopback listener and private registration socket.
+- Setup :: Use separate roots/documents, source-controlled hostile links, foreign origins, capabilities and filesystem aliases.
+- Action :: Attempt forged author/path fields, wrong document grants, source and sidecar symlink escapes, hard links, mounts, unknown methods, missing Origin and cross-origin POSTs.
+- Expected :: All forbidden mutations fail with zero changed bytes; GET/HEAD remain non-mutating. Exact-origin authorized events succeed. No CORS, general editor, upload or unconfigured-root write route exists.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.8 - Passive rendering and existing controls
+:PROPERTIES:
+:CUSTOM_ID: rt-007-8
+:END:
+
+- Covers :: [[#ac-007-14][AC007.14 - Passive annotation content]], [[#ac-007-17][AC007.17 - Readable stored metadata]], [[#ac-007-20][AC007.20 - Reader compatibility]].
+- Boundary :: Real Pandoc output and browser-run regression page.
+- Setup :: Use annotation strings containing HTML, script, Org terminators, Markdown comment terminators, backticks and literal marker examples.
+- Action :: Save, reload, print and exercise annotation status beside source/code copy and heading/drawer controls.
+- Expected :: Strings remain inert, structured records do not leak into body/frontmatter and code text is unchanged. Browser checks cover event delegation, pending-copy interactions, close guards and print-state restoration.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.9 - Anchors and document identity
+:PROPERTIES:
+:CUSTOM_ID: rt-007-9
+:END:
+
+- Covers :: [[#ac-007-15][AC007.15 - Document and passage targets]], [[#ac-007-16][AC007.16 - Deterministic reattachment]], [[#ac-007-22][AC007.22 - Document and sidecar identity]].
+- Boundary :: Rendered text mapping, HTTP validation and persistent re-render.
+- Setup :: Use repeated passages, cross-node selections, accented/combining text, astral characters, emoji, code, tables and folded drawers.
+- Action :: Create selectors, insert prose before targets, duplicate exact contexts, edit/delete the selected phrase, rename/copy source with embedded records and move a sidecar with its source.
+- Expected :: Only uniquely verified targets attach; missing/ambiguous targets retain comments in the unresolved list. Canonical mapping agrees in Go/browser; offsets use Unicode scalar indices, and body revisions exclude annotation UI.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.10 - Budgets and bounded failure
+:PROPERTIES:
+:CUSTOM_ID: rt-007-10
+:END:
+
+- Covers :: [[#ac-007-21][AC007.21 - Resource bounds]].
+- Boundary :: Public API and writer admission boundary.
+- Setup :: Use stores near byte/event limits, maximum-size UTF-8 payloads and concurrent requests.
+- Action :: Cross each declared limit by one unit; block a writer; submit repeated transient failures.
+- Expected :: Correct 413/429/503 outcomes within deadlines, bounded concurrency and no unbounded retry queue. Existing data is retained; quota errors do not silently compact or move history.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** RT007.11 - Refresh and autosave coordination
+:PROPERTIES:
+:CUSTOM_ID: rt-007-11
+:END:
+
+- Covers :: [[#ac-007-24][AC007.24 - Automatic source refresh]], [[#ac-007-11][AC007.11 - Conflicts and interrupted writes]], [[#ac-007-16][AC007.16 - Deterministic reattachment]].
+- Boundary :: Real service HTTP, changing files and browser-run regression page.
+- Setup :: Use a visible preview with a dirty/in-flight composer, folded sections, scroll position and two tabs.
+- Action :: Edit source bytes, replace the source, change only annotation records, remove or duplicate the target, and change the file again between refresh and append.
+- Expected :: Polling discovers changes; body/list refresh preserves dirty text and never replaces the active composer. Unique targets rebase automatically; unresolved anchors pause saves. Every append rechecks current revision; repeated races are bounded and never overwrite newer source.
+- Retention :: *Persistent regression suite* under the applicable command above.
+
+** UT007.1 - Attributed persistence
+:PROPERTIES:
+:CUSTOM_ID: ut-007-1
+:END:
+
+- Covers :: [[#ac-007-3][AC007.3 - Attribution]], [[#ac-007-4][AC007.4 - Missing or invalid identity]], [[#ac-007-5][AC007.5 - Embedded persistence]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Create whole-document and passage comments in Org and Markdown with the display-name override, then USER fallback. Reopen after browser/service restart; change the name and add a new comment.
+- Expected :: Authors/dates are readable, old names remain, current names are correct and embedded records persist. Missing identity clearly explains why creation is unavailable.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** UT007.2 - Read-only and sidecar workflow
+:PROPERTIES:
+:CUSTOM_ID: ut-007-2
+:END:
+
+- Covers :: [[#ac-007-6][AC007.6 - Read-only sidecar]], [[#ac-007-22][AC007.22 - Document and sidecar identity]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Use work.org and work.md with the same stem. Make each source read-only, save comments, reopen, restore write permission and add more. Repeat with an unwritable parent and a foreign sidecar.
+- Expected :: Storage destination is apparent, both histories remain visible and separate, originals stay intact in sidecar mode, and unsaved text remains recoverable on failure.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** UT007.3 - Autosave and append-only composition
+:PROPERTIES:
+:CUSTOM_ID: ut-007-3
+:END:
+
+- Covers :: [[#ac-007-7][AC007.7 - Append-only comments]], [[#ac-007-8][AC007.8 - Autosave and acknowledgement]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Type slowly, rapidly for ten seconds and using an IME; pause, close and reopen. Add a correction as a new comment. Clear a draft after an earlier autosave.
+- Expected :: No Save button is required; typing remains fluid, only acknowledged text is labelled autosaved, close freezes the comment and reopening offers no edit/delete. Clearing cannot silently erase saved draft text.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** UT007.4 - Failure and navigation recovery
+:PROPERTIES:
+:CUSTOM_ID: ut-007-4
+:END:
+
+- Covers :: [[#ac-007-8][AC007.8 - Autosave and acknowledgement]], [[#ac-007-9][AC007.9 - Ordered and idempotent writes]], [[#ac-007-11][AC007.11 - Conflicts and interrupted writes]], [[#ac-007-18][AC007.18 - Draft recovery and navigation]], [[#ac-007-21][AC007.21 - Resource bounds]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Throttle responses; type while a save is pending; disconnect/stop the service; trigger a permission or capacity failure. Try closing, another annotation, local navigation and browser back/reload; retry after recovery.
+- Expected :: Older replies never label newer text saved. Pending/failed text stays editable and copyable; app-controlled navigation waits or explains failure. Acknowledged text survives restart; no duplicate comments result from retry.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** UT007.5 - Selection and changed documents
+:PROPERTIES:
+:CUSTOM_ID: ut-007-5
+:END:
+
+- Covers :: [[#ac-007-11][AC007.11 - Conflicts and interrupted writes]], [[#ac-007-15][AC007.15 - Document and passage targets]], [[#ac-007-16][AC007.16 - Deterministic reattachment]], [[#ac-007-19][AC007.19 - Accessible browser interaction]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Select with mouse and keyboard across emphasis, links, code and visible drawers, including repeated phrases and Unicode. Change the source externally, then reopen comments.
+- Expected :: Selection is preserved on opening the composer; copying/folding is not hijacked. Unique targets reattach; ambiguity and missing targets are visible and retain excerpts, with no silent guess.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** UT007.6 - Accessible and safe presentation
+:PROPERTIES:
+:CUSTOM_ID: ut-007-6
+:END:
+
+- Covers :: [[#ac-007-14][AC007.14 - Passive annotation content]], [[#ac-007-17][AC007.17 - Readable stored metadata]], [[#ac-007-19][AC007.19 - Accessible browser interaction]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Use keyboard only and screen reader; inspect 320 px and wide viewports, 200% zoom, dark/light and reduced motion. Include hostile-looking literal text and malformed stored metadata.
+- Expected :: Controls have names and visible focus; status is textual and announced without keystroke chatter; focus returns sensibly, no horizontal UI overflow occurs, and content stays inert.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** UT007.7 - Reader and print regression
+:PROPERTIES:
+:CUSTOM_ID: ut-007-7
+:END:
+
+- Covers :: [[#ac-007-20][AC007.20 - Reader compatibility]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Exercise source copy, inline/block code copy, header/navigation buttons, folded headings/drawers, relative links and browser history while comments are visible. Print and return to screen.
+- Expected :: Existing controls retain their distinct actions and literal text. Print has a labelled saved-comment appendix and the screen restores its previous fold/annotation state.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** UT007.8 - Service boundary and lifecycle
+:PROPERTIES:
+:CUSTOM_ID: ut-007-8
+:END:
+
+- Covers :: [[#ac-007-2][AC007.2 - Service-only annotation]], [[#ac-007-18][AC007.18 - Draft recovery and navigation]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Preview with W007 service, W006-only service, no service, an excluded source and JavaScript disabled. Close/reload a tab with an acknowledged draft, then restart the service.
+- Expected :: Only W007 service mode enables creation. File/JS-disabled reading remains usable. Recovered saved drafts are visible and read-only; no promise is made that unacknowledged keystrokes survive forced termination.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** UT007.9 - Live refresh while annotating
+:PROPERTIES:
+:CUSTOM_ID: ut-007-9
+:END:
+
+- Covers :: [[#ac-007-24][AC007.24 - Automatic source refresh]], [[#ac-007-11][AC007.11 - Conflicts and interrupted writes]], [[#ac-007-16][AC007.16 - Deterministic reattachment]].
+- Reviewer :: *Operator or named human tester* on the required matrix.
+- Procedure :: Keep a source open in an editor beside the browser. Edit surrounding prose while typing a comment, then edit/delete its selected phrase. Change a folded heading and add a comment in another tab.
+- Expected :: Source changes appear automatically without manual reload; unique-target autosave continues with intact text and compatible fold/scroll state. Lost or ambiguous targets visibly pause; no stale-file overwrite or false saved indication occurs.
+- Record :: Dated observations in [[file:validation.org][W007 validation]].
+
+** OT007.1 - Dependency and delivered guidance
+:PROPERTIES:
+:CUSTOM_ID: ot-007-1
+:END:
+
+- Covers :: [[#ac-007-1][AC007.1 - Service prerequisite]], [[#ac-007-23][AC007.23 - Documented ownership limits]].
+- Boundary :: *Delivery prerequisite evidence and operator-facing documentation*.
+- Procedure :: Before W007 coding, verify the delivered W006 revision and its
+  required qualification. At W007 validation, compare implemented CLI/API and
+  storage behaviour with README, help, Vision, Architecture, SERVICE and
+  ANNOTATIONS guidance; run sanitize on changed documentation.
+- Expected :: *Dependency evidenced before coding* and accurate guidance for all
+  specified behaviours and limits, with no claim of remote-hosting support.
+- Bounds :: Two local reviews, *no service activation or external model calls*
+  under this OT; no persistent prose regression.
+- Record :: Exact W006 evidence links and dated W007 review in =validation.org=.
+
+** OT007.2 - Native filesystem qualification
+:PROPERTIES:
+:CUSTOM_ID: ot-007-2
+:END:
+
+- Covers :: [[#ac-007-10][AC007.10 - Source preservation]], [[#ac-007-11][AC007.11 - Conflicts and interrupted writes]], [[#ac-007-12][AC007.12 - Constrained write authority]].
+- Boundary :: *Actual supported filesystem append, locking and durability paths*.
+- Procedure :: In an OS-created synthetic tree on macOS APFS and Linux ext4,
+  plus WSL's Linux filesystem and a Windows-mounted directory, exercise writable
+  and read-only source/parent permissions, ACL denial, symlinks, hard links,
+  concurrent editor rename, short-write/sync-failure injection and restart.
+  Use the candidate fixture runner's bounded scenarios, not personal documents.
+- Expected :: *Exact prior bytes and permissions survive application writes*;
+  unsupported safe-write/lock semantics produce a diagnostic, never a fallback
+  to an unsafe write. Actual permissions/locking support is recorded per target.
+- Bounds :: At most *20 saves and two restart cycles per filesystem*, under
+  ten minutes each. No elevated privileges, mounts, host changes or live data.
+  Clean up only fixture-owned temporary state.
+- Record :: Filesystem, mount/options, candidate revision, results and limits in
+  =validation.org=. Do not add this native qualification to CI or scheduled jobs.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** External editor changes a passage during typing
+
+- Condition :: A *base-source change arrives before or during autosave*.
+- Required behaviour :: Refresh automatically while keeping the composer. Rebase
+  a uniquely matching target; otherwise pause with a visible unresolved reason.
+  Every write still checks current bytes; never restore an old source snapshot.
+- Covered by :: [[#ac-007-24][AC007.24 - Automatic source refresh]], [[#rt-007-11][RT007.11 - Refresh and autosave coordination]], [[#ut-007-9][UT007.9 - Live refresh while annotating]].
+
+** Acknowledgement is lost or an older response arrives late
+
+- Condition :: A *durable append may have succeeded while its response failed*.
+- Required behaviour :: Retry the same operation ID and exact payload; deduplicate
+  before the stale-revision check. Only the matching client revision is acknowledged.
+- Covered by :: [[#ac-007-9][AC007.9 - Ordered and idempotent writes]], [[#rt-007-5][RT007.5 - Append-only autosave protocol]], [[#ut-007-4][UT007.4 - Failure and navigation recovery]].
+
+** An append is interrupted or a human moves the owned tail
+
+- Condition :: A *partial/malformed owned frame or non-tail annotation store* exists.
+- Required behaviour :: Keep bytes and all valid preceding events; explain the
+  malformed location, suppress owned transport from the body and disable new
+  writes. No automatic truncation, repair, migration or record deletion occurs.
+- Covered by :: [[#ac-007-11][AC007.11 - Conflicts and interrupted writes]], [[#ac-007-17][AC007.17 - Readable stored metadata]], [[#rt-007-6][RT007.6 - Conflicts and durability faults]].
+
+** Permissions or source location change
+
+- Condition :: Source becomes writable/read-only, aliases change, or source moves.
+- Required behaviour :: Read both stores and choose the destination afresh at the
+  first event of a composer, pinning it for that composer. Permission loss during
+  composition pauses saving. Embedded records travel with the source; sidecars
+  must be moved alongside it using the documented full-basename convention.
+- Covered by :: [[#ac-007-6][AC007.6 - Read-only sidecar]], [[#ac-007-22][AC007.22 - Document and sidecar identity]], [[#rt-007-4][RT007.4 - Sidecars and storage transitions]], [[#ut-007-2][UT007.2 - Read-only and sidecar workflow]].
+
+** Clearing an autosaved draft or closing the browser
+
+- Condition :: A user clears text after a non-empty snapshot was saved, or the
+  browser/service ends without a successful final flush.
+- Required behaviour :: Never delete the stored snapshot. Empty drafts cannot
+  overwrite it; explain that the last autosaved text remains and allow restoring
+  it or writing a correction. Forced termination may lose *unacknowledged*
+  keystrokes; the last acknowledged draft is recovered read-only.
+- Covered by :: [[#ac-007-7][AC007.7 - Append-only comments]], [[#ac-007-18][AC007.18 - Draft recovery and navigation]], [[#ut-007-3][UT007.3 - Autosave and append-only composition]], [[#ut-007-8][UT007.8 - Service boundary and lifecycle]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Renderer :: Reuse the *owned Go/Pandoc pipeline* after extracting recognized
+  annotation transport. Keep read rendering separate from file mutation.
+- Annotation domain :: A small Go package owns *event validation, author capture,
+  selector resolution, storage and write policy*. HTTP routes adapt this domain;
+  the package does not depend on browser DOM, service manager or Exodan.
+- Browser :: Separate *composer/autosave state, target mapping and presentation*
+  from existing copying/folding code. Share narrowly defined lifecycle hooks.
+  No global dirty boolean can acknowledge unrelated composers.
+- Reuse assessment :: Writeback inline autosave creates on first input and uses
+  a *300 ms update debounce*. Its general feedback uses two seconds. The inspected
+  close path starts asynchronous flush then removes the editor; htmlpreview must
+  await acknowledgement. Its excerpt restoration finds the first matching text
+  node; mutable documents need the stronger selector rules below. Adopt its
+  nearby save/error feedback, not SQLite review ownership, edit/delete routes,
+  sentence-click takeover, automatic clipboard writes or its implementation
+  structure without assessment.
+- Ownership :: Prototype or reused project code is *our maintained code*.
+  Restructure and test it against these contracts; no upstream/prototype exemption.
+
+** High-level design
+
+*** Flow
+
+1. CLI validates inputs/settings and *captures the display name*. It registers
+   the preview through W007's private control endpoint.
+2. The service renders an authorized source snapshot, strips owned storage
+   transport and supplies *annotation state plus document-scoped write authority*.
+3. The browser reads saved comments and opens an *explicit annotation composer*
+   for the document or current text selection.
+4. It autosaves serialized draft snapshots. The server *revalidates the source,
+   author grant, event sequence and filesystem destination*, appends and
+   synchronizes, then acknowledges that exact revision.
+5. The browser *checks for source changes and refreshes automatically*. A changed
+   document triggers target revalidation; dirty text is preserved.
+6. Closing the composer flushes its latest text and appends a close event.
+   *Reopening is read-only*; later comments add records.
+
+*** Identity and private registration
+
+- Resolution :: The initiating CLI trims Unicode whitespace from
+  =HTMLPREVIEW_USER_DISPLAY_NAME=; empty/unset falls back to trimmed =USER=.
+  Neither value means *reading without creation*. No daemon USER substitution.
+- Validation :: A non-empty name must be valid UTF-8, at most *128 Unicode
+  scalars and 512 bytes*, with no control characters or embedded line breaks.
+  Invalid explicitly supplied values report the setting and disable creation;
+  they do not silently fall back. Source/annotation viewing remains available.
+- Lifetime :: *Capture the name in the registration context*, including it in the
+  W006 context-equivalence key. Existing tabs/links retain their captured name;
+  a new CLI invocation captures the current environment. Browser JSON cannot
+  set author or timestamp.
+- Extension :: Add private control =POST /v1/annotation-previews= with the W006
+  preview request schema plus =display_name= (string or null). Its response has
+  the same per-file preview results. Keep =POST /v1/previews= unchanged and
+  *read-only*. W007 CLI tries the extension once; 404 means use the unchanged
+  read-only endpoint with one annotation-unavailable notice. Other failures
+  retain W006's classification. No silent protocol downgrade on malformed replies.
+- Authority :: Same-UID socket checks and private runtime permissions remain.
+  A display name is *a label, not proof of identity or permission*.
+
+*** Browser HTTP interfaces
+
+- Paths :: =/_annotations/v1/<read-token>/<encoded-root-relative-document-path>=
+  is the annotation state/event route. Reuse W006's canonical decoding, admission
+  and path bounds. It resolves *one Org/Markdown document*, never an arbitrary
+  browser-supplied disk path. Root tokens cannot collide with this reserved prefix.
+- GET state :: Returns ={protocol:1, revision, source_revision, body_revision, events, storage,
+  writable, reason, write_token}=. Events are the latest projected comments,
+  including saved drafts and unresolved targets; tokens are omitted for
+  read-only contexts. No GET creates a file or durable event. HEAD has no body.
+- Write grant :: A separate *32-byte random capability* binds the canonical
+  document, root/logical context, author and service instance. Return it only
+  under an annotation-enabled read context and send it in
+  =X-HTMLPreview-Annotation-Token=, never URLs. At most 256 active document grants;
+  reuse equivalent grants, reject excess with 503 until service restart.
+- POST event :: Strict JSON ={operation_id, annotation_id, composer_id, sequence,
+  revision, body_revision, kind, target, text}=. IDs are UUIDv4; kind is
+  =draft= or =close=. The first accepted draft creates the annotation/composer;
+  later events require its in-memory composer secret in
+  =X-HTMLPreview-Composer-Token=. The browser generates this 32-byte random
+  secret before the first request and retains it for identical retries and later
+  events; the server stores only its digest. The secret is never written into
+  the annotation file or browser persistent storage.
+- Result :: 201 for a new durable event; 200 for an identical accepted retry.
+  Response ={annotation_id, sequence, revision, body_revision, stored_at, storage,
+  closed}=. Unknown fields, forged author/date, malformed selectors and IDs: 400;
+  authentication/origin: 403; unauthorized target: 404; revision/sequence/store
+  conflict: 409; oversize/capacity: 413; per-document busy: 429; temporary service
+  or filesystem failure: 503. Errors are bounded ={error:code}= JSON; browser
+  maps codes to plain recovery guidance.
+- Mutation boundary :: POST alone appends events. PUT/PATCH/DELETE remain 405;
+  arbitrary uploads, source editing and author changes have no route. This
+  *narrowly extends W006's GET/HEAD-only TCP rule*.
+- Requests :: JSON <=64 KiB, comment <=4,000 Unicode scalars and 16 KiB UTF-8,
+  selected exact quote <=8 KiB, prefix/suffix <=64 scalars each. Reject invalid
+  UTF-8, NUL and unsupported schema values without truncating user text.
+- Revision :: SHA-256 over a length-delimited tuple of *current raw source bytes
+  and current sidecar bytes or an explicit absent marker*. A fresh read under
+  the write lock supplies it. Body revision hashes the canonical rendered text
+  defined below, excluding annotation transport and controls.
+  Source revision separately hashes authored source bytes with the owned tail
+  removed, so metadata or formatting changes trigger refresh even if canonical
+  body text is unchanged.
+- Composer lifecycle :: One active composer per tab, at most *64 active service
+  composers*. A composer cannot change target identity, author or storage choice.
+  Explicit close seals it. After service restart no old composer secret is
+  recognized; its latest draft remains a read-only recovered comment. An open
+  page may retry an already committed event after restart once reauthorized,
+  but cannot append further revisions to that recovered annotation.
+
+*** Autosave and automatic refresh
+
+- State :: Track *local revision, acknowledged revision, in-flight snapshot,
+  queued newest snapshot and error* separately per composer. Keep at most one
+  request in flight per composer; coalesce intermediate unsent keystrokes.
+- Scheduling :: Debounce valid non-empty text by *300 ms*; send within *two
+  seconds* of continuous dirty input. Suspend submission during IME composition
+  and schedule on compositionend. The initial draft follows the same rule.
+- Status :: Show textual *Saving, Autosaved draft, Saved, or Not saved* beside
+  the composer. Autosaved requires acknowledgement of the latest local text.
+  Older replies cannot clear new dirty state. No automatic clipboard write.
+- Close :: Close/Escape, another annotation and app-owned navigation *flush and
+  await* the newest text then close. Clicking within the composer, changing focus
+  to its controls or selecting/copying text does not implicitly close it. If the
+  save fails, keep the editor and text with Retry and Copy draft controls.
+  Browser chrome cannot always be intercepted; use beforeunload only while
+  dirty/in-flight and flush on visibility loss as best effort, never as durable proof.
+- Retry :: Network/503 failures retry the *same operation* after one, two and four
+  seconds, then stop with Retry. A request deadline is five seconds. Retry never
+  changes the acknowledged event payload or invents a new ID for a lost response.
+  New typing remains queued. Permanent errors require visible recovery.
+- Polling :: While visible, issue state GET *once per second*, with at most one
+  poll in flight. While hidden, stop periodic checks; on visibility/focus/pageshow,
+  immediately check and flush pending text. Poll failure backs off to two, four,
+  eight then 30 seconds; visible reconnect/status action checks immediately.
+- Refresh :: A changed revision updates comments; a changed source revision fetches
+  a fresh normal W006 rendered page and *replaces only its owned document/header
+  and navigation regions*, never the active composer. Parse as inert content,
+  use the owned initialization path and discard embedded script execution.
+  Compare the rendered response's revision with current state and retry at most
+  twice if the source changes during fetch. No blind location.reload.
+  The owned rendered-page response carries its raw/source/body revision tuple;
+  it must agree with the state response before replacement. Title, metadata and
+  formatting changes refresh even when their normalized passage text is unchanged.
+- State preservation :: Restore folds using surviving stable heading/drawer IDs,
+  preserve focused controls and restore scroll by the nearest surviving heading.
+  Keep composer text/selection and its captured original excerpt outside replaced
+  nodes. If an anchor becomes unique at a new position, *rebase automatically*.
+  If absent/ambiguous, pause saves and show the reason while retaining text.
+- Save race :: Every POST checks raw revision after re-reading. On 409 stale_source,
+  refresh and revalidate automatically, then submit with the new revision and a
+  new operation ID *only after establishing the prior event did not commit*.
+  Limit automatic rebase to two attempts per snapshot; continuing edits cause a
+  visible waiting state and another attempt after a quiet poll, not a tight loop.
+- Saved anchors :: An already saved draft keeps the same quote/target identity
+  across refresh. Position/context evidence may be recomputed for a uniquely
+  verified match. Retargeting to different text is a new annotation.
+- Exposure :: Source refresh cannot widen the original root grant. Removed,
+  revoked or non-regular sources disable saving and retain the draft. A changed
+  document never causes the old source bytes to be written back.
+- Limits :: Keep W006's conversion/cache/body limits. Polling uses a shared
+  per-document state snapshot refreshed at most once per second across tabs;
+  *every append still re-reads* before writing. A source state poll never performs
+  Pandoc conversion if raw source and sidecar revisions are unchanged.
+
+*** Persisted format and storage
+
+*The semantic format is htmlpreview-annotations version 1*. A store consists
+of a header frame followed by zero or more event frames, contiguous at EOF.
+The first successful save appends the header and first event in one operation;
+no speculative empty store is created. Each frame contains one compact JSON
+object on one physical line. All strings use JSON escapes; additionally escape
+=<=, =>=, =&= and hyphens in strings so Markdown comment terminators cannot occur.
+No user string becomes a raw Org directive. The examples show frame envelopes;
+=JSON_HEADER= and =JSON_EVENT= label the schema described immediately below.
+
+#+begin_src org
+#+begin_comment
+htmlpreview-annotations:v1
+JSON_HEADER
+#+end_comment
+
+#+begin_comment
+htmlpreview-annotation-event:v1
+JSON_EVENT
+#+end_comment
+#+end_src
+
+For Markdown the corresponding envelope is:
+
+#+begin_src html
+<!-- htmlpreview-annotations:v1
+JSON_HEADER
+-->
+<!-- htmlpreview-annotation-event:v1
+JSON_EVENT
+-->
+#+end_src
+
+- Header schema :: ={schema:1, document_id:<UUIDv4>, source_format:"org"|"markdown"}=.
+  The source and sidecar share document_id once either exists. An absent embedded
+  header may adopt the valid sidecar's ID. Simultaneous first writes serialize by
+  canonical source identity. No absolute source path or capability is persisted.
+- Event schema :: ={schema:1, operation_id, annotation_id, composer_id, sequence,
+  kind:"draft"|"close", author, created_at, recorded_at, target, text}=.
+  Times are server-generated RFC3339 UTC. created_at and author remain fixed
+  across a composer's events. Sequence starts at one and increments exactly;
+  a close event repeats the latest acknowledged text/target and seals the record.
+- Projection :: Display *one comment per annotation_id*, using its highest valid
+  contiguous sequence; retain all prior events in the file. Order comments by
+  created_at then annotation_id. Equal IDs with unequal event content constitute
+  corruption and disable writes; exact duplicate records are deduplicated.
+- Recognition :: Recognize only *top-level, exact owned markers* outside source/
+  example blocks, Markdown fences/indented code, quoted/list-literal contexts and
+  ordinary comments. Extract before Org preservation/Pandoc. Markers in literal
+  examples remain content. An owned header followed by malformed/incomplete
+  frames or authored content after the store is diagnosed and cannot be appended.
+  A source ending inside an unterminated literal/comment construct cannot safely
+  accept an embedded store; report conflict rather than guess an insertion point.
+- Bytes :: Preserve the existing file prefix exactly, including BOM and CRLF.
+  Append owned records with the source's predominant line ending, LF on a tie,
+  adding only the separators needed to start the store on a fresh line.
+  Embedded events are not placed in ordinary YAML frontmatter or property drawers.
+- Sidecar :: Adjacent to the *canonical source*, use full basename plus
+  =-annotations.org=. It contains the Org envelope regardless of source format.
+  No source path supplied by the browser determines the filename. New sidecars
+  are exclusive-created regular files with mode 0600; existing permissions are
+  preserved. Foreign/corrupt files at that name are never overwritten or adopted.
+- Selection :: Safely writable source uses embedded storage; EACCES/EPERM/EROFS
+  opening the otherwise safe source for append selects the sidecar. Do not use
+  chmod or privileges. A safety/parse/identity failure is not read-only fallback.
+  Pin the chosen destination per composer; later permission loss pauses it.
+  New composers may choose again. Reads *union both valid stores*, with no
+  automatic relocation or pruning.
+- Bounds :: Preserve W006's *10 MiB total source ceiling*, including embedded
+  events; sidecar <=10 MiB, combined annotation frames <=10 MiB and <=10,000
+  events per document, each frame <=64 KiB. Autosave history consumes this budget.
+  At capacity, stop saving visibly; never evict comments or compact history.
+  Check the complete planned append before any bytes are written.
+- Portability :: Embedded records travel on rename/copy. Sidecars travel only if
+  moved with the source and renamed to its full-basename convention. Do not
+  scan the disk looking for detached sidecars. Two copied documents become
+  independent storage locations even if their initial document IDs match.
+
+*** Append safety and interruption
+
+- Admission :: Reuse W006 rooted handles, canonical identity, regular-file and
+  filesystem checks for both source and sidecar. *No symlink sidecar* and no
+  multi-hard-linked write target (link count >1). A logical source symlink may
+  resolve to a safe canonical source within the grant; writes target that identity.
+  Recheck both canonical paths against their held handles immediately before append.
+- Serialization :: One in-process writer lock per canonical source, plus an
+  *exclusive nonblocking advisory lock on the selected file*. A locked file returns
+  429 within one second. If native safe append/locking is unsupported, refuse
+  writing with a specific diagnostic; do not weaken confinement for WSL mounts.
+- Compare :: Under the lock read source/sidecar, validate complete framing and
+  operation identity, then compare the request's raw revision. A known successful
+  retry is recognized *before* stale-revision rejection and synchronized/read back
+  before returning acknowledgement. Other mismatches return 409 without append.
+- Write :: Append complete frame bytes with an O_APPEND handle; never truncate,
+  patch existing bytes, serialize the authored document or replace the whole file.
+  Detect short writes, synchronize the file, verify committed bytes and recheck
+  path/handle identity before success. Synchronize the parent after sidecar creation.
+- Failure :: An append is *not claimed physically atomic across power loss*.
+  Only complete validated frames count as events; retain and diagnose an incomplete
+  tail, expose earlier saved events and block further writes. A full event after
+  an uncertain sync can be retried and synchronized without a duplicate append.
+  Never roll back by overwriting bytes another process may have changed.
+- External limits :: Advisory locks do not bind arbitrary editors. Detected
+  rename/replacement/truncate is a conflict; refresh reflects the actual file.
+  An editor can overwrite an earlier acknowledged append later. The UI/guide
+  must explain this limit rather than describe autosave as a filesystem lock.
+- Logging :: Operation/status/duration and safe request ID only. Do not log
+  comments, author names, excerpts, raw paths or capabilities. Persisted comments
+  are *part of the document's data*, not confidential hidden browser state.
+
+*** Targets and reattachment
+
+- Types :: ={type:"document"}= or ={type:"text", body_revision, exact, prefix,
+  suffix, start, end, heading_id}=. Text indices count *Unicode scalar values*;
+  end is exclusive. heading_id is an optional stable source/custom heading ID.
+  The server validates selectors against the current authorized rendering.
+- Canonical text :: Traverse sanitized authored content in document order before
+  injecting controls. Include headings, prose, tables, code and drawer values,
+  including folded content. Exclude filename/header frontmatter controls, nav,
+  generated copy/fold labels and annotation UI/transport. Insert a separator at
+  block boundaries and br, collapse Unicode White_Space runs to one ASCII space
+  and trim outer space. No case folding or Unicode normalization. Go and browser
+  use the same explicit White_Space code-point table and block-element list
+  defined with shared fixtures during delivery; they must agree byte-for-byte.
+- Fast path :: On an unchanged body revision, accept stored positions *only if
+  the exact quote matches* there.
+- Changed body :: Search exact normalized quotes, refine using stored context and
+  surviving stable heading context; attach *only one uniquely verified match*.
+  A changed optional heading does not alone prove the quote lost, but never
+  discard conflicting context merely to manufacture a unique match.
+- Unresolved :: Zero/multiple candidates display the original excerpt and
+  Missing/Ambiguous status in the annotations list. Never hide the comment or
+  silently choose the first occurrence. No fuzzy matching or automatic retargeting.
+- Source identity :: Canonical path/handle identifies the live document, separate
+  from logical link context. URLs and root tokens are never persistent anchors.
+  A source rename requires reopening by its new path; no global file watcher
+  follows files outside admitted roots.
+
+*** Browser interaction
+
+- Entry :: An *Annotations* toolbar button opens the list and Add comment action.
+  A retained selection inside authored content targets that passage; without one,
+  target the whole document. Show the target excerpt in the composer before input.
+  Do not hijack ordinary sentence clicks, code copying or heading folding.
+- Layout :: Keep one composer in a stable panel outside the replaceable source
+  DOM. Wide layouts must coexist with the left navigation; narrow layouts use
+  document flow with no overflow. Annotations use distinct, subtle styling.
+- Accessibility :: Native buttons/textarea with labels, visible focus, pointer
+  cursors on actions, keyboard selection and polite live status. Escape closes
+  through the save guard; focus returns to the invoking control/nearest surviving
+  target. Status cannot depend only on colour, a glyph or animation.
+- Selection :: Capture the Range before focus changes; map cross-node/code
+  selections without surroundContents assumptions. Markers must preserve literal
+  text, links and copy payloads. Heading/drawer controls keep independent listeners.
+- Lifecycle :: Dispose replaced-region listeners/timers without disposing the
+  composer or losing dirty text. Reinitialize after refresh/bfcache restoration
+  without duplicate handlers. JavaScript disabled leaves an inert readable page.
+- Print :: Closed and latest acknowledged draft comments form a labelled appendix
+  with author/date, quote and unresolved status. Exclude pending text, capabilities
+  and buttons; restore screen state after printing.
+- Browser limitation :: beforeunload is best effort and cannot guarantee saving
+  on process termination; [[https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event][the
+  browser event documentation]] records this limitation. Auto-refresh and autosave
+  do not change it.
+
+** Architecture impact
+
+*** Security impact
+
+- Threat boundary :: *Reading becomes purpose-limited writing* only through
+  annotation-enabled registration. Configured roots remain the maximum grant.
+  No read-only W006 registration can mint a writer.
+- Request protection :: Preserve hardcoded 127.0.0.1, exact Host, restart-scoped
+  capability, no CORS and no trusted forwarding. Mutation also requires *exact
+  Origin*, application/json and the separate document token; reject missing/null
+  Origin and cross-site fetch metadata. GET/HEAD never mutate durable data.
+- Browser policy :: Permit =connect-src 'self'= for owned annotation requests;
+  retain hash-authorized packaged scripts/styles, no remote assets, no-referrer,
+  no-store and frame-ancestors none. Source-authored controls/scripts and
+  service-origin automatic requests remain stripped.
+- Content :: Render comments/names with textContent or Go escaped templates,
+  never HTML interpretation. Structured storage escapes delimiter characters.
+  Reading a forged on-disk author does not grant editing rights.
+- Privacy :: Embedded comments, authors and retained draft revisions *travel when
+  the file is shared or committed*. Sidecars inherit filesystem accessibility;
+  0600 creation does not protect against the same OS user. No telemetry, remote
+  synchronization, automatic clipboard copy or browser-local secret persistence.
+- Conclusion :: W007 deliberately adds a narrow write capability. No public
+  listener or directory exposure option is added; filesystem/race qualification
+  is required before claiming native write support.
+
+*** Other relevant qualities
+
+- Reliability :: Append history, exact-operation retries, current-revision checks,
+  auto-refresh and explicit unresolved state limit data loss without claiming
+  control over unrelated editors. Saved drafts survive service restart.
+- Performance :: Shared polling avoids one disk read per tab. W006's conversion
+  ceilings remain; at most *two concurrent annotation writers globally*, one per
+  document, with no waiting queue. Reject busy admission with 429; request/write
+  deadline five seconds. No recursive watchers, network fetches or background scans.
+- Operability :: W006 service installation remains explicit. No new daemon or
+  database. Stop/restart revokes grants; files retain comments. Downgrade preserves
+  records but may show only ordinary documents; never delete annotations on uninstall.
+- Portability :: macOS, Linux and WSL retain the system default browser; actual
+  filesystem support is qualified rather than inferred. No network configuration
+  change or non-loopback fallback is permitted.
+- Maintainability :: Keep event codec, rooted append policy, anchors, HTTP adapter,
+  composer state and DOM mapping as independently testable responsibilities.
+  Go/HTML/CSS/browser JS suffice; justify any Go dependency before introduction.
+- Future hosting :: A separately approved Exodan deployment would supply service
+  users, bounded server-owned documents and mutable STATE_DIRECTORY storage.
+  Bundled data_dirs are not mutable annotation storage. The application would own
+  authenticated identities, permissions and annotation format/API; Exodan would
+  own hosting/TLS/deployment. *No client personal filesystem is exposed*. W007
+  does not adopt configurable ADDR, hosted authentication or deploy artefacts.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: This specification, .sdlc/project.yaml, the named Vision/
+  Architecture and *W006 specification plus its recorded delivery evidence*.
+  Existing source/tests named above establish compatibility; Writeback/Exodan
+  checkouts are prior art, not runtime or delivery dependencies.
+- Dependency check :: Record [[#ot-007-1][OT007.1 - Dependency and delivered guidance]]'s W006 prerequisite evidence *before
+  implementation*. W006's design approval and implementation hold are not delivery.
+- First implementation step :: On the delivered W006 baseline, write
+  [[#rt-007-1][RT007.1 - Transport and protocol compatibility]] and [[#rt-007-3][RT007.3 - Embedded format and byte preservation]], observe their *intended RED*, then introduce
+  the event/storage boundary. Add browser regressions before browser implementation.
+- Definition evidence :: [[file:audits.yaml][W007 - Retained definition audit]].
+- Validation evidence :: [[file:validation.org][W007 - Browser and filesystem
+  qualification]], with *all implementation/UT/OT results initially PENDING*.
+- Documentation impact :: Update README/help, docs/VISION.md,
+  docs/ARCHITECTURE.md, docs/SERVICE.md and new docs/ANNOTATIONS.md during delivery.
+  Include environment precedence, autosave/refresh, frozen comments, storage
+  envelopes/limits, sidecar naming, recovery, sharing/privacy and editor conflicts.
+- Compatibility handoff :: Preserve W006's old control endpoint and narrow
+  read-only registrations. Extend only annotation routes/CSP and the explicitly
+  stated source-preservation exception. Requalify affected reader controls.
+- Authority :: This is *definition work only*. Operator sign-off authorizes the
+  design; implementation still requires a delivery instruction and the prerequisite.

@@ -1,0 +1,143 @@
+#+TITLE: W007 - Annotation browser and filesystem validation
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+
+* Planned qualification
+
+- Specification :: [[file:spec.org][W007 - Attributed autosaved annotations]].
+- Evidence boundary :: *Definition only*. No W007 implementation, regression
+  execution, browser result or native filesystem qualification is claimed.
+- Prerequisite :: *W006 delivered revision and required qualification must be
+  recorded before W007 implementation*, under OT007.1 below.
+- Recording :: Each result needs *candidate revision, exact environment,
+  procedure, observed evidence and reviewer*. Human tests require human authority.
+  All required platforms remain PENDING until observed individually.
+
+** UT007.1 - Attributed persistence
+:PROPERTIES:
+:CUSTOM_ID: ut-007-1
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-1][UT007.1 - Attributed persistence]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** UT007.2 - Read-only and sidecar workflow
+:PROPERTIES:
+:CUSTOM_ID: ut-007-2
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-2][UT007.2 - Read-only and sidecar workflow]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** UT007.3 - Autosave and append-only composition
+:PROPERTIES:
+:CUSTOM_ID: ut-007-3
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-3][UT007.3 - Autosave and append-only composition]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** UT007.4 - Failure and navigation recovery
+:PROPERTIES:
+:CUSTOM_ID: ut-007-4
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-4][UT007.4 - Failure and navigation recovery]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** UT007.5 - Selection and changed documents
+:PROPERTIES:
+:CUSTOM_ID: ut-007-5
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-5][UT007.5 - Selection and changed documents]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** UT007.6 - Accessible and safe presentation
+:PROPERTIES:
+:CUSTOM_ID: ut-007-6
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-6][UT007.6 - Accessible and safe presentation]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** UT007.7 - Reader and print regression
+:PROPERTIES:
+:CUSTOM_ID: ut-007-7
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-7][UT007.7 - Reader and print regression]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** UT007.8 - Service boundary and lifecycle
+:PROPERTIES:
+:CUSTOM_ID: ut-007-8
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-8][UT007.8 - Service boundary and lifecycle]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** UT007.9 - Live refresh while annotating
+:PROPERTIES:
+:CUSTOM_ID: ut-007-9
+:CATEGORY: USER
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ut-007-9][UT007.9 - Live refresh while annotating]].
+- Platforms :: *macOS/Safari, Linux/Firefox, WSL1/Windows Edge and
+  WSL2/Windows Edge: PENDING*. UT007.6 also requires VoiceOver and NVDA.
+- Evidence :: *Not executed*. Record dated observations against the specification.
+
+** OT007.1 - Dependency and delivered guidance
+:PROPERTIES:
+:CUSTOM_ID: ot-007-1
+:CATEGORY: ONE-OFF
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ot-007-1][OT007.1 - Dependency and delivered guidance]].
+- Evidence :: *Not executed*. Record the bounded procedure and actual result.
+
+** OT007.2 - Native filesystem qualification
+:PROPERTIES:
+:CUSTOM_ID: ot-007-2
+:CATEGORY: ONE-OFF
+:RESULT: PENDING
+:END:
+
+- Definition :: [[file:spec.org::#ot-007-2][OT007.2 - Native filesystem qualification]].
+- Evidence :: *Not executed*. Record the bounded procedure and actual result.
+

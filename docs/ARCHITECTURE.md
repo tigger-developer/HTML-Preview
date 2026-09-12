@@ -31,6 +31,27 @@ and file-only resource-policy portions below as design authority; the earlier
 sections remain baseline history. No service implementation or native
 qualification is claimed by this document update.
 
+## Annotation proposal - 12 September 2026
+
+[W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)
+depends on delivered and qualified W006 service behaviour. It proposes a separate
+Go annotation boundary for constrained append-only writes, versioned embedded
+records, read-only sidecars and deterministic passage anchors. Browser composers
+autosave revisions and preserve unsaved text across automatic source refresh;
+every append rechecks the current file revision. Closed comments are read-only.
+
+Private registration captures the CLI display name. Purpose-specific document
+write capabilities, exact-origin requests and rooted file handles constrain
+mutation. W006 read-only registration remains compatible; new annotation routes
+narrowly extend its GET/HEAD-only HTTP contract. File previews do not annotate.
+Append history and refresh do not prevent an unrelated editor from later saving
+an old buffer over newer file contents; the specification states that limit.
+
+This is a definition proposal, with no annotation implementation or qualification
+claimed. The source-preservation rule gains an explicit exception only for
+annotation records. A future Exodan deployment would require its own definition
+over server-owned documents and storage, never a client's personal filesystem.
+
 ## System shape
 
 The implementation uses `cmd/htmlpreview`, `internal/preview`, a root Go asset
