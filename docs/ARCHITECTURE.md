@@ -87,9 +87,11 @@ cycle. W007 annotation storage remains limited to genuine Org/Markdown sources.
 Until W006 replaces it, the existing opt-in file graph admits all W008-supported
 formats under unchanged traversal budgets. Node identity includes the selected
 format; graph-disabled links retain original-file destinations.
-These are definition amendments awaiting overall sign-off, not implementation
-claims. The 11 September W006 approval is retained as history; its implementation
-hold remains effective while the changed definition receives renewed review.
+Taḋg approved these amendments on 12 September 2026 and authorized delivery in
+the order W008, W006, W007. These approvals are not implementation claims. The
+11 September W006 approval and hold remain history; the delivery instruction
+explicitly released that hold. Each work item's admission and qualification
+requirements remain applicable.
 
 ## System shape
 

@@ -2,8 +2,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+DEFINITION_GATE: PASS
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: Taḋg, 2026-09-12: full W007 design approved; delivery authorized after W008 and delivered, qualified W006.
 
 * Attributed autosaved annotations in service previews
 :PROPERTIES:
@@ -13,7 +12,8 @@
 - Outcome :: *Annotate local Org and Markdown while reading*, with named comments
   restored on later visits.
 - Before :: The reader preserves source bytes; the approved W006 service design
-  is *not evidence of service delivery*. It currently carries an implementation hold.
+  is *not evidence of service delivery*. Its former implementation hold was
+  released by the operator's 12 September delivery instruction.
 - After :: Once W006 is delivered, *service previews autosave comments* into
   semantically identified source records, or adjacent Org sidecars for read-only
   sources. File previews retain their reading-only behaviour.
@@ -30,9 +30,9 @@
   closing freezes a comment, and later corrections create another comment.
   The CLI resolves =HTMLPREVIEW_USER_DISPLAY_NAME=, then =USER=.
 - Dependency :: *W006 delivery and recorded service qualification precede W007
-  implementation*. W007 definition does not lift W006's implementation hold.
-- Next step :: *Definition gate, then operator sign-off*. No implementation is
-  authorized by this document's preparation.
+  implementation*. The released hold does not waive that dependency.
+- Next step :: *Deliver after qualified W006*, under the operator's explicit
+  12 September 2026 instruction.
 
 -----
 
@@ -115,8 +115,8 @@ UX verification; the earlier documents remain historical baseline evidence.
 - *W006 must be delivered first*, with its candidate revision, required automated
   service evidence and platform/user qualification recorded. A definition PASS or
   design approval is insufficient. Do not fold W006 implementation into W007.
-- *Definition remains on the current branch*. W006's implementation hold and
-  existing work-item evidence are preserved.
+- *Definition remained on the current branch*. The earlier W006 hold remains
+  historical; its delivery and qualification requirements are preserved.
 - *No JavaScript runtime on the CLI*. Browser tests use native browser JavaScript
   with a Go fixture runner; no Node/npm or new web framework is introduced.
 - Source writes *never widen filesystem permissions or configured roots*.
@@ -146,9 +146,11 @@ UX verification; the earlier documents remain historical baseline evidence.
 
 ** Unresolved blockers
 
-*No unresolved definition blocker*. Implementation is gated by W006 delivery
-and a subsequent delivery instruction. The detailed storage and API choices
-remain reviewable design proposals; overall sign-off remains pending.
+*No unresolved product question*. On 12 September 2026, Taḋg approved the full
+design ("ok, 006 007 008 approved") and authorized delivery
+("$deliver-change 008 006 007"). Implementation remains gated by *delivered and
+qualified W006*. The retired copied gate directive is preserved in Git history;
+current audit evidence has its sole home in [[file:audits.yaml][the audit record]].
 
 * Hands-off mode decision log
 :PROPERTIES:
@@ -1186,5 +1188,5 @@ JSON_EVENT
   read-only registrations. Extend only annotation routes/CSP and the explicitly
   stated source-preservation, polling-refresh and browser-regression exceptions.
   Preserve strict invalid-setting exit behaviour. Requalify affected reader controls.
-- Authority :: This is *definition work only*. Operator sign-off authorizes the
-  design; implementation still requires a delivery instruction and the prerequisite.
+- Authority :: *Design and delivery were authorized on 12 September 2026*.
+  The W006 delivery and qualification prerequisite remains mandatory.

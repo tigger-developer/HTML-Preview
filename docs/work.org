@@ -155,13 +155,15 @@ classification; it is provenance, not current state.
 - Validation :: [[file:../specs/006-local-preview-service/validation.org][W006 - Service and browser qualification]].
 - Scope :: *On-demand HTTP within configured trees*, hardcoded loopback binding,
   token-prefixed links, automatic single-document fallback and optional user
-  service packaging. *Definition only*; existing delivery records remain separate.
+  service packaging. Existing delivery records remain separate.
 - Delivery instruction :: *Design approved by Taḋg on 11 September 2026;
-  implementation explicitly deferred*. Await a subsequent instruction to begin.
+  implementation explicitly deferred at that time*. On 12 September, Taḋg
+  approved all three designs and invoked delivery of W008, W006, then W007,
+  *releasing the implementation hold*.
 - Amendment :: On *12 September 2026*, the operator requested support for W008's
   complete format contract in direct service inputs and linked targets, including
-  passive native HTML. *Renewed definition sign-off is required*; the prior
-  approval remains history and the implementation hold remains in force.
+  passive native HTML. *The amended design was approved on 12 September*;
+  delivery admission still requires its current definition evidence.
 - Dependency :: [[file:../specs/008-input-formats/spec.org][W008 - Input formats]]
   supplies the format pipeline before W006 service integration is qualified.
 
@@ -179,10 +181,11 @@ classification; it is provenance, not current state.
 - Scope :: *Service-only autosave and source refresh*, embedded annotation history,
   read-only sidecars, author attribution and append-only closed comments.
 - Dependency :: *W006 delivery and recorded service qualification precede W007
-  implementation*. W006 design approval alone is insufficient; its implementation
-  hold remains in force. This work is *definition only*.
+  implementation*. W006 design approval alone is insufficient.
+- Authority :: *Design and delivery approved on 12 September 2026* by Taḋg,
+  after W008 input formats and qualified W006 local service.
 
-** REVIEW W008 - Preview Pandoc documents, source code and plain text :feature:defect:
+** ACTIVE W008 - Preview Pandoc documents, source code and plain text :feature:defect:
 :PROPERTIES:
 :CUSTOM_ID: w-008
 :PRIORITY: P1
@@ -198,8 +201,8 @@ classification; it is provenance, not current state.
 - Dependency direction :: W008 can be delivered in file mode independently;
   amended W006 consumes its format contract for *on-demand linked navigation*.
   W007's annotation writes remain restricted to genuine Org/Markdown sources.
-- Instruction :: *Definition only*. Accepted format recommendations resolve
-  design questions; overall specification sign-off and delivery remain separate.
+- Instruction :: Taḋg *approved the full design and authorized delivery* on
+  12 September 2026, before W006 local service and W007 annotations.
 
 * Migration record
 :PROPERTIES:

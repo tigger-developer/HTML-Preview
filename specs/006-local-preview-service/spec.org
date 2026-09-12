@@ -3,7 +3,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: Taḋg, 2026-09-12: full amended W006 design approved; explicit delivery instruction releases the prior implementation hold, after W008.
 
 * Synopsis
 :PROPERTIES:
@@ -66,14 +66,13 @@
   fallback* on 11 September 2026, including restart-scoped tokens and replacement
   of pre-generated browsing.
 - The 12 September amendment adds *W008 format routing and passive native HTML*.
-- The *previous approval remains history*; the amended candidate needs renewed
-  sign-off and the operator's implementation hold remains in force.
+- The *11 September approval and hold remain history*. On 12 September Taḋg
+  approved the amended design and explicitly released the hold through delivery.
 
 ** Next step
 
-- *Review the amended definition and obtain renewed sign-off* under
-  [[#delivery-handoff][Delivery Handoff]]. Native qualification remains delivery
-  work; an explicit instruction is required before implementation.
+- *Check delivery admission*, then implement after W008 under
+  [[#delivery-handoff][Delivery Handoff]]. Native qualification remains delivery work.
 
 -----
 
@@ -210,14 +209,17 @@
 
 ** Unresolved blockers
 
-- *No unresolved product question remains*. Overall sign-off of the amended
-  candidate is pending; acceptance of the recommendations does not waive it.
+- *No unresolved product question remains*. Full amended-design approval and
+  explicit delivery authority were supplied on 12 September 2026.
 - Sign-off resolution :: On *11 September 2026*, Taḋg approved the design after
   clarification of its asset restrictions: "makes sense. design is approved but
   don't implement yet". This resolves the sign-off requirement above, including
-  the lifetime and migration proposals. *Implementation remains deferred* until
-  a subsequent explicit instruction. *That prior approval predates the format
-  amendment* and does not establish approval of the changed candidate.
+  the lifetime and migration proposals. Implementation was deferred pending a
+  subsequent explicit instruction. That approval predates the format amendment.
+- Renewed authority :: On *12 September 2026*, Taḋg said "ok, 006 007 008
+  approved", then "$deliver-change 008 006 007". This approves the amended
+  format contract and *releases the implementation hold*. Current definition
+  evidence in =audits.yaml= and the W008 dependency still govern admission.
 
 * Acceptance Criteria
 :PROPERTIES:
@@ -1430,8 +1432,8 @@ serve:
 - Artefact inventory :: Deliver the *four named service source/guide files*,
   generated archive/install destinations and Homebrew service block specified
   under Packaging layout and manager contracts; do not invent another layout.
-- Closure boundary :: *Prior design approval is retained as history; the amended
-  candidate needs renewed sign-off*. Implementation is explicitly deferred. A subsequent operator instruction is required to begin delivery.
+- Closure boundary :: *Amended design approval and delivery authority were
+  supplied on 12 September 2026*. Prior approval and deferral remain history.
   Activation on the operator's machine requires its own authority. Required RTs,
   implementation gate, browser/platform validation and operator closure remain
   distinct.

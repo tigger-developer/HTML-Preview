@@ -3,7 +3,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: Taḋg, 2026-09-12: full W008 design approved; delivery authorized with W006 and W007 in that dependency order.
 
 * Synopsis
 :PROPERTIES:
@@ -69,8 +69,8 @@
 
 ** Next step
 
-- *Definition review, then overall operator sign-off* under
-  [[#delivery-handoff][Delivery Handoff]]. No implementation is authorized.
+- *Deliver W008 first* under [[#delivery-handoff][Delivery Handoff]], following
+  the operator's 12 September approval and explicit delivery instruction.
 
 -----
 
@@ -169,8 +169,10 @@
   opt-in file graph*, retaining current depth, count and byte limits. With graph
   mode off, links retain original-file destinations. This applies before W006
   replaces graph mode; it does not reinstate graph mode in delivered W006.
-- Approval scope :: Acceptance of these recommendations *resolves the product
-  questions*, not overall sign-off of this specification or permission to code.
+- Approval history :: Acceptance of the recommendations initially resolved only
+  product questions. On *12 September 2026*, Taḋg then approved the full designs:
+  "ok, 006 007 008 approved", followed by "$deliver-change 008 006 007".
+  This *authorizes delivery* and releases the earlier W006 implementation hold.
 
 ** Unresolved blockers
 
@@ -1073,7 +1075,8 @@ authorization and HTTP headers; its implementation is not a W008 prerequisite.
 - Entry conditions :: *Explicit delivery authority and overall operator sign-off*;
   read current definition evidence in =audits.yaml=. Verify the
   [[#constraints-and-dependencies][dependency boundary]]: file-mode delivery is
-  independent of W006, and the service remains separately held.
+  independent of W006. The operator released the service hold on 12 September;
+  its own admission and qualification requirements remain applicable.
 - First implementation step :: Write [[#rt-008-3][RT008.3 - Code and text wrapper
   presentation]] and observe .txt admission fail, then implement under TDD.
 - Definition evidence :: [[file:audits.yaml][audits.yaml]].
@@ -1081,8 +1084,8 @@ authorization and HTTP headers; its implementation is not a W008 prerequisite.
 - Documentation impact :: Update README/help and add =docs/FORMATS.md= at delivery;
   maintain the proposed broad-format sections in Vision/Architecture and the
   amended W006 boundary. Preserve historical narrower scope explicitly.
-- Delivery boundary :: *No implementation in this definition*. W008 file-mode
-  delivery can precede W006; W006 owns served cross-format navigation tests.
+- Delivery boundary :: Definition introduced no implementation. *Delivery is now
+  authorized*: W008 file mode precedes W006, which owns served navigation tests.
 
 * Hands-off mode decision log
 :PROPERTIES:
@@ -1091,3 +1094,14 @@ authorization and HTTP headers; its implementation is not a W008 prerequisite.
 :END:
 
 - *No hands-off invocation occurred* during definition.
+
+** 2026-09-12T17:20:37Z :hands-off:review:
+
+*** Delivery order and authority
+
+- Taḋg approved all three designs and invoked delivery in the order *W008 input
+  formats, W006 local service, W007 annotations*. The explicit delivery
+  instruction releases W006's earlier hold; each work item retains its admission
+  and dependency checks. Delivery remains on the current master branch.
+- Human-only browser/platform qualification stays *pending until observed*.
+- Native continuation was explicitly authorized with a *100,000-token budget*.

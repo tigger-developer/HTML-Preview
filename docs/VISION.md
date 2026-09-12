@@ -35,8 +35,9 @@ later corrections create new comments. The CLI uses
 This proposal adds a narrow exception to the source-untouched reading contract
 below: annotation composition writes its own records. Reading and file-mode
 previews remain non-mutating. Stored comments, names and draft history travel
-with shared files. W007 remains a definition proposal awaiting overall sign-off;
-it does not authorize implementation or lift W006's implementation hold.
+with shared files. Taḋg approved W007 and authorized delivery on 12 September
+2026, after delivered and qualified W006. That instruction also released W006's
+earlier implementation hold.
 
 W007 also supersedes the earlier live-reload exclusion below for service previews:
 bounded polling refresh is part of annotation autosave. Recursive filesystem
@@ -61,8 +62,10 @@ formats to the existing opt-in file graph under its unchanged depth, count and
 byte limits. With graph mode off, links retain original-file destinations.
 
 The operator accepted these format recommendations on 12 September 2026.
-Overall sign-off of W008 and the materially amended W006 is pending; W006's
-previous design approval remains history and its implementation hold remains.
+Taḋg subsequently approved W008 and the materially amended W006, and authorized
+delivery in the order W008, W006, W007. W006's previous approval and hold remain
+history; its hold was explicitly released. These are design and delivery
+authorities, not implementation evidence.
 The older narrower descriptions below record the original scope. This proposal
 does not extend annotation writes beyond genuine Org/Markdown sources.
 
