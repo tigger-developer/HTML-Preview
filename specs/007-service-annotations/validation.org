@@ -106,6 +106,12 @@
   registration response triggers one old-schema retry and an unavailable notice.
   Its first execution lacked the control protocol's JSON content-type header;
   correcting the fixture header allowed the intended compatibility checks to run.
+- Storage coverage :: Combined annotation-unit and service HTTP regressions
+  measured 78.2% statement coverage in =internal/annotation=. Added persisted-byte
+  cases for duplicate/malformed headers, orphan events, unknown versions,
+  oversized frames and valid-prefix retention passed without production changes.
+  The same combined profile now measures 80.2%. This is statement coverage for
+  that package, not a whole-application or browser branch-coverage claim.
 - Further boundaries :: Mixed predominant source line endings no longer obscure
   an intact owned-tail boundary. Cancellation during synchronization does not
   acknowledge an event, and an identical later retry remains available. Oversized

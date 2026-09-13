@@ -100,3 +100,56 @@ func TestRT007_3_ExistingTailKeepsItsNewlineBoundary(t *testing.T) {
 		t.Fatal("changed predominant source line ending corrupted an intact annotation tail")
 	}
 }
+
+func TestRT007_3_DamagedRecordsRetainValidPrefixAndRefuseAppend(t *testing.T) {
+	for _, format := range []string{"org", "markdown"} {
+		header := Header{Schema: 1, DocumentID: "40000000-0000-4000-8000-000000000001", SourceFormat: format}
+		frame := func(marker, payload string) string {
+			if format == "org" {
+				return "#+begin_comment\n" + marker + "\n" + payload + "\n#+end_comment\n"
+			}
+			return "<!-- " + marker + "\n" + payload + "\n-->\n"
+		}
+		first, err := AppendBytes(Parse([]byte("Body"), format), &header, fixtureEvent(), format)
+		if err != nil {
+			t.Fatal(err)
+		}
+		duplicate, err := Frame(format, headerMarker, header, "\n")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, tc := range []struct{ name, tail, reason string }{
+			{"duplicate header", string(duplicate), "corrupt_store"},
+			{"invalid JSON", frame(eventMarker, "{"), "corrupt_store"},
+			{"unknown field", frame(eventMarker, `{"schema":1,"foreign":true}`), "corrupt_store"},
+			{"missing event fields", frame(eventMarker, `{}`), "corrupt_store"},
+			{"future format", frame("htmlpreview-annotation-event:v2", `{}`), "unsupported_store"},
+			{"oversized frame", frame(eventMarker, strings.Repeat("x", MaxFrame)), "store_limit"},
+		} {
+			t.Run(format+"/"+tc.name, func(t *testing.T) {
+				data := []byte("Body" + string(first) + "\n" + tc.tail)
+				before := bytes.Clone(data)
+				store := Parse(data, format)
+				if store.Reason != tc.reason || string(store.Source) != "Body" || len(store.Events) != 1 || store.Events[0] != fixtureEvent() || !bytes.Equal(data, before) {
+					t.Fatalf("damaged record lost valid prefix: %+v", store)
+				}
+				if _, err := AppendBytes(store, nil, fixtureEvent(), format); err == nil {
+					t.Fatal("damaged store accepted another event")
+				}
+			})
+		}
+		for _, payload := range []string{`{}`, `{"schema":2}`, `{"schema":1,"schema":1}`} {
+			store := Parse([]byte("Body\n\n"+frame(headerMarker, payload)), format)
+			if store.Reason != "corrupt_store" || store.Header != nil {
+				t.Fatalf("invalid header accepted: %+v", store)
+			}
+		}
+		orphan, err := Frame(format, eventMarker, fixtureEvent(), "\n")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if store := Parse(append([]byte("Body\n\n"), orphan...), format); store.Reason != "corrupt_store" || len(store.Events) != 0 {
+			t.Fatalf("orphan event accepted: %+v", store)
+		}
+	}
+}
