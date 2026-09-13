@@ -68,6 +68,9 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 		return service.localAssetSource(cap, name)
 	}
 	if err = s.extract(); err != nil {
+		if renderStatus(ctx, err) == 413 {
+			return nil, 413
+		}
 		return nil, 503
 	}
 	p := s.admit(src)

@@ -26,7 +26,7 @@ func (s *previewService) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	responsePrivacy(w)
 	peer, _, err := net.SplitHostPort(r.RemoteAddr)
 	authority := strings.TrimPrefix(s.origin, "http://")
-	if err != nil || net.ParseIP(peer) == nil || !net.ParseIP(peer).IsLoopback() || r.Host != authority || (r.URL.IsAbs() && (r.URL.Host != authority || r.URL.Scheme != "http")) || (r.Header.Get("Origin") != "" && r.Header.Get("Origin") != s.origin) || strings.EqualFold(r.Header.Get("Sec-Fetch-Site"), "cross-site") {
+	if err != nil || net.ParseIP(peer) == nil || !net.ParseIP(peer).IsLoopback() || r.Host != authority || (r.URL.IsAbs() && (r.URL.Host != authority || r.URL.Scheme != "http")) || !sameOriginHeaders(r.Header, s.origin) {
 		publicError(w, r, 403, "Request authority refused")
 		return
 	}
@@ -79,6 +79,22 @@ func (s *previewService) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.serveDocument(w, r, cap, parts, nil)
+}
+
+func sameOriginHeaders(headers http.Header, origin string) bool {
+	for _, value := range headers.Values("Origin") {
+		if value != "" && value != origin {
+			return false
+		}
+	}
+	for _, value := range headers.Values("Sec-Fetch-Site") {
+		for _, site := range strings.Split(value, ",") {
+			if strings.EqualFold(strings.TrimSpace(site), "cross-site") {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (s *previewService) serveDocument(w http.ResponseWriter, r *http.Request, cap *readCapability, parts []string, lookup *orgLookup) {

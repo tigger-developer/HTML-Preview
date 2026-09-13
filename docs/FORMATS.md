@@ -1,7 +1,8 @@
 # Supported input formats
 
-Version: 1  
-Updated: 12 September 2026
+Version: 2
+
+Updated: 13 September 2026
 
 htmlpreview previews documents using the installed Pandoc readers, wraps common
 source code and plain text, and preserves passive authored HTML. The W008
@@ -214,7 +215,8 @@ alternative text and diagnostic notices.
 Admitted PNG, JPEG, GIF, WebP and AVIF images must match their filename suffix,
 declared MIME type when supplied, and bounded-header signature. Container and
 data-URI images require matching MIME and signature. SVG is not a raster.
-Accepted bytes are embedded in the preview; denied images keep alternative text.
+Accepted bytes are embedded in file previews or served through authorized HTTP
+asset routes; denied images keep alternative text.
 
 Local images and stylesheets stay inside the source's configured root and
 filesystem, including after symlink resolution. Every asset is limited to
@@ -235,15 +237,16 @@ is a dependency error; conversion is never retried without sandboxing.
 
 ## Linked files and original identity
 
-With `HTMLPREVIEW_LINKS=1`, the current file transport pre-generates eligible
-linked documents of every automatically supported kind, including code, text,
-binary documents and native HTML. It preserves the existing depth, file-count,
-root and byte limits. Code/text contents do not create document links.
+The [W006 local service](SERVICE.md) renders supported targets on demand,
+including links from native HTML. A target selects its own format; an explicit
+`htmlpreview-format` query value can select a specialist reader. Ordinary JSON
+needs no selector; `?htmlpreview-format=json` selects a Pandoc document AST.
 
-With graph mode off, links retain original-file destinations; selecting one
-does not convert it on demand. Failed or skipped targets keep the established
-diagnostic behaviour. The approved [W006 local service](../specs/006-local-preview-service/spec.org)
-will provide on-demand conversion separately; W008 does not start a service.
+File fallback converts explicit inputs only and retains original-file link
+destinations. The earlier W008 graph admitted every supported kind under depth,
+count and byte limits; W006 supersedes it. `HTMLPREVIEW_LINKS` and
+`HTMLPREVIEW_MAX_DEPTH` now emit a migration notice and have no graph effect.
+Code/text contents never create document links. The CLI does not start a service.
 
 Converted-page headers identify the original logical source, never a wrapper
 or extraction path. Native HTML retains its own presentation and original
@@ -252,5 +255,6 @@ Org wrapper does not make a code or office document eligible for annotations.
 
 ## History
 
+- Version 2: W006 on-demand HTTP links, explicit target readers and graph retirement.
 - Version 1: W008 candidate format selection, literal wrappers, bounded resources
   and passive authored HTML.

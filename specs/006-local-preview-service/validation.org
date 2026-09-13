@@ -270,3 +270,41 @@
   last-waiter cancellation passed under race in *2.095 seconds*.
 - Qualification boundary :: These are development checks. The final full suite,
   static/security verification and planned native checks remain separate.
+
+* Candidate regression and contract review, 13 September 2026
+
+- Baseline :: =f295c51= plus the following checkpoint; macOS arm64, Go 1.26.8,
+  Pandoc 3.9.0.2. All service fixtures and tool caches use OS-temporary storage.
+- Full regression :: =make test= passed with the race detector and 20-minute
+  package deadline: integration *43.619 seconds*, internal preview *608.960
+  seconds*. This run includes the interrupted-handoff and cleanup corrections.
+- Output-limit RED/GREEN :: A one-byte output budget returned 503 while
+  extracting bundled assets. It now returns the specified 413. The strict
+  control/source/output subset passed under race in *2.038 seconds*, including
+  inclusive 64 KiB control bodies, invalid settings, UTF-8 and GET/HEAD parity.
+- Repeated-header RED/GREEN :: Foreign/null Origin and cross-site fetch values
+  after a permitted first header returned 200. Every supplied value is now
+  checked. The combined authority/control/output subset passed under race in
+  *2.140 seconds*.
+- Current service regression :: =go test -race -coverprofile=<temporary-path>
+  ./internal/preview -run TestRT006_ -count=1= passed in *35.367 seconds* after
+  both corrections. Existing executable service tests also passed against the
+  current source. Unsafe runtime directories/locks, unrelated socket paths and
+  recoverable stale sockets use real OS fixtures. Canonical aliases, empty roots,
+  32/33 configured roots and malformed structures passed separately under race
+  in *1.056 seconds*.
+- Coverage :: Combined current service-unit and instrumented executable-service
+  profiles cover *80.86% of statements* in the new =service*.go= runtime and
+  packaging modules. This is statement coverage, not a claim of complete branch
+  coverage or native platform qualification. Existing tests are reused; coverage
+  collection is a local development measurement, not a new build dependency.
+- Static/security :: =make lint= passed on this candidate, including the pinned
+  StyLua 2.5.2 provisioned only in temporary storage. =make vulncheck= reported
+  *No vulnerabilities found*; the subsequent changes add no dependency.
+- Documentation :: README, help, Vision and Architecture now describe the
+  implemented two transports, retain graph supersession history and link native
+  qualification separately. =sanitize oed= processed the changed documents;
+  final OT006.2 remains after the implementation gate.
+- Remaining qualification :: The listed native service-manager, WSL and human
+  browser checks remain pending. No active installation, manager state or
+  operator document root was changed by these checks.

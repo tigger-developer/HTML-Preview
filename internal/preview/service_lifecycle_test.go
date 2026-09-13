@@ -7,12 +7,84 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 )
+
+func TestRT006_9_UnsafeRuntimeAndStaleSocket(t *testing.T) {
+	for _, kind := range []string{"public directory", "symlink directory", "symlink lock", "unrelated socket path", "stale socket"} {
+		t.Run(kind, func(t *testing.T) {
+			path, err := os.MkdirTemp("", "hp-runtime-")
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() {
+				if err := os.RemoveAll(path); err != nil {
+					t.Error(err)
+				}
+			})
+			runtimePath := path
+			sentinel := source(t, path, "sentinel", "retain this content")
+			switch kind {
+			case "public directory":
+				// #nosec G302 -- Deliberately invalid permissions on this test-owned runtime.
+				if err := os.Chmod(path, 0755); err != nil {
+					t.Fatal(err)
+				}
+			case "symlink directory":
+				runtimePath = filepath.Join(path, "alias")
+				if err := os.Symlink(path, runtimePath); err != nil {
+					t.Fatal(err)
+				}
+			case "symlink lock":
+				if err := os.Symlink(sentinel, filepath.Join(path, "instance.lock")); err != nil {
+					t.Fatal(err)
+				}
+			case "unrelated socket path":
+				source(t, path, "control.sock", "not a socket")
+			case "stale socket":
+				listener, err := net.ListenUnix("unix", &net.UnixAddr{Name: filepath.Join(path, "control.sock"), Net: "unix"})
+				if err != nil {
+					t.Fatal(err)
+				}
+				listener.SetUnlinkOnClose(false)
+				if err := listener.Close(); err != nil {
+					t.Fatal(err)
+				}
+			}
+			runtime, err := openServiceRuntime(runtimePath)
+			if kind == "stale socket" {
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := runtime.close(); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := os.Lstat(filepath.Join(path, "control.sock")); !os.IsNotExist(err) {
+					t.Fatal("owned socket retained after clean shutdown")
+				}
+			} else {
+				if runtime != nil {
+					if err := runtime.close(); err != nil {
+						t.Error(err)
+					}
+				}
+				if err == nil {
+					t.Fatal("unsafe runtime accepted")
+				}
+			}
+			// #nosec G304 -- Reads the exact test-owned sentinel to check it survived startup.
+			data, err := os.ReadFile(sentinel)
+			if err != nil || string(data) != "retain this content" {
+				t.Fatal("startup altered unrelated state")
+			}
+		})
+	}
+}
 
 func TestRT006_9_CleanupFailureReportsOwnedPath(t *testing.T) {
 	host := NativeHost()

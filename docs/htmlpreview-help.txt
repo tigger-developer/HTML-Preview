@@ -7,6 +7,13 @@ Use -- before a filename beginning with -. Open the system default browser.
   --list-input-formats List this installation's Pandoc readers; no browser opens
   --from FORMAT        Select one installed reader for all explicit inputs
   --from=FORMAT        Equivalent reader selection; -f is not accepted
+  --serve              Run the optional per-user loopback service; no browser
+
+A running service previews allowed inputs over HTTP on 127.0.0.1 only, using
+an assigned port and token-prefixed URLs. Configure serve.roots in version-1
+YAML; the default empty list grants nothing. Service activation is explicit.
+Absent/unreachable service or service-root exclusion selects a single-file
+preview. Invalid settings, protocol and conversion errors remain errors.
 
 Filename mappings cover document aliases, common code languages and .txt.
 Unknown suffixes require --from. Ordinary .json is pretty-printed source code;
@@ -18,28 +25,42 @@ Code and .txt use private Org wrappers. Code has one Source code heading;
 plain text has none. Copying preserves original UTF-8 text. Sources never execute.
 Native HTML keeps its authored structure and permitted CSS without application
 chrome. Scripts, forms, remote fonts and automatic remote resources are blocked.
-Admitted local/container rasters are embedded; unsupported media gets a notice.
+Admitted rasters are embedded in file previews or authorized HTTP assets in
+service previews; unsupported media gets a notice.
 
 Environment settings (empty values use defaults):
   HTMLPREVIEW_TOC                     1; converted-page navigation; 0 disables
   HTMLPREVIEW_TOC_DEPTH               3; source heading levels 1 to 6
-  HTMLPREVIEW_LINKS                   0; 0 or 1 for bounded linked browsing
-  HTMLPREVIEW_MODE                    quick; read when LINKS=1
+  HTMLPREVIEW_LINKS                   Deprecated; 0 or 1, no graph effect
+  HTMLPREVIEW_MODE                    quick or read; file retention only
   HTMLPREVIEW_ROOT                    Each entry's canonical parent directory
   HTMLPREVIEW_GRACE                   3s; 100ms to 1h, quick retention
   HTMLPREVIEW_MAX_FILES               50; 1 to 500 contexts including entries
-  HTMLPREVIEW_MAX_DEPTH               3; 0 to 10 linked levels
+  HTMLPREVIEW_MAX_DEPTH               Deprecated; 0 to 10, no graph effect
   HTMLPREVIEW_MAX_SOURCE_BYTES        10485760; 1 to 10485760
   HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES  52428800; 1 to 52428800
   HTMLPREVIEW_MAX_OUTPUT_BYTES        104857600; 1 to 104857600
   HTMLPREVIEW_DEADLINE                60s; 100ms to 10m for conversion
+  HTMLPREVIEW_CONFIG                  Absolute YAML file; default user config
+  HTMLPREVIEW_RUNTIME_DIR             Absolute private service runtime directory
 
-LINKS=1 pre-generates supported linked files and requires read mode. Without it,
-links retain original-file destinations. Explicit --from never applies to children.
+LINKS and MAX_DEPTH retain validation and emit one migration notice when set.
+They no longer pre-generate links or select read mode. HTTP links render targets
+on demand; file-mode links retain original destinations. Explicit --from never
+applies to children. A served link may select ?htmlpreview-format=markdown%2Bsmart.
+HTMLPREVIEW_ROOT first restricts explicit inputs, regardless of service availability;
+it can only narrow served roots. Restart applies config changes and revokes tokens.
+HTTP conversion ceilings are 10 MiB source, 50 MiB output and 60 seconds.
+Two distinct conversions run concurrently; excess work returns 503 with a retry hint.
+Default config: macOS ~/Library/Application Support/htmlpreview/config.yaml;
+Linux/WSL $XDG_CONFIG_HOME/htmlpreview/config.yaml (default ~/.config).
+Default runtime: macOS ~/Library/Caches/htmlpreview/runtime;
+Linux/WSL $XDG_CACHE_HOME/htmlpreview/runtime (default ~/.cache).
 Read mode retains pages until Ctrl+C or SIGTERM. Standalone output is always on.
 Quick mode removes its private temporary directory after the grace period;
 the delay does not guarantee browser readiness. SIGKILL can leave that directory.
-Source files are never modified. There is no running preview service in file mode.
+Source files are never modified. The command never starts a service implicitly.
+See the packaged SERVICE.md for configuration, activation, stop and rollback.
 
 Requires Pandoc 3.9.0.2 or a later 3.9 patch with bundled Lua 5.4.
 macOS uses /usr/bin/open; Linux desktops require xdg-open (xdg-utils).

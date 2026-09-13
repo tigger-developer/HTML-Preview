@@ -10,6 +10,13 @@ The [W008 input-format candidate](specs/008-input-formats/spec.org) extends the
 earlier Org/Markdown-only scope. Its [validation record](specs/008-input-formats/validation.org)
 tracks automated evidence and pending native qualification separately.
 
+The optional [local service](docs/SERVICE.md) renders supported linked files on
+request within explicitly configured roots. Start it with `htmlpreview --serve`;
+normal invocations then use its loopback HTTP URLs. Absent service or an input
+outside its roots selects a single-document file preview. Installation never
+starts the service. [Service validation](specs/006-local-preview-service/validation.org)
+distinguishes regression evidence from pending native qualification.
+
 **Evidence:** See [the specification](specs/001-local-document-preview/spec.org)
 and its [audit record](specs/001-local-document-preview/audits.org).
 Browser qualification and the Homebrew installation trial remain pending in
@@ -50,7 +57,7 @@ Successful path and code copying briefly overlays the copied text with a fading
 confirmation; refused clipboard writes retain the manual-copy fallback.
 
 ```sh
-HTMLPREVIEW_LINKS=1 htmlpreview examples/work.org examples/code.md
+htmlpreview examples/work.org examples/code.md
 ```
 
 Every preview is a complete styled HTML document. Navigation defaults to on
@@ -84,29 +91,42 @@ HTMLPREVIEW_MODE=read htmlpreview README.md
 The command stays in the foreground until Ctrl+C or SIGTERM. It then removes
 only its own session directory. SIGKILL or a system failure can leave that
 directory behind; the reported path identifies the exact directory for manual
-removal. There is no background service or cross-session scavenger.
+removal. The optional service has its own lifetime; there is no cross-session
+scavenger.
 
-Linked browsing is opt-in and implies reading mode:
+For linked browsing, configure and explicitly start the optional service as
+described in [the service guide](docs/SERVICE.md). HTTP-only invocations return
+after browser handoff. Each followed link is converted on request; no filesystem
+scan or eager graph conversion occurs. Outside-root links remain inactive with
+an explanation. Unique Org heading and custom-ID searches resolve on request;
+fileless IDs use only the bounded catalogue of already rendered documents.
+
+### Historical graph mode
+
+The earlier file transport used opt-in graph pre-generation. These examples
+record that superseded interface:
 
 ```sh
 HTMLPREVIEW_LINKS=1 htmlpreview docs/VISION.md
 ```
 
-By default, traversal stays within each entry's physical parent directory and
-filesystem. An explicit root permits a wider document neighbourhood:
+Traversal stayed within each entry's physical parent directory and filesystem.
+An explicit root permitted a wider document neighbourhood:
 
 ```sh
 HTMLPREVIEW_LINKS=1 HTMLPREVIEW_ROOT="$PWD" htmlpreview docs/VISION.md
 ```
 
-The graph follows rendered document anchors breadth-first. Cycles reuse the
-same source context; symlink aliases with different logical parents retain
-separate relative-link contexts. Eligible linked documents of all supported
-kinds can become previews. Validated local/container raster bytes are embedded;
-other files remain references to their original locations. This supersedes the
-earlier original-file image URLs. Skipped or failed linked documents retain original
-file links with diagnostics. Org ID and heading searches require unique actual
-destinations; unresolved searches receive an explanation.
+The former graph followed rendered anchors breadth-first under depth/count
+budgets; cycles reused source contexts and symlink aliases retained their logical
+parents. W008 expanded it to all supported kinds. W006 replaces that graph with
+on-demand HTTP and single-document file fallback. `HTMLPREVIEW_LINKS` and
+`HTMLPREVIEW_MAX_DEPTH` retain validation and one migration notice, with no graph
+or retention effect. File fallback keeps original-file link destinations.
+
+Validated local/container rasters are embedded in file previews and served
+through authorized asset routes in HTTP previews, replacing original-file image
+URLs. Original source context remains the basis for relative references.
 
 Sources remain unchanged. Source scripts, event handlers, executable embeds,
 and automatic remote resources are removed or made passive. Org includes remain
@@ -176,8 +196,9 @@ installation there is not removed automatically.
 
 Empty values select defaults. Unknown `HTMLPREVIEW_` settings are errors.
 Every supplied setting is validated, including those inactive in the selected
-mode. There is no personal configuration file or arbitrary Pandoc-argument
-interface. Use `--` before a filename beginning with `-`.
+mode. The service uses a strict versioned YAML configuration for permitted roots;
+there is no arbitrary Pandoc-argument interface. Use `--` before a filename
+beginning with `-`.
 
 An optional `--from FORMAT` or `--from=FORMAT` selects an installed built-in
 reader for the explicit input batch. It never propagates to linked documents.
@@ -190,16 +211,24 @@ uses its separate passive policy and receives no application reading controls.
 | --- | --- | --- |
 | `HTMLPREVIEW_TOC` | `1` | `0` or `1`; enable navigation for all documents |
 | `HTMLPREVIEW_TOC_DEPTH` | `3` | Integer, 1 to 6; maximum source heading level |
-| `HTMLPREVIEW_LINKS` | `0` | `0` or `1` |
-| `HTMLPREVIEW_MODE` | `quick`; `read` with links | `quick` or `read`; links require `read` |
+| `HTMLPREVIEW_LINKS` | `0` | Deprecated; `0` or `1`, no graph effect |
+| `HTMLPREVIEW_MODE` | `quick` | `quick` or `read`; file retention only |
 | `HTMLPREVIEW_ROOT` | Each entry's canonical parent | Existing directory containing every explicit canonical source |
 | `HTMLPREVIEW_GRACE` | `3s` | Go duration, `100ms` to `1h` |
 | `HTMLPREVIEW_MAX_FILES` | `50` | Integer, 1 to 500 source contexts |
-| `HTMLPREVIEW_MAX_DEPTH` | `3` | Integer, 0 to 10; entries are depth zero |
+| `HTMLPREVIEW_MAX_DEPTH` | `3` | Deprecated; integer, 0 to 10, no graph effect |
 | `HTMLPREVIEW_MAX_SOURCE_BYTES` | `10485760` | Integer, 1 to 10485760 |
 | `HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES` | `52428800` | Integer, 1 to 52428800 |
 | `HTMLPREVIEW_MAX_OUTPUT_BYTES` | `104857600` | Integer, 1 to 104857600; includes embedded fonts and staging |
 | `HTMLPREVIEW_DEADLINE` | `60s` | Go duration, `100ms` to `10m` |
+| `HTMLPREVIEW_CONFIG` | Platform user config directory + `htmlpreview/config.yaml` | Absolute version-1 YAML path |
+| `HTMLPREVIEW_RUNTIME_DIR` | Platform user cache directory + `htmlpreview/runtime` | Absolute user-owned private directory |
+
+HTTP requests additionally apply the service's 10 MiB source, 50 MiB output
+and 60-second conversion ceilings. `HTMLPREVIEW_ROOT` restricts explicit inputs
+before transport selection and can only narrow configured service roots.
+The [service guide](docs/SERVICE.md) describes exact paths, permissions, limits
+and restart behaviour.
 
 Published entry URLs go to stdout; diagnostics go to stderr. Exit status is 0
 for success, 1 for an operational failure, and 2 for an invalid invocation.

@@ -31,6 +31,16 @@ and file-only resource-policy portions below as design authority; the earlier
 sections remain baseline history. No service implementation or native
 qualification is claimed by this document update.
 
+The service implementation now exists as a delivery candidate under
+`internal/preview/service*.go`, sharing the W008 renderer and format catalogue.
+Its [validation record](../specs/006-local-preview-service/validation.org) retains
+the staged implementation evidence and pending native qualification. File mode
+now converts explicit inputs only; legacy graph settings are validated and
+diagnosed without pre-generation. The earlier processing and graph descriptions
+below are retained as design history, superseded by W006's two transports.
+The [service guide](SERVICE.md) supplies the current configuration and lifecycle
+interface.
+
 ## Annotation proposal - 12 September 2026
 
 [W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)
@@ -115,6 +125,15 @@ standard library has no equivalent parser/sanitizer. Their module checksums are
 tracked; the two transitive CSS-parser dependencies and their licences are
 recorded in [the notices](../THIRD_PARTY_NOTICES.md). No source CSS is enabled
 merely because the sanitizer contains a CSS parser.
+
+W006 adds `go.yaml.in/yaml/v3` 3.0.5 for strict user-authored service YAML.
+The pinned package adds no runtime executable or transitive module dependency;
+its mixed MIT/Apache licence is retained in the distribution notices. The service
+owns the startup root snapshot, private control socket, read capabilities,
+in-flight conversions and bounded memory cache. Every conversion owns and cleans
+its temporary directory before publication; cleanup failure returns an error and
+reports the remaining owned path. Token-free availability rechecks permit file
+fallback only after confirmed endpoint loss, before any batch handoff.
 
 W008's native HTML implementation selects `github.com/tdewolff/parse/v2`
 2.8.16 for its CSS grammar and token parser. The standard library has no CSS

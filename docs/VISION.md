@@ -21,6 +21,14 @@ sections remain history. The existing reader, source-preservation and platform
 requirements remain. Its specification records the approved token lifetime,
 compatibility and asset contracts; runtime qualification remains future work.
 
+The service is now an implementation candidate with its development evidence
+and pending native checks recorded in [W006 validation](../specs/006-local-preview-service/validation.org).
+It replaces the historical graph workflow below with requested-document HTTP
+rendering and single-document file fallback. The [service guide](SERVICE.md)
+describes explicit configuration, activation and rollback. Reading still leaves
+sources unchanged; annotation implementation remains behind its qualified-service
+dependency.
+
 ## Annotation proposal - 12 September 2026
 
 [W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)
