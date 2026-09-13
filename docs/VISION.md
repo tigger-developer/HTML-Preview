@@ -89,24 +89,34 @@ authorities, not implementation evidence.
 The older narrower descriptions below record the original scope. This proposal
 does not extend annotation writes beyond genuine Org/Markdown sources.
 
-## Reader interaction proposal - 13 September 2026
+## Reader and footnote proposal - 14 September 2026
 
-[W009 - Persistent info bar and direct annotation interaction](../specs/009-reader-annotation-ux/spec.org)
+[W009 - Persistent reader controls and native footnote annotations](../specs/009-reader-annotation-ux/spec.org)
 defines the follow-up to the annotation review. A persistent full-width info bar
 puts the home-abbreviated source path left and visibly stateful controls right.
-Navigation sizes to its content. Annotation mode opens a composer from a sentence
-click or completed selection, with compact autosave feedback and readable dates.
+Navigation sizes to its content. Annotation mode opens a composer at a clicked
+insertion point, with compact autosave feedback and readable dates. The comment
+box receives focus; a subtle editable Footnote ID field sits below it and defaults
+to annotationNN. Native Org and Markdown references link to readable definitions.
 Comments occupy a right column, or the larger lower pane of a phone split view.
 
-Show plaintext reveals literal Org/Markdown source, including embedded annotation
-records, while retaining the info bar and disabling annotation. TXT, code wrappers,
+Show plaintext reveals literal Org/Markdown source, including embedded footnotes,
+while retaining the info bar and disabling annotation. TXT, code wrappers,
 HTML and binary documents do not gain this mode. Existing stored document-wide
-comments remain readable, but new comments in the UI require a passage.
+comments remain readable, but new comments in the UI use insertion points.
 
-Taḋg requested these changes and accepted the phone layout and literal-source
-scope on 13 September. Full definition sign-off remains pending. The proposal
-supersedes the earlier interaction only when approved and delivered; append-only
-storage, service-only mutation and existing authorization remain unchanged.
+Taḋg accepted the phone layout and literal-source scope on 13 September and
+selected native footnotes, insertion points and the secondary ID field in the
+14 September amendment. Permanent autosave history was explicitly withdrawn:
+only the current annotation values belong in sources and sidecars. Git history
+is outside the application. Closed comments remain read-only in the UI.
+
+This direction supersedes the event-history and selected-passage requirements
+above; those paragraphs describe the existing candidate and its original design.
+The revised specification retains the service/root boundary and requires verified
+source patches, current-value replacement and legacy reading. Full amended
+definition sign-off remains pending. Read-only sources use sidecars with virtual
+preview markers; ordinary native footnotes remain untouched.
 
 ## Purpose
 

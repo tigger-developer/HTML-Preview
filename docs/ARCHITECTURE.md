@@ -123,31 +123,48 @@ the order W008, W006, W007. These approvals are not implementation claims. The
 explicitly released that hold. Each work item's admission and qualification
 requirements remain applicable.
 
-## Reader interaction proposal - 13 September 2026
+## Reader and footnote proposal - 14 September 2026
 
-[W009 - Persistent info bar and direct annotation interaction](../specs/009-reader-annotation-ux/spec.org)
+[W009 - Persistent reader controls and native footnote annotations](../specs/009-reader-annotation-ux/spec.org)
 proposes one sticky info bar and a shared responsive grid in the existing page
 template. It replaces the fixed navigation width and floating annotation panel;
 phone annotation mode reserves the larger lower pane for comments while keeping
 document text selectable above. No iframe or additional browsing context is used.
 
 The existing reader lifecycle owns mode controls. The annotation panel captures
-the current selection or browser-segmented sentence and delegates to the existing
-canonical mapper and composer. One guarded close path handles target changes,
+a collapsed insertion point and delegates to canonical text mapping and composer
+scheduling. The comment box gets initial focus, with a secondary editable footnote
+label below. One guarded close path handles point changes,
 leaving annotation mode and entering plaintext without hiding unacknowledged text.
-Native date formatting changes display only; the event schema remains unchanged.
+Native date formatting changes display only. The annotation package now owns a
+proposed native-footnote codec and current-record replacement, superseding the
+earlier event-log writer and selected-text anchors. Each current record retains
+attribution, state and the latest retry identity, with no permanent autosave
+history or JSON in the document. Closed comments remain read-only in the UI.
+
+The source reference uses normal Org/Markdown notation and the editable label;
+a separate stable annotation identity supports renaming and retry handling.
+New insertion points require one bounded marker round-trip through the existing
+renderer. Unprovable points report an error rather than inserting elsewhere.
+Saves patch only owned reference tokens and definitions, then atomically replace
+the freshly checked rooted file. Metadata that cannot be preserved blocks saving.
+The v2 annotation adapter retains existing grants/origin checks and retires v1
+mutation. The existing decoder remains for legacy reading and import on save.
+Sidecars keep current Org footnotes and point context; they cannot physically
+insert a reference into their read-only source.
 
 For genuine Org/Markdown, Go retains the original admitted snapshot before
 preprocessing and embeds it as bounded inert data. Plaintext uses textContent,
 without highlighting, and includes embedded annotation records. Existing page
 GET/refresh supplies current text in service mode; file previews use their
-snapshot. No source endpoint, binary extraction, new capability or dependency is
+snapshot. No raw-source endpoint, binary extraction, wider capability or dependency is
 introduced. Payload growth counts against existing output/cache budgets.
 
-This is a definition proposal awaiting full sign-off, not an implementation claim.
-Its specification identifies the superseded W005/W007 presentation requirements;
-the prior paragraphs remain history. Storage, rooting and passive-content
-contracts remain authoritative.
+This is a definition proposal awaiting full amended sign-off, not an implementation
+claim. Taḋg withdrew permanent autosave history and selected footnotes and point
+insertion on 14 September. Its specification identifies the superseded W005/W007
+presentation, storage and mutation requirements; the earlier paragraphs remain
+historical baseline. Root confinement and passive-content contracts remain.
 
 ## System shape
 

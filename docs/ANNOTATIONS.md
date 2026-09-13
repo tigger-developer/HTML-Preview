@@ -10,6 +10,13 @@ This is the W007 delivery candidate. Automated evidence and pending browser,
 accessibility and filesystem qualification are recorded in
 [annotation validation](../specs/007-service-annotations/validation.org).
 
+**Design correction, 14 September 2026:** Taḋg withdrew permanent autosave history
+and selected native Org/Markdown footnotes at clicked insertion points, with a
+subtle editable ID field below the comment box. [The W009 replacement design](../specs/009-reader-annotation-ux/spec.org)
+stores only current annotations. The guide below describes the existing candidate;
+its event history and selection workflow are not requirements for the replacement.
+The native-footnote changes are not yet implemented.
+
 ## Start and annotate
 
 Start the [local service](SERVICE.md) from a documentation directory:
