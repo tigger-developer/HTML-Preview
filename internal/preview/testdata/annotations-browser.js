@@ -172,6 +172,11 @@ try {
   assert(unload.defaultPrevented, 'Unsaved draft guards browser navigation');
   assert(!live.appendix.textContent.includes('Never lose this draft'), 'Print appendix excludes unacknowledged text');
   live.dispose();
+
+  const invalid = new app.AnnotationPanel({ endpoint: '/invalid', page_url: location.href, ...state }, { clock: new TestClock(), request: async () => ({ ...state, body_revision: '', writable: true }) });
+  await invalid.ready;
+  assert(invalid.add.disabled && invalid.connection.textContent.includes('unavailable'), 'Malformed state cannot enable annotation writes');
+  invalid.dispose();
 } catch (error) {
   report.failures.push(error instanceof Error ? error.message : String(error));
 }

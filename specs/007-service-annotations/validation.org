@@ -87,8 +87,10 @@
   the preview package reporting 617.219 seconds and 619.717 seconds. Subsequent
   =go test -race ./internal/annotation ./internal/preview -run
   'TestRT007_|TestRT006_' -count=1= passed at =49bd9aa= (41.100 seconds for the
-  preview package). A final uncached full-suite run was started for that
-  checkpoint; its result is recorded when available.
+  preview package). The final uncached =go test -race -count=1 -timeout=20m
+  ./...= run passed for that checkpoint (626.349 seconds for the preview
+  package). Later response-validation changes have the focused browser evidence
+  below; that earlier full run is not presented as covering those changes.
 - Browser result :: The latest native Chrome 147 run returned 38 passing
   assertions. It additionally checks continuous typing's two-second bound and
   the print appendix before the next poll. The latter first failed, then passed
@@ -96,6 +98,14 @@
   An earlier inert-comment assertion regressed when its fake service changed
   events without changing the full revision; the fixture now follows the
   specified revision contract and that assertion passes.
+- Response validation :: A later native browser assertion first failed because
+  malformed state with an empty body revision enabled Add comment. Validating
+  the required revision and write-state fields made all 39 assertions pass.
+  =make lint= also passed for this correction.
+- Compatibility :: The new HTTP compatibility fixture checks that only a 404
+  registration response triggers one old-schema retry and an unavailable notice.
+  Its first execution lacked the control protocol's JSON content-type header;
+  correcting the fixture header allowed the intended compatibility checks to run.
 - Further boundaries :: Mixed predominant source line endings no longer obscure
   an intact owned-tail boundary. Cancellation during synchronization does not
   acknowledge an event, and an identical later retry remains available. Oversized

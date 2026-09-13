@@ -58,6 +58,16 @@ function annotationRevisions(data) {
   return Object.fromEntries(['revision', 'source_revision', 'body_revision'].map(key => [key, data[key]]));
 }
 
+function validateAnnotationState(state) {
+  const revisions = ['revision', 'source_revision', 'body_revision'];
+  if (!state || state.protocol !== 1 || !revisions.every(key => typeof state[key] === 'string' && /^[a-f0-9]{64}$/.test(state[key])) ||
+      !Array.isArray(state.events) || state.events.length > 10000 || typeof state.writable !== 'boolean' ||
+      typeof state.reason !== 'string' || (state.writable && (!['embedded', 'sidecar'].includes(state.storage) || typeof state.write_token !== 'string' || !state.write_token))) {
+    throw new Error('Unsupported annotation state.');
+  }
+  return state;
+}
+
 export class AnnotationPanel {
   constructor(data, options = {}) {
     this.data = data; this.request = options.request || annotationRequest;
@@ -209,9 +219,8 @@ export class AnnotationPanel {
   }
 
   async loadState() {
-    let state = await this.request(this.data.endpoint);
+    let state = validateAnnotationState(await this.request(this.data.endpoint));
     if (this.disposed) return;
-    if (state.protocol !== 1 || !Array.isArray(state.events)) throw new Error('Unsupported annotation state.');
     if (state.source_revision !== this.data.source_revision) state = await this.replaceSource(state);
     if (this.disposed) return;
     const changed = !this.state || this.state.revision !== state.revision;
@@ -287,7 +296,7 @@ export class AnnotationPanel {
       if (data && ['revision', 'source_revision', 'body_revision'].every(key => data[key] === state[key])) {
         await this.swapRegions(page, data); return state;
       }
-      state = await this.request(this.data.endpoint);
+      state = validateAnnotationState(await this.request(this.data.endpoint));
     }
     throw new Error('The source is still changing. Waiting for a stable version; your draft is retained.');
   }
