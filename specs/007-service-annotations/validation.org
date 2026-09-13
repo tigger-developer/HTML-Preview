@@ -234,11 +234,27 @@
 :PROPERTIES:
 :CUSTOM_ID: ot-007-1
 :CATEGORY: ONE-OFF
-:RESULT: PENDING
+:RESULT: PASS
 :END:
 
 - Definition :: [[file:spec.org::#ot-007-1][OT007.1 - Dependency and delivered guidance]].
-- Evidence :: *Not executed*. Record the bounded procedure and actual result.
+- Candidate :: =21f3551= (damaged-store regression checkpoint), with unchanged
+  production from =a80fc4e= (annotation response validation); macOS arm64,
+  13 September 2026.
+- Procedure :: The initial admission review above and one delivered-guidance
+  comparison of README, help, Vision, Architecture, SERVICE and ANNOTATIONS
+  against registration, storage, browser behaviour and package inputs.
+- Evidence :: Attribution precedence, reading-only exclusions, autosave/close,
+  refresh/recovery, source and sidecar ownership, limits and external-editor
+  overwrite risk agree with the implementation. ANNOTATIONS.md is included in
+  installation packaging. Changed documentation passed =sanitize oed= with
+  no remaining transformation. No remote-hosting capability is claimed.
+- Packaging check :: Two =DESTDIR= staged =make install= runs succeeded in a
+  unique OS temporary directory. The packaged ANNOTATIONS.md matched its source
+  byte-for-byte. This verifies creation and repeated installation of the same
+  managed symlink; it does not claim replacement of a different existing target.
+- Boundary :: No service activation or model invocation occurred under this OT.
+  The separately authorized foreground sample is recorded below.
 
 ** OT007.2 - Native filesystem qualification
 :PROPERTIES:
@@ -248,4 +264,43 @@
 :END:
 
 - Definition :: [[file:spec.org::#ot-007-2][OT007.2 - Native filesystem qualification]].
-- Evidence :: *Not executed*. Record the bounded procedure and actual result.
+- macOS APFS :: *PASS*, 13 September 2026, production =a80fc4e= with regression
+  checkpoint =21f3551=, ordinary user on macOS arm64. Native =Statfs= reported
+  =apfs=, mount flags =0x4909080= and filesystem identifier =[16777232 26]=.
+- Procedure :: A temporary Go fixture runner called the delivered annotation
+  boundary in an OS-created synthetic tree. Fifteen append attempts and one
+  fresh-process recovery completed in under one second; no personal source
+  files, elevated permissions, mounts or service-manager changes were involved.
+- Observed :: Writable sources appended embedded records; read-only sources
+  and an ACL denying write/append used mode-0600 sidecars. An unwritable parent,
+  symlink sidecar, hard-linked source and externally replaced source were refused.
+  Short-write and sync-failure injection preserved existing bytes; a damaged tail
+  refused another append, and an identical uncertain-write retry succeeded.
+  A real advisory lock produced immediate busy refusal. A fresh process retried
+  an existing operation without duplicate bytes and refused a new revision of
+  its recovered draft. Source prefixes and modes were checked around every call.
+- Runner correction :: The initial runner stopped before any append because its
+  filesystem-identification command rejected a directory argument. It was changed
+  to native Statfs; only the subsequent bounded execution is qualification evidence.
+- Cleanup :: The runner removed only its own OS-created synthetic tree. Its
+  scratch source and execution log were kept outside tracked project artefacts.
+- Other platforms :: *Linux ext4, WSL Linux storage and Windows-mounted WSL
+  storage remain PENDING*. This entry's overall result remains pending until
+  each required filesystem is observed.
+
+* Browser review handoff, 13 September 2026
+
+- Candidate :: The rebuilt executable is reached by the existing
+  =~/.local/bin/htmlpreview= symlink to this checkout's =bin/htmlpreview=.
+  The foreground candidate serves the already authorized checkout on loopback;
+  its explicit runtime directory is temporary. Native service-manager activation
+  remains pending.
+- Sample :: =.agents/annotation-review.girrXX/index.org= links disposable Org,
+  Markdown, DOCX, plain-text and Go fixtures, plus a mode-0400 Org file for
+  sidecar review. The CLI opened it using the system default browser with
+  the display name Taḋg. Review comments do not modify tracked fixtures or specs.
+- Automated check :: After the implementation review, =make test-browser=
+  again returned 39 passing assertions in Chrome 147. The race-enabled combined
+  annotation/service regression selection passed (40.874 seconds for preview).
+  These results do not replace the pending human browser and accessibility tests.
+- Vulnerability result :: The final =make vulncheck= reported no vulnerabilities.

@@ -765,33 +765,29 @@ audits:
         harness: hermes
         provider: nous
         model: z-ai/glm-5.3
-      external_round: 1
+      external_round: 2
       status: passed
-      updated: "2026-09-13T13:22:01Z"
-      revision: 49bd9aa (W007 annotation implementation checkpoint following 84ea26e admission)
+      updated: "2026-09-13T13:25:42Z"
+      revision: a80fc4e (W007 annotation candidate supplied in this invocation; production unchanged from the previously reviewed response-validation state)
       verdict: PASS
       response: |-
         GATE: implementation
-        REVISION: 49bd9aa (W007 annotation implementation checkpoint following 84ea26e admission)
+        REVISION: a80fc4e (W007 annotation candidate supplied in this invocation; production unchanged from the previously reviewed response-validation state)
         VERDICT: PASS
 
-        Findings and assessment:
+        Resume assessment:
 
-        No blocking findings. Reviewed implemented tests first, then production code, against the signed-off W007 specification, the supplied SDLC standards (ARCHITECTURE, CODING, TESTING, SECURITY, GO, JAVASCRIPT, WEB, API) and project authorities.
+        Revision identification: per the caller context, the supplied candidate is a80fc4e; my prior response mislabelled the then-audited tree as 49bd9aa when its manifest already included the response-validation fix. The current manifest's production files (all internal/annotation, internal/preview, assets/web, docs, specs) are hash-identical to that previously audited state, so every prior conformance finding stands unchanged and is incorporated by reference: append-only autosave lifecycle, literal framing and byte preservation, rooted locked appends, capability boundaries, attribution, body mapping and unique reattachment, reader compatibility, CSP extension, and browser/GOP test quality with honest Chrome-only limitation recording.
 
-        Conformance highlights verified:
+        Changed evidence reviewed:
 
-        - No duplicated audit state. W007 spec.org and validation.org contain test-execution evidence and revision identifiers only in their designated roles; audit verdicts remain solely in audits.yaml links. No FAIL trigger under the duplication rule.
-        - Append-only autosave lifecycle. Composer debounce (300 ms), two-second continuous-typing bound, IME suspension, single-flight coalescing, identical-payload retries with 1/2/4 s backoff plus jitter, and explicit non-retry of composer_capacity/grant_capacity all match the signed-off contracts. Close flushes then seals; recovered drafts are read-only.
-        - Framing and literal contexts. Org comment-block and Markdown comment envelopes, hyphen escaping plus Go's default JSON escaping of <, >, &, literal-context tracking (blocks, fences, indented/quoted Markdown, open comments), corrupt-tail preservation without truncation, and store limits (10 MiB, 10,000 events, 64 KiB frames) are implemented and tested, including BOM/CRLF/no-final-newline prefixes and mixed line-ending tails.
-        - Rooted writes and identity. os.Root confinement, O_NOFOLLOW, O_APPEND, exclusive sidecar creation at 0600 with parent fsync, flock serialization, short-write and sync-failure injection, cancellation-before-acknowledgement, and re-read/identity verification before and after append are all present with observed RED/GREEN evidence in validation.org. Hard links, symlink sidecars, replacements, foreign sidecars and external edits are refused with zero changed bytes (tested).
-        - Capability boundaries. Exact-Origin, write-token (constant-time compare), 32-byte composer secret with server-side digest, strict duplicate-key-rejecting JSON decoding, 64 KiB body limit, 405 on non-GET/HEAD/POST, per-document grant scope (cross-document token use returns 403), 64 composers and 256 grants with visible capacity refusal and release on close.
-        - Attribution. Display-name capture at the settings boundary with USER fallback, exit 2 on invalid non-empty names, read-only for missing identity, no daemon substitution; forged author/date fields rejected server-side.
-        - Body mapping and refresh. Shared Go/browser Unicode fixtures, scalar offsets, unique-match reattachment with prefix/suffix/verified-explicit-heading corroboration, forged/generated heading IDs rejected, shared one-second polling snapshot with writes always re-reading, refresh preserving the active composer, dirty text, verified folds and scroll.
-        - Reader compatibility. Annotation modules ride the existing packaging and CSP (connect-src 'self' only on annotation pages); print appendix excludes unacknowledged text; presentation uses textContent only (inert stored comments verified in-browser).
-        - Test quality. Browser tests execute the actual packaged module extracted from a rendered page with controlled clocks/transports via the operator-approved Go/native-browser runner; no Node/npm, no source greps, no metered services. Honest limitation recording: Chrome-only browser evidence, native matrix and OTs pending.
+        1. internal/annotation/codec_test.go (TestRT007_3_DamagedRecordsRetainValidPrefixAndRefuseAppend): new persisted-byte regressions covering duplicate headers, invalid/unknown/duplicate-key JSON, missing event fields, orphan events without a header, future frame versions (unsupported_store), oversized frames (store_limit) and invalid header payloads. Assertions verify the valid prefix, prior events and exact bytes are retained, the reason code is precise, and AppendBytes refuses further writes on a damaged store — exactly the specification's "retain and diagnose, never truncate, repair or migrate" contract. These are byte-stream tests on the persisted artefact, not source greps; retained under make test. No production change was needed, consistent with the codec already implementing the contract.
 
-        Bounded, non-blocking follow-ups already recorded in validation.org (do not invalidate this sign-off): native platform/human qualification (UT007.1–9, OT007.1 guidance portion, OT007.2) remain PENDING; the operator's 13 September sequencing authorization permits implementation while Linux/WSL qualification stays pending, and no compatibility claim is made from Chrome results.
+        2. specs/007-service-annotations/validation.org: records the combined internal/annotation statement coverage increase from 78.2% to 80.2% with the same combined profile, explicitly scoped as package statement coverage rather than a whole-application or branch claim. Honest reporting; the 80% floor from TESTING.md is met for the new package.
+
+        No duplicated audit state appears in the changed evidence; revision identifiers and test results sit in validation.org in their designated evidence role, and audit outcomes remain solely in audits.yaml links.
+
+        No new or retained blocking findings. The test-only delta adds conformance-relevant coverage without production changes, scope expansion or unnecessary complexity. Outstanding bounded follow-ups remain as previously recorded and do not invalidate sign-off: native platform/human qualification (UT007.1–9, OT007.1 guidance portion, OT007.2) stay PENDING under the operator's recorded sequencing direction, with no Safari, Linux/WSL or assistive-technology claim made from Chrome 147 evidence.
       history:
         - cache_key: sha256:7a0ab9663255e9c87a075ca7fa276ffb64b36fd139cb837ab99c03ec0eb1db19
           session_id: 20260913_142009_78448c
@@ -1059,3 +1055,265 @@ audits:
 
             Bounded, non-blocking follow-ups already recorded in validation.org (do not invalidate this sign-off): native platform/human qualification (UT007.1–9, OT007.1 guidance portion, OT007.2) remain PENDING; the operator's 13 September sequencing authorization permits implementation while Linux/WSL qualification stays pending, and no compatibility claim is made from Chrome results.
           updated: "2026-09-13T13:20:07Z"
+        - cache_key: sha256:bf515de1344a0c06a991b5a983319361dfb0ff99dce569bb901108cbfbaeae37
+          session_id: 20260913_142009_78448c
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 98738ed0a7d5e3856a936f31424232ca489ea7dfdb9638104412a6694869f965
+              bytes: 12313
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: bd32656992311c5b4da2f83ac154bfcb073a71fe987a8bf0d7618b05e7e5cf2c
+              bytes: 3994
+            - path: /Users/tigger/.agents/sdlc/GIT.md
+              sha256: 97bbf89af1c65d159688b452a0434e77d9775f7a98dd1c822ffd264b41012bbb
+              bytes: 7807
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 833de19319224d80f95ad94ab6923b3d4b1255d13a11bac50b07553efa675fc4
+              bytes: 11310
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: 59522d1f15d3d204a9a3e3a648e5eca106344aa87e6b6302077fd2af6e177d83
+              bytes: 2813
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 5ed902d49dbb8321ea093fd60db68d5195e59c95c763c02e4ca0c09f6fa1e932
+              bytes: 13561
+            - path: /Users/tigger/.agents/sdlc/technologies/API.md
+              sha256: 617a6fed7544d449204f0d79426d91a1d4571a084770e6f4589929cf88856fff
+              bytes: 10905
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/skills/deliver-change/SKILL.md
+              sha256: 2f2330e3cd7a074785da95fd34e1d7b8555aeaeb02d69151cfda48e9de23d2fe
+              bytes: 6797
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: cacf11b21a102f0b7ff114446d2489c15cc69f9822a1f8fd2ba9255295b54af4
+              bytes: 790
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 258cb29ca471deffd75b3c97070e9912aa465232847b3bc110b4476fc5150a55
+              bytes: 16163
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-composer.js
+              sha256: 1a7e01dde8eaa9d3f0d70946daff8decedc4e913a0645ea3c6b961c7a7610779
+              bytes: 8026
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: cf10db6a84ed163fee2244a3abe538faa1e803a4505d4ee5fe2c2d4a8788e3b9
+              bytes: 3801
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: 768120b00e028cf856ac311f2a4c17d05a98c4c80b81c13bc96582f294936410
+              bytes: 22390
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: 4a0f4b5ed64d5fd9b4ef5f094a8fdc55db240026ab4d2a1e19f4baa8645e932e
+              bytes: 1526
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: f30ef711520a26503924abbfe268802a939fb53ccf05580887aa00b83ea796df
+              bytes: 14696
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: e6510a2c0f1020c7dd7422fe2ed02c8cf5b81489f9b8e585b0ed0e5193d3a9cf
+              bytes: 17645
+            - path: /Users/tigger/code/tigoss/html-preview/bundle.go
+              sha256: 28d77adbdd855cf514861e934e4db3c173fc53e58f7f7cd5771db0ee7754a85d
+              bytes: 521
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: b4d201623d2d155a3902871edb91bee54f9a989c3fbf12b2ec7c65179a0aa03a
+              bytes: 6031
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: c5bc3d5f8dc39174208427d7e894e712757f48706b11f3e16c8c8248e96af16e
+              bytes: 43937
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: 93d615ddea8e49e5a03f477b63a7017695cf3d3f763ca0f6731c871650abb685
+              bytes: 12293
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 1a4698c21d59b9784086b8bad725b4ababc38f015435559b43ba400c48090ba5
+              bytes: 13666
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: fad718dc6e818444d3dedea06d3ec887ea7e9dd3c804cf8b005dfc2a240cab81
+              bytes: 5508
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 876142d317610cd1945043bed377a776f49b2dd32135e07a312f8ee33aad5407
+              bytes: 11068
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: 1ade6f1ba5461d9d4ce915f459488fceaa7d67d9e98381b341cd22be2443e223
+              bytes: 311
+            - path: /Users/tigger/code/tigoss/html-preview/go.sum
+              sha256: 07c6131b94054c0409e2f5067066a889f48d0671ba913d0ec95c0da81c17753d
+              bytes: 1179
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/append.go
+              sha256: e8cabcbeef332b1193e5620a2f52cec1f5f4597e22f8e5638283ff27ca0cd562
+              bytes: 5192
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/codec.go
+              sha256: 4f9b97d37e36bed7ca6db95d968c3826a3391eead0d792633b7083e1c6e5e182
+              bytes: 7250
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/codec_test.go
+              sha256: fdc5c6b46bb4ea6e8c4337a0c52556faae213c671a232fc96ef3d10590a866a3
+              bytes: 6808
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/event.go
+              sha256: 636101d6fa5086cb298ed010da714d0fc309903afc86c8140d98a16df3b15ccd
+              bytes: 8184
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/files.go
+              sha256: 1bc2f7affd0f60d83c9d80515318228343ac701044d6db62f478ca9c9eb299c8
+              bytes: 5737
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/text.go
+              sha256: b5a963fa3ea25c90c94966babe94d31ab41ef78dd937ae09e527ce90e5ddfa71
+              bytes: 3961
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/text_test.go
+              sha256: 9d37d38e8c450ebea58f1fa374a9918f5ab7d40a1b12a8088e32790175ae3953
+              bytes: 1810
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/writer.go
+              sha256: 9a5cabbd36389688833144016731847e7d3cafb7bc7cff4944f2dba9c286a3c3
+              bytes: 7495
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/writer_test.go
+              sha256: d7f7ec48889785910c59b685a8a3cf0c382c5763f9f856b9bfe3cc7796c3f5e3
+              bytes: 9713
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: 3138e350e86064dc8b21fd3e93a7bf6bc60f2cf38090de2401796d77b963e2df
+              bytes: 3210
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_browser_test.go
+              sha256: e2e46489e9798158fc58662cba73c3ecd9693007b00c09dafb8261b654dc1ec8
+              bytes: 4745
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_compatibility_test.go
+              sha256: bf142a39ef60734c6b2b59a700ab5bfe06654b242d945409aef2c88852d3e278
+              bytes: 2451
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_identity_test.go
+              sha256: e0d4079dcffbd626b69d8e2592f62fcccc641cf4fa0d19087a4dc63e31a08364
+              bytes: 1037
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_limits_test.go
+              sha256: e6c5255a4ef0806a1b1a7cb35cd744e2227641dfcd52bd570d9e0b02d568d717
+              bytes: 3045
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_security_test.go
+              sha256: 09ff0ed306461c43e74046edbd9103339f9a6876254df305a142648fadda843c
+              bytes: 3857
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_service_test.go
+              sha256: e300c98475f10687f9bf6a1ba7c230386e01b8cd4518297e0a5b03ec96e6c1b3
+              bytes: 10453
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/config.go
+              sha256: 229780a009d7f29ab527891842e21c23a8c9f76616b4154976ab5a6ebfeb2345
+              bytes: 5533
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats.go
+              sha256: 3154a18d48461d2a5fee934395767ad56422061cf695d12217ed33e729225350
+              bytes: 7853
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 0351dfe0ebc30723815b66c84c5401ec0f8b94005c419c78276b2b70aaafda26
+              bytes: 10103
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/main.go
+              sha256: b4aa0ffd8faee7c8b797162815c23c5bf9167f91e227cd133c3cf6447698b676
+              bytes: 2941
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/org.go
+              sha256: 21a455d41f600fd3f517e0f160824079de3207efa91d97c8a4717337f9c20ccf
+              bytes: 8808
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/platform.go
+              sha256: 260363b0df198bfb665688dd3d0baf9f2d3c795b4687d00e6fdea5ff5abacca7
+              bytes: 6339
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/process.go
+              sha256: 162c5b3a0e17641aa12eb16e7740362566c551e34b3e5ece527d8acdee843201
+              bytes: 3286
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 268dc624ba3b9e0662851dcc2e4bb1d461143f28818d01b872274c899a473bdb
+              bytes: 14091
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service.go
+              sha256: 4695a3b9e85d93fec2cf1bfc065df7ce4d2148199b08aeb2ce3e9494ec450ab7
+              bytes: 5323
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_annotations.go
+              sha256: 4c5a04bc605711bbd445f417c29ac492d7a40dbb4eb04da15f087e92c044856a
+              bytes: 11979
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache.go
+              sha256: 9e939901673b26632ffe79dfb11700da228902f4e8aeeb191b4dca32c3df60e8
+              bytes: 5586
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
+              sha256: f1554c16b66c8b81666e4d560cb1eec8c9a5cf99bc799d7312f163716318f6d1
+              bytes: 9971
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_client.go
+              sha256: 58cd74c02244f2f0fd47a073457f6cd98ae14ae3432fdef3fccbf980db6e0866
+              bytes: 11065
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_control.go
+              sha256: 7b075638c68a678c0de58e222846da4be0c3f418dd034af11df5314f9f7d7933
+              bytes: 9945
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_http.go
+              sha256: 94fa5772bf17c63f480a6d300dc1879b075d9fc2fb0cf3dd485c5db9be0aba5d
+              bytes: 6287
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_org.go
+              sha256: cb1ead8f923796f51abdb4ce2fbe1306a40ba0307bb9468e92b2dc055afb1895
+              bytes: 2855
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_render.go
+              sha256: 587b2dca4f2f34a2d57f91d1b82acbf916cf3a0a54011b2a0ce2971018e33bac
+              bytes: 7909
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_runtime.go
+              sha256: 041b744e3cb83d87e5748e0ae256f76c015ab1fb982573aa4d9736d10a4e5643
+              bytes: 3814
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 20718529810a8f7762fe43d3a0913d17931b153d09ba15e5ecc37972a9259887
+              bytes: 10980
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/source.go
+              sha256: 1ff1e81cbfac5dcd085d5619b5f53d50d0fad549658eb108c3f0467d2156fa0d
+              bytes: 2798
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser-bootstrap.js
+              sha256: 1d2fcff47138849d2e63f08a6148d9ec7288f1523ef033e02e89ec3c5143185c
+              bytes: 770
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.html
+              sha256: fa06cb8f598e46f30d523f82ba8a603d80807b1d4aa7e9ba3727ffbad706079d
+              bytes: 543
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
+              sha256: 34ba926717fc378e566bd3e18cc1ef590c9349ca7e9b8131a2cdef895eaf7e73
+              bytes: 13615
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
+              bytes: 93437
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/validation.org
+              sha256: a12b07939c52df065b1aead299e9c4cd940120276530a84f96d5778842824221
+              bytes: 24770
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+              sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
+              bytes: 85482
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/validation.org
+              sha256: f03bfcc59625b29dc671eff6613e67a72f6bd7e40575d01a402ee0a22619e4d9
+              bytes: 12792
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+              sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
+              bytes: 62969
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json
+              sha256: ae24f6499037e5e7c20b7317c8ad8e5d18d2a418c748677af8c2fba52f011a7a
+              bytes: 806
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/linked-preview/index.org
+              sha256: 6481d67efeab448f4f6abf4708ce42e5920567c2e433da8707475466e2f737d5
+              bytes: 1219
+          round: 2
+          revision: a80fc4e (W007 annotation candidate supplied in this invocation; production unchanged from the previously reviewed response-validation state)
+          verdict: PASS
+          response: |-
+            GATE: implementation
+            REVISION: a80fc4e (W007 annotation candidate supplied in this invocation; production unchanged from the previously reviewed response-validation state)
+            VERDICT: PASS
+
+            Resume assessment:
+
+            Revision identification: per the caller context, the supplied candidate is a80fc4e; my prior response mislabelled the then-audited tree as 49bd9aa when its manifest already included the response-validation fix. The current manifest's production files (all internal/annotation, internal/preview, assets/web, docs, specs) are hash-identical to that previously audited state, so every prior conformance finding stands unchanged and is incorporated by reference: append-only autosave lifecycle, literal framing and byte preservation, rooted locked appends, capability boundaries, attribution, body mapping and unique reattachment, reader compatibility, CSP extension, and browser/GOP test quality with honest Chrome-only limitation recording.
+
+            Changed evidence reviewed:
+
+            1. internal/annotation/codec_test.go (TestRT007_3_DamagedRecordsRetainValidPrefixAndRefuseAppend): new persisted-byte regressions covering duplicate headers, invalid/unknown/duplicate-key JSON, missing event fields, orphan events without a header, future frame versions (unsupported_store), oversized frames (store_limit) and invalid header payloads. Assertions verify the valid prefix, prior events and exact bytes are retained, the reason code is precise, and AppendBytes refuses further writes on a damaged store — exactly the specification's "retain and diagnose, never truncate, repair or migrate" contract. These are byte-stream tests on the persisted artefact, not source greps; retained under make test. No production change was needed, consistent with the codec already implementing the contract.
+
+            2. specs/007-service-annotations/validation.org: records the combined internal/annotation statement coverage increase from 78.2% to 80.2% with the same combined profile, explicitly scoped as package statement coverage rather than a whole-application or branch claim. Honest reporting; the 80% floor from TESTING.md is met for the new package.
+
+            No duplicated audit state appears in the changed evidence; revision identifiers and test results sit in validation.org in their designated evidence role, and audit outcomes remain solely in audits.yaml links.
+
+            No new or retained blocking findings. The test-only delta adds conformance-relevant coverage without production changes, scope expansion or unnecessary complexity. Outstanding bounded follow-ups remain as previously recorded and do not invalidate sign-off: native platform/human qualification (UT007.1–9, OT007.1 guidance portion, OT007.2) stay PENDING under the operator's recorded sequencing direction, with no Safari, Linux/WSL or assistive-technology claim made from Chrome 147 evidence.
+          updated: "2026-09-13T13:24:26Z"

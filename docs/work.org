@@ -177,7 +177,7 @@ classification; it is provenance, not current state.
   and requested a running browser preview. The current specification owns the
   amended discovery and grant rules.
 
-** ACTIVE W007 - Attributed autosaved annotations in service previews :feature:
+** REVIEW W007 - Attributed autosaved annotations in service previews :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-007
 :PRIORITY: P1
@@ -186,7 +186,7 @@ classification; it is provenance, not current state.
 :END:
 
 - Specification :: [[file:../specs/007-service-annotations/spec.org][W007 - Attributed autosaved annotations in service previews]].
-- Audit evidence :: [[file:../specs/007-service-annotations/audits.yaml][W007 - Retained definition audit]].
+- Audit evidence :: [[file:../specs/007-service-annotations/audits.yaml][W007 - Retained definition and implementation reviews]].
 - Validation :: [[file:../specs/007-service-annotations/validation.org][W007 - Browser and filesystem qualification]].
 - Scope :: *Service-only autosave and source refresh*, embedded annotation history,
   read-only sidecars, author attribution and append-only closed comments.
@@ -196,6 +196,11 @@ classification; it is provenance, not current state.
   specification's sequencing direction. W006 design approval alone is insufficient.
 - Authority :: *Design and delivery approved on 12 September 2026* by Taḋg,
   after W008 input formats and qualified W006 local service.
+- Review candidate :: Attributed autosaved comments, embedded/sidecar records
+  and source refresh are implemented. The validation record contains automated
+  browser, service and macOS APFS evidence. A foreground service and disposable
+  linked fixture are available for operator review. Human browser/accessibility
+  acceptance and the remaining platform matrix are pending; no closure is inferred.
 
 ** REVIEW W008 - Preview Pandoc documents, source code and plain text :feature:defect:
 :PROPERTIES:
