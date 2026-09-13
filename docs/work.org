@@ -175,7 +175,7 @@ classification; it is provenance, not current state.
   and requested a running browser preview. The current specification owns the
   amended discovery and grant rules.
 
-** REVIEW W007 - Attributed autosaved annotations in service previews :feature:
+** ACTIVE W007 - Attributed autosaved annotations in service previews :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-007
 :PRIORITY: P1
@@ -189,7 +189,9 @@ classification; it is provenance, not current state.
 - Scope :: *Service-only autosave and source refresh*, embedded annotation history,
   read-only sidecars, author attribution and append-only closed comments.
 - Dependency :: *W006 delivery and recorded service qualification precede W007
-  implementation*. W006 design approval alone is insufficient.
+  implementation*. On 13 September the operator authorized continuation on the
+  working macOS service with Linux/WSL qualification remaining pending; see the
+  specification's sequencing direction. W006 design approval alone is insufficient.
 - Authority :: *Design and delivery approved on 12 September 2026* by Taḋg,
   after W008 input formats and qualified W006 local service.
 

@@ -136,6 +136,14 @@ UX verification; the earlier documents remain historical baseline evidence.
 :CUSTOM_ID: constraints-and-dependencies
 :END:
 
+- Operator sequencing direction, 13 September 2026 :: After observing working
+  project-link navigation on the W006 macOS service, Taḋg instructed continuation
+  of the remaining implementation and confirmed that *Linux/WSL qualification
+  remains pending because those platforms cannot be tested here*. W007 may
+  proceed on that service candidate with the recorded local evidence. This
+  supersedes the all-platform qualification hold below for implementation
+  admission only; unperformed platform, manager and browser checks remain
+  pending and no native compatibility or closure result is inferred.
 - *W006 must be delivered first*, with its candidate revision, required automated
   service evidence and platform/user qualification recorded. A definition PASS or
   design approval is insufficient. Do not fold W006 implementation into W007.
@@ -1299,7 +1307,9 @@ These checks connect their *important decisions to existing evidence types*.
   stated source-preservation, polling-refresh and browser-regression exceptions.
   Preserve strict invalid-setting exit behaviour. Requalify affected reader controls.
 - Authority :: *Design and delivery were authorized on 12 September 2026*.
-  The W006 delivery and qualification prerequisite remains mandatory.
+  The W006 delivery prerequisite is subject to the operator's 13 September
+  sequencing direction under Constraints and dependencies. Unperformed
+  qualification remains mandatory evidence before platform closure.
 
 * Hands-off mode decision log
 :PROPERTIES:

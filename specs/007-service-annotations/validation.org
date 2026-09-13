@@ -13,6 +13,27 @@
   procedure, observed evidence and reviewer*. Human tests require human authority.
   All required platforms remain PENDING until observed individually.
 
+* Implementation admission, 13 September 2026
+
+- Service baseline :: =3819952= (portable service configuration and review
+  evidence), with runtime =7d890c0= and synthetic linked fixture =1b040aa=.
+  [[file:../006-local-preview-service/validation.org][Service validation]] records
+  race-enabled regression, lint, vulnerability and actual loopback/browser
+  handoff evidence. [[file:../006-local-preview-service/audits.yaml][Service
+  implementation review]] retains the independent review evidence.
+- Operator observation :: Taḋg confirmed project-link navigation on macOS and
+  instructed continuation of the remaining implementation. When asked about
+  pending native qualification, the operator confirmed, "linux/wsl will remain
+  pending as i can't test it here".
+- Admission :: The specification records this operator sequencing direction.
+  It permits W007 implementation on the working service without converting
+  unperformed platform or manager checks into passes. All W007 browser and
+  filesystem results below remain pending until individually observed.
+- OT007.1 dependency review :: The service code and running linked fixture,
+  recorded local checks, operator observation and explicit sequencing direction
+  provide the pre-implementation evidence. The later delivered-guidance portion
+  remains pending; this entry is not a full OT007.1 pass.
+
 ** UT007.1 - Attributed persistence
 :PROPERTIES:
 :CUSTOM_ID: ut-007-1
@@ -140,4 +161,3 @@
 
 - Definition :: [[file:spec.org::#ot-007-2][OT007.2 - Native filesystem qualification]].
 - Evidence :: *Not executed*. Record the bounded procedure and actual result.
-
