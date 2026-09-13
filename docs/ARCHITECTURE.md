@@ -160,6 +160,13 @@ GET/refresh supplies current text in service mode; file previews use their
 snapshot. No raw-source endpoint, binary extraction, wider capability or dependency is
 introduced. Payload growth counts against existing output/cache budgets.
 
+Pandoc retains ownership of footnote HTML: native reference anchors, one endnotes
+section and its backlinks. Annotation mode moves that existing section into the
+aside and returns it to the document end on exit. It does not clone or regenerate
+the notes. Refresh and print restore placement through the reader lifecycle;
+canonical insertion-point text excludes endnotes and reference labels in both
+Go and browser mappings. The separate annotation list/print appendix is retired.
+
 This is a definition proposal awaiting full amended sign-off, not an implementation
 claim. Taḋg withdrew permanent autosave history and selected footnotes and point
 insertion on 14 September. Its specification identifies the superseded W005/W007

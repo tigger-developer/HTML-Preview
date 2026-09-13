@@ -25,6 +25,8 @@
 - *Navigation fits its content*; annotations occupy a visible right column, or the larger lower pane on phones.
 - In annotation mode, a *click places a footnote at an insertion point* and focuses the comment box.
 - *Native Org/Markdown footnotes store only current annotation text*, without autosave history or embedded JSON.
+- *Pandoc renders all footnotes at the document end*. Annotation mode moves the
+  same footnote section into the sidebar; switching off returns it to the end.
 - A *subtle editable Footnote ID field below the comment box* defaults to =annotationNN=.
 - *Compact save feedback and readable dates* replace raw timestamps and large closing controls.
 - *Show plaintext reveals literal Org/Markdown source*, including embedded annotations, with the info bar retained.
@@ -105,7 +107,8 @@ source* in the same preview on desktop and phone layouts.
   acknowledgement and draft-recovery guarantees* remain authoritative unless explicitly replaced below.
 - *Existing document-wide comments remain readable*. Creation uses point targets;
   the old mutation protocol is retired rather than emulating event appends.
-- *Folding, code/path copying, Org metadata and print appendix* retain their meaning.
+- *Folding, code/path copying and Org metadata* retain their meaning. Native
+  footnotes replace the separate annotation print appendix.
 
 ** Authority and starting point
 
@@ -121,6 +124,10 @@ source* in the same preview on desktop and phone layouts.
   replaced. Footnote references/definitions are intentional, bounded source edits;
   other authored bytes are preserved. Earlier specifications describe the existing
   candidate and remain historical evidence, not authority to retain withdrawn behaviour.
+- Rendering correction :: On 14 September, Taḋg selected *ordinary Pandoc endnotes
+  for all footnotes*, with the sidebar only a toggled convenience view. This
+  supersedes W007's separate annotation-list/print-appendix rendering and the
+  initial W009 plan to extract owned definitions into a separate presentation.
 - Withdrawn assumption :: Taḋg explicitly rejected *permanent autosave history*:
   only current annotations belong in the document; version history belongs in Git.
   The application does not initialize repositories, commit, or manage history.
@@ -167,6 +174,9 @@ source* in the same preview on desktop and phone layouts.
   =[fn:annotation01]= / =[^annotation01]= notation and matching definitions.
 - Operator, 14 September 2026 :: *Editable ID defaults to annotationNN*, shown
   subtly below the comment text box. Initial focus remains in the comment box.
+- Operator, 14 September 2026 :: *Render footnotes normally at the document end*.
+  Annotation mode shows those footnotes in the sidebar; switching off restores
+  their normal position. Ordinary footnotes participate without becoming editable.
 
 ** Unresolved blockers
 
@@ -206,7 +216,7 @@ source* in the same preview on desktop and phone layouts.
 - Criterion :: Controls share a common appearance with *visible and accessible
   active/inactive states*. Annotation activation is restricted to its on state;
   plaintext and annotation composition cannot be active together.
-- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]], [[#rt-009-2][RT009.2 - Passage activation]].
+- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]], [[#rt-009-2][RT009.2 - Point activation]].
 
 ** AC009.4 - Content-sized navigation and visible annotations
 :PROPERTIES:
@@ -238,7 +248,7 @@ source* in the same preview on desktop and phone layouts.
 - Criterion :: The composer presents *small textual autosave feedback and compact
   named controls*. Closing, switching insertion points or leaving annotation mode does
   not hide unacknowledged text; *save failure retains the editable composer*.
-- Proven by :: [[#rt-009-3][RT009.3 - Composer transitions and refresh]], [[#ut-009-2][UT009.2 - Selection, save feedback and recovery]].
+- Proven by :: [[#rt-009-3][RT009.3 - Composer transitions and refresh]], [[#ut-009-2][UT009.2 - Point insertion, save feedback and recovery]].
 
 ** AC009.7 - Readable annotation timestamps
 :PROPERTIES:
@@ -248,7 +258,7 @@ source* in the same preview on desktop and phone layouts.
 - Criterion :: Saved comments show *author, local calendar date and minute-level
   time*, with the original UTC timestamp available to inspect. Display formatting
   does not change stored attribution or timestamps.
-- Proven by :: [[#rt-009-4][RT009.4 - Date presentation]], [[#ut-009-2][UT009.2 - Selection, save feedback and recovery]].
+- Proven by :: [[#rt-009-4][RT009.4 - Date presentation]], [[#ut-009-2][UT009.2 - Point insertion, save feedback and recovery]].
 
 ** AC009.8 - Literal source view
 :PROPERTIES:
@@ -269,7 +279,7 @@ source* in the same preview on desktop and phone layouts.
 - Criterion :: The new views *preserve ordinary links, folding, literal copying
   and existing comments*. Reading or toggling without a non-empty draft causes
   no source write; source text remains inert in every view.
-- Proven by :: [[#rt-009-2][RT009.2 - Passage activation]], [[#rt-009-3][RT009.3 - Composer transitions and refresh]], [[#rt-009-5][RT009.5 - Literal source and format boundaries]], [[#ut-009-1][UT009.1 - Responsive reading and composition]].
+- Proven by :: [[#rt-009-2][RT009.2 - Point activation]], [[#rt-009-3][RT009.3 - Composer transitions and refresh]], [[#rt-009-5][RT009.5 - Literal source and format boundaries]], [[#ut-009-1][UT009.1 - Responsive reading and composition]].
 
 ** AC009.10 - Current annotation values only
 :PROPERTIES:
@@ -325,6 +335,17 @@ source* in the same preview on desktop and phone layouts.
   latest valid value and attribution*, without its old autosave history. Unplaced
   legacy comments remain visible and are never silently attached or discarded.
 - Proven by :: [[#rt-009-7][RT009.7 - Replacement, concurrency and legacy stores]].
+
+** AC009.15 - One native footnote view
+:PROPERTIES:
+:CUSTOM_ID: ac-009-15
+:END:
+
+- Criterion :: With annotations off, *all footnotes render normally at the end
+  of the document*. With annotations on, the same footnotes appear in the sidebar.
+  References and backlinks continue to reach their targets in either mode;
+  neither duplicate IDs nor a separate annotation appendix is generated.
+- Proven by :: [[#rt-009-8][RT009.8 - Native endnote relocation]], [[#ut-009-1][UT009.1 - Responsive reading and composition]], [[#ut-009-4][UT009.4 - Footnote source and portability]].
 
 * Test Definitions
 :PROPERTIES:
@@ -390,10 +411,10 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   point during pending save; retry failures; refresh the document; print and return.
 - Expected :: One transition awaits *latest text acknowledgement and close*;
   failure retains text, target and mode. Repeated activation does not duplicate
-  comments. Empty composers write nothing. Save status never claims pending
+  comments. Empty initial composers write nothing. Save status never claims pending
   text is saved. Refresh retains composer/focus and mode; ambiguous targets pause
-  saving. Existing document comments remain readable. Print retains W007's saved
-  appendix and restores the interactive layout afterwards.
+  saving. Existing document comments remain readable. Print returns the same
+  footnotes to the document end and restores the interactive layout afterwards.
 - Retention :: *Persistent browser and Go service regressions*. Preserve W007's
   security/scheduling coverage; replace expectations for the retired event protocol.
 
@@ -443,7 +464,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 :CUSTOM_ID: ut-009-1
 :END:
 
-- Covers :: [[#ac-009-1][Persistent bar]], [[#ac-009-4][Responsive panes]], [[#ac-009-9][Reader compatibility]].
+- Covers :: [[#ac-009-1][Persistent bar]], [[#ac-009-4][Responsive panes]], [[#ac-009-9][Reader compatibility]], [[#ac-009-15][Native endnotes]].
 - Reviewer :: Taḋg or named human tester.
 - Procedure :: On the running service, read linked Org/Markdown samples, scroll
   both panes, fold sections, copy a long source path and use each mode. Review
@@ -451,7 +472,9 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   software keyboard shown where available; inspect light/dark and print views.
 - Expected :: *No hidden controls, unreadable shrinking or overlap*. Navigation
   wastes no obvious space; comments stay available while source text remains
-  selectable. Focus and targets stay visible below the info bar.
+  selectable. Footnotes move between the document end and sidebar as mode changes;
+  reference/backlink navigation works in both locations. Focus and targets stay
+  visible below the info bar.
 - Record :: Date, OS/browser/version, viewport/zoom, actual device or emulation,
   observations and result in =validation.org=. Device emulation is not actual
   phone keyboard evidence; unavailable platform checks remain pending. Use
@@ -547,14 +570,15 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 :CUSTOM_ID: ut-009-4
 :END:
 
-- Covers :: [[#ac-009-10][Current values]], [[#ac-009-11][Native footnotes]].
+- Covers :: [[#ac-009-10][Current values]], [[#ac-009-11][Native footnotes]], [[#ac-009-15][Native endnotes]].
 - Reviewer :: Taḋg or named human tester.
 - Procedure :: Create and rename an annotation in each format; inspect the
   source after several autosaves and after close. Follow the footnote in an Org
   reader and a Markdown reader with footnote support, and inspect native export.
 - Expected :: The *comment, author and ID are readily identifiable*; the reference
   is at the clicked point. There is one current comment, with no draft-history
-  dump. Ordinary footnotes still work. Read-only sidecar limitations are explicit.
+  dump. Ordinary and owned footnotes use one native endnote list, including when
+  moved into the sidebar. Read-only sidecar limitations are explicit.
 - Record :: Dated reader/browser versions and observations in =validation.org=.
 
 ** OT009.1 - Native replacement qualification
@@ -576,6 +600,26 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   source or global service-manager configuration is modified.
 - Record :: Results in =validation.org=. macOS can be exercised locally;
   Linux/WSL remain pending if unavailable. No new persistent platform harness.
+
+** RT009.8 - Native endnote relocation
+:PROPERTIES:
+:CUSTOM_ID: rt-009-8
+:END:
+
+- Covers :: [[#ac-009-15][One native footnote view]], [[#ac-009-9][Reader compatibility]].
+- Boundary :: Real Pandoc output through the final sanitizer and real-browser reader lifecycle.
+- Setup :: Org/Markdown with ordinary and owned notes, multiple references,
+  different source labels, long footnote content, a folded final section and no-note controls.
+- Action :: Render; activate references/backlinks with mode off; toggle on,
+  navigate within the sidebar, toggle off repeatedly, save/refresh, print and restore.
+- Expected :: Pandoc's native numbered references and one endnotes section remain;
+  ID/href pairs resolve in both positions. Endnotes stay outside the final fold.
+  Toggling changes placement, not contents, canonical point offsets or source bytes.
+  No duplicate IDs/list, lost focus or dead backlink appears after refresh.
+  Print places current saved footnotes at the end once. Empty footnote lists do
+  not prevent opening the composer. Ordinary footnotes receive no write controls.
+- Retention :: *Persistent Go/browser regressions*, using parsed DOM and real
+  navigation rather than matching HTML strings alone.
 
 * Edge Cases
 :PROPERTIES:
@@ -699,8 +743,9 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - Refresh :: *Keep active mode, composer and focus outside replaced regions*.
   Reapply controls once after refresh, without duplicate handlers. Retain existing
   source reattachment and navigation guards; new document navigation starts modes off.
-- Print :: Restore normal-flow rendered content with W007's saved appendix and
-  no interactive panels. Plaintext prints source only. Restore modes afterwards.
+- Print :: *Return the native footnotes to the document end* with no interactive
+  panels or second annotation appendix. Print current saved content, excluding
+  unsaved drafts. Plaintext prints source only. Restore modes and placement afterwards.
 
 *** Point activation and composer feedback
 :PROPERTIES:
@@ -802,18 +847,16 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   the native footnote grammar. Reject an unterminated literal/comment context.
   On edits, patch only its reference token, body and metadata. Preserve all other
   source bytes, BOM, line endings, ordinary footnotes and comments.
-- Rendering :: In annotation-enabled service previews, extract owned definitions before conversion, replacing owned
-  references with provenance-bound inline markers. Their comment text and
-  metadata stay out of article/navigation/frontmatter and appear in the annotation
-  pane and saved print appendix. Native readers/exporters see ordinary footnotes;
-  Markdown portability requires a reader supporting footnotes. No network resource
-  or executable content is introduced by a comment.
+- Rendering :: *Leave references and definitions for Pandoc to render normally*;
+  remove only hidden owned metadata from the conversion input. Keep native
+  footnote content at the document end, outside heading folding and navigation.
+  Annotation creation does not install a parallel comment renderer. Comments
+  remain passive under the existing sanitizer; ordinary notes retain their content.
+  Markdown portability requires a reader supporting footnotes.
 - Reading without annotation UI :: File previews and service registrations without
-  annotations *retain native footnote rendering*, removing only owned hidden
-  metadata. They do not lose comments or gain writes. In the annotation-enabled
-  view, clicking an existing marker opens its current comment and panel; it does
-  not create another annotation. Print uses either the existing saved-comment
-  appendix or native footnotes, never both for the same owned comment.
+  annotation UI retain native endnotes without gaining writes. Existing reference
+  clicks follow their normal link to the endnote; they do not automatically enter
+  annotation mode. The mode button controls relocation explicitly.
 - Read-only sources :: Keep the established full-basename =-annotations.org=
   sidecar. It contains a readable context line with an Org footnote reference and
   one matching current definition. Metadata additionally stores source identity,
@@ -821,6 +864,46 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   insert a physical reference into a read-only source*. Its preview gets virtual
   markers; external readers need the sidecar and cannot display those as inline
   source footnotes automatically.
+
+*** Native endnotes and sidebar placement
+:PROPERTIES:
+:CUSTOM_ID: native-endnotes
+:END:
+
+- Observed HTML :: A bounded probe with *Pandoc 3.9.0.2* on 14 September produced
+  the same structure from Org and Markdown: =a.footnote-ref#fnref1[href="#fn1"]=,
+  =section#footnotes.footnotes.footnotes-end-of-document= containing =li#fn1=,
+  and =a.footnote-back[href="#fnref1"]=. Roles were =doc-noteref=,
+  =doc-endnotes= and =doc-backlink=. Source labels are not preserved as those
+  HTML IDs: *never infer a footnote label from fn1 or its displayed number*.
+- Rendering boundary :: Retain these Pandoc classes, IDs and fragment links through
+  finalization. The current sanitizer strips these role attributes; preserve only
+  the corresponding fixed role values on the appropriate anchor/section elements.
+  Do not globally allow arbitrary roles or use source-supplied classes as write authority.
+  After heading wrapping, keep endnotes as the final non-foldable document child.
+- One DOM list :: The reader remembers the *original endnotes position*. On
+  annotation-mode entry, move that existing section into the annotation aside;
+  on exit, move it back. Do not clone, renumber or separately generate its notes.
+  All ordinary and owned footnotes participate; only the active owned composer
+  can write. Keep the composer distinct from the read-only native footnotes.
+- Navigation :: Preserve native IDs and hrefs. Reference links scroll to their
+  target in whichever pane currently contains it; backlinks reveal a folded
+  source section and return to the reference. Keyboard focus and fragment scroll
+  margins account for the persistent info bar. No automatic toggle on a normal
+  reference click is required.
+- Refresh/print :: Restore the list before reader teardown, replace it with the
+  freshly rendered list through the existing page refresh, then reapply the mode.
+  Full-store changes, including footnote-only updates, trigger this refresh.
+  Keep the composer outside replacement and preserve its focus/dirty text. Print
+  temporarily restores native placement; there is no second saved-comment appendix.
+- Canonical text :: Go and browser point mapping both *exclude endnotes and
+  footnote-reference/backlink labels*. Moving the list or updating its text must
+  not change a point's canonical offset or authored-body revision. Ordinary source
+  text remains included; no arbitrary source class changes write authorization.
+- Empty/unplaced notes :: A document with no footnotes still permits point creation.
+  Legacy or sidecar comments without a verifiable location remain explicitly
+  unplaced entries at the end, included in the same moved section without a false
+  inline source marker. They are not silently discarded or presented as located notes.
 
 *** Source-point verification and replacement
 :PROPERTIES:
@@ -885,12 +968,19 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   revisions, storage/writable/reason and a =comments= list of current records;
   it does not expose an event-history API. HEAD remains non-mutating.
 - Mutation :: POST carries =operation_id=, =annotation_id=, monotonic =sequence=,
-  =action: upsert|close=, =label=, =text=, =target= and W007's fresh revision
+  =composer_id=, =action: upsert|close=, =label=, =text=, =target= and W007's fresh revision
   preconditions. Author/timestamps are server-owned. Use one in-flight request
   per composer and the existing 300 ms debounce/two-second maximum wait.
   Upsert replaces only the current active value; close sets closed state without
   duplicating its text. An empty active upsert removes only that active record;
   empty initial composition does not create a store. No DELETE for closed notes.
+- Point interface :: A new target has =type: point=, =body_revision=,
+  =position= (canonical scalar offset), =run= (clicked text-node text) and
+  =run_offset= (scalar offset within it). The server verifies all fields and
+  derives before/after context and structural identity. Subsequent mutations
+  retain the annotation UUID and resolve its current owned reference. GET's
+  current records expose =annotation_id=, =label=, =text=, author/timestamps,
+  sequence, state and resolved/unplaced status; they never expose composer secrets.
 - Revisions :: Preserve *authored-source versus full-store revision separation*:
   exclude owned footnote tokens/definitions when calculating authored-source
   revision. The full revision includes current source and sidecar records.
@@ -914,7 +1004,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   mutation and remain intact. Reading alone never migrates a source.
 - Legacy anchors :: For a uniquely resolved old passage, place its new marker at
   the *end of that passage*. A document target or unresolved range becomes an
-  explicitly unplaced current definition, visible in the panel/appendix with its
+  explicitly unplaced current definition, visible in the endnotes/sidebar with its
   original context; do not invent a location or discard the comment.
 - Two stores :: Migrate *only the destination being written*. A source and sidecar
   are not an atomic pair; continue reading both and reconcile by UUID/sequence,
@@ -957,6 +1047,15 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   unavailable-view error, not a switch to blank or truncated content.
 
 ** Design decisions and verification
+
+*** Pandoc owns footnote rendering
+
+- Decision :: *Relocate the existing native endnotes section* for the sidebar.
+- Rationale :: The operator explicitly chose normal endnotes with a convenience
+  sidebar. One DOM section preserves native links and avoids a second renderer,
+  duplicate numbering, IDs or a separate print appendix.
+- Verification :: [[#rt-009-8][Native endnote relocation]] and [[#ut-009-4][Footnote portability]];
+  implementation review checks that native content is reused rather than rebuilt.
 
 *** Shared layout and one browsing context
 

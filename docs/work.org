@@ -244,6 +244,8 @@ classification; it is provenance, not current state.
   proceeding with the secondary ID-field approach.
 - Boundaries :: *Current-value storage replaces the event writer*; service
   authorization remains and earlier Linux/WSL qualification stays pending.
+- Presentation :: *Pandoc endnotes remain the normal view*; the annotation toggle
+  moves the same footnote section into the sidebar and restores it on exit.
 
 * Migration record
 :PROPERTIES:

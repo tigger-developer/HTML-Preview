@@ -98,7 +98,10 @@ Navigation sizes to its content. Annotation mode opens a composer at a clicked
 insertion point, with compact autosave feedback and readable dates. The comment
 box receives focus; a subtle editable Footnote ID field sits below it and defaults
 to annotationNN. Native Org and Markdown references link to readable definitions.
-Comments occupy a right column, or the larger lower pane of a phone split view.
+Pandoc renders comments as ordinary footnotes at the document end. Annotation
+mode moves that same footnote list into the right column, or the larger lower
+pane of a phone split view. Switching it off restores the endnotes. Ordinary
+footnotes participate in this view without becoming editable.
 
 Show plaintext reveals literal Org/Markdown source, including embedded footnotes,
 while retaining the info bar and disabling annotation. TXT, code wrappers,
