@@ -181,6 +181,21 @@ func TestRT007_6_RetryHonoursFilesystemLock(t *testing.T) {
 	}
 }
 
+func TestRT007_6_CancelledSyncDoesNotAcknowledge(t *testing.T) {
+	loc, initial := sourceFixture(t, "cancel.org")
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	w := NewWriter(FileOperations{Sync: func(f *os.File) error { cancel(); return f.Sync() }})
+	request := requestFixture(t, initial)
+	if _, _, err := w.Append(ctx, loc, initial.SourceInfo, "Reviewer", "secret", request); !errors.Is(err, context.Canceled) {
+		t.Fatalf("cancelled operation acknowledged: %v", err)
+	}
+	w.operations.Sync = func(f *os.File) error { return f.Sync() }
+	if _, retry, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", request); err != nil || !retry {
+		t.Fatalf("cancelled sync retry=%v %v", retry, err)
+	}
+}
+
 func TestRT007_7_IdentityAliasesAndStaleSource(t *testing.T) {
 	for _, change := range []string{"hard link", "symlink sidecar", "replacement", "edit", "foreign sidecar"} {
 		t.Run(change, func(t *testing.T) {

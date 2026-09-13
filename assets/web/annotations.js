@@ -71,9 +71,10 @@ export class AnnotationPanel {
     this.add = annotationButton('Add comment'); this.add.disabled = true;
     this.connection = annotationElement('p', 'Loading annotations…', 'hp-annotation-status');
     this.connection.setAttribute('role', 'status'); this.connection.setAttribute('aria-live', 'polite');
+    this.reconnect = annotationButton('Reconnect'); this.reconnect.hidden = true;
     this.list = annotationElement('div'); this.editor = annotationElement('div');
     this.appendix = annotationElement('section', '', 'hp-annotation-print'); this.appendix.setAttribute('aria-label', 'Saved annotations');
-    this.panel.append(annotationElement('h2', 'Annotations'), this.connection, this.add, this.editor, this.list);
+    this.panel.append(annotationElement('h2', 'Annotations'), this.connection, this.reconnect, this.add, this.editor, this.list);
     document.body.append(this.panel, this.appendix); this.attachToggle();
     this.listen();
     this.ready = this.refresh().catch(error => this.showFailure(error));
@@ -82,7 +83,11 @@ export class AnnotationPanel {
   attachToggle() { (document.querySelector('#hp-header .hp-toolbar') || document.getElementById('hp-header-row')).append(this.toggle); }
 
   listen() {
-    this.toggle.addEventListener('click', () => { this.panel.hidden = !this.panel.hidden; this.toggle.setAttribute('aria-expanded', String(!this.panel.hidden)); }, this.events);
+    this.toggle.addEventListener('click', () => {
+      this.panel.hidden = !this.panel.hidden; this.toggle.setAttribute('aria-expanded', String(!this.panel.hidden));
+      if (!this.panel.hidden && matchMedia('(max-width:45rem)').matches) this.panel.scrollIntoView({ block: 'start' });
+    }, this.events);
+    this.reconnect.addEventListener('click', () => this.refresh().catch(error => this.showFailure(error)), this.events);
     this.add.addEventListener('click', () => this.openComposer(), this.events);
     document.addEventListener('selectionchange', () => {
       const selection = window.getSelection(); const main = document.getElementById('hp-document');
@@ -135,7 +140,10 @@ export class AnnotationPanel {
     this.editor.append(label, this.textarea, this.status, close, this.recovery);
     this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target,
       send: (request, secret) => this.request(this.data.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-HTMLPreview-Annotation-Token': this.state.write_token, 'X-HTMLPreview-Composer-Token': secret }, body: JSON.stringify(request) }),
-      onState: state => { this.status.textContent = state.status + (state.error ? ': ' + state.error.message : ''); this.recovery.hidden = !state.error; },
+      onState: state => {
+        this.status.textContent = state.status + (state.error ? ': ' + state.error.message : ''); this.recovery.hidden = !state.error;
+        if (this.composer?.sequence && this.displayedSequence !== this.composer.sequence) { this.displayedSequence = this.composer.sequence; this.renderComments(this.state.events); }
+      },
       onStale: async current => { await this.refresh(); return this.rebaseTarget(current); },
     });
     this.textarea.addEventListener('input', () => this.composer.input(this.textarea.value), this.events);
@@ -176,6 +184,7 @@ export class AnnotationPanel {
   showFailure(error) {
     if (this.disposed) return;
     this.connection.textContent = 'Annotations unavailable: ' + error.message;
+    this.reconnect.hidden = false;
     this.add.disabled = true;
     if (this.composer && [403, 404].includes(error.status)) this.composer.suspend('The document is unavailable. Copy your draft before leaving.');
   }
@@ -184,7 +193,7 @@ export class AnnotationPanel {
 
   schedulePoll() {
     this.cancelPoll();
-    if (this.disposed || document.hidden) return;
+    if (this.disposed || document.hidden || this.lastError?.code === 'grant_capacity') return;
     const delay = this.failures ? [2000, 4000, 8000, 30000][Math.min(this.failures - 1, 3)] : 1000;
     this.poll = this.clock.setTimeout(() => { this.poll = null; this.refresh().catch(error => this.showFailure(error)); }, delay);
   }
@@ -194,8 +203,8 @@ export class AnnotationPanel {
     if (this.pendingRefresh) return this.pendingRefresh;
     this.cancelPoll();
     this.pendingRefresh = this.loadState();
-    try { await this.pendingRefresh; this.failures = 0; }
-    catch (error) { this.failures += 1; throw error; }
+    try { await this.pendingRefresh; this.failures = 0; this.lastError = null; }
+    catch (error) { this.failures += 1; this.lastError = error; throw error; }
     finally { this.pendingRefresh = null; this.schedulePoll(); }
   }
 
@@ -207,6 +216,7 @@ export class AnnotationPanel {
     if (this.disposed) return;
     const changed = !this.state || this.state.revision !== state.revision;
     this.state = state; this.data.revision = state.revision;
+    this.reconnect.hidden = true;
     this.connection.textContent = state.writable ? (state.storage === 'sidecar' ? 'Comments autosave beside this read-only source.' : 'Comments autosave in this document.') : 'Reading only: ' + state.reason.replaceAll('_', ' ');
     this.add.disabled = !state.writable || Boolean(this.composer);
     if (changed) this.renderComments(state.events);
@@ -241,6 +251,14 @@ export class AnnotationPanel {
   }
 
   renderComments(events) {
+    const composer = this.composer;
+    const acknowledged = composer?.savedReceipt;
+    if (acknowledged && this.data.display_name) {
+      const existing = events.find(event => event.annotation_id === composer.annotationID);
+      if (!existing || existing.sequence < composer.sequence) {
+        events = events.filter(event => event.annotation_id !== composer.annotationID).concat({ annotation_id: composer.annotationID, sequence: composer.sequence, author: this.data.display_name, recorded_at: acknowledged.stored_at, text: composer.savedText, target: composer.savedTarget, closed: acknowledged.closed, status: 'resolved' });
+      }
+    }
     this.list.replaceChildren(); this.appendix.replaceChildren(annotationElement('h2', 'Saved annotations'));
     this.appendix.hidden = events.length === 0;
     for (const event of events) {
@@ -249,9 +267,12 @@ export class AnnotationPanel {
       if (event.target.exact) comment.append(annotationElement('blockquote', event.target.exact));
       comment.append(annotationElement('p', event.text, 'hp-annotation-text'));
       let status = event.closed ? 'Saved' : this.composer?.annotationID === event.annotation_id ? 'Autosaved draft' : 'Recovered draft · read only';
+      const unacknowledged = composer?.annotationID === event.annotation_id && event.sequence > composer.sequence;
+      if (unacknowledged) status = 'Stored draft · acknowledgement pending';
       if (event.status !== 'resolved') status += ' · ' + event.status;
       comment.append(annotationElement('p', status, 'hp-annotation-status'));
-      this.list.append(comment); this.appendix.append(comment.cloneNode(true));
+      this.list.append(comment);
+      if (!unacknowledged) this.appendix.append(comment.cloneNode(true));
     }
     if (!events.length) this.list.append(annotationElement('p', 'No saved annotations.', 'hp-annotation-status'));
   }

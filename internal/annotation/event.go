@@ -121,18 +121,24 @@ func (t Target) Validate() error {
 }
 
 func (r Request) Validate() error {
+	if len(r.Text) > 16384 || utf8.RuneCountInString(r.Text) > 4000 || len(r.Target.Exact) > 8192 || utf8.RuneCountInString(r.Target.Prefix) > 64 || utf8.RuneCountInString(r.Target.Suffix) > 64 || len(r.Target.HeadingID) > 4096 {
+		return fail("body_limit")
+	}
 	if !ValidID(r.OperationID) || !ValidID(r.AnnotationID) || !ValidID(r.ComposerID) || r.Sequence < 1 || r.Sequence > MaxEvents || (r.Kind != "draft" && r.Kind != "close") || !ValidText(r.Text) {
-		return errors.New("invalid event")
+		return fail("invalid_event")
 	}
 	for _, revision := range []string{r.Revision, r.SourceRevision, r.BodyRevision} {
 		if len(revision) != 64 {
-			return errors.New("invalid revision")
+			return fail("invalid_event")
 		}
 		if _, err := hex.DecodeString(revision); err != nil {
-			return errors.New("invalid revision")
+			return fail("invalid_event")
 		}
 	}
-	return r.Target.Validate()
+	if r.Target.Validate() != nil {
+		return fail("invalid_event")
+	}
+	return nil
 }
 
 func (e Event) Validate() error {

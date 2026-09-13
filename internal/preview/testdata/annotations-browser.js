@@ -61,6 +61,18 @@ try {
   assert(statuses.at(-1).status === 'Saved', 'Closed acknowledged comment is saved');
   composer.dispose();
 
+  const continuousClock = new TestClock(); const continuousRequests = [];
+  const continuous = new app.AnnotationComposer({ clock: continuousClock, target: { type: 'document' }, revisions: { revision: 'a'.repeat(64), source_revision: 'b'.repeat(64), body_revision: 'c'.repeat(64) },
+    send: async request => { continuousRequests.push(request); return { annotation_id: request.annotation_id, sequence: request.sequence, closed: false }; },
+  });
+  continuous.input('0');
+  for (let i = 1; i < 10; i += 1) { await continuousClock.advance(200); continuous.input(String(i)); }
+  await continuousClock.advance(199);
+  assert(continuousRequests.length === 0, 'Continuous typing coalesces intermediate drafts');
+  await continuousClock.advance(1);
+  assert(continuousRequests.length === 1 && continuousRequests[0].text === '9', 'Continuous typing saves at the two-second bound');
+  continuous.dispose();
+
   const coalesced = []; let release;
   const slowClock = new TestClock();
   const slow = new app.AnnotationComposer({ clock: slowClock, jitter: () => 0,
@@ -97,12 +109,13 @@ try {
   assert(typeof app.AnnotationPanel === 'function', 'Packaged annotation presentation is available');
   const panelClock = new TestClock();
   const state = { protocol: 1, revision: 'a'.repeat(64), source_revision: 'b'.repeat(64), body_revision: 'c'.repeat(64), events: [], writable: true, write_token: 'test-token', storage: 'embedded', reason: '' };
-  const panel = new app.AnnotationPanel({ endpoint: '/fixture-state', page_url: location.href, ...state, explicit_ids: {} }, {
+  const panel = new app.AnnotationPanel({ endpoint: '/fixture-state', page_url: location.href, display_name: 'Fixture Reviewer', ...state, explicit_ids: {} }, {
     clock: panelClock, request: async (_url, options = {}) => {
       if (options.method === 'POST') {
         const event = JSON.parse(options.body);
+        state.revision = String(event.sequence).repeat(64);
         state.events = [{ ...event, author: 'Fixture Reviewer', recorded_at: '2026-09-13T12:00:00Z', closed: event.kind === 'close', status: 'resolved' }];
-        return { annotation_id: event.annotation_id, sequence: event.sequence, closed: event.kind === 'close', revision: state.revision, source_revision: state.source_revision, body_revision: state.body_revision };
+        return { annotation_id: event.annotation_id, sequence: event.sequence, closed: event.kind === 'close', stored_at: '2026-09-13T12:00:00Z', revision: state.revision, source_revision: state.source_revision, body_revision: state.body_revision };
       }
       return structuredClone(state);
     }, reinitialize: async () => {},
@@ -116,6 +129,7 @@ try {
   textarea.value = '<script>literal annotation</script>'; textarea.dispatchEvent(new Event('input', { bubbles: true }));
   await panelClock.advance(300);
   assert(panel.editor.querySelector('[role=status]').textContent.includes('Autosaved draft'), 'Composer announces acknowledged autosave');
+  assert(panel.appendix.textContent.includes('<script>literal annotation</script>') && panel.appendix.textContent.includes('Fixture Reviewer'), 'Print includes the latest acknowledgement before the next poll');
   await panel.closeComposer(); await panel.refresh();
   assert(panel.panel.textContent.includes('<script>literal annotation</script>') && !panel.panel.querySelector('script'), 'Stored comments render as inert text');
   assert(!panel.panel.querySelector('textarea'), 'Closing removes the editor after acknowledgement');

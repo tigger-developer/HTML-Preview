@@ -125,6 +125,9 @@ func (w *Writer) commit(ctx context.Context, loc Location, snap Snapshot, storag
 	if err = destinationIdentity(loc, storage, root, f, updated); err != nil {
 		return updated, err
 	}
+	if err = ctx.Err(); err != nil {
+		return updated, err
+	}
 	return updated, nil
 }
 

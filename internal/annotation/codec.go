@@ -59,7 +59,11 @@ func Parse(data []byte, format string) Store {
 		}
 		if ownedStart(lines, i, format) {
 			start := line.offset
-			separator := []byte(ending + ending)
+			boundaryEnding := "\n"
+			if bytes.HasSuffix(data[line.offset:line.end], []byte("\r\n")) {
+				boundaryEnding = "\r\n"
+			}
+			separator := []byte(boundaryEnding + boundaryEnding)
 			if start >= len(separator) && bytes.Equal(data[start-len(separator):start], separator) {
 				start -= len(separator)
 			} else {

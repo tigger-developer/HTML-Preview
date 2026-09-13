@@ -253,8 +253,12 @@ func (s *previewService) appendAnnotation(w http.ResponseWriter, r *http.Request
 		return
 	}
 	var request annotation.Request
-	if annotation.Decode(data, &request) != nil || request.Validate() != nil {
+	if annotation.Decode(data, &request) != nil {
 		annotationError(w, r, 400, "invalid_event")
+		return
+	}
+	if err := request.Validate(); err != nil {
+		annotationFailure(w, r, err)
 		return
 	}
 	state, snap, page, err := s.annotationDocument(r.Context(), cap, src)

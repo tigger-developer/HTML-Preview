@@ -4,6 +4,7 @@ package annotation
 
 import (
 	"strings"
+	"unicode/utf8"
 
 	"golang.org/x/net/html"
 )
@@ -111,20 +112,26 @@ func Resolve(target Target, text string, headings map[string]Span) (Target, stri
 		return target, "resolved"
 	}
 	var positions []int
-	for i := 0; i+len(quote) <= len(body); i++ {
-		if string(body[i:i+len(quote)]) != target.Exact {
-			continue
+	for cursor, scalar := 0, 0; cursor < len(text); {
+		rel := strings.Index(text[cursor:], target.Exact)
+		if rel < 0 {
+			break
 		}
-		if target.Prefix != "" && !strings.HasSuffix(string(body[:i]), target.Prefix) {
-			continue
+		at := cursor + rel
+		scalar += utf8.RuneCountInString(text[cursor:at])
+		matches := strings.HasSuffix(text[:at], target.Prefix) && strings.HasPrefix(text[at+len(target.Exact):], target.Suffix)
+		if area, exists := headings[target.HeadingID]; exists && (scalar < area.Start || scalar+len(quote) > area.End) {
+			matches = false
 		}
-		if target.Suffix != "" && !strings.HasPrefix(string(body[i+len(quote):]), target.Suffix) {
-			continue
+		if matches {
+			positions = append(positions, scalar)
+			if len(positions) == 2 {
+				return target, "ambiguous"
+			}
 		}
-		if area, exists := headings[target.HeadingID]; target.HeadingID != "" && exists && (i < area.Start || i+len(quote) > area.End) {
-			continue
-		}
-		positions = append(positions, i)
+		_, width := utf8.DecodeRuneInString(text[at:])
+		cursor = at + width
+		scalar++
 	}
 	if len(positions) == 0 {
 		return target, "missing"

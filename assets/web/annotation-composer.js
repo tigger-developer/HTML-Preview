@@ -108,6 +108,7 @@ export class AnnotationComposer {
     this.inFlight = pending; this.emit();
     try {
       const receipt = await pending;
+      this.savedReceipt = receipt;
       this.sequence = receipt.sequence;
       this.savedText = snapshot.request.text; this.savedTarget = snapshot.request.target;
       this.savedVersion = snapshot.version; this.failed = null;

@@ -86,3 +86,17 @@ func TestRT007_6_ProjectionRetainsValidEventsBeforeConflict(t *testing.T) {
 		t.Fatalf("valid event lost on conflicting sequence: %v %#v", err, latest)
 	}
 }
+
+func TestRT007_3_ExistingTailKeepsItsNewlineBoundary(t *testing.T) {
+	first := []byte("Original\r\n")
+	header := Header{Schema: 1, DocumentID: "40000000-0000-4000-8000-000000000001", SourceFormat: "org"}
+	addition, err := AppendBytes(Parse(first, "org"), &header, fixtureEvent(), "org")
+	if err != nil {
+		t.Fatal(err)
+	}
+	edited := []byte(strings.Repeat("New line\n", 50))
+	parsed := Parse(append(append([]byte{}, edited...), addition...), "org")
+	if parsed.Reason != "" || !bytes.Equal(parsed.Source, edited) {
+		t.Fatal("changed predominant source line ending corrupted an intact annotation tail")
+	}
+}

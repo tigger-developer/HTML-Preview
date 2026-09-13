@@ -230,5 +230,8 @@ func (w *Writer) retry(ctx context.Context, loc Location, snap Snapshot, event E
 	if err = destinationIdentity(loc, storage, root, f, current); err != nil {
 		return Receipt{}, false, err
 	}
+	if err = ctx.Err(); err != nil {
+		return Receipt{}, false, err
+	}
 	return receipt(current, event, body, storage), true, nil
 }
