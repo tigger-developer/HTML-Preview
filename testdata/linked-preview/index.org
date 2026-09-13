@@ -1,0 +1,24 @@
+#+TITLE: Linked format preview
+#+SUBTITLE: Browser review fixture
+#+AUTHOR: HTML Preview test fixture
+#+OPTIONS: num:nil
+
+* Documents
+
+Each link should open a rendered preview in the browser. The filename header
+should identify the original source. Browser Back returns to this page.
+
+- [[file:notes.org][Org: tasks, tags, drawers and highlighted code]]
+- [[file:notes.md][Markdown: headings, a table and highlighted code]]
+- [[file:document.docx][DOCX: formatted text, a table and relative document links]]
+- [[file:plain.txt][Plain text: literal text without interpreting markup]]
+- [[file:hello.go][Go source: syntax highlighting and copying]]
+
+* Review
+
+Follow the links between Org, Markdown and DOCX as well as returning here.
+Try folding headings and drawers, selecting text, and copying code.
+These synthetic documents contain no personal information.
+
+Annotations are a separate, pending feature for Org and Markdown. This fixture
+currently exercises reading and navigation only.

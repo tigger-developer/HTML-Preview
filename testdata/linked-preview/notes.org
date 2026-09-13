@@ -1,0 +1,36 @@
+#+TITLE: Org reading sample
+#+SUBTITLE: Tasks, drawers and code
+#+AUTHOR: Fixture Reviewer
+#+DATE: 2026-09-13
+#+OPTIONS: num:nil
+
+* TODO Review the linked documents :review:sample:
+:PROPERTIES:
+:CUSTOM_ID: review-documents
+:OWNER: Fixture Reviewer
+:END:
+
+This paragraph has *bold*, /italic/, ~inline code~ and =literal text=.
+The properties drawer should start folded, including after opening this section.
+
+** DONE Check a code block :code:
+
+#+BEGIN_SRC go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello from the Org fixture")
+}
+#+END_SRC
+
+:NOTES:
+This ordinary drawer should also start folded.
+:END:
+
+* Continue reading
+
+- [[file:notes.md][Markdown sample]]
+- [[file:document.docx][DOCX sample]]
+- [[file:index.org][Return to fixture index]]

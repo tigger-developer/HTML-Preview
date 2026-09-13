@@ -1,0 +1,9 @@
+Plain text reading sample
+
+These characters must remain literal:
+* This is not an Org heading.
+#+TITLE: This is not document metadata.
+<strong>This is not HTML.</strong>
+Spaces:    one    two    three
+
+Unicode: café, Gaeilge, λ.

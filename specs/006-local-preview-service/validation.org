@@ -333,3 +333,43 @@
   Org/Markdown/DOCX/ODT/code/text/JSON/native-HTML fixtures are available for the
   operator's checks. Fixture generation is not user validation. All planned
   platform/user results remain as recorded above.
+
+* Portable configuration and linked fixture, 13 September 2026
+
+- Candidate :: =7d890c0= (portable configuration discovery and startup-directory
+  fallback), macOS arm64, Go 1.26.8 and Pandoc 3.9.0.2. The subsequent fixture
+  checkpoint adds only synthetic review documents and this evidence.
+- Intended RED :: The local-config test returned no roots; staged service
+  templates used the previous platform config path. Both failed before the
+  loader and template expansion changes.
+- GREEN :: Configuration and staged-install tests passed under race: internal
+  preview *10.285 seconds*, integration *4.372 seconds*. The combined RT006
+  service and public-command bootstrap suite then passed: internal preview
+  *35.613 seconds*, integration *11.558 seconds*.
+- Cases :: Explicit override, local-before-user selection, absent-default
+  startup root, empty selected roots, malformed/unreadable/dangling selected
+  config and missing explicit override. Existing confinement, lifecycle,
+  navigation and packaging regressions remain in the combined run.
+- Static/security :: =make lint= exited 0; =make vulncheck= returned
+  *No vulnerabilities found* on the committed runtime candidate. Changed
+  guidance and fixture prose passed =sanitize oed=.
+- Foreground review :: At the operator's request, the rebuilt checkout binary
+  started from the repository without either default config. Only its runtime
+  state uses an OS-temporary override. The default-browser opener exited 0 for
+  =docs/work.org=; that page and its linked service specification returned HTTP
+  200. No installed service manager was activated.
+- Human observation :: Taḋg reported, "that looks good, i can navigate project
+  links" on the running macOS candidate. Browser identity and viewport were not
+  captured. This records the observed linked-reading subset; it does not infer
+  the rest of UT006.1, cross-platform qualification or annotation delivery.
+- Persistent fixture :: [[file:../../testdata/linked-preview/index.org][Linked
+  format preview]] links Org, Markdown, DOCX, plain text and Go source. The
+  first three also link to one another and to the index. DOCX is generated from
+  an adjacent synthetic Markdown source with the documented Pandoc command.
+- Fixture observations :: All five actual linked URLs returned HTTP 200.
+  The DOCX response contains rewritten HTTP links to Org, Markdown and the
+  index. The index was opened through the system browser command, which exited
+  0. Cross-format visual results await operator observation.
+- Qualification boundary :: The service remains running for browser review.
+  Existing native-manager, Linux, WSL1/WSL2 and remaining browser requirements
+  retain their pending status; this fixture does not waive them.
