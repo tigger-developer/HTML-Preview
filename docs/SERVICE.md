@@ -10,8 +10,21 @@ are distributed with the executable.
 
 ## Configure permitted directories
 
-Start with the packaged `config.example.yaml`. Copy it to your configuration
-location only if that file does not already exist, then edit its roots:
+For a foreground service, run `htmlpreview --serve` from your documentation
+directory. If neither default config exists, that directory and its descendants
+are served. No configuration file is required for this workflow.
+
+Configuration selection is first-found, without merging or searching ancestors:
+
+1. An absolute `HTMLPREVIEW_CONFIG` override, if set.
+2. `config.yaml` in the current directory.
+3. `~/.config/htmlpreview/config.yaml`, on every supported platform.
+
+A missing explicit override, invalid or unreadable file, or dangling config
+symlink is an error. Only absence of both default files permits startup-directory
+fallback. To select explicit roots, start with the packaged `config.example.yaml`.
+Copy it to your chosen location only if that file does not already exist, then
+edit its roots:
 
 ```yaml
 version: 1
@@ -30,12 +43,13 @@ The defaults are:
 
 | Platform | Configuration | Private runtime directory |
 | --- | --- | --- |
-| macOS | `~/Library/Application Support/htmlpreview/config.yaml` | `~/Library/Caches/htmlpreview/runtime` |
+| macOS | `~/.config/htmlpreview/config.yaml` | `~/Library/Caches/htmlpreview/runtime` |
 | Linux and WSL | `~/.config/htmlpreview/config.yaml` | `~/.cache/htmlpreview/runtime` |
 
-Linux honours `XDG_CONFIG_HOME` and `XDG_CACHE_HOME`. Absolute
-`HTMLPREVIEW_CONFIG` and `HTMLPREVIEW_RUNTIME_DIR` values override the respective
-locations. The CLI and service must use the same runtime directory. Keep the
+Linux honours `XDG_CACHE_HOME` for runtime storage. Configuration discovery does
+not use `XDG_CONFIG_HOME`. Absolute `HTMLPREVIEW_CONFIG` and
+`HTMLPREVIEW_RUNTIME_DIR` values override the respective locations. The CLI and
+service must use the same runtime directory. Keep the
 configuration user-owned, without group or other write permission. The service
 requires a private runtime directory and creates its control socket with mode
 0600 inside a mode-0700 directory.
@@ -91,9 +105,15 @@ service's executable or configuration arguments. Installation requires Pandoc
 to determine a fixed service PATH. Neither installation mode creates or changes
 your active configuration, registers a service, or starts it.
 
-The generated template sets the default configuration path for the installing
-user. If you choose an override, update the inactive service template's
+The generated template explicitly sets `~/.config/htmlpreview/config.yaml` for
+the installing user. Create that configuration before manager activation; this
+prevents the manager's incidental working directory from becoming a served root.
+If you choose an override, update the inactive service template's
 `HTMLPREVIEW_CONFIG` before installing it into your service manager.
+
+The 13 September 2026 configuration amendment supersedes the former macOS
+Application Support and Linux XDG configuration defaults. Existing user files
+are not moved or rewritten automatically.
 
 ## macOS with Homebrew
 

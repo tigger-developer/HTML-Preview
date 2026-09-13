@@ -117,11 +117,11 @@ func checkInstalledLaunchAgent(t *testing.T, root, stage, executable string) {
 		t.Fatal("launchd lifecycle policy differs")
 	}
 	env := plistDictionary(t, values["EnvironmentVariables"])
-	base, err := os.UserConfigDir()
+	base, err := os.UserHomeDir()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if env["HTMLPREVIEW_CONFIG"].Text != filepath.Join(base, "htmlpreview/config.yaml") || !strings.Contains(env["PATH"].Text, "/usr/bin") || strings.Contains(string(data), stage) {
+	if env["HTMLPREVIEW_CONFIG"].Text != filepath.Join(base, ".config/htmlpreview/config.yaml") || !strings.Contains(env["PATH"].Text, "/usr/bin") || strings.Contains(string(data), stage) {
 		t.Fatal("service environment contains wrong configuration or staging paths")
 	}
 }

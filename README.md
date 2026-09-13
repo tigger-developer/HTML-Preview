@@ -221,8 +221,13 @@ uses its separate passive policy and receives no application reading controls.
 | `HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES` | `52428800` | Integer, 1 to 52428800 |
 | `HTMLPREVIEW_MAX_OUTPUT_BYTES` | `104857600` | Integer, 1 to 104857600; includes embedded fonts and staging |
 | `HTMLPREVIEW_DEADLINE` | `60s` | Go duration, `100ms` to `10m` |
-| `HTMLPREVIEW_CONFIG` | Platform user config directory + `htmlpreview/config.yaml` | Absolute version-1 YAML path |
+| `HTMLPREVIEW_CONFIG` | First existing `./config.yaml`, then `~/.config/htmlpreview/config.yaml` | Absolute version-1 YAML override; no merging |
 | `HTMLPREVIEW_RUNTIME_DIR` | Platform user cache directory + `htmlpreview/runtime` | Absolute user-owned private directory |
+
+With neither default config present, explicit `htmlpreview --serve` serves its
+startup directory and descendants. An existing config with empty roots grants
+nothing; invalid or unreadable configuration is an error. Service roots remain
+fixed until restart.
 
 HTTP requests additionally apply the service's 10 MiB source, 50 MiB output
 and 60-second conversion ceilings. `HTMLPREVIEW_ROOT` restricts explicit inputs

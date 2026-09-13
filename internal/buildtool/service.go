@@ -46,7 +46,7 @@ func installService(share, executable, goos string) error {
 			return err
 		}
 	}
-	base, err := os.UserConfigDir()
+	base, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func installService(share, executable, goos string) error {
 	if err != nil {
 		return err
 	}
-	config := filepath.Join(base, "htmlpreview/config.yaml")
+	config := filepath.Join(base, ".config/htmlpreview/config.yaml")
 	path := filepath.Dir(pandoc) + ":/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 	data, err := renderService(goos, executable, config, path)
 	if err != nil {

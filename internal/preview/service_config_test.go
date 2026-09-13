@@ -10,6 +10,104 @@ import (
 	"testing"
 )
 
+func TestRT006_2_CurrentDirectoryConfiguration(t *testing.T) {
+	cwd := t.TempDir()
+	root := t.TempDir()
+	t.Chdir(cwd)
+	source(t, cwd, "config.yaml", fmt.Sprintf("version: 1\nserve: {roots: [%q]}\n", root))
+	want, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := serviceSettings(config{runtimePath: filepath.Join(cwd, "runtime")})
+	if err != nil || len(cfg.roots) != 1 || cfg.roots[0] != want {
+		t.Fatalf("local configuration roots=%v want=%q err=%v", cfg.roots, want, err)
+	}
+}
+
+func TestRT006_2_ConfigurationDiscovery(t *testing.T) {
+	for _, name := range []string{"absent", "user", "local", "empty local", "invalid local", "dangling local", "unreadable local"} {
+		t.Run(name, func(t *testing.T) {
+			cwd, home, localRoot, userRoot := t.TempDir(), t.TempDir(), t.TempDir(), t.TempDir()
+			localConfig := filepath.Join(cwd, "config.yaml")
+			userConfig := filepath.Join(home, ".config/htmlpreview/config.yaml")
+			if name != "absent" {
+				source(t, home, ".config/htmlpreview/config.yaml", fmt.Sprintf("version: 1\nserve: {roots: [%q]}\n", userRoot))
+			}
+			want, invalid := cwd, false
+			switch name {
+			case "user":
+				want = userRoot
+			case "local":
+				want = localRoot
+				source(t, cwd, "config.yaml", fmt.Sprintf("version: 1\nserve: {roots: [%q]}\n", localRoot))
+			case "empty local":
+				want = ""
+				source(t, cwd, "config.yaml", "version: 1\nserve: {roots: []}\n")
+				// A selected local file must not even parse a lower-priority file.
+				if err := os.WriteFile(userConfig, []byte("invalid: ["), 0600); err != nil {
+					t.Fatal(err)
+				}
+			case "invalid local":
+				invalid = true
+				source(t, cwd, "config.yaml", "version: [")
+			case "dangling local":
+				invalid = true
+				if err := os.Symlink(filepath.Join(cwd, "missing"), localConfig); err != nil {
+					t.Fatal(err)
+				}
+			case "unreadable local":
+				if os.Geteuid() == 0 {
+					t.Skip("root bypasses ordinary file read permissions")
+				}
+				invalid = true
+				source(t, cwd, "config.yaml", "version: 1\nserve: {roots: []}\n")
+				if err := os.Chmod(localConfig, 0000); err != nil {
+					t.Fatal(err)
+				}
+			}
+			roots, err := discoverServiceRoots(cwd, home)
+			if invalid {
+				if err == nil {
+					t.Fatal("invalid selected config fell through")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if want == "" {
+				if len(roots) != 0 {
+					t.Fatalf("empty config granted %v", roots)
+				}
+				return
+			}
+			canonical, err := filepath.EvalSymlinks(want)
+			if err != nil || len(roots) != 1 || roots[0] != canonical {
+				t.Fatalf("selected roots=%v want=%q err=%v", roots, canonical, err)
+			}
+		})
+	}
+}
+
+func TestRT006_2_ExplicitConfigurationPrecedence(t *testing.T) {
+	cwd, root := t.TempDir(), t.TempDir()
+	t.Chdir(cwd)
+	source(t, cwd, "config.yaml", "invalid: [")
+	explicit := source(t, t.TempDir(), "explicit.yaml", fmt.Sprintf("version: 1\nserve: {roots: [%q]}\n", root))
+	canonical, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := serviceSettings(config{configPath: explicit, runtimePath: filepath.Join(cwd, "runtime")})
+	if err != nil || len(cfg.roots) != 1 || cfg.roots[0] != canonical {
+		t.Fatalf("explicit override roots=%v err=%v", cfg.roots, err)
+	}
+	if _, err := serviceSettings(config{configPath: filepath.Join(cwd, "missing.yaml")}); err == nil {
+		t.Fatal("missing explicit config fell through")
+	}
+}
+
 func TestRT006_2_RootConfigurationBoundaries(t *testing.T) {
 	root := t.TempDir()
 	canonical, err := filepath.EvalSymlinks(root)

@@ -1,4 +1,4 @@
-// ABOUTME: Validates the per-user service configuration without granting implicit roots.
+// ABOUTME: Selects explicit or discovered configuration, with startup-directory fallback.
 // ABOUTME: Keeps YAML syntax, filesystem ownership and canonical root selection explicit.
 package preview
 
@@ -23,26 +23,22 @@ type serviceConfig struct {
 
 func serviceSettings(cfg config) (serviceConfig, error) {
 	var result serviceConfig
-	path := cfg.configPath
-	if path == "" {
-		base, err := os.UserConfigDir()
-		if err != nil {
-			return result, err
+	var err error
+	if cfg.configPath != "" {
+		result.roots, err = readServiceRoots(cfg.configPath)
+	} else {
+		cwd, cwdErr := os.Getwd()
+		if cwdErr != nil {
+			return result, cwdErr
 		}
-		path = filepath.Join(base, "htmlpreview", "config.yaml")
+		home, homeErr := os.UserHomeDir()
+		if homeErr != nil {
+			return result, homeErr
+		}
+		result.roots, err = discoverServiceRoots(cwd, home)
 	}
-	if !filepath.IsAbs(path) {
-		return result, errors.New("configuration path must be absolute")
-	}
-	data, err := readConfiguration(path)
-	if err != nil && !(os.IsNotExist(err) && cfg.configPath == "") {
+	if err != nil {
 		return result, err
-	}
-	if err == nil {
-		result.roots, err = decodeServiceRoots(data)
-		if err != nil {
-			return result, err
-		}
 	}
 	result.runtime = cfg.runtimePath
 	if result.runtime == "" {
@@ -56,6 +52,33 @@ func serviceSettings(cfg config) (serviceConfig, error) {
 		return result, errors.New("runtime directory must be absolute")
 	}
 	return result, nil
+}
+
+func discoverServiceRoots(cwd, home string) ([]string, error) {
+	for _, path := range []string{filepath.Join(cwd, "config.yaml"), filepath.Join(home, ".config/htmlpreview/config.yaml")} {
+		if _, err := os.Lstat(path); os.IsNotExist(err) {
+			continue
+		} else if err != nil {
+			return nil, err
+		}
+		return readServiceRoots(path)
+	}
+	root, err := filepath.EvalSymlinks(cwd)
+	if err != nil {
+		return nil, err
+	}
+	return []string{root}, nil
+}
+
+func readServiceRoots(path string) ([]string, error) {
+	if !filepath.IsAbs(path) {
+		return nil, errors.New("configuration path must be absolute")
+	}
+	data, err := readConfiguration(path)
+	if err != nil {
+		return nil, err
+	}
+	return decodeServiceRoots(data)
 }
 
 func readConfiguration(path string) (data []byte, err error) {

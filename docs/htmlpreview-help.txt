@@ -10,8 +10,9 @@ Use -- before a filename beginning with -. Open the system default browser.
   --serve              Run the optional per-user loopback service; no browser
 
 A running service previews allowed inputs over HTTP on 127.0.0.1 only, using
-an assigned port and token-prefixed URLs. Configure serve.roots in version-1
-YAML; the default empty list grants nothing. Service activation is explicit.
+an assigned port and token-prefixed URLs. With no config, --serve serves its
+startup directory and descendants. A selected config's empty roots grant nothing.
+Service activation is explicit; configure serve.roots in version-1 YAML if needed.
 Absent/unreachable service or service-root exclusion selects a single-file
 preview. Invalid settings, protocol and conversion errors remain errors.
 
@@ -41,7 +42,7 @@ Environment settings (empty values use defaults):
   HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES  52428800; 1 to 52428800
   HTMLPREVIEW_MAX_OUTPUT_BYTES        104857600; 1 to 104857600
   HTMLPREVIEW_DEADLINE                60s; 100ms to 10m for conversion
-  HTMLPREVIEW_CONFIG                  Absolute YAML file; default user config
+  HTMLPREVIEW_CONFIG                  Absolute YAML override; otherwise discovery
   HTMLPREVIEW_RUNTIME_DIR             Absolute private service runtime directory
 
 LINKS and MAX_DEPTH retain validation and emit one migration notice when set.
@@ -52,8 +53,10 @@ HTMLPREVIEW_ROOT first restricts explicit inputs, regardless of service availabi
 it can only narrow served roots. Restart applies config changes and revokes tokens.
 HTTP conversion ceilings are 10 MiB source, 50 MiB output and 60 seconds.
 Two distinct conversions run concurrently; excess work returns 503 with a retry hint.
-Default config: macOS ~/Library/Application Support/htmlpreview/config.yaml;
-Linux/WSL $XDG_CONFIG_HOME/htmlpreview/config.yaml (default ~/.config).
+Config selection: HTMLPREVIEW_CONFIG, then ./config.yaml, then
+~/.config/htmlpreview/config.yaml on every platform. First found wins; no merging.
+Missing defaults select the service startup directory. Invalid/unreadable config
+is an error, including a missing explicit override; it never grants fallback roots.
 Default runtime: macOS ~/Library/Caches/htmlpreview/runtime;
 Linux/WSL $XDG_CACHE_HOME/htmlpreview/runtime (default ~/.cache).
 Read mode retains pages until Ctrl+C or SIGTERM. Standalone output is always on.
