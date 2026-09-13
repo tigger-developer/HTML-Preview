@@ -3,7 +3,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+OPERATOR_SIGNOFF: Taḋg, 2026-09-12: full amended W006 design approved; explicit delivery instruction releases the prior implementation hold, after W008.
+#+OPERATOR_SIGNOFF: Taḋg, 2026-09-12: full W006 design and delivery approved after W008. Renewed 2026-09-13: explicit config override, current-directory then ~/.config discovery, startup-directory fallback when neither exists; implement and open a running review preview.
 
 * Synopsis
 :PROPERTIES:
@@ -24,6 +24,8 @@
 ** After
 
 - An optional *per-user Go service serves HTTP only on 127.0.0.1*.
+- *Configuration is optional*: without a discovered config, explicit service
+  startup serves its working directory and descendants.
 - Eligible inputs open *random-token/root-relative-path URLs* and the CLI returns.
 - Without a service, or outside its configured roots, the command uses the
   existing file preview and quick/read lifetime, subject to explicit client-root
@@ -62,6 +64,10 @@
 
 ** Decisions
 
+- The 13 September operator amendment selects *HTMLPREVIEW_CONFIG, ./config.yaml,
+  then ~/.config/htmlpreview/config.yaml*, with first-found selection and no
+  merging. Missing defaults grant the explicit service startup directory;
+  existing empty roots grant nothing, and malformed configuration remains an error.
 - The operator approved *HTTP, loopback, configured roots, random tokens and
   fallback* on 11 September 2026, including restart-scoped tokens and replacement
   of pre-generated browsing.
@@ -180,6 +186,15 @@
 
 ** Decisions
 
+- Configuration amendment, 13 September 2026 :: The operator rejected macOS
+  Application Support config placement and approved the stated discovery order
+  and *working-directory fallback for explicitly started services*. This
+  supersedes the prior os.UserConfigDir default and missing-config empty grant.
+  HTMLPREVIEW_CONFIG remains an absolute override, with no fallback on error.
+  No parent-directory scan, config merging or client-side root expansion is added.
+  Existing config omission of serve/roots still means no grants. The runtime
+  directory contract is unchanged. The operator requested implementation and
+  a service already running with a document opened for review.
 - Template update, 13 September 2026 :: The operator requested the current
   *architecture standard and solution-design template*. Schema 5 adds explicit
   responsibilities, reuse, rationale, verification and routine-detail boundaries.
@@ -246,7 +261,7 @@
 :CUSTOM_ID: ac-006-2
 :END:
 - Criterion :: For an otherwise valid explicit input, *absent/unreachable service,
-  absent/empty service roots or exclusion by service roots select file delivery*.
+  empty service roots or exclusion by service roots select file delivery*.
   An explicit client =HTMLPREVIEW_ROOT= is an input restriction checked first;
   exclusion by that restriction is an error under AC006.17 - Failure precedence.
 - Proven by :: [[#rt-006-1][RT006.1 - Automatic transport selection]],
@@ -390,7 +405,9 @@
 - Criterion :: *Configuration follows the stated schema and validation rules*;
   invalid input cannot grant access. The running service's root snapshot
   remains authoritative until restart, regardless of later client config
-  edits.
+  edits. Explicit config overrides discovery; otherwise the first existing
+  current-directory or user config applies. Only when neither exists does
+  explicit service startup grant its working directory and descendants.
 - Proven by :: [[#rt-006-2][RT006.2 - Configuration and compatibility]].
 
 ** AC006.17 - Failure precedence prevents accidental fallback
@@ -614,8 +631,13 @@
   and unknown keys, wrong types, over-limit root lists, relative/missing/file
   roots, duplicate/overlapping roots, bad permissions, stale client config and
   configured restart. Cover legacy options and TOC values at both bounds.
-- Expected :: *Strict documented validation and precedence*, no implicit root
-  grant, canonical duplicate handling and no work on malformed settings.
+- Discovery cases :: Verify explicit override before ./config.yaml before
+  ~/.config/htmlpreview/config.yaml; first-found selection without merging;
+  no-config startup-directory grant; empty roots suppress fallback; malformed,
+  unreadable and dangling-symlink config errors do not fall through. Run from
+  different working directories without modifying the actual user config.
+- Expected :: *Strict documented validation and precedence*, only the approved
+  startup-directory fallback, canonical duplicate handling and no work on malformed settings.
   Service-authoritative roots prevail; a CLI root override can only narrow them.
   Help/version bypass config and discovery with no side effects.
 - Intended RED :: Baseline rejects the new config/runtime settings or cannot validate their YAML contract.
@@ -1050,9 +1072,15 @@
   =htmlpreview --serve= as a sole operation. =--= still permits a literal
   filename beginning with a dash. Service mode opens no browser and requires
   no desktop session. No =open= command or file association is installed.
-- Configuration file :: =HTMLPREVIEW_CONFIG= selects an absolute YAML path;
-  unset/empty uses =os.UserConfigDir()/htmlpreview/config.yaml=. The initial
-  schema is the following, with *no directory grants by default*:
+- Configuration file :: =HTMLPREVIEW_CONFIG= selects an absolute YAML path and
+  bypasses discovery. Otherwise select the *first existing* =./config.yaml=,
+  then =~/.config/htmlpreview/config.yaml=, identically on macOS, Linux and WSL.
+  Do not merge files or search ancestors. The user path is literal relative to
+  the home directory, independent of XDG_CONFIG_HOME. A present but unreadable,
+  malformed or dangling-symlink candidate is an error, not permission to fall
+  through. With neither default file present, explicit =--serve= grants its
+  canonical startup directory and descendants, subject to existing confinement.
+  The schema remains unchanged; this *explicit empty configuration grants nothing*:
 
 #+begin_src yaml
 version: 1
@@ -1062,11 +1090,11 @@ serve:
 
 - Root schema :: Up to *32 existing absolute directory paths*, at most 4096
   UTF-8 bytes each; no tilde/environment expansion. Canonical duplicates collapse;
-  overlaps use longest containment. A missing default config means empty roots;
+  overlaps use longest containment. Existing config with missing/empty roots means no grants;
   an explicitly selected missing file is an error. Maximum config size is 64 KiB.
   Reject duplicate/unknown fields, wrong types, aliases/tags and extra documents.
   Reject config not owned by the current user or writable by group/others.
-- Configuration lifetime :: *Read once per service start*. Missing/empty roots
+- Configuration lifetime :: *Read once per service start*. Existing config with missing/empty roots
   allow an idle service but serve no documents. Invalid config exits 2 before
   listening. The CLI validates a present config but does not use a changed file
   to override the running service's snapshot. Restart is the reload mechanism.
@@ -1383,7 +1411,9 @@ architecture suggested by the reviewer.
   deliberately visible original source header.
 - Authorization renewal :: *Every request revalidates the allowed root and source
   handle*. Configuration changes take effect on restart; old tokens then fail.
-  Allowed roots are explicit user grants, not inferred cwd/home/repository scans.
+  Allowed roots are configured grants or the operator-approved default grant
+  made by explicit service startup with no config. Ordinary CLI use from another
+  directory never expands a running service's roots; no filesystem scan is used.
 - Data and secrets :: *Tokens and content remain in memory/private state* apart
   from necessary browser delivery and explicit CLI URL output. No access log of
   full URLs, cookie/session persistence, telemetry, crash upload or token backup.
@@ -1465,7 +1495,10 @@ architecture suggested by the reviewer.
   and enable --now; disable --now reverses activation. No system unit or linger
   change is installed. WSL without the user manager uses foreground --serve.
 - Service environment :: Templates set HTMLPREVIEW_CONFIG to the resolved
-  config path. PATH is a fixed installation-time value containing the known
+  =~/.config/htmlpreview/config.yaml= path on every platform. Manager activation
+  therefore requires that explicit config; it never grants a manager's incidental
+  working directory. Foreground =--serve= without this override uses discovery.
+  PATH is a fixed installation-time value containing the known
   Pandoc directory and platform system binaries; no shell wrapper, profile or
   runtime executable discovery is placed into a service-manager command.
 - Homebrew contract :: Formula =htmlpreview= gains a service block running

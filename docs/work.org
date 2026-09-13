@@ -142,7 +142,7 @@ classification; it is provenance, not current state.
   supported recovery requires runner repair or an operator-authorized fresh
   session; the application changes and verification checkpoints are retained.
 
-** REVIEW W006 - Local preview service and automatic fallback :feature:
+** ACTIVE W006 - Local preview service and automatic fallback :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-006
 :PRIORITY: P1
@@ -170,6 +170,10 @@ classification; it is provenance, not current state.
   recorded in validation.org. Native service-manager and browser qualification
   require the listed platform observations; no operator roots or installed
   service were activated during development.
+- Configuration amendment :: On 13 September the operator approved portable
+  config discovery and serving the startup directory when no config exists,
+  and requested a running browser preview. The current specification owns the
+  amended discovery and grant rules.
 
 ** REVIEW W007 - Attributed autosaved annotations in service previews :feature:
 :PROPERTIES:

@@ -29,6 +29,12 @@ describes explicit configuration, activation and rollback. Reading still leaves
 sources unchanged; annotation implementation remains behind its qualified-service
 dependency.
 
+Under the operator's 13 September amendment, starting the service in a document
+directory can work without configuration. Explicit config, current-directory
+config and `~/.config/htmlpreview/config.yaml` take precedence over that default;
+the grant remains fixed for the service lifetime. Native manager activation
+continues to use an explicit user configuration.
+
 ## Annotation proposal - 12 September 2026
 
 [W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)

@@ -41,6 +41,15 @@ below are retained as design history, superseded by W006's two transports.
 The [service guide](SERVICE.md) supplies the current configuration and lifecycle
 interface.
 
+The operator's 13 September configuration amendment replaces the OS-specific
+config default: explicit `HTMLPREVIEW_CONFIG`, then `./config.yaml`, then
+`~/.config/htmlpreview/config.yaml`, with first-found selection. If neither
+default file exists, explicit foreground service startup grants its canonical
+working directory. Existing empty or invalid configuration never enables that
+fallback. The startup grant stays fixed; later CLI working directories cannot
+expand it. Packaged managers retain an explicit user config path, now under
+`~/.config` on every platform. W006 owns this amendment and its delivery evidence.
+
 ## Annotation proposal - 12 September 2026
 
 [W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)
