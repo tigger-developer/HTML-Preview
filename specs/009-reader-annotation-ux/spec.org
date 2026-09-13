@@ -1,0 +1,688 @@
+#+TITLE: W009 - Persistent info bar and direct annotation interaction
+#+SCHEMA: 5
+#+SUBTITLE: Unified change specification
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: PENDING
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+** Outcome
+
+- *Reading controls stay visible* while the reader selects passages and writes comments.
+
+** Before
+
+- The *filename row scrolls away*; navigation reserves a fixed-width column.
+- *Add comment can reuse an earlier selection*; the comment panel is a floating box.
+
+** After
+
+- A *full-width sticky info bar* puts the home-abbreviated filename left and stateful buttons right.
+- *Navigation fits its content*; annotations occupy a visible right column, or the larger lower pane on phones.
+- In annotation mode, *sentence clicks and completed selections open the composer*.
+- *Compact save feedback and readable dates* replace raw timestamps and large closing controls.
+- *Show plaintext reveals literal Org/Markdown source*, including embedded annotations, with the info bar retained.
+
+** Changes
+
+- *Annotation mode is explicit* and starts off; leaving it safely finishes the active comment.
+- *Plaintext disables annotation* and is absent for text wrappers, code, HTML and binary documents.
+- *New document-wide comments leave the UI*; existing document-wide records remain readable.
+
+** Unchanged
+
+- *Append-only storage, autosave, author attribution and conflict recovery* retain W007's contracts.
+- *Loopback/root authorization, passive content, fonts, copying and folding* retain their existing boundaries.
+- *File previews remain non-mutating*; native HTML retains its authored presentation.
+
+** Edge cases
+:PROPERTIES:
+:CUSTOM_ID: synopsis-edge-cases
+:END:
+
+- *Failed saves retain the composer* and block a mode change that would hide unsaved text.
+- *Long paths wrap without disappearing*; a phone keeps document text available above the composer.
+- *Ambiguous targets pause saving*; unsupported sentence APIs leave explicit text selection available.
+- *Plaintext exposes only the selected source*, never sidecars or included files; output limits still apply.
+
+** Decisions
+
+- Taḋg requested these changes on *13 September 2026* and accepted the *phone split view*.
+- Taḋg clarified that plaintext means *literal Org/Markdown source without highlighting*, with *no binary extraction*.
+
+** Next step
+
+- Definition review, then operator sign-off under [[#delivery-handoff][Delivery Handoff]].
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+During the annotation review, Taḋg reported *controls disappearing on scroll*,
+an oversized navigation column, *stale selection reuse* and cramped comment
+presentation. Reviewing the actual source requires a separate preview today.
+
+** Outcome
+
+The reader can *reach controls, select a passage, follow save state and inspect
+source* in the same preview on desktop and phone layouts.
+
+** Scope
+
+*** In scope
+
+- *Info bar, navigation sizing and button states* on pages using the application template.
+- *Service annotation interaction and responsive panel*, preserving the existing composer protocol.
+- *Literal source mode for genuine Org/Markdown*, in file and service previews.
+
+*** Out of scope
+
+- *Editing source, deleting saved comments, new accounts, remote access or a new service*.
+- *Plaintext extraction from binary formats*, new document-wide creation UI, source highlighting or a native-HTML toolbar.
+- *Changes to Writeback*, new JavaScript runtimes or another browser test framework.
+
+*** Unchanged
+
+- *W006 read admission and W008 format selection* remain authoritative.
+- *W007 persisted formats, append-only semantics, debounce/maximum wait, quotas,
+  attribution, sidecars, rebasing and recovery* remain authoritative.
+- *Existing document-wide comments and the document-target API remain compatible*.
+- *Folding, code/path copying, Org metadata and print appendix* retain their meaning.
+
+** Authority and starting point
+
+- Profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product :: [[file:../../docs/VISION.md][Vision: reader interaction proposal and reading experience]].
+- Architecture :: [[file:../../docs/ARCHITECTURE.md][Architecture: reader interaction proposal, rendering and annotation boundaries]].
+- Service and formats :: [[file:../006-local-preview-service/spec.org][W006 - Local preview service]] and [[file:../008-input-formats/spec.org][W008 - Input formats]].
+- Annotation baseline :: [[file:../007-service-annotations/spec.org][W007 - Attributed autosaved annotations]], especially Browser interaction, Autosave and automatic refresh, and Targets and reattachment.
+- Supersession :: This change *replaces W007's Add comment/document-wide creation UI
+  and exclusion of sentence-click activation*, only while annotation mode is on.
+  It also replaces W005's fixed navigation width and the non-sticky filename row.
+  W007's hidden-record rendering rule continues in formatted view; *plaintext
+  intentionally includes embedded records*. Earlier specifications remain history.
+- Implementation evidence :: [[file:../../assets/web/page.html][Page template]], [[file:../../assets/web/preview.css][Reader styles]], [[file:../../assets/web/preview.js][Reader lifecycle]], [[file:../../assets/web/annotations.js][Annotation panel]], [[file:../../assets/web/annotation-composer.js][Composer]], [[file:../../assets/web/annotation-text.js][Passage mapping]], [[file:../../internal/preview/render.go][Rendering]] and [[file:../../internal/preview/testdata/annotations-browser.js][Browser regressions]], inspected at =fa90a62= (annotation qualification checkpoint).
+- Prior art :: The operator-directed Writeback inspection found *sentence-span
+  click activation, 300 ms comment updates, small status text and green/amber/red
+  feedback*. Its X action deletes comments and its close path does not await
+  acknowledgement. *Adopt the presentation ideas, not those persistence semantics*.
+  Writeback currently disables selection-based creation; this change supplies
+  that interaction using the existing HTML Preview passage mapper. No external
+  checkout is required to deliver this self-contained contract.
+
+** Constraints and dependencies
+:PROPERTIES:
+:CUSTOM_ID: constraints-and-dependencies
+:END:
+
+- *Build on the existing W006/W007/W008 implementation candidate*; do not reimplement
+  the service, storage protocol or format catalogue.
+- *W007's macOS review candidate is available*. The operator authorized proceeding
+  while Linux/WSL qualification remains pending; this change does not convert
+  those pending checks into passes or require new service-manager activation.
+- *No iframe, new endpoint, persisted schema or dependency* is needed.
+- *Source bytes and generated payloads stay within existing budgets*.
+
+** Decisions
+
+- Operator, 13 September 2026 :: *Filename left, controls right, persistent full-width
+  info bar; narrower navigation; visible annotation column; mode feedback;
+  sentence/selection activation; compact autosave controls and local dates*.
+- Operator, 13 September 2026 :: *Phone split view accepted*: document above and
+  a larger annotation pane below while annotations are on.
+- Operator clarification :: *Show plaintext means Org/Markdown as in a plain text
+  editor*, including embedded annotations, without code formatting. Do not offer
+  it for =.txt=, DOCX or any binary file. This definition also excludes code
+  wrappers and native HTML; those retain W008's presentation.
+- Proposed closing convention :: *Check finishes the comment; X leaves annotation
+  mode*. Both preserve acknowledged text; neither deletes a saved comment.
+
+** Unresolved blockers
+
+- *None*. Full definition sign-off remains pending; the closing convention is
+  part of that review, not a claim of prior operator approval.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC009.1 - Persistent responsive info bar
+:PROPERTIES:
+:CUSTOM_ID: ac-009-1
+:END:
+
+- Criterion :: Application-template previews have a *full-width info bar visible
+  during scrolling*, with filename left and controls right. At the tested widths,
+  its contents remain reachable without overlap or page-wide horizontal overflow.
+- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]], [[#ut-009-1][UT009.1 - Responsive reading and composition]].
+
+** AC009.2 - Shortened display, original copy value
+:PROPERTIES:
+:CUSTOM_ID: ac-009-2
+:END:
+
+- Criterion :: A source inside the serving or invoking user's home has a *leading
+  tilde in its displayed path*. Copying still yields the *full original absolute
+  path*, and paths outside that home remain unchanged.
+- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]].
+
+** AC009.3 - Truthful mode controls
+:PROPERTIES:
+:CUSTOM_ID: ac-009-3
+:END:
+
+- Criterion :: Controls share a common appearance with *visible and accessible
+  active/inactive states*. Annotation activation is restricted to its on state;
+  plaintext and annotation composition cannot be active together.
+- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]], [[#rt-009-2][RT009.2 - Passage activation]].
+
+** AC009.4 - Content-sized navigation and visible annotations
+:PROPERTIES:
+:CUSTOM_ID: ac-009-4
+:END:
+
+- Criterion :: Short navigation labels occupy *only the width they need up to a
+  cap*. When annotations are on, their pane remains visible independently of
+  document scrolling; on phones it has *priority over document height* while
+  leaving document text available to select.
+- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]], [[#ut-009-1][UT009.1 - Responsive reading and composition]].
+
+** AC009.5 - Current-passage composition
+:PROPERTIES:
+:CUSTOM_ID: ac-009-5
+:END:
+
+- Criterion :: In writable annotation mode, a *sentence click or completed valid
+  text selection opens a composer for that passage*. Empty, invalid or cleared
+  selections never create a document comment or reuse an earlier passage.
+- Proven by :: [[#rt-009-2][RT009.2 - Passage activation]], [[#ut-009-2][UT009.2 - Selection, save feedback and recovery]].
+
+** AC009.6 - Safe compact composer controls
+:PROPERTIES:
+:CUSTOM_ID: ac-009-6
+:END:
+
+- Criterion :: The composer presents *small textual autosave feedback and compact
+  named controls*. Closing, switching targets or leaving annotation mode does
+  not hide unacknowledged text; *save failure retains the editable composer*.
+- Proven by :: [[#rt-009-3][RT009.3 - Composer transitions and refresh]], [[#ut-009-2][UT009.2 - Selection, save feedback and recovery]].
+
+** AC009.7 - Readable annotation timestamps
+:PROPERTIES:
+:CUSTOM_ID: ac-009-7
+:END:
+
+- Criterion :: Saved comments show *author, local calendar date and minute-level
+  time*, with the original UTC timestamp available to inspect. Display formatting
+  does not change stored attribution or timestamps.
+- Proven by :: [[#rt-009-4][RT009.4 - Date presentation]], [[#ut-009-2][UT009.2 - Selection, save feedback and recovery]].
+
+** AC009.8 - Literal source view
+:PROPERTIES:
+:CUSTOM_ID: ac-009-8
+:END:
+
+- Criterion :: Genuine Org/Markdown previews offer *Show plaintext*, displaying
+  their literal source, including embedded annotation records, without highlighting
+  or annotation creation. The *info bar remains available*. Other formats do not
+  offer that control, and sidecar contents are not appended to source text.
+- Proven by :: [[#rt-009-5][RT009.5 - Literal source and format boundaries]], [[#ut-009-3][UT009.3 - Original source inspection]].
+
+** AC009.9 - Preserved reading and mutation boundaries
+:PROPERTIES:
+:CUSTOM_ID: ac-009-9
+:END:
+
+- Criterion :: The new views *preserve ordinary links, folding, literal copying
+  and existing comments*. Reading or toggling without a non-empty draft causes
+  no source write; source text remains inert in every view.
+- Proven by :: [[#rt-009-2][RT009.2 - Passage activation]], [[#rt-009-3][RT009.3 - Composer transitions and refresh]], [[#rt-009-5][RT009.5 - Literal source and format boundaries]], [[#ut-009-1][UT009.1 - Responsive reading and composition]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+Extend the *existing Go and browser-native regression runner*. Use its owned
+clock/transport seams to control scheduling and failures; retain real-browser
+DOM, selection and layout evidence. Go cases run under =go test ./...= and
+browser cases under =make test-browser=. Write each changed boundary's regression
+and observe its *intended RED before implementation*. No Node/npm or mock DOM.
+
+** RT009.1 - Info bar and reader states
+:PROPERTIES:
+:CUSTOM_ID: rt-009-1
+:END:
+
+- Covers :: [[#ac-009-1][Persistent bar]], [[#ac-009-2][Path identity]], [[#ac-009-3][Mode states]], [[#ac-009-4][Responsive panes]].
+- Boundary :: Go page generation and real-browser controls/layout.
+- Setup :: Genuine Org and Markdown with folds, short/long navigation, a long
+  home path, a sibling path with the same prefix and an outside-home path.
+- Action :: Render; copy the path through the existing clipboard seam; scroll;
+  activate each outline preset, manually change a fold, toggle annotations,
+  resize the runner's same-origin fixture viewport to 320, 390, 768 and 1440 CSS pixels.
+- Expected :: Display abbreviates *only the home boundary*, copy stays absolute;
+  bar stays visible, no horizontal page overflow, controls remain reachable.
+  Short navigation is narrower than its cap; long labels wrap. Active states
+  match the mode contract; mixed outline state selects no preset. The phone
+  composer and document both retain visible scrollable space.
+- Retention :: *Persistent Go/browser regressions*; use element bounds and actual
+  actions, not stylesheet string assertions. Human zoom and keyboard review is below.
+
+** RT009.2 - Passage activation
+:PROPERTIES:
+:CUSTOM_ID: rt-009-2
+:END:
+
+- Covers :: [[#ac-009-3][Mode states]], [[#ac-009-5][Current-passage composition]], [[#ac-009-9][Reader compatibility]].
+- Boundary :: Real-browser selection/click handling with the existing composer transport seam.
+- Setup :: Two sentences crossing emphasis, a supplementary Unicode character,
+  abbreviations, a link, code, a fold heading and a visible drawer.
+- Action :: Click prose with mode off/on; select by mouse and keyboard; clear
+  selection, select outside the document, drag across inline markup/code and
+  drawer text; activate link/copy/fold controls. Exercise unavailable sentence APIs.
+- Expected :: Mode off and excluded clicks *do not compose*. Valid completed
+  selections and sentence clicks open exactly one correctly anchored composer;
+  stale/collapsed/outside selections open none. No write occurs merely on opening.
+  Existing controls work; explicit selection still works without sentence APIs.
+- Retention :: *Persistent browser regressions*. Touch handle timing and pointer
+  targeting require the human procedure as well; synthetic events alone do not qualify them.
+
+** RT009.3 - Composer transitions and refresh
+:PROPERTIES:
+:CUSTOM_ID: rt-009-3
+:END:
+
+- Covers :: [[#ac-009-6][Safe closing]], [[#ac-009-9][Mutation and compatibility boundaries]].
+- Boundary :: Browser composer with controlled clock/transport, plus existing real-service refresh tests.
+- Setup :: An active draft, existing document and passage comments, slow/lost
+  acknowledgements, failed appends, uniquely moved and ambiguous source passages.
+- Action :: Type; use check, X, annotation toggle, Show plaintext and a new
+  passage during pending save; retry failures; refresh the document; print and return.
+- Expected :: One transition awaits *latest text acknowledgement and close*;
+  failure retains text, target and mode. Repeated activation does not duplicate
+  comments. Empty composers write nothing. Save status never claims pending
+  text is saved. Refresh retains composer/focus and mode; ambiguous targets pause
+  saving. Existing document comments remain readable. Print retains W007's saved
+  appendix and restores the interactive layout afterwards.
+- Retention :: *Persistent browser and Go service regressions*; retain W007 protocol tests.
+
+** RT009.4 - Date presentation
+:PROPERTIES:
+:CUSTOM_ID: rt-009-4
+:END:
+
+- Covers :: [[#ac-009-7][Readable timestamps]].
+- Boundary :: Browser date presentation using controlled locale/timezone parameters.
+- Setup :: Two UTC timestamps either side of a daylight-saving transition and
+  a date crossing midnight in another zone; an attributed saved record.
+- Action :: Format using =en-IE= with =Europe/Dublin= and =en-US= with
+  =America/New_York= through Intl's locale/timezone arguments; render the record.
+- Expected :: *Calendar date and minute-level local time agree with the timezone*;
+  no fractional seconds appear; the semantic time element retains the exact UTC
+  value. Author and stored record are unchanged. Assert date parts, not punctuation.
+- Retention :: *Persistent browser regressions*; host timezone is not a test dependency.
+
+** RT009.5 - Literal source and format boundaries
+:PROPERTIES:
+:CUSTOM_ID: rt-009-5
+:END:
+
+- Covers :: [[#ac-009-8][Literal source]], [[#ac-009-9][Passive reading]].
+- Boundary :: Actual file/service rendering, browser mode changes and source snapshots.
+- Setup :: Org/Markdown with tabs, blank lines, LF/CRLF, BOM, markup, embedded
+  history and hostile closing tags; a read-only source with a sidecar; TXT, Go,
+  JSON, DOCX and HTML controls; explicit reader overrides; a near-budget source.
+- Action :: Toggle source view in both transports; compare decoded source text;
+  save a comment then enter plaintext; change the source on disk during a service
+  preview; return to rendered view. Attempt a view outside the existing grant.
+- Expected :: *Original Unicode text and line endings survive the payload*;
+  visible layout preserves lines/tabs without highlighting. Embedded history
+  appears, sidecar records do not. Only genuine Org/Markdown offer plaintext;
+  unsupported formats and forced binary readers do not. Own just-saved events
+  appear on entry in service mode. Existing refresh updates the visible source
+  where enabled; file mode retains its snapshot. No source executes or fetches
+  resources, no new route or file access is granted, and budgets fail with the
+  existing bounded error rather than truncated source. Returning restores the
+  reader with annotation mode off. Printed plaintext contains source only.
+- Retention :: *Persistent Go/browser regressions*, including unchanged file hashes
+  for reading/toggling without a draft.
+
+** UT009.1 - Responsive reading and composition
+:PROPERTIES:
+:CUSTOM_ID: ut-009-1
+:END:
+
+- Covers :: [[#ac-009-1][Persistent bar]], [[#ac-009-4][Responsive panes]], [[#ac-009-9][Reader compatibility]].
+- Reviewer :: Taḋg or named human tester.
+- Procedure :: On the running service, read linked Org/Markdown samples, scroll
+  both panes, fold sections, copy a long source path and use each mode. Review
+  wide desktop, narrow window, 200% zoom and a phone-sized viewport with the
+  software keyboard shown where available; inspect light/dark and print views.
+- Expected :: *No hidden controls, unreadable shrinking or overlap*. Navigation
+  wastes no obvious space; comments stay available while source text remains
+  selectable. Focus and targets stay visible below the info bar.
+- Record :: Date, OS/browser/version, viewport/zoom, actual device or emulation,
+  observations and result in =validation.org=. Device emulation is not actual
+  phone keyboard evidence; unavailable platform checks remain pending. Use
+  local browser emulation for the localhost service; *do not expose it over a
+  LAN or tunnel to qualify a phone*. No change to its loopback boundary is authorized.
+
+** UT009.2 - Selection, save feedback and recovery
+:PROPERTIES:
+:CUSTOM_ID: ut-009-2
+:END:
+
+- Covers :: [[#ac-009-5][Passage creation]], [[#ac-009-6][Safe closing]], [[#ac-009-7][Readable dates]].
+- Reviewer :: Taḋg or named human tester.
+- Procedure :: Click sentences, select fragments with pointer/touch and keyboard,
+  type with an IME, switch targets, use check/X and interrupt the foreground
+  service during a draft; reconnect and retry. Use keyboard and the platform
+  screen reader to inspect control names, focus and save announcements.
+- Expected :: *The current passage is used*, never stale text. Save feedback is
+  quiet but legible and honest; failure retains editable text. Controls have
+  clear names; author/date reads naturally; touch selection is not interrupted
+  while handles are moving. No closed comment offers edit/delete.
+- Record :: Actual browser/device and accessibility tool, observations and dated
+  result in =validation.org=; native Linux/WSL remain pending if unavailable.
+
+** UT009.3 - Original source inspection
+:PROPERTIES:
+:CUSTOM_ID: ut-009-3
+:END:
+
+- Covers :: [[#ac-009-8][Literal source]].
+- Reviewer :: Taḋg or named human tester.
+- Procedure :: Compare Org/Markdown plaintext with the original in a plain text
+  editor, before and after a saved embedded comment. Repeat with a sidecar source;
+  open TXT, code and DOCX links, then return to the rendered document.
+- Expected :: *Markup and embedded history are visible without highlighting*;
+  the info bar remains, annotation creation is unavailable, and sidecar history
+  is not substituted for source. Ineligible formats have no Show plaintext button.
+- Record :: Dated observations and result in =validation.org=.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** Closing while the source changes
+
+- Condition :: A mode change overlaps autosave, source replacement or an ambiguous target.
+- Required behaviour :: *Keep the composer visible* until existing W007 close and
+  reattachment rules permit the transition. Never interpret X as discard.
+- Covered by :: [[#ac-009-6][Safe closing]] and [[#rt-009-3][Composer transitions and refresh]].
+
+** Very long paths and the on-screen keyboard
+
+- Condition :: The info bar wraps or the usable viewport height shrinks.
+- Required behaviour :: *Recalculate available pane height*; retain scrollable
+  controls and editor. Wrapping is preferable to clipping or tiny filename text.
+- Covered by :: [[#ac-009-1][Persistent bar]], [[#ac-009-4][Responsive panes]] and [[#ut-009-1][Responsive reading and composition]].
+
+** Text views and annotation storage
+
+- Condition :: An embedded comment was just acknowledged, or a read-only source
+  stores its comments in a separate sidecar.
+- Required behaviour :: Service plaintext shows the *current source including
+  acknowledged embedded events*; it does not read the sidecar as source content.
+- Covered by :: [[#ac-009-8][Literal source]] and [[#rt-009-5][Literal source and format boundaries]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Ownership :: *Go owns bounded source snapshots and safe template data*;
+  the existing browser modules own presentation, selection and composer state.
+- Reuse :: *Retain the composer and canonical passage mapper*. Extend reader
+  teardown/initialization and the existing page refresh boundary; no parallel controller.
+
+** High-level design
+
+*** Components and responsibilities
+
+- Template/styles :: Make the *info bar a top-level sticky element*, with frontmatter
+  in the document flow below it. A shared grid contains navigation, reading
+  content and annotation aside. No iframe or duplicate filename control.
+- Reader module :: Own *outline/appearance states and plaintext switching*;
+  preserve path/code clipboard behaviour and shared disposal.
+- Annotation panel :: Own *annotation-mode activation, current passage capture,
+  panel layout and the guarded transition into another target or reading mode*.
+- Renderer :: Retain *original admitted source bytes before annotation stripping
+  or preprocessing*, attach the optional source payload, and abbreviate display paths.
+
+*** Info bar and responsive layout
+:PROPERTIES:
+:CUSTOM_ID: layout-contract
+:END:
+
+- Width :: The *info bar fills available viewport width*, including over the
+  side columns. The article retains its existing readable maximum measure.
+- Filename :: *Left aligned*, with =min-width: 0= and a responsive size bounded
+  between =0.875rem= and =1rem=. Use =clamp()= with a rem-based fluid term,
+  =overflow-wrap: anywhere= and normal wrapping. Do not truncate the copy value.
+- Controls :: *Right aligned*, common font/height, contiguous compact buttons,
+  quiet coloured fills and a stronger selected fill plus a non-colour state cue.
+  Keep each label unbroken; wrap the group only when necessary. Use a neat bottom
+  rule and native buttons with visible focus and at least 24 CSS pixel targets.
+- Path shortening :: Go obtains the *current user's home through the existing OS
+  boundary*. Replace only an exact home prefix followed by a path separator with
+  =~/=; retain the original absolute source in the copy data. An unavailable
+  home leaves the display unchanged. No new environment setting is introduced.
+- Wide layout :: From *72rem*, navigation uses content sizing capped at *14rem*,
+  the article uses the remaining width, and an enabled annotation column uses
+  *18-24rem*. Empty/disabled navigation reserves no space; long labels wrap.
+- Intermediate layout :: From *48rem to below 72rem*, keep article and annotation
+  columns when enabled; preserve narrow Org-hidden/Markdown-above-content navigation.
+- Phone layout :: Below *48rem*, annotation mode uses a *40% document / 60%
+  annotation split* below the info bar, with independent vertical scrolling.
+  When the software keyboard reduces usable height, the annotation pane retains
+  priority. The info bar and both panes stay reachable; turning mode off restores
+  ordinary document flow. No draggable splitter is required.
+- Height :: Observe the *actual info-bar height* for sticky offsets and fragment
+  scroll margins. Use dynamic viewport units and the visual viewport resize
+  boundary where necessary for the software keyboard; dispose observers/listeners
+  with the reader. Keep focus, fragment targets and editor actions unobscured.
+
+*** Mode and closing contract
+:PROPERTIES:
+:CUSTOM_ID: mode-contract
+:END:
+
+| Control | State and action |
+|---------+------------------|
+| Overview / Contents / Show all | Existing folding presets, with at most one selected. Manual folds that match none show all inactive. Reapplying the selected preset is harmless. |
+| Annotations | Independent on/off toggle, initially off on each new document. Visible only where W007 exposes annotations; readable comments remain available when creation is unavailable. |
+| Show plaintext | Independent on/off toggle, initially off, only for genuine Org/Markdown. While on, disable outline controls and hide annotation control/panel. |
+| Check glyph | Finish the current comment through the existing close protocol; keep annotation mode on. Accessible name: Finish comment. |
+| X glyph | Finish any current comment, then leave annotation mode. Accessible name: Exit annotations; tooltip states that saved text is retained. |
+
+- Semantics :: Buttons use *aria-pressed* for state and *aria-controls* for owned
+  regions. Annotation toggle also exposes *aria-expanded*. Disabled actions
+  remain correctly named. X/check are native buttons, not clickable text.
+- Outline ties :: If several presets produce the same empty/simple outline,
+  *retain the last selected matching preset*; before an explicit choice prefer
+  Show all, then Contents, then Overview. With no foldable content, disable the
+  outline buttons. Manual changes still recompute the matching state.
+- Transition :: Annotation off, X, plaintext entry and a different passage use
+  *one guarded close path*. Capture the requested target once, await the latest
+  text's flush and close acknowledgement, then change UI. Repeated actions while
+  pending are coalesced; a failed close leaves the original mode and composer.
+- Empty composer :: A never-saved empty composer *closes without writing*.
+  Clearing an already saved draft retains W007's explicit recovery behaviour.
+- Refresh :: *Keep active mode, composer and focus outside replaced regions*.
+  Reapply controls once after refresh, without duplicate handlers. Retain existing
+  source reattachment and navigation guards; new document navigation starts modes off.
+- Print :: Restore normal-flow rendered content with W007's saved appendix and
+  no interactive panels. Plaintext prints source only. Restore modes afterwards.
+
+*** Passage activation and composer feedback
+:PROPERTIES:
+:CUSTOM_ID: passage-contract
+:END:
+
+- Selection :: While writable annotation mode is on, capture the *current Range
+  entirely within authored document content* after pointer release or keyboard
+  selection completion. Clear candidates when selection collapses, moves outside,
+  mode changes or the document refreshes. No stored Range survives as a later
+  Add comment target; remove that button and document-wide creation fallback.
+- Touch :: Do not open during pointer/handle movement. After selection changes,
+  allow a *150 ms quiet interval with no active pointer* before capturing a touch
+  selection; cancel on renewed movement. Ignore selections inside the composer.
+- Sentence click :: For an unmodified primary click without a non-empty selection,
+  find the caret using the browser's *caretPositionFromPoint/caretRangeFromPoint*
+  capability. Within the nearest visible paragraph, list item or table cell,
+  use *Intl.Segmenter with sentence granularity* and document language (browser
+  locale fallback). Map the containing sentence's UTF-16 segment offsets through
+  its authored text nodes to a Range, then reuse the *canonical scalar mapper*.
+  Do not rewrite the document into sentence spans or guess sentence endings by regex.
+- Exclusions :: *Links, copy controls, code clicks, headings, folding bars,
+  summaries and other interactive elements keep their own actions*. Explicit
+  text selection can still include inline code, emphasis and visible drawers.
+- Fallback :: If a caret/sentence API is absent or mapping fails, *do not create
+  a guessed target*. Keep explicit selection working and show brief guidance
+  to select text. Invalid/over-limit passages use the existing bounded message.
+- Composer :: Focus the textarea after an accepted target; show its excerpt.
+  A different target waits for guarded close. An existing closed comment opens
+  *read-only*, and a correction uses a new passage comment.
+- Feedback :: Below the textarea, use small legible text: *Saving*, *Not saved*,
+  =✔ Auto saved= or *Save failed*, matching actual composer state. A subtle
+  green/amber/red outline reinforces status; colour never replaces text.
+  Preserve retry, explicit copy and recovery actions. Use a polite live region
+  on state changes, not a repeated announcement for every keystroke.
+- Timestamps :: Use *Intl.DateTimeFormat*, browser locale/timezone, medium date
+  and short time. Show the author's name separately and use a =time= element
+  whose =datetime= and inspectable title retain the *exact recorded UTC timestamp*.
+  Formatting never changes stored records.
+
+*** Literal source payload and view
+:PROPERTIES:
+:CUSTOM_ID: plaintext-contract
+:END:
+
+- Eligibility :: Use the *same genuine Org/Markdown provenance classification
+  as W007*, independently of whether annotations are enabled. A generated Org
+  wrapper or explicit reader override cannot turn code, TXT or binary input
+  into an eligible source. Native HTML remains outside the application template.
+- Payload :: Carry the *original bounded source snapshot* as base64 in an owned
+  inert template field. Decode UTF-8 and assign =textContent= to a plain =pre=;
+  never assign source to =innerHTML=. This preserves CRLF, BOM and initial newlines
+  through HTML parsing and prevents source closing tags escaping the payload.
+- Presentation :: Show *Iosevka text without syntax highlighting*, preserving
+  spaces, tabs and line breaks, with soft wrapping for viewport fit. Hide rendered
+  frontmatter/title/body, navigation and annotation panel; retain the info bar.
+  No linkification, source editing or source-code copy takeover in this view.
+- Service entry :: After any guarded close, *fetch the existing authorized page
+  URL* through the current refresh path before showing its source payload. This
+  includes newly acknowledged embedded events without a new endpoint or query.
+  A failed fetch leaves the current readable view and reports the failure.
+- Refresh :: Where W007 polling is enabled, *plaintext follows full source/store
+  revision changes*, including annotation-only appends, through the existing
+  bounded page GET/swap. No writes occur in plaintext. Without that polling,
+  service view refreshes on entry; file mode retains its original snapshot.
+  Returning to rendered view restores reading state with annotation mode off.
+- Bounds :: Include payload/base64 growth in *existing source, output and cache
+  budgets*. Do not independently reopen sources, expose sidecar content as source,
+  add a raw-files route or increase limits. Missing/invalid payload is a visible
+  unavailable-view error, not a switch to blank or truncated content.
+
+** Design decisions and verification
+
+*** Shared layout and one browsing context
+
+- Decision :: *Sticky CSS and a shared responsive grid* keep controls and panes visible.
+- Rationale :: They retain selection, focus, CSP and refresh ownership in one
+  document. An iframe adds an unnecessary browsing and communication boundary.
+  [[https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/position][MDN positioning]] and [[https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/clamp][MDN bounded fluid sizing]] supply the relevant mechanisms.
+- Verification :: [[#rt-009-1][Info bar/layout regression]] and [[#ut-009-1][Responsive review]];
+  implementation review checks one lifecycle and no duplicate shell.
+
+*** Reuse the append-only composer
+
+- Decision :: *Selection changes and small closing controls use the existing state machine*.
+- Rationale :: Writeback's deletion and fire-and-forget close semantics conflict
+  with the approved append-only and acknowledgement requirements.
+- Verification :: [[#rt-009-3][Composer transition regression]]; implementation review
+  checks shared close/recovery code rather than a second persistence path.
+
+*** Browser-native sentence and date handling
+
+- Decision :: Use *Intl segmentation/date formatting* with explicit selection fallback.
+- Rationale :: Browser locale support avoids a new parser or date dependency.
+  [[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter][MDN segmentation]] describes sentence granularity; [[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat][MDN date formatting]] describes locale/timezone output.
+- Verification :: [[#rt-009-2][Passage activation]], [[#rt-009-4][Dates]] and [[#ut-009-2][Human selection/save review]].
+
+*** Same admitted snapshot for literal source
+
+- Decision :: *Embed the original text in existing page output* and reuse page refresh.
+- Rationale :: Both delivery modes gain the same view without an additional HTTP
+  endpoint, file permission or binary extraction pipeline. Extra bytes consume
+  the existing budget; oversized pages fail visibly rather than broadening limits.
+- Verification :: [[#rt-009-5][Source/format regression]]; implementation review checks
+  pre-transform snapshot ownership, output accounting and unchanged authorization.
+
+** Routine details left to implementation
+
+- *Exact colour tokens, border radius, spacing and helper names* may follow the
+  existing styles within these layout, accessibility and lifecycle constraints.
+
+** Architecture impact
+
+*** Security impact
+
+- Threat boundary :: *Same authorized document and loopback service*. No new
+  roots, file routes, external resources, write methods or capabilities.
+- Data :: Plaintext *reveals already admitted source text*, including embedded
+  comment history hidden from formatted view. It never merges sidecars or
+  follows includes. Document this difference; do not log payloads or tokens.
+- Passive rendering :: *Base64 transport and textContent* keep all source inert;
+  retain CSP and template provenance. Source attributes cannot forge owned controls.
+- Mutation :: *Only the existing annotation close/append path writes* when leaving
+  a non-empty composer; reading, empty activation and source mode are non-mutating.
+
+*** Other relevant qualities
+
+- Accessibility :: *Visible focus, named controls, textual state and reflow* are
+  required; small visual controls retain usable hit targets. No iframe focus trap.
+- Reliability :: *One guarded transition and existing refresh recovery* protect
+  drafts; preserve the known limit that unrelated editors may overwrite old buffers.
+- Performance :: *No new polling loop or unlimited payload*. Source presentation
+  uses the existing output/cache ceilings and only builds sentence maps on demand.
+- Portability :: *Existing Go/browser stack only*. Record actual browser/device
+  qualification; unavailable Linux/WSL and phone checks remain explicit.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: This specification, the project profile, linked Vision and
+  Architecture proposals, [[file:../007-service-annotations/spec.org][W007 annotation contracts]],
+  [[file:../006-local-preview-service/spec.org][W006 service contracts]], [[file:../008-input-formats/spec.org][W008 provenance/budgets]],
+  [[file:../../docs/ANNOTATIONS.md][Annotation guide]] and the implementation/test files named under Context.
+- Entry conditions :: *Explicit operator sign-off and delivery authority*, with
+  current definition evidence in =audits.yaml= and the existing candidate under
+  [[#constraints-and-dependencies][Constraints and dependencies]]. This follow-up does not close W006/W007/W008.
+- First implementation step :: Write [[#rt-009-1][RT009.1 - Info bar and reader states]]
+  and [[#rt-009-2][RT009.2 - Passage activation]] against the current candidate and
+  observe their *expected behavioural RED*, then implement the shared shell and activation.
+- Definition evidence :: [[file:audits.yaml][Retained definition audit]].
+- Validation evidence :: Create =validation.org= when recording actual UT results;
+  do not claim pending device/platform checks as passed.
+- Documentation impact :: Update =docs/ANNOTATIONS.md= and the reader usage in
+  =README.md= during delivery; replace proposal wording in Vision/Architecture
+  with evidenced implementation description while preserving history. Record
+  lifecycle only in =docs/work.org=.

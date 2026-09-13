@@ -89,6 +89,25 @@ authorities, not implementation evidence.
 The older narrower descriptions below record the original scope. This proposal
 does not extend annotation writes beyond genuine Org/Markdown sources.
 
+## Reader interaction proposal - 13 September 2026
+
+[W009 - Persistent info bar and direct annotation interaction](../specs/009-reader-annotation-ux/spec.org)
+defines the follow-up to the annotation review. A persistent full-width info bar
+puts the home-abbreviated source path left and visibly stateful controls right.
+Navigation sizes to its content. Annotation mode opens a composer from a sentence
+click or completed selection, with compact autosave feedback and readable dates.
+Comments occupy a right column, or the larger lower pane of a phone split view.
+
+Show plaintext reveals literal Org/Markdown source, including embedded annotation
+records, while retaining the info bar and disabling annotation. TXT, code wrappers,
+HTML and binary documents do not gain this mode. Existing stored document-wide
+comments remain readable, but new comments in the UI require a passage.
+
+Taḋg requested these changes and accepted the phone layout and literal-source
+scope on 13 September. Full definition sign-off remains pending. The proposal
+supersedes the earlier interaction only when approved and delivered; append-only
+storage, service-only mutation and existing authorization remain unchanged.
+
 ## Purpose
 
 `htmlpreview` makes local Markdown and Org documents comfortable to read in a

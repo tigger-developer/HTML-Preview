@@ -123,6 +123,32 @@ the order W008, W006, W007. These approvals are not implementation claims. The
 explicitly released that hold. Each work item's admission and qualification
 requirements remain applicable.
 
+## Reader interaction proposal - 13 September 2026
+
+[W009 - Persistent info bar and direct annotation interaction](../specs/009-reader-annotation-ux/spec.org)
+proposes one sticky info bar and a shared responsive grid in the existing page
+template. It replaces the fixed navigation width and floating annotation panel;
+phone annotation mode reserves the larger lower pane for comments while keeping
+document text selectable above. No iframe or additional browsing context is used.
+
+The existing reader lifecycle owns mode controls. The annotation panel captures
+the current selection or browser-segmented sentence and delegates to the existing
+canonical mapper and composer. One guarded close path handles target changes,
+leaving annotation mode and entering plaintext without hiding unacknowledged text.
+Native date formatting changes display only; the event schema remains unchanged.
+
+For genuine Org/Markdown, Go retains the original admitted snapshot before
+preprocessing and embeds it as bounded inert data. Plaintext uses textContent,
+without highlighting, and includes embedded annotation records. Existing page
+GET/refresh supplies current text in service mode; file previews use their
+snapshot. No source endpoint, binary extraction, new capability or dependency is
+introduced. Payload growth counts against existing output/cache budgets.
+
+This is a definition proposal awaiting full sign-off, not an implementation claim.
+Its specification identifies the superseded W005/W007 presentation requirements;
+the prior paragraphs remain history. Storage, rooting and passive-content
+contracts remain authoritative.
+
 ## System shape
 
 The implementation uses `cmd/htmlpreview`, `internal/preview`, a root Go asset

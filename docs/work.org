@@ -221,6 +221,24 @@ classification; it is provenance, not current state.
 - Instruction :: Taḋg *approved the full design and authorized delivery* on
   12 September 2026, before W006 local service and W007 annotations.
 
+** TODO W009 - Persistent info bar and direct annotation interaction :feature:defect:
+:PROPERTIES:
+:CUSTOM_ID: w-009
+:PRIORITY: P1
+:SOURCE: operator annotation review
+:CREATED: 2026-09-13
+:END:
+
+- Specification :: [[file:../specs/009-reader-annotation-ux/spec.org][W009 - Persistent info bar and direct annotation interaction]].
+- Audit evidence :: [[file:../specs/009-reader-annotation-ux/audits.yaml][W009 - Definition and implementation reviews]].
+- Scope :: *Sticky responsive info bar, narrower navigation, direct passage
+  annotation, visible comment pane and literal Org/Markdown source view*.
+- Authority :: Taḋg requested the UX changes on *13 September 2026*, accepted
+  the phone split view and clarified plaintext eligibility. *Full design
+  sign-off remains pending*; this is a follow-up to the existing W007 candidate.
+- Boundaries :: *Existing annotation storage and service authorization remain*;
+  earlier Linux/WSL qualification stays pending.
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded
