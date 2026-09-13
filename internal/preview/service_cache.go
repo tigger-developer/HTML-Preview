@@ -8,6 +8,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"os"
+
+	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 )
 
 type assetRevision struct {
@@ -15,18 +17,21 @@ type assetRevision struct {
 	sum    [32]byte
 }
 type httpPage struct {
-	data                  []byte
-	source                sourceContext
-	revision              string
-	ids, headings, orgIDs map[string][]string
-	dependencies          map[string]assetRevision
-	cacheable             bool
-	media                 map[string]servedRaster
-	assetGrants           map[string]assetGrant
-	mediaGrants           map[string]mediaGrant
-	cap                   *readCapability
-	catalogueSensitive    bool
-	used                  uint64
+	annotationSourceRevision, bodyText string
+	explicitIDs                        map[string]string
+	headingSpans                       map[string]annotation.Span
+	data                               []byte
+	source                             sourceContext
+	revision                           string
+	ids, headings, orgIDs              map[string][]string
+	dependencies                       map[string]assetRevision
+	cacheable                          bool
+	media                              map[string]servedRaster
+	assetGrants                        map[string]assetGrant
+	mediaGrants                        map[string]mediaGrant
+	cap                                *readCapability
+	catalogueSensitive                 bool
+	used                               uint64
 }
 type renderWork struct {
 	done    chan struct{}
@@ -44,6 +49,12 @@ func (s *previewService) currentPage(ctx context.Context, cap *readCapability, s
 	sum := sha256.Sum256(input)
 	revision := hex.EncodeToString(sum[:])
 	key := cap.token + "\x00" + src.logical + "\x00" + src.input.key() + "\x00" + revision
+	if cap.settings.annotations && annotationFormat(src) != "" {
+		state, err := annotation.Read(annotation.Location{Root: cap.root, Path: src.canonical, Format: annotationFormat(src), Limit: min(cap.settings.sourceBytes, cap.settings.totalBytes)})
+		if err == nil {
+			key += "\x00" + state.Revision
+		}
+	}
 	s.mu.Lock()
 	cached := s.cache[key]
 	s.mu.Unlock()
@@ -148,7 +159,13 @@ func (s *previewService) cachePage(key string, page *httpPage) {
 }
 
 func (p *httpPage) byteCost() int64 {
-	total := int64(len(p.data) + len(p.source.logical) + len(p.source.canonical) + len(p.revision))
+	total := int64(len(p.data) + len(p.source.logical) + len(p.source.canonical) + len(p.revision) + len(p.bodyText) + len(p.annotationSourceRevision))
+	for key, value := range p.explicitIDs {
+		total += int64(len(key) + len(value) + 32)
+	}
+	for key := range p.headingSpans {
+		total += int64(len(key) + 32)
+	}
 	for _, catalogue := range []map[string][]string{p.ids, p.headings, p.orgIDs} {
 		for key, values := range catalogue {
 			total += int64(len(key))

@@ -162,6 +162,13 @@ func (s *session) document(p *page) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	for _, name := range []string{"annotation-composer.js", "annotation-text.js", "annotations.js"} {
+		module, err := bundle.Assets.ReadFile("assets/web/" + name)
+		if err != nil {
+			return nil, err
+		}
+		script = append(append(script, '\n'), module...)
+	}
 	layout, err := bundle.Assets.ReadFile("assets/web/page.html")
 	if err != nil {
 		return nil, err
@@ -173,8 +180,12 @@ func (s *session) document(p *page) ([]byte, error) {
 	policy := fmt.Sprintf("default-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; script-src 'sha256-%s'; style-src 'sha256-%s'; font-src data:; img-src file: data:", hashBase64(script), hashBase64([]byte(css)))
 	if s.cfg.httpOrigin != "" {
 		policy = strings.Replace(policy, "img-src file: data:", "img-src "+s.cfg.httpOrigin+" data:", 1)
+		if p.annotationData != "" {
+			policy += "; connect-src 'self'"
+		}
 	}
 	data := struct {
+		AnnotationData                                                          string
 		Policy, Name, Source, Directory, Startup, Title, Subtitle, Author, Date string
 		Format                                                                  string
 		Frontmatter                                                             []metadataField
@@ -183,7 +194,8 @@ func (s *session) document(p *page) ([]byte, error) {
 		Body, TOC, FontNotices                                                  template.HTML
 	}{
 		Policy: policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: strings.TrimSuffix(p.source.logical, filepath.Base(p.source.logical)), Startup: p.startup, Title: p.title, Subtitle: p.subtitle, Author: p.author, Date: p.date, Frontmatter: p.frontmatter,
-		Format: p.format,
+		Format:         p.format,
+		AnnotationData: p.annotationData,
 		// #nosec G203 -- CSS, script, and notices come only from embed.FS; body has passed the passive allowlist.
 		CSS: template.CSS(css), Script: template.JS(script), Body: template.HTML(body), TOC: template.HTML(toc), FontNotices: template.HTML(fontNotices), // Only embedded assets and allowlisted HTML cross these trusted boundaries.
 	}

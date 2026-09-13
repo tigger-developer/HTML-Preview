@@ -7,9 +7,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 )
 
 type config struct {
+	displayName                          string
+	annotations                          bool
 	configPath, runtimePath              string
 	httpOrigin                           string
 	from, version                        string
@@ -72,14 +76,20 @@ func arguments(args []string) ([]string, string, string, error) {
 func settings(env []string) (config, error) {
 	c := config{toc: true, tocDepth: 3, mode: "quick", grace: 3 * time.Second, deadline: time.Minute, files: 50, sourceBytes: 10485760, totalBytes: 52428800, outputBytes: 104857600}
 	values := make(map[string]string)
+	user := ""
 	for _, entry := range env {
 		key, value, _ := strings.Cut(entry, "=")
+		if key == "USER" {
+			user = value
+		}
 		if strings.HasPrefix(key, "HTMLPREVIEW_") {
 			values[key] = value
 		}
 	}
 	for key, value := range values {
 		switch key {
+		case "HTMLPREVIEW_USER_DISPLAY_NAME":
+			c.displayName = strings.TrimSpace(value)
 		case "HTMLPREVIEW_CONFIG":
 			c.configPath = value
 		case "HTMLPREVIEW_RUNTIME_DIR":
@@ -163,6 +173,14 @@ func settings(env []string) (config, error) {
 	}
 	if value := values["HTMLPREVIEW_MODE"]; value != "" {
 		c.mode = value
+	}
+	nameSetting := "HTMLPREVIEW_USER_DISPLAY_NAME"
+	if c.displayName == "" {
+		c.displayName = strings.TrimSpace(user)
+		nameSetting = "USER"
+	}
+	if err := annotation.ValidateName(c.displayName); err != nil {
+		return c, fmt.Errorf("%s: %w", nameSetting, err)
 	}
 	return c, nil
 }

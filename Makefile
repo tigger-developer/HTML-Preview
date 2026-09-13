@@ -4,7 +4,7 @@
 COMMIT_MESSAGE ?= chore: sync
 export PREFIX DESTDIR VERSION RELEASE_BASE_URL COMMIT_MESSAGE
 
-.PHONY: build lint test install sync vulncheck release
+.PHONY: build lint test test-browser install sync vulncheck release
 build:
 	go run ./internal/buildtool build
 install:
@@ -17,5 +17,7 @@ lint:
 	go run ./internal/buildtool lint
 test:
 	go test -race -timeout=20m ./...
+test-browser:
+	go test -tags=browser -count=1 -timeout=3m -v ./internal/preview -run '^TestRT007_Browser$$'
 vulncheck:
 	govulncheck ./...

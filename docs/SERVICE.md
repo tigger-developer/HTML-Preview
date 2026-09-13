@@ -265,8 +265,12 @@ Local raster images require an authorized document reference and a matching
 allowlisted signature. Registered PDF and SVG anchors download unless an
 explicit installed reader was selected. Native HTML retains passive styling;
 its scripts, forms and automatic remote resources are disabled. Container media
-is bound to its parent source revision. The service does not modify documents;
-annotations belong to the separate W007 delivery.
+is bound to its parent source revision. Reading does not modify documents.
+[Annotations](ANNOTATIONS.md) add a separate, constrained write route for genuine
+Org and Markdown sources. The CLI captures `HTMLPREVIEW_USER_DISPLAY_NAME`, with
+`USER` as fallback. Older services receive the original read-only registration
+request after one annotation-unavailable notice; other protocol errors remain
+errors. The daemon never supplies its own display name.
 
 ## Rollback
 

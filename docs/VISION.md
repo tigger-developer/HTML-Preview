@@ -26,8 +26,9 @@ and pending native checks recorded in [W006 validation](../specs/006-local-previ
 It replaces the historical graph workflow below with requested-document HTTP
 rendering and single-document file fallback. The [service guide](SERVICE.md)
 describes explicit configuration, activation and rollback. Reading still leaves
-sources unchanged; annotation implementation remains behind its qualified-service
-dependency.
+sources unchanged. The original annotation prerequisite is superseded by the
+operator's 13 September instruction to proceed with annotations while Linux/WSL
+qualification remains pending.
 
 Under the operator's 13 September amendment, starting the service in a document
 directory can work without configuration. Explicit config, current-directory
@@ -56,6 +57,11 @@ earlier implementation hold.
 W007 also supersedes the earlier live-reload exclusion below for service previews:
 bounded polling refresh is part of annotation autosave. Recursive filesystem
 watchers and file-mode live reload remain excluded.
+
+The annotation implementation candidate now provides the approved composer,
+append-only stores and automatic refresh. [The annotation guide](ANNOTATIONS.md)
+describes usage and ownership; its linked validation record retains unperformed
+platform and human checks without treating implementation as qualification.
 
 ## Input format proposal - 12 September 2026
 

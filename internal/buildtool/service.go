@@ -32,6 +32,7 @@ func serviceFiles(goos string) (map[string]string, error) {
 	return map[string]string{
 		"config.example.yaml":       "packaging/service/config.example.yaml",
 		"SERVICE.md":                "docs/SERVICE.md",
+		"ANNOTATIONS.md":            "docs/ANNOTATIONS.md",
 		"service/" + name + ".tmpl": "packaging/service/" + name + ".tmpl",
 	}, nil
 }

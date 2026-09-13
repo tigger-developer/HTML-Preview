@@ -240,6 +240,7 @@ async function enhanceOutline(main, header, controller, dispose) {
       record.more.hidden = expanded;
       record.more.setAttribute('aria-expanded', String(expanded));
       record.node.classList.toggle('hp-folded', !expanded);
+      record.node.setAttribute('data-hp-fold-mode', record.mode);
     }
   }
 
@@ -400,7 +401,7 @@ function enhancePreview() {
     await enhanceOutline(main, header, controller, dispose);
     if (!controller.signal.aborted) await enhanceCode(main, copyValue, controller, dispose);
   }
-  enhance().catch(() => {
+  const ready = enhance().catch(() => {
     if (controller.signal.aborted) return;
     teardown();
     const status = document.createElement('p');
@@ -410,9 +411,21 @@ function enhancePreview() {
     header.after(status);
     window.addEventListener('pagehide', () => { status.remove(); }, { once: true });
   });
+  return { teardown, ready };
 }
 
-enhancePreview();
+let previewLifecycle = enhancePreview();
+export async function reinitializePreview(replaceRegions) {
+  previewLifecycle.teardown();
+  if (replaceRegions) replaceRegions();
+  previewLifecycle = enhancePreview();
+  await previewLifecycle.ready;
+}
 window.addEventListener('pageshow', event => {
-  if (event.persisted) enhancePreview();
+  if (event.persisted) reinitializePreview().catch(error => {
+    const status = document.createElement('p');
+    status.setAttribute('role', 'status');
+    status.textContent = 'Reader controls could not be restored.';
+    document.getElementById('hp-header').after(status);
+  });
 });

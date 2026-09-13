@@ -140,16 +140,29 @@ func prepareHTTP(ctx context.Context, sources []sourceContext, cfg config, conne
 	for _, src := range sources {
 		request.Paths = append(request.Paths, src.logical)
 	}
-	data, err := json.Marshal(request)
+	data, err := json.Marshal(annotationRegistration{previewRegistration: request, DisplayName: &cfg.displayName})
 	if err != nil || len(data) > 65536 {
 		return prepared, nil, errors.New("service registration exceeds request limit")
 	}
-	req, err := http.NewRequestWithContext(controlCtx, http.MethodPost, "http://control/v1/previews", bytes.NewReader(data))
+	req, err := http.NewRequestWithContext(controlCtx, http.MethodPost, "http://control/v1/annotation-previews", bytes.NewReader(data))
 	if err != nil {
 		return prepared, nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	data, code, err := controlResponse(client, req)
+	if err == nil && code == 404 {
+		log.notice("annotations unavailable in this service; using read-only preview")
+		data, err = json.Marshal(request)
+		if err != nil {
+			return prepared, nil, err
+		}
+		req, err = http.NewRequestWithContext(controlCtx, http.MethodPost, "http://control/v1/previews", bytes.NewReader(data))
+		if err != nil {
+			return prepared, nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		data, code, err = controlResponse(client, req)
+	}
 	if err != nil {
 		return prepared, nil, errors.New("service registration failed")
 	}

@@ -44,6 +44,7 @@ Environment settings (empty values use defaults):
   HTMLPREVIEW_DEADLINE                60s; 100ms to 10m for conversion
   HTMLPREVIEW_CONFIG                  Absolute YAML override; otherwise discovery
   HTMLPREVIEW_RUNTIME_DIR             Absolute private service runtime directory
+  HTMLPREVIEW_USER_DISPLAY_NAME       Annotation label; falls back to trimmed USER
 
 LINKS and MAX_DEPTH retain validation and emit one migration notice when set.
 They no longer pre-generate links or select read mode. HTTP links render targets
@@ -62,7 +63,13 @@ Linux/WSL $XDG_CACHE_HOME/htmlpreview/runtime (default ~/.cache).
 Read mode retains pages until Ctrl+C or SIGTERM. Standalone output is always on.
 Quick mode removes its private temporary directory after the grace period;
 the delay does not guarantee browser readiness. SIGKILL can leave that directory.
-Source files are never modified. The command never starts a service implicitly.
+Reading never modifies source files. Service annotations append their own records
+to genuine Org/Markdown sources, or an adjacent Org sidecar for read-only sources.
+The Annotations button opens the autosaving composer. Closing freezes a comment;
+later corrections are new comments. Source changes refresh without losing drafts.
+The display name permits 128 Unicode characters/512 UTF-8 bytes, without controls.
+Missing display name and USER permit reading only. See packaged ANNOTATIONS.md.
+The command never starts a service implicitly.
 See the packaged SERVICE.md for configuration, activation, stop and rollback.
 
 Requires Pandoc 3.9.0.2 or a later 3.9 patch with bundled Lua 5.4.

@@ -1,0 +1,6 @@
+[
+  {"name":"blocks and whitespace","html":"<main><h2>A&nbsp;heading</h2><p>café\t <em>😀</em><br>next</p></main>","text":"A heading café 😀 next"},
+  {"name":"all Unicode whitespace","html":"<p>a\u0009\u000a\u000b\u000c\u000d\u0020\u0085\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000b</p>","text":"a b"},
+  {"name":"literal code and folded drawers","html":"<main><pre><code>a &lt; b\n  c</code></pre><details><summary>Properties</summary><dl><dt>Key</dt><dd>value</dd></dl></details><button>Ignore</button><nav>Ignore</nav><script>ignore()</script></main>","text":"a < b c Properties Key value"},
+  {"name":"table and combining marks","html":"<table><tr><td>é</td><td>é</td></tr></table><p>Case CASE</p>","text":"é é Case CASE"}
+]

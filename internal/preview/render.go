@@ -13,11 +13,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/tigger-developer/HTML-Preview/internal/annotation"
+
 	bundle "github.com/tigger-developer/HTML-Preview"
 	"golang.org/x/net/html"
 )
 
 type page struct {
+	annotationData                string
+	annotationSourceRevision      string
+	explicitIDs                   map[string]string
 	httpMedia                     map[string]servedRaster
 	assetGrants                   map[string]assetGrant
 	mediaGrants                   map[string]mediaGrant
@@ -41,6 +46,14 @@ type page struct {
 }
 
 func (s *session) render(ctx context.Context, p *page, data []byte) error {
+	if format := annotationFormat(p.source); format != "" {
+		store := annotation.Parse(data, format)
+		data = store.Source
+		p.annotationSourceRevision = annotation.Digest(data)
+		if store.Reason != "" {
+			s.log.notice("annotation metadata unavailable: %s", store.Reason)
+		}
+	}
 	if p.source.input.binary() {
 		expanded, err := validateArchive(ctx, data, s.cfg.outputBytes-s.used-int64(len(data)))
 		if err != nil {
@@ -257,6 +270,7 @@ type headingDestination struct {
 }
 
 func catalogue(p *page, log *console) {
+	p.explicitIDs = make(map[string]string)
 	wrapBareHeadings(p.dom)
 	flattenOutlineGaps(p.dom)
 	var destinations []headingDestination
@@ -268,6 +282,11 @@ func catalogue(p *page, log *console) {
 	p.ids = allocateIdentifiers(p.dom)
 	for _, d := range destinations {
 		target := attribute(d.section, "id")
+		for _, id := range []string{d.custom, d.alias} {
+			if id != "" && validID(id) && len(p.ids[id]) == 1 {
+				p.explicitIDs[id] = target
+			}
+		}
 		p.headings[d.title] = append(p.headings[d.title], target)
 		if d.custom != "" && (!validID(d.custom) || len(p.ids[d.custom]) != 1) {
 			p.ids[d.custom] = nil

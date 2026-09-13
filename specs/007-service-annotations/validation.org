@@ -5,8 +5,9 @@
 * Planned qualification
 
 - Specification :: [[file:spec.org][W007 - Attributed autosaved annotations]].
-- Evidence boundary :: *Definition only*. No W007 implementation, regression
-  execution, browser result or native filesystem qualification is claimed.
+- Evidence boundary :: The original definition-only boundary is superseded by
+  the implementation evidence below. Native browser usability, accessibility
+  and filesystem qualification remain individually pending.
 - Prerequisite :: *W006 delivered revision and required qualification must be
   recorded before W007 implementation*, under OT007.1 below.
 - Recording :: Each result needs *candidate revision, exact environment,
@@ -33,6 +34,49 @@
   recorded local checks, operator observation and explicit sequencing direction
   provide the pre-implementation evidence. The later delivered-guidance portion
   remains pending; this entry is not a full OT007.1 pass.
+
+* Implementation regression evidence, 13 September 2026
+
+- Candidate :: The implementation checkpoint following =84ea26e= (operator
+  admission with pending platform qualification); subsequent records identify
+  the final reviewed revision.
+- Environment :: macOS arm64, Go 1.26.8, Pandoc 3.9.0.2. Go cache and module
+  cache were redirected into the allocated temporary workspace.
+- Initial RED :: On the delivered service baseline, the new annotation
+  registration HTTP test received 404. The browser runner then reached its
+  intended missing-composer failure. Its first attempt had timed out without
+  returning assertions; a complete fixture header and module-load error reporting
+  were added before retrying. That timeout is not a product or browser pass.
+- Further RED/GREEN :: Controlled browser tests exposed duplicate concurrent
+  flushes; filesystem tests exposed loss of the live composer after a failed sync,
+  missing secret verification and missing file locking on accepted retries.
+  HTTP tests exposed the missing shared polling snapshot and loss of an explicit
+  Markdown reader during refresh. Framing/projection tests exposed incorrect
+  oversized-frame classification and loss of valid events before a conflicting
+  sequence. Each observed failure was followed by implementation and a passing
+  affected test. Canonical explicit-heading spans initially failed to compile
+  because their new owned mapping interface was absent; its implementation and
+  shared text fixtures then passed.
+- Targeted Go result :: =go test -race ./internal/annotation ./internal/preview
+  -run TestRT007_ -count=1= passed after these corrections. Tests exercise actual
+  temporary files and service requests; append/sync faults use the owned file
+  operation boundary. No metered API or provider is in the regression suite.
+- Browser result :: =make test-browser= returned 35 passing native assertions
+  from Chrome 147.0.0.0. The runner loaded modules extracted from an actual
+  rendered page. Assertions cover shared Unicode text fixtures, debounce, IME,
+  single-flight coalescing, identical retry payloads, close ordering, accessible
+  composition, inert saved text, source refresh, explicit-ID folds, default-folded
+  drawers, failed close, navigation protection and unsaved-text print exclusion.
+  This is Chrome evidence, not Safari or screen-reader qualification.
+- Check limitations :: Additional focused tests extend the broader initial RED
+  boundary; no independent pre-change failure is claimed for every individual
+  assertion. Full-suite, final static checks and the delivered browser sample
+  are recorded separately when their current runs return.
+- Vulnerability check :: =make vulncheck= reported no vulnerabilities against
+  the implementation candidate. No runtime dependency was added by annotations.
+- Native matrix :: Linux, WSL1, WSL2, Safari and assistive-technology results
+  remain PENDING. The operator's platform sequencing instruction is preserved
+  above; it does not manufacture qualification results.
 
 ** UT007.1 - Attributed persistence
 :PROPERTIES:

@@ -74,8 +74,19 @@ autosave and refresh regressions without Node/npm. Headless CI retains Go tests;
 actual browser qualification is required on the supported native matrix before
 the implementation gate, with unavailable browsers reported as unexecuted failures.
 
-This is a definition proposal, with no annotation implementation or qualification
-claimed. The source-preservation rule gains an explicit exception only for
+The earlier definition-only statement is superseded by the W007 implementation
+candidate. `internal/annotation` owns framing, history projection, canonical text
+and rooted append operations. The existing preview service owns author-bound
+grants and a bounded shared polling snapshot; every append bypasses that snapshot.
+Browser composer, text mapping and presentation modules are packaged with the
+existing reader script. Refresh reuses its teardown/initialization boundary while
+retaining the composer outside replaced document regions. No dependency was added.
+The [annotation guide](ANNOTATIONS.md) records storage and operational limits;
+[validation](../specs/007-service-annotations/validation.org) distinguishes local
+regressions from pending native qualification. The operator authorized proceeding
+on 13 September while Linux/WSL qualification remains pending.
+
+The source-preservation rule gains an explicit exception only for
 annotation records. A future Exodan deployment would require its own definition
 over server-owned documents and storage, never a client's personal filesystem.
 

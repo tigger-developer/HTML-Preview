@@ -19,6 +19,7 @@
 {{if .TOC}}<nav id="hp-toc" aria-label="Document navigation"><span class="hp-nav-label">Navigate</span>{{.TOC}}</nav>{{end}}
 {{if or .Title .Subtitle .Author .Date}}<section id="hp-document-title">{{if .Title}}<h1>{{.Title}}</h1>{{end}}{{if .Subtitle}}<h2>{{.Subtitle}}</h2>{{end}}{{if .Author}}<p>{{.Author}}</p>{{end}}{{if .Date}}<p>{{.Date}}</p>{{end}}</section>{{end}}
 <main id="hp-document" data-hp-startup="{{.Startup}}">{{.Body}}</main>
+{{if .AnnotationData}}<template id="hp-annotation-data">{{.AnnotationData}}</template>{{end}}
 <script type="module">{{.Script}}</script>
 </body>
 </html>

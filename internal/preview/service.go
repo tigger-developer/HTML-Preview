@@ -14,10 +14,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/tigger-developer/HTML-Preview/internal/annotation"
+
 	"golang.org/x/net/netutil"
 )
 
 type previewService struct {
+	annotationWriter         *annotation.Writer
+	annotationGrants         map[string]*annotationGrant
+	annotationPollMu         sync.Mutex
+	annotationPolls          map[string]annotationPoll
 	mu                       sync.Mutex
 	workers                  sync.WaitGroup
 	ctx                      context.Context
@@ -101,6 +107,9 @@ func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, c
 	s.inflight = make(map[string]*renderWork)
 	s.assets = make(map[string]assetGrant)
 	s.media = make(map[string]mediaGrant)
+	s.annotationWriter = annotation.NewWriter(annotation.FileOperations{})
+	s.annotationGrants = make(map[string]*annotationGrant)
+	s.annotationPolls = make(map[string]annotationPoll)
 	public := serviceHTTPServer(http.HandlerFunc(s.serveHTTP), ctx, 70*time.Second)
 	control := serviceHTTPServer(http.HandlerFunc(s.serveControl), ctx, 5*time.Second)
 	done := make(chan error, 2)

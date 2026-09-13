@@ -15,6 +15,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 )
 
 type serviceStatus struct {
@@ -31,6 +33,11 @@ type previewRegistration struct {
 	Settings       previewSettings `json:"settings"`
 	From           string          `json:"from,omitempty"`
 	FormatContract int             `json:"format_contract"`
+}
+
+type annotationRegistration struct {
+	previewRegistration
+	DisplayName *string `json:"display_name"`
 }
 
 type previewSettings struct {
@@ -65,7 +72,8 @@ func (s *previewService) serveControl(w http.ResponseWriter, r *http.Request) {
 		writeControl(w, 200, serviceStatus{1, s.instance, s.origin, s.ctx.Err() == nil, 1, readers})
 		return
 	}
-	if r.URL.Path != "/v1/previews" || r.Method != http.MethodPost {
+	enabled := r.URL.Path == "/v1/annotation-previews"
+	if (r.URL.Path != "/v1/previews" && !enabled) || r.Method != http.MethodPost {
 		writeControl(w, 404, map[string]string{"error": "not_found"})
 		return
 	}
@@ -75,7 +83,21 @@ func (s *previewService) serveControl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var request previewRegistration
-	if err = decodeControl(data, &request); err != nil || len(request.Paths) == 0 || int64(len(request.Paths)) > s.base.files {
+	name := ""
+	if enabled {
+		var extended annotationRegistration
+		err = annotation.Decode(data, &extended)
+		request = extended.previewRegistration
+		if extended.DisplayName != nil {
+			name = strings.TrimSpace(*extended.DisplayName)
+		}
+		if nameErr := annotation.ValidateName(name); nameErr != nil {
+			err = nameErr
+		}
+	} else {
+		err = decodeControl(data, &request)
+	}
+	if err != nil || len(request.Paths) == 0 || int64(len(request.Paths)) > s.base.files {
 		writeControl(w, 400, map[string]string{"error": "invalid_request"})
 		return
 	}
@@ -84,6 +106,7 @@ func (s *previewService) serveControl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cfg, err := request.Settings.apply(s.base)
+	cfg.annotations, cfg.displayName = enabled, name
 	if err != nil {
 		writeControl(w, 400, map[string]string{"error": "invalid_settings"})
 		return
@@ -259,6 +282,7 @@ func (s *previewService) effectiveRoot(logical, canonical, narrow string) string
 
 func (s *previewService) capability(root, parent string, cfg config) (*readCapability, error) {
 	key := fmt.Sprintf("%s\x00%s\x00%s\x00%t/%d/%d/%d/%d/%d", root, parent, cfg.root, cfg.toc, cfg.tocDepth, cfg.sourceBytes, cfg.totalBytes, cfg.outputBytes, cfg.deadline)
+	key += fmt.Sprintf("\x00%t\x00%s", cfg.annotations, cfg.displayName)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if cap := s.contexts[key]; cap != nil {

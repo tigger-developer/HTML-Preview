@@ -17,6 +17,11 @@ outside its roots selects a single-document file preview. Installation never
 starts the service. [Service validation](specs/006-local-preview-service/validation.org)
 distinguishes regression evidence from pending native qualification.
 
+Service previews of genuine Org and Markdown sources also offer
+[attributed annotations](docs/ANNOTATIONS.md). The composer autosaves append-only
+draft events and freezes the comment on close. Source changes refresh without
+discarding an active draft; read-only sources use an adjacent Org sidecar.
+
 **Evidence:** See [the specification](specs/001-local-document-preview/spec.org)
 and its [audit record](specs/001-local-document-preview/audits.org).
 Browser qualification and the Homebrew installation trial remain pending in
@@ -128,7 +133,8 @@ Validated local/container rasters are embedded in file previews and served
 through authorized asset routes in HTTP previews, replacing original-file image
 URLs. Original source context remains the basis for relative references.
 
-Sources remain unchanged. Source scripts, event handlers, executable embeds,
+Reading leaves sources unchanged; annotation composition appends its owned
+records in service mode. Source scripts, event handlers, executable embeds,
 and automatic remote resources are removed or made passive. Org includes remain
 visible without expansion. Literal source/example blocks remain literal.
 This is a local preview, not a portable export or a whole-process sandbox.
@@ -223,6 +229,7 @@ uses its separate passive policy and receives no application reading controls.
 | `HTMLPREVIEW_DEADLINE` | `60s` | Go duration, `100ms` to `10m` |
 | `HTMLPREVIEW_CONFIG` | First existing `./config.yaml`, then `~/.config/htmlpreview/config.yaml` | Absolute version-1 YAML override; no merging |
 | `HTMLPREVIEW_RUNTIME_DIR` | Platform user cache directory + `htmlpreview/runtime` | Absolute user-owned private directory |
+| `HTMLPREVIEW_USER_DISPLAY_NAME` | Trimmed `USER` | Annotation label; at most 128 Unicode characters and 512 UTF-8 bytes, without controls |
 
 With neither default config present, explicit `htmlpreview --serve` serves its
 startup directory and descendants. An existing config with empty roots grants

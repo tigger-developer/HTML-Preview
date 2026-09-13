@@ -5,12 +5,15 @@ package preview
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 
 	"golang.org/x/net/html"
 )
@@ -87,6 +90,19 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 	if p.resourceLimit {
 		return nil, 413
 	}
+	if cap.settings.annotations && annotationFormat(src) != "" {
+		state, readErr := annotation.Read(annotation.Location{Root: cap.root, Path: src.canonical, Format: annotationFormat(src), Limit: min(cap.settings.sourceBytes, cap.settings.totalBytes)})
+		if readErr != nil {
+			service.diagnostics.Printf("annotation state unavailable: %s", annotationErrorCode(readErr))
+		}
+		pageURL := service.documentURL(cap, src.logical, src.input.reader, "", "")
+		endpoint := service.origin + "/_annotations/v1/" + strings.TrimPrefix(pageURL, service.origin+"/")
+		metadata, marshalErr := json.Marshal(map[string]any{"endpoint": endpoint, "page_url": pageURL, "revision": state.Revision, "source_revision": p.annotationSourceRevision, "body_revision": annotation.Digest([]byte(annotation.CanonicalText(p.dom))), "explicit_ids": p.explicitIDs})
+		if marshalErr != nil {
+			return nil, 422
+		}
+		p.annotationData = string(metadata)
+	}
 	data, err := s.document(p)
 	if err != nil {
 		return nil, 422
@@ -94,7 +110,8 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 	if int64(len(data)) > cfg.outputBytes-s.used {
 		return nil, 413
 	}
-	return &httpPage{data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants, cap: cap, catalogueSensitive: p.catalogueSensitive}, 200
+	bodyText, headingSpans := annotation.CanonicalDocument(p.dom, p.explicitIDs)
+	return &httpPage{annotationSourceRevision: p.annotationSourceRevision, bodyText: bodyText, headingSpans: headingSpans, explicitIDs: p.explicitIDs, data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants, cap: cap, catalogueSensitive: p.catalogueSensitive}, 200
 }
 func renderStatus(ctx context.Context, err error) int {
 	if ctx.Err() != nil || errors.Is(err, context.DeadlineExceeded) {
