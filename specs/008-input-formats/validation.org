@@ -60,6 +60,16 @@
   licences and font provenance remain in THIRD_PARTY_NOTICES and asset notices.
 - Review boundary :: A bounded local documentation review, with no external
   API or service activation. Native browser results are not inferred.
+- Current candidate review, 13 September 2026 :: Repeated the bounded review
+  for =808730761b3fd61487b3e91f115343883492a592= after W006's graph retirement.
+  The rebuilt command lists *51 readers*, all represented by existing synthetic
+  or writer-generated fixtures. All *54 distinct mapped code languages* either
+  match the installed highlighter catalogue or are the declared plaintext
+  fallback. Every document/code mapping matches FORMATS. Help, README and
+  FORMATS now distinguish on-demand HTTP from explicit-input file fallback;
+  selectors, binary limits, passive HTML and original source/copy identity remain
+  consistent. The fixture source's provenance statement remains unchanged.
+  Updated prose passed =sanitize oed=. Native UT008.1 remains pending.
 
 * Definition feasibility
 :PROPERTIES:

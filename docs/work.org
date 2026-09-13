@@ -142,7 +142,7 @@ classification; it is provenance, not current state.
   supported recovery requires runner repair or an operator-authorized fresh
   session; the application changes and verification checkpoints are retained.
 
-** ACTIVE W006 - Local preview service and automatic fallback :feature:
+** REVIEW W006 - Local preview service and automatic fallback :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-006
 :PRIORITY: P1
@@ -151,7 +151,7 @@ classification; it is provenance, not current state.
 :END:
 
 - Specification :: [[file:../specs/006-local-preview-service/spec.org][W006 - Local preview service and automatic fallback]].
-- Audit evidence :: [[file:../specs/006-local-preview-service/audits.yaml][W006 - Definition audit record]].
+- Audit evidence :: [[file:../specs/006-local-preview-service/audits.yaml][W006 - Definition and implementation audit record]].
 - Validation :: [[file:../specs/006-local-preview-service/validation.org][W006 - Service and browser qualification]].
 - Scope :: *On-demand HTTP within configured trees*, hardcoded loopback binding,
   token-prefixed links, automatic single-document fallback and optional user
@@ -166,6 +166,10 @@ classification; it is provenance, not current state.
   delivery admission still requires its current definition evidence.
 - Dependency :: [[file:../specs/008-input-formats/spec.org][W008 - Input formats]]
   supplies the format pipeline before W006 service integration is qualified.
+- Operator qualification :: The implementation candidate and local checks are
+  recorded in validation.org. Native service-manager and browser qualification
+  require the listed platform observations; no operator roots or installed
+  service were activated during development.
 
 ** REVIEW W007 - Attributed autosaved annotations in service previews :feature:
 :PROPERTIES:

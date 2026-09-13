@@ -89,7 +89,7 @@
 :PROPERTIES:
 :CUSTOM_ID: ot-006-2
 :CATEGORY: ONE-OFF
-:RESULT: PENDING
+:RESULT: PASS
 :END:
 - Requirements :: [[file:spec.org::#ac-006-29][AC006.29 - Packaged two-mode guidance]].
 - Procedure :: Review candidate help, README, architecture, vision, service
@@ -97,6 +97,17 @@
   changed documentation; no persistent prose test is required.
 - Expected :: *Accurate two-mode guidance and preserved supersession history*,
   with explicit qualification limits and no remote-serving workaround.
+- Tested revision :: =808730761b3fd61487b3e91f115343883492a592=, macOS arm64,
+  Go 1.26.8 and Pandoc 3.9.0.2, 13 September 2026.
+- Observed :: Rebuilt =--help= matches the service guide and configuration
+  interface. README, Vision, Architecture and FORMATS identify the two transports
+  and retain superseded graph history. Root narrowing, platform config/runtime
+  paths, restart-scoped tokens, graph migration, WSL fallback and native-manager
+  start/stop instructions agree with the candidate and packaged templates.
+  The guide does not claim a published tap or recommend a remote-bind workaround.
+- Bounds :: One local guidance review after the implementation review, using
+  existing regression evidence for executable behaviour. No manager activation
+  or human browser result is inferred. Changed prose passed =sanitize oed=.
 
 * Initial service boundary checkpoint, 12 September 2026
 
@@ -308,3 +319,17 @@
 - Remaining qualification :: The listed native service-manager, WSL and human
   browser checks remain pending. No active installation, manager state or
   operator document root was changed by these checks.
+
+* Exact-candidate security verification, 13 September 2026
+
+- Tested revision :: =808730761b3fd61487b3e91f115343883492a592=, macOS arm64,
+  Go 1.26.8; the runtime source and dependency graph are unchanged since this
+  revision. Only the harness-owned evidence file differed during the scan.
+- Command :: =make vulncheck=, invoking =govulncheck ./...=, with Go telemetry
+  disabled and Go build/module caches confined to OS-temporary storage.
+- Observed :: Exit 0, *No vulnerabilities found*. This result supersedes the
+  earlier scanner checkpoint as current candidate evidence.
+- Browser preparation :: A temporary candidate executable and synthetic linked
+  Org/Markdown/DOCX/ODT/code/text/JSON/native-HTML fixtures are available for the
+  operator's checks. Fixture generation is not user validation. All planned
+  platform/user results remain as recorded above.
