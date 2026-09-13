@@ -1,0 +1,192 @@
+version: 1
+audits:
+    - work_item: W009-reader-annotation-ux
+      gate: definition
+      session_id: 20260913_230517_397b86
+      harness: hermes
+      provider: nous
+      model: z-ai/glm-5.3
+      configured:
+        harness: hermes
+        provider: nous
+        model: z-ai/glm-5.3
+      external_round: 1
+      status: passed
+      updated: "2026-09-13T22:06:22Z"
+      revision: 25a6d9df11dd01883c7c1eb06934a13acfc91c3f40fdf94c3a54e1cfe349e44f
+      verdict: PASS
+      response: |-
+        GATE: definition
+        REVISION: 25a6d9df11dd01883c7c1eb06934a13acfc91c3f40fdf94c3a54e1cfe349e44f
+        VERDICT: PASS
+
+        Findings and assessment:
+
+        1. Annotation/audit-state hygiene: spec.org contains no semantically identified annotation records or blocks (only ordinary Org prose and authoring structure). No duplicated audit findings, verdicts, revisions, round numbers or session IDs; audit state is referenced only via the audits.yaml link in the handoff, which is permitted. No feedback.yaml is required since no annotations were processed.
+
+        2. Template conformance: SCHEMA 5 copied from the canonical template; change-specific title; Synopsis named correctly with CUSTOM_ID: summary and the eight level-two categories; core sections present; security impact retained; hands-off log correctly absent of fabricated entries. The Synopsis introduces nothing absent from the detail and mirrors the material changes, unchanged boundaries, decisions and edge cases.
+
+        3. Requirements and traceability: AC009.1–AC009.9 are observable and falsifiable, each linked to test definitions, and every RT/UT links back to its ACs. Test classifications are honest: persistent Go/browser regressions extend the existing W007 runner (no new framework, no Node/npm, no mock DOM), and human judgement (responsive layout, touch selection, screen-reader use, phone keyboard) is assigned to UT009.1–3 rather than fabricated automation. RED expectations are stated per regression. RT009.1 explicitly requires element bounds and actual actions rather than stylesheet assertions; RT009.4 controls locale/timezone through Intl arguments so host timezone is not a dependency; RT009.5 verifies payload survival and unchanged file hashes. The designs make the planned tests feasible through the named owned seams (clock, transport, clipboard, viewport fixture).
+
+        4. Scope and supersession: the change is confined to the operator-authorized UI work. Supersession of W007's document-wide creation UI, Add comment button and sentence-click exclusion is explicit and matches the operator's recorded direction; W007's document-target API, storage, autosave, rebasing and recovery contracts are preserved unchanged. W005's fixed navigation width and non-sticky filename row are replaced as recorded. Plaintext eligibility excluding code wrappers and native HTML is a documented decision consistent with the operator's "genuine Org/Markdown only" clarification and reuses W007's provenance classification; it is not an invented requirement and is flagged for the pending sign-off.
+
+        5. KISS/proportionality: no iframe, new endpoint, dependency, persisted schema or polling loop is introduced. The literal-source payload reuses page output and the existing refresh boundary with base64/textContent inertness, which is materially simpler than a source route; the justification is recorded. The composer, canonical mapper, guarded close path and refresh machinery are reused rather than duplicated. No template-inflation mechanisms were identified.
+
+        6. Boundaries, state and security: state ownership (Go snapshots, reader module modes, annotation panel activation) is explicit; one guarded close path prevents hidden unacknowledged text; plaintext is non-mutating and never merges sidecars or follows includes; the revealed embedded-annotation difference from formatted view is documented. Security impact section is present with a supported no-new-boundary rationale. Changed-contract transitions (removed UI affordances, retained API/storage compatibility) are described with intended end states.
+
+        7. Pending items correctly left open: operator sign-off (including the proposed check/X closing convention, which is honestly marked as proposed, not pre-approved) and pending Linux/WSL/phone qualification are recorded as pending without manufactured evidence, matching the audit context.
+
+        No blocking findings. Optional observations (not grounds for FAIL): the closing-convention table and mode contract are sufficiently resolved for delivery; nothing requires the delivery agent to invent significant structure.
+      history:
+        - cache_key: sha256:7b288180e833d35739b8c1b3decf16d6de1d2573bd52116c4bbc39e66edd78c9
+          session_id: 20260913_230517_397b86
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 98738ed0a7d5e3856a936f31424232ca489ea7dfdb9638104412a6694869f965
+              bytes: 12313
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: bd32656992311c5b4da2f83ac154bfcb073a71fe987a8bf0d7618b05e7e5cf2c
+              bytes: 3994
+            - path: /Users/tigger/.agents/sdlc/GIT.md
+              sha256: 97bbf89af1c65d159688b452a0434e77d9775f7a98dd1c822ffd264b41012bbb
+              bytes: 7807
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: 8545a6297e21423a9ed1797bc3b6f90ac4425600606ae20152252d2da3c0cc42
+              bytes: 16332
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 833de19319224d80f95ad94ab6923b3d4b1255d13a11bac50b07553efa675fc4
+              bytes: 11310
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: 59522d1f15d3d204a9a3e3a648e5eca106344aa87e6b6302077fd2af6e177d83
+              bytes: 2813
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 5ed902d49dbb8321ea093fd60db68d5195e59c95c763c02e4ca0c09f6fa1e932
+              bytes: 13561
+            - path: /Users/tigger/.agents/sdlc/technologies/API.md
+              sha256: 617a6fed7544d449204f0d79426d91a1d4571a084770e6f4589929cf88856fff
+              bytes: 10905
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/LUA.md
+              sha256: 83386b235c96e1ee1209e854764c41c604196db62c6db729a1641bd61027bae1
+              bytes: 10768
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 5f8e42f83ff183e91e2e4af1e3b27f22d9b8082866cdb6932aa1e3f0386d7be7
+              bytes: 18411
+            - path: /Users/tigger/.agents/skills/define-change/SKILL.md
+              sha256: 9d4bb26874f392b6df119398d93a9a420af946ebde0683823c87616549296d9a
+              bytes: 4415
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: cacf11b21a102f0b7ff114446d2489c15cc69f9822a1f8fd2ba9255295b54af4
+              bytes: 790
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-composer.js
+              sha256: 1a7e01dde8eaa9d3f0d70946daff8decedc4e913a0645ea3c6b961c7a7610779
+              bytes: 8026
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: cf10db6a84ed163fee2244a3abe538faa1e803a4505d4ee5fe2c2d4a8788e3b9
+              bytes: 3801
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: 768120b00e028cf856ac311f2a4c17d05a98c4c80b81c13bc96582f294936410
+              bytes: 22390
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: 4a0f4b5ed64d5fd9b4ef5f094a8fdc55db240026ab4d2a1e19f4baa8645e932e
+              bytes: 1526
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: f30ef711520a26503924abbfe268802a939fb53ccf05580887aa00b83ea796df
+              bytes: 14696
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: e6510a2c0f1020c7dd7422fe2ed02c8cf5b81489f9b8e585b0ed0e5193d3a9cf
+              bytes: 17645
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: b4d201623d2d155a3902871edb91bee54f9a989c3fbf12b2ec7c65179a0aa03a
+              bytes: 6031
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 39cf27110aa4840a647883cb01b69c7a3538c64ceb46b4cd148aa825c0a02ec8
+              bytes: 45556
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 083c6936d22c825024171dc4fc076ced8f836111c60349335abdc8f17846dc52
+              bytes: 14864
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 283cfd76baba3b0a74c5b26d4e4a3755820ee69c90f175beb24f0713e0d2bd07
+              bytes: 12455
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 0351dfe0ebc30723815b66c84c5401ec0f8b94005c419c78276b2b70aaafda26
+              bytes: 10103
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 268dc624ba3b9e0662851dcc2e4bb1d461143f28818d01b872274c899a473bdb
+              bytes: 14091
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_annotations.go
+              sha256: 4c5a04bc605711bbd445f417c29ac492d7a40dbb4eb04da15f087e92c044856a
+              bytes: 11979
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_render.go
+              sha256: 587b2dca4f2f34a2d57f91d1b82acbf916cf3a0a54011b2a0ce2971018e33bac
+              bytes: 7909
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
+              sha256: 34ba926717fc378e566bd3e18cc1ef590c9349ca7e9b8131a2cdef895eaf7e73
+              bytes: 13615
+            - path: /Users/tigger/code/tigoss/html-preview/specs/005-navigation-and-metadata/spec.org
+              sha256: 56f4efc28c729bf89fcfd30296a44dd4ea4b24abe1c91a5d8c18e9f8e4a6c06f
+              bytes: 12451
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
+              bytes: 93437
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+              sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
+              bytes: 85482
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+              sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
+              bytes: 62969
+            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+              sha256: 25a6d9df11dd01883c7c1eb06934a13acfc91c3f40fdf94c3a54e1cfe349e44f
+              bytes: 38677
+          round: 1
+          revision: 25a6d9df11dd01883c7c1eb06934a13acfc91c3f40fdf94c3a54e1cfe349e44f
+          verdict: PASS
+          response: |-
+            GATE: definition
+            REVISION: 25a6d9df11dd01883c7c1eb06934a13acfc91c3f40fdf94c3a54e1cfe349e44f
+            VERDICT: PASS
+
+            Findings and assessment:
+
+            1. Annotation/audit-state hygiene: spec.org contains no semantically identified annotation records or blocks (only ordinary Org prose and authoring structure). No duplicated audit findings, verdicts, revisions, round numbers or session IDs; audit state is referenced only via the audits.yaml link in the handoff, which is permitted. No feedback.yaml is required since no annotations were processed.
+
+            2. Template conformance: SCHEMA 5 copied from the canonical template; change-specific title; Synopsis named correctly with CUSTOM_ID: summary and the eight level-two categories; core sections present; security impact retained; hands-off log correctly absent of fabricated entries. The Synopsis introduces nothing absent from the detail and mirrors the material changes, unchanged boundaries, decisions and edge cases.
+
+            3. Requirements and traceability: AC009.1–AC009.9 are observable and falsifiable, each linked to test definitions, and every RT/UT links back to its ACs. Test classifications are honest: persistent Go/browser regressions extend the existing W007 runner (no new framework, no Node/npm, no mock DOM), and human judgement (responsive layout, touch selection, screen-reader use, phone keyboard) is assigned to UT009.1–3 rather than fabricated automation. RED expectations are stated per regression. RT009.1 explicitly requires element bounds and actual actions rather than stylesheet assertions; RT009.4 controls locale/timezone through Intl arguments so host timezone is not a dependency; RT009.5 verifies payload survival and unchanged file hashes. The designs make the planned tests feasible through the named owned seams (clock, transport, clipboard, viewport fixture).
+
+            4. Scope and supersession: the change is confined to the operator-authorized UI work. Supersession of W007's document-wide creation UI, Add comment button and sentence-click exclusion is explicit and matches the operator's recorded direction; W007's document-target API, storage, autosave, rebasing and recovery contracts are preserved unchanged. W005's fixed navigation width and non-sticky filename row are replaced as recorded. Plaintext eligibility excluding code wrappers and native HTML is a documented decision consistent with the operator's "genuine Org/Markdown only" clarification and reuses W007's provenance classification; it is not an invented requirement and is flagged for the pending sign-off.
+
+            5. KISS/proportionality: no iframe, new endpoint, dependency, persisted schema or polling loop is introduced. The literal-source payload reuses page output and the existing refresh boundary with base64/textContent inertness, which is materially simpler than a source route; the justification is recorded. The composer, canonical mapper, guarded close path and refresh machinery are reused rather than duplicated. No template-inflation mechanisms were identified.
+
+            6. Boundaries, state and security: state ownership (Go snapshots, reader module modes, annotation panel activation) is explicit; one guarded close path prevents hidden unacknowledged text; plaintext is non-mutating and never merges sidecars or follows includes; the revealed embedded-annotation difference from formatted view is documented. Security impact section is present with a supported no-new-boundary rationale. Changed-contract transitions (removed UI affordances, retained API/storage compatibility) are described with intended end states.
+
+            7. Pending items correctly left open: operator sign-off (including the proposed check/X closing convention, which is honestly marked as proposed, not pre-approved) and pending Linux/WSL/phone qualification are recorded as pending without manufactured evidence, matching the audit context.
+
+            No blocking findings. Optional observations (not grounds for FAIL): the closing-convention table and mode contract are sufficiently resolved for delivery; nothing requires the delivery agent to invent significant structure.
+          updated: "2026-09-13T22:05:16Z"

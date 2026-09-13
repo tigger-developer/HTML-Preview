@@ -221,7 +221,7 @@ classification; it is provenance, not current state.
 - Instruction :: Taḋg *approved the full design and authorized delivery* on
   12 September 2026, before W006 local service and W007 annotations.
 
-** TODO W009 - Persistent info bar and direct annotation interaction :feature:defect:
+** REVIEW W009 - Persistent info bar and direct annotation interaction :feature:defect:
 :PROPERTIES:
 :CUSTOM_ID: w-009
 :PRIORITY: P1
