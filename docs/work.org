@@ -168,8 +168,10 @@ classification; it is provenance, not current state.
   supplies the format pipeline before W006 service integration is qualified.
 - Operator qualification :: The implementation candidate and local checks are
   recorded in validation.org. Native service-manager and browser qualification
-  require the listed platform observations; no operator roots or installed
-  service were activated during development.
+  require the listed platform observations. Initial development used synthetic
+  roots. The operator's later configuration amendment authorized a foreground
+  service for this checkout and browser review; native service-manager activation
+  remains separate and pending.
 - Configuration amendment :: On 13 September the operator approved portable
   config discovery and serving the startup directory when no config exists,
   and requested a running browser preview. The current specification owns the

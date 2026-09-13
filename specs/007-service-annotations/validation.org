@@ -78,6 +78,34 @@
   remain PENDING. The operator's platform sequencing instruction is preserved
   above; it does not manufacture qualification results.
 
+** Candidate verification after the implementation checkpoint
+
+- Revisions :: =fb19048= introduced the annotation candidate. The subsequent
+  =49bd9aa= synchronization checkpoint contains the boundary corrections and
+  their tests. The working tree was clean when that checkpoint was inspected.
+- Regression results :: Two full =make test= runs returned successfully, with
+  the preview package reporting 617.219 seconds and 619.717 seconds. Subsequent
+  =go test -race ./internal/annotation ./internal/preview -run
+  'TestRT007_|TestRT006_' -count=1= passed at =49bd9aa= (41.100 seconds for the
+  preview package). A final uncached full-suite run was started for that
+  checkpoint; its result is recorded when available.
+- Browser result :: The latest native Chrome 147 run returned 38 passing
+  assertions. It additionally checks continuous typing's two-second bound and
+  the print appendix before the next poll. The latter first failed, then passed
+  after the presentation included the composer's acknowledged receipt.
+  An earlier inert-comment assertion regressed when its fake service changed
+  events without changing the full revision; the fixture now follows the
+  specified revision contract and that assertion passes.
+- Further boundaries :: Mixed predominant source line endings no longer obscure
+  an intact owned-tail boundary. Cancellation during synchronization does not
+  acknowledge an event, and an identical later retry remains available. Oversized
+  comment fields return HTTP 413; malformed or forged fields return HTTP 400.
+  These cases each have observed failing and passing regression executions.
+- Build and lint :: =make build= and =make lint= returned successfully. The built
+  executable reports =htmlpreview dev (49bd9aa432cb)=. The existing user-local
+  symlink points to this checkout's =bin/htmlpreview=; no installation outside
+  the checkout was changed by the agent.
+
 ** UT007.1 - Attributed persistence
 :PROPERTIES:
 :CUSTOM_ID: ut-007-1

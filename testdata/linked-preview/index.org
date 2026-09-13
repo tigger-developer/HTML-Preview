@@ -20,5 +20,8 @@ Follow the links between Org, Markdown and DOCX as well as returning here.
 Try folding headings and drawers, selecting text, and copying code.
 These synthetic documents contain no personal information.
 
-Annotations are a separate, pending feature for Org and Markdown. This fixture
-currently exercises reading and navigation only.
+The original fixture covered reading and navigation while annotations were
+pending. The annotation candidate now adds an Annotations button to its Org and
+Markdown pages in service mode. Select a short passage, add a comment and wait
+for Autosaved draft, then close the comment and return to the page. DOCX, plain
+text and code previews remain reading-only.
