@@ -248,3 +248,25 @@
   with the race detector and 20-minute package deadline. Subsequent packaging
   changes are covered by the focused result
   above and remain subject to final candidate qualification.
+
+* Resumed service development checkpoint, 13 September 2026
+
+- Baseline :: =aae0b98= (retained definition evidence); macOS arm64, Go 1.26.8,
+  Pandoc 3.9.0.2. All new service fixtures use OS-temporary synthetic sources.
+- Baseline service subset :: Race-enabled RT006 cases passed: internal preview
+  *22.845 seconds*, integration *21.046 seconds*.
+- Interrupted handoff RED/GREEN :: Confirmed endpoint absence incorrectly
+  returned an error, and reachable/foreign/malformed endpoints received no
+  availability recheck. The bounded recheck now distinguishes these outcomes;
+  the focused regression passed under race in *1.033 seconds*. Conversion
+  errors retain their per-input failure without fallback.
+- Reader coverage :: Every installed reader passed through actual returned
+  native-HTML links in *14.086 seconds*. The initial mdoc assertion searched raw
+  HTML across markup; comparison now uses parsed rendered body text. This was
+  an assertion correction, not a production-code failure.
+- Cleanup RED/GREEN :: Failed scratch deletion returned 503 with no remaining
+  path diagnostic. It now reports the exact owned directory while refusing
+  publication. Cleanup reporting, exclusive ownership, 128-context capacity and
+  last-waiter cancellation passed under race in *2.095 seconds*.
+- Qualification boundary :: These are development checks. The final full suite,
+  static/security verification and planned native checks remain separate.

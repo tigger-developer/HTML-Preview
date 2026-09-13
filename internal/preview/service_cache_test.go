@@ -27,6 +27,11 @@ type runningTestService struct {
 
 func startTestService(t *testing.T, host Host, extraRoots ...string) *runningTestService {
 	t.Helper()
+	return startObservedTestService(t, host, io.Discard, extraRoots...)
+}
+
+func startObservedTestService(t *testing.T, host Host, diagnostics io.Writer, extraRoots ...string) *runningTestService {
+	t.Helper()
 	root := t.TempDir()
 	canonical, err := filepath.EvalSymlinks(root)
 	if err != nil {
@@ -48,7 +53,7 @@ func startTestService(t *testing.T, host Host, extraRoots ...string) *runningTes
 	ctx, cancel := context.WithCancel(t.Context())
 	done := make(chan int, 1)
 	go func() {
-		done <- runService(ctx, cfg, serviceConfig{roots: append([]string{canonical}, extraRoots...), runtime: runtime}, host, &console{out: io.Discard, diagnostics: io.Discard})
+		done <- runService(ctx, cfg, serviceConfig{roots: append([]string{canonical}, extraRoots...), runtime: runtime}, host, &console{out: io.Discard, diagnostics: diagnostics})
 	}()
 	var stopOnce sync.Once
 	stopCode := 0

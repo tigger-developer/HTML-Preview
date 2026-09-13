@@ -222,6 +222,12 @@ permissions, incompatible protocols and conversion failures remain errors.
 Read the diagnostic and correct its cause; restarting an incompatible service
 requires the operator's explicit action.
 
+If the public endpoint disappears during entry preparation, the CLI makes one
+token-free health request with a five-second deadline. Confirmed unavailability
+selects file fallback before browser handoff. A reachable endpoint or a failed
+document conversion remains an error. Failed temporary-directory cleanup reports
+the exact remaining owned path and refuses publication.
+
 File fallback converts explicitly requested inputs only. `HTMLPREVIEW_LINKS`
 and `HTMLPREVIEW_MAX_DEPTH` retain their old validation ranges but are deprecated
 and have no graph effect. Non-empty values emit one migration notice per command.

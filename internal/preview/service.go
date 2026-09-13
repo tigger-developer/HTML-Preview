@@ -24,6 +24,7 @@ type previewService struct {
 	config                   serviceConfig
 	base                     config
 	host                     Host
+	diagnostics              *log.Logger
 	pandoc, origin, instance string
 	capabilities             map[string]*readCapability
 	contexts                 map[string]*readCapability
@@ -96,6 +97,7 @@ func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, c
 	}
 	s := &previewService{ctx: ctx, config: svc, base: cfg, host: host, pandoc: pandoc, origin: "http://" + listener.Addr().String(), instance: instance, capabilities: make(map[string]*readCapability), contexts: make(map[string]*readCapability)}
 	s.cache = make(map[string]*httpPage)
+	s.diagnostics = log.New(console.diagnostics, "htmlpreview: ", 0)
 	s.inflight = make(map[string]*renderWork)
 	s.assets = make(map[string]assetGrant)
 	s.media = make(map[string]mediaGrant)

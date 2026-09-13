@@ -52,6 +52,7 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 	}
 	defer func() {
 		if err := service.host.Remove(path); err != nil {
+			service.diagnostics.Printf("service cleanup failed; remaining owned directory %q", path)
 			result = nil
 			status = 503
 		}

@@ -175,6 +175,7 @@ func wireSettings(cfg config) previewSettings {
 
 func preflightHTTP(ctx context.Context, sources []sourceContext, cfg config, status serviceStatus, response registrationResponse, prepared httpPreviews, log *console) (httpPreviews, []sourceContext, error) {
 	var fallback []sourceContext
+	serviceGone := false
 	client := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 70 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	defer client.CloseIdleConnections()
 	for i, result := range response.Results {
@@ -194,13 +195,32 @@ func preflightHTTP(ctx context.Context, sources []sourceContext, cfg config, sta
 		if !strings.HasPrefix(result.URL, status.Origin+"/") {
 			return prepared, nil, errors.New("service returned invalid preview origin")
 		}
+		if serviceGone {
+			fallback = append(fallback, src)
+			continue
+		}
 		req, err := http.NewRequestWithContext(ctx, http.MethodHead, result.URL, nil)
 		if err != nil {
 			return prepared, nil, errors.New("invalid preview URL")
 		}
 		resp, err := client.Do(req)
 		if err != nil {
-			return prepared, nil, errors.New("service entry preflight failed")
+			if !publicServiceAbsent(ctx, client, status) {
+				return prepared, nil, errors.New("service entry preflight failed")
+			}
+			// Reprepare successful entries too: none of this batch has opened yet.
+			// Earlier conversion failures stay failures, never successful fallback.
+			for _, earlier := range sources[:i] {
+				if prepared.urls[earlier.key] != "" {
+					fallback = append(fallback, earlier)
+				}
+			}
+			clear(prepared.urls)
+			prepared.sources, prepared.outputs = 0, 0
+			fallback = append(fallback, src)
+			serviceGone = true
+			log.warn("service became unavailable before handoff; using file preview")
+			continue
 		}
 		closeErr := resp.Body.Close()
 		if closeErr != nil {
@@ -228,6 +248,28 @@ func preflightHTTP(ctx context.Context, sources []sourceContext, cfg config, sta
 		prepared.urls[src.key] = result.URL
 	}
 	return prepared, fallback, nil
+}
+
+// One bounded, token-free request distinguishes a disappeared endpoint from a
+// failed document request. A responding but malformed/foreign service is not
+// absence; callers must report that failure rather than change transports.
+func publicServiceAbsent(ctx context.Context, client *http.Client, status serviceStatus) bool {
+	probe, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(probe, http.MethodGet, status.Origin+"/_health", nil)
+	if err != nil {
+		return false
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return ctx.Err() == nil && unavailableService(err)
+	}
+	// Any HTTP response establishes reachability. Its contents cannot authorize
+	// fallback, even if the instance changed or the response reports an error.
+	if err := resp.Body.Close(); err != nil {
+		return false
+	}
+	return false
 }
 
 func openHTTP(ctx context.Context, sources []sourceContext, prepared httpPreviews, desktop *desktop, log *console) int {

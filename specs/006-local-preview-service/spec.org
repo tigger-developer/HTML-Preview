@@ -1548,3 +1548,24 @@ architecture suggested by the reviewer.
 - References :: [[https://github.com/yaml/go-yaml][YAML organization maintenance policy]],
   [[https://github.com/yaml/go-yaml/releases/tag/v3.0.5][Stable release]],
   [[https://raw.githubusercontent.com/yaml/go-yaml/v3.0.5/LICENSE][Licence]].
+
+** 2026-09-13T00:45:30Z :hands-off:review:
+
+*** Resume the existing service candidate
+
+- The operator invoked delivery of W006, W007 and W008 and clarified that
+  *W006 is partially delivered*. Continue its committed implementation on master;
+  native goal mode remains off under the existing operator instruction.
+- W008's existing format pipeline remains the prerequisite implementation.
+  *W007 stays behind W006's recorded service and native qualification*; this
+  invocation does not waive those requirements or activate an installed service.
+
+*** Classify interrupted public handoff
+
+- The specified *single availability recheck* uses a token-free HTTP health
+  request with a five-second deadline. Only a missing, refused or timed-out
+  endpoint establishes absence. A responding endpoint, including malformed or
+  foreign-instance responses, leaves the preflight failure as an error.
+- When absence is confirmed, *reprepare the batch's successful and remaining
+  eligible entries in file mode before any browser handoff*. Earlier conversion
+  failures remain failures; explicit reader selection remains unchanged.
