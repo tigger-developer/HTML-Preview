@@ -108,6 +108,13 @@
 - Bounds :: One local guidance review after the implementation review, using
   existing regression evidence for executable behaviour. No manager activation
   or human browser result is inferred. Changed prose passed =sanitize oed=.
+- Configuration-amendment recheck :: On 13 September 2026, revision =1b040aa=
+  (portable config and linked fixture) was rebuilt after implementation review.
+  Its emitted =--help= states the approved explicit/local/user selection order,
+  no-config startup-directory fallback, invalid-config errors and unchanged
+  runtime paths. README and SERVICE guidance agree with the actual loader and
+  staged manager templates. Earlier platform-config wording above describes
+  the historical =8087307= candidate and is superseded by this recheck.
 
 * Initial service boundary checkpoint, 12 September 2026
 
