@@ -4,6 +4,7 @@ package preview
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 	"os"
@@ -92,6 +93,7 @@ func TestRT009_7_HTTPCurrentFootnotes(t *testing.T) {
 					request[key] = saved[key]
 				}
 			}
+			// #nosec G304 -- Reads only the synthetic source allocated in this test's temporary root.
 			data, err := os.ReadFile(path)
 			if err != nil {
 				t.Fatal(err)
@@ -114,5 +116,155 @@ func TestRT009_6_CurrentFootnoteEndpoint(t *testing.T) {
 	status, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
 	if status != 200 || state["protocol"] != float64(2) || state["comments"] == nil {
 		t.Fatalf("current-footnote state unavailable: status=%d state=%#v", status, state)
+	}
+}
+
+func TestRT009_8_ReadOnlySidecarUsesNativeEndnotes(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("requires unprivileged source permission checks")
+	}
+	s := startTestService(t, NativeHost())
+	for _, ext := range []string{"org", "md"} {
+		t.Run(ext, func(t *testing.T) {
+			path := source(t, s.root, "sidecar."+ext, "A sentence to annotate.\n")
+			if err := os.Chmod(path, 0400); err != nil {
+				t.Fatal(err)
+			}
+			endpoint := strings.Replace(annotationRegistrationURL(t, s, path, "Taḋg"), "/_annotations/v1/", "/_annotations/v2/", 1)
+			status, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
+			if status != 200 {
+				t.Fatal(status, state)
+			}
+			headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
+			request := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "upsert", "label": "tadg-001", "target": map[string]any{"type": "point", "position": 10, "run": "A sentence to annotate.", "run_offset": 10}, "text": "A sidecar footnote"}
+			status, saved := annotationJSON(t, s, "POST", endpoint, request, headers)
+			if status != 201 {
+				t.Fatal(status, saved)
+			}
+			pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
+			pageStatus, _, data := responseAsset(t, s, "GET", pageURL)
+			if pageStatus != 200 {
+				t.Fatal(pageStatus)
+			}
+			page := parseHTTPDocument(t, data)
+			var count int
+			for _, section := range nodes(page, "section") {
+				if attr(section, "role") == "doc-endnotes" && strings.Contains(textOf(section), "A sidecar footnote") {
+					count++
+				}
+			}
+			if count != 1 {
+				t.Fatal("sidecar comment is absent from the single native endnotes section")
+			}
+			status, current := annotationJSON(t, s, "GET", endpoint, nil, nil)
+			if status != 200 || current["body_revision"] != state["body_revision"] {
+				t.Fatal("virtual footnote changed authored body", status, current)
+			}
+			encoded, err := json.Marshal(current["comments"])
+			if err != nil || !strings.Contains(string(encoded), `"status":"resolved"`) {
+				t.Fatalf("sidecar location not resolved: %s %v", encoded, err)
+			}
+			// #nosec G304 -- Reads only the synthetic source allocated in this test's temporary root.
+			original, err := os.ReadFile(path)
+			if err != nil || string(original) != "A sentence to annotate.\n" {
+				t.Fatal("read-only source changed", err)
+			}
+			if err := os.Chmod(path, 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(path, []byte("Entirely different text.\n"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Chmod(path, 0400); err != nil {
+				t.Fatal(err)
+			}
+			pageStatus, _, data = responseAsset(t, s, "GET", pageURL)
+			if pageStatus != 200 {
+				t.Fatalf("unplaced page: %d %s", pageStatus, data)
+			}
+			page = parseHTTPDocument(t, data)
+			unplaced := false
+			for _, section := range nodes(page, "section") {
+				if attr(section, "role") == "doc-endnotes" {
+					unplaced = strings.Contains(textOf(section), "Unplaced annotation") && strings.Contains(textOf(section), "A sidecar footnote")
+				}
+			}
+			if !unplaced {
+				t.Fatal("unmatched sidecar note was lost or falsely located")
+			}
+			for _, anchor := range nodes(page, "a") {
+				if attr(anchor, "role") == "doc-noteref" || attr(anchor, "role") == "doc-backlink" {
+					t.Fatal("unplaced note retains a false source link")
+				}
+			}
+		})
+	}
+}
+
+func TestRT009_7_HTTPLegacyReadAndImport(t *testing.T) {
+	s := startTestService(t, NativeHost())
+	for _, format := range []string{"org", "markdown"} {
+		t.Run(format, func(t *testing.T) {
+			body := "One unique sentence.\n"
+			header := annotation.Header{Schema: 1, DocumentID: "40000000-0000-4000-8000-000000000001", SourceFormat: format}
+			event := annotation.Event{Schema: 1, OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Kind: "draft", Author: "Original reviewer", CreatedAt: "2026-09-13T12:00:00Z", RecordedAt: "2026-09-13T12:00:00Z", Target: annotation.Target{Type: "text", BodyRevision: annotation.Digest([]byte(strings.TrimSpace(body))), Exact: "unique", Start: 4, End: 10, Prefix: "One ", Suffix: " sentence."}, Text: "Retain this legacy comment"}
+			addition, err := annotation.AppendBytes(annotation.Parse([]byte(body), format), &header, event, format)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ext := ".org"
+			if format == "markdown" {
+				ext = ".md"
+			}
+			path := source(t, s.root, "legacy"+ext, body+string(addition))
+			endpoint := strings.Replace(annotationRegistrationURL(t, s, path, "Taḋg"), "/_annotations/v1/", "/_annotations/v2/", 1)
+			pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
+			status, _, output := responseAsset(t, s, "GET", pageURL)
+			if status != 200 || !strings.Contains(string(output), event.Text) {
+				t.Fatalf("legacy read: %d", status)
+			}
+			// #nosec G304 -- Reads only the synthetic source allocated in this test's temporary root.
+			unchanged, err := os.ReadFile(path)
+			if err != nil || string(unchanged) != body+string(addition) {
+				t.Fatal("reading migrated source", err)
+			}
+			status, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
+			if status != 200 {
+				t.Fatal(status, state)
+			}
+			headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
+			request := map[string]any{"operation_id": "50000000-0000-4000-8000-000000000001", "annotation_id": "60000000-0000-4000-8000-000000000001", "composer_id": "70000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "upsert", "label": "tadg-001", "target": map[string]any{"type": "point", "position": 19, "run": "One unique sentence.", "run_offset": 19}, "text": "New footnote"}
+			status, saved := annotationJSON(t, s, "POST", endpoint, request, headers)
+			if status != 201 {
+				t.Fatal(status, saved)
+			}
+			current, err := annotation.Read(annotation.Location{Root: s.root, Path: path, Format: format})
+			if err != nil || current.Reason != "" || len(current.Embedded.Notes) != 2 || string(current.Embedded.Source) != body {
+				t.Fatalf("invalid migrated source: %v %s", err, current.Reason)
+			}
+			for _, note := range current.Embedded.Notes {
+				if !note.Located() {
+					t.Fatal("verified legacy passage did not receive native reference")
+				}
+			}
+		})
+	}
+}
+
+func TestRT009_7_PreviousProtocolCannotAppendHistory(t *testing.T) {
+	s := startTestService(t, NativeHost())
+	path := source(t, s.root, "previous.org", "A sentence.\n")
+	endpoint := strings.Replace(annotationRegistrationURL(t, s, path, "Reviewer"), "/_annotations/v2/", "/_annotations/v1/", 1)
+	_, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
+	headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
+	request := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "kind": "draft", "target": map[string]any{"type": "document"}, "text": "Must not append history"}
+	status, response := annotationJSON(t, s, "POST", endpoint, request, headers)
+	if status != 409 || response["error"] != "annotation_upgrade_required" {
+		t.Fatalf("old protocol remains a writer: %d %#v", status, response)
+	}
+	// #nosec G304 -- Reads only the synthetic source allocated in this test's temporary root.
+	data, err := os.ReadFile(path)
+	if err != nil || string(data) != "A sentence.\n" {
+		t.Fatal("old request changed source", err)
 	}
 }

@@ -92,7 +92,7 @@ does not extend annotation writes beyond genuine Org/Markdown sources.
 ## Reader and footnote proposal - 14 September 2026
 
 [W009 - Persistent reader controls and native footnote annotations](../specs/009-reader-annotation-ux/spec.org)
-defines the follow-up to the annotation review. A persistent full-width info bar
+is the implementation candidate following the annotation review. A persistent full-width info bar
 puts the home-abbreviated source path left and visibly stateful controls right.
 Navigation sizes to its content. Annotation mode opens a composer at a clicked
 insertion point, with compact autosave feedback and readable dates. The comment
@@ -118,10 +118,12 @@ is outside the application. Closed comments remain read-only in the UI.
 
 This direction supersedes the event-history and selected-passage requirements
 above; those paragraphs describe the existing candidate and its original design.
-The revised specification retains the service/root boundary and requires verified
-source patches, current-value replacement and legacy reading. Full amended
-definition sign-off remains pending. Read-only sources use sidecars with virtual
-preview markers; ordinary native footnotes remain untouched.
+The candidate retains the service/root boundary and uses verified source patches,
+current-value replacement and legacy reading/import. Read-only sources use sidecars
+with virtual preview markers; ordinary native footnotes remain untouched.
+[W009 validation](../specs/009-reader-annotation-ux/validation.org) records the
+current objective checks and pending paired browser/platform qualification.
+The earlier W007 event-history description is superseded by this candidate.
 
 ## Purpose
 

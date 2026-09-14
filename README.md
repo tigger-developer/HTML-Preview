@@ -18,9 +18,12 @@ starts the service. [Service validation](specs/006-local-preview-service/validat
 distinguishes regression evidence from pending native qualification.
 
 Service previews of genuine Org and Markdown sources also offer
-[attributed annotations](docs/ANNOTATIONS.md). The composer autosaves append-only
-draft events and freezes the comment on close. Source changes refresh without
+[attributed annotations](docs/ANNOTATIONS.md). The composer autosaves current native
+footnotes and freezes the comment on close. Source changes refresh without
 discarding an active draft; read-only sources use an adjacent Org sidecar.
+The persistent info bar also offers literal Org/Markdown source inspection.
+[Reader validation](specs/009-reader-annotation-ux/validation.org) records the
+remaining paired browser checks.
 
 **Evidence:** See [the specification](specs/001-local-document-preview/spec.org)
 and its [audit record](specs/001-local-document-preview/audits.org).
@@ -133,7 +136,7 @@ Validated local/container rasters are embedded in file previews and served
 through authorized asset routes in HTTP previews, replacing original-file image
 URLs. Original source context remains the basis for relative references.
 
-Reading leaves sources unchanged; annotation composition appends its owned
+Reading leaves sources unchanged; annotation composition updates its owned
 records in service mode. Source scripts, event handlers, executable embeds,
 and automatic remote resources are removed or made passive. Org includes remain
 visible without expansion. Literal source/example blocks remain literal.

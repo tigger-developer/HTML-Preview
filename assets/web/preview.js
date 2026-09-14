@@ -206,6 +206,7 @@ async function enhanceOutline(main, header, controller, dispose) {
   const closeOwnedDrawers = root => { root.querySelectorAll('details[data-hp-org-drawer]').forEach(detail => { detail.open = false; }); };
   const owners = new WeakMap();
   const records = [];
+  let lastPreset = main.dataset.hpPreset || 'showall';
   const walker = document.createTreeWalker(main, NodeFilter.SHOW_ELEMENT);
   let count = 0;
   while (walker.nextNode()) {
@@ -246,7 +247,7 @@ async function enhanceOutline(main, header, controller, dispose) {
     }
     for (const button of toolbar.querySelectorAll('[data-hp-mode]')) {
       const expected = { overview: 'folded', content: 'children', showall: 'all' }[button.dataset.hpMode];
-      button.setAttribute('aria-pressed', String(records.length > 0 && records.every(record => record.mode === expected)));
+      button.setAttribute('aria-pressed', String(records.length ? records.every(record => record.mode === expected) : button.dataset.hpMode === lastPreset));
     }
   }
 
@@ -264,6 +265,7 @@ async function enhanceOutline(main, header, controller, dispose) {
   toolbar.className = 'hp-toolbar';
   toolbar.setAttribute('aria-label', 'Document outline');
   function globalMode(mode) {
+    lastPreset = mode; main.dataset.hpPreset = mode;
     for (const record of records) record.mode = mode === 'overview' ? 'folded' : mode === 'content' ? 'children' : 'all';
     if (mode === 'showall') main.querySelectorAll('details').forEach(detail => { detail.open = true; });
     refresh();
@@ -406,7 +408,10 @@ function enhancePreview() {
   const copyValue = clipboardService(controller, dispose);
   enhanceHeader(header, copyValue, { signal: controller.signal }, dispose);
   const measureHeader = () => document.documentElement.style.setProperty('--hp-bar-height', header.getBoundingClientRect().height + 'px');
-  const observer = new ResizeObserver(measureHeader); observer.observe(header); dispose(() => observer.disconnect()); measureHeader();
+  if (typeof ResizeObserver === 'function') {
+    const observer = new ResizeObserver(measureHeader); observer.observe(header); dispose(() => observer.disconnect());
+  }
+  window.addEventListener('resize', measureHeader, { signal: controller.signal }); measureHeader();
   // Outline labels are captured before inline copy controls can affect headings.
   async function enhance() {
     await enhanceOutline(main, header, controller, dispose);
@@ -434,18 +439,48 @@ function enhancePlaintext(header, controller, dispose) {
   button.setAttribute('aria-controls', view.id);
   header.querySelector('.hp-toolbar').append(button);
   const apply = on => {
+    // A guarded save may have refreshed these regions while this click waited.
+    const currentPayload = document.getElementById('hp-source-data');
+    const currentView = document.getElementById('hp-source-text');
+    const currentButton = document.getElementById('hp-plaintext-toggle');
+    if (!currentPayload || !currentView || !currentButton) throw new Error('Original source is unavailable.');
     if (on) {
-      const bytes = Uint8Array.from(atob(payload.content.textContent), ch => ch.charCodeAt(0));
-      view.textContent = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+      const bytes = Uint8Array.from(atob(currentPayload.content.textContent), ch => ch.charCodeAt(0));
+      currentView.textContent = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
     }
-    document.body.classList.toggle('hp-plaintext', on); view.hidden = !on;
-    for (const control of header.querySelectorAll('[data-hp-mode]')) control.disabled = on;
-    button.setAttribute('aria-pressed', String(on));
+    document.body.classList.toggle('hp-plaintext', on); currentView.hidden = !on;
+    for (const control of document.querySelectorAll('#hp-header [data-hp-mode]')) control.disabled = on;
+    currentButton.setAttribute('aria-pressed', String(on));
   };
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     const next = !document.body.classList.contains('hp-plaintext');
     const change = new CustomEvent('hp-before-plaintext', { cancelable: true, detail: { apply: () => apply(next), on: next } });
-    if (document.dispatchEvent(change)) apply(next);
+    if (document.dispatchEvent(change)) {
+      try {
+        // Annotation-enabled pages own their guarded refresh above. Other
+        // service pages still need the current source on each explicit entry.
+        if (next && location.protocol === 'http:') {
+          button.disabled = true;
+          const html = await annotationRequest(location.href, { html: true });
+          if (controller.signal.aborted) return;
+          const page = new DOMParser().parseFromString(html, 'text/html');
+          const fresh = page.getElementById('hp-source-data');
+          if (!fresh || page.querySelector('[data-hp-source]')?.getAttribute('data-hp-source') !== header.querySelector('[data-hp-source]').getAttribute('data-hp-source')) {
+            throw new Error('The refreshed document has no matching original source.');
+          }
+          // Validate before replacing the last readable snapshot.
+          new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(Uint8Array.from(atob(fresh.content.textContent), ch => ch.charCodeAt(0)));
+          document.getElementById('hp-source-data').replaceWith(document.importNode(fresh, true));
+        }
+        apply(next);
+      }
+      catch (error) {
+        if (controller.signal.aborted) return;
+        const status = document.createElement('p'); status.className = 'hp-status'; status.setAttribute('role', 'status');
+        status.textContent = 'Original source unavailable: ' + error.message; header.after(status);
+        dispose(() => status.remove());
+      } finally { button.disabled = false; }
+    }
   }, { signal: controller.signal });
   apply(document.body.classList.contains('hp-plaintext'));
   dispose(() => button.remove());

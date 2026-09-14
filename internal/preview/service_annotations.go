@@ -155,18 +155,14 @@ func (s *previewService) serveAnnotations(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/_annotations/v2/") {
-		annotationResponse(w, r, 200, map[string]any{"protocol": 2, "revision": state.Revision, "source_revision": state.SourceRevision, "body_revision": state.BodyRevision, "comments": state.Events, "storage": state.Storage, "writable": state.Writable, "reason": state.Reason, "write_token": state.WriteToken, "footnote_labels": state.Labels})
+		response := map[string]any{"protocol": 2, "revision": state.Revision, "source_revision": state.SourceRevision, "body_revision": state.BodyRevision, "comments": state.Events, "storage": state.Storage, "writable": state.Writable, "reason": state.Reason, "footnote_labels": state.Labels}
+		if state.WriteToken != "" {
+			response["write_token"] = state.WriteToken
+		}
+		annotationResponse(w, r, 200, response)
 	} else {
 		annotationResponse(w, r, 200, state)
 	}
-}
-
-func (s *previewService) annotationDocument(ctx context.Context, cap *readCapability, src sourceContext) (annotationState, annotation.Snapshot, *httpPage, error) {
-	state, snap, page, err := s.readAnnotationDocument(ctx, cap, src)
-	if err == nil {
-		err = s.authorizeAnnotations(&state, cap, src, snap)
-	}
-	return state, snap, page, err
 }
 
 func (s *previewService) readAnnotationDocument(ctx context.Context, cap *readCapability, src sourceContext) (annotationState, annotation.Snapshot, *httpPage, error) {
@@ -205,6 +201,12 @@ func (s *previewService) readAnnotationDocument(ctx context.Context, cap *readCa
 				if note.Event.AnnotationID == event.AnnotationID && note.Located() {
 					match = "resolved"
 				}
+			}
+		}
+		if located, virtual := page.annotationLocations[event.AnnotationID]; virtual {
+			match = "unplaced"
+			if located {
+				match = "resolved"
 			}
 		}
 		state.Events = append(state.Events, annotationView{event, match, event.Kind == "close"})
@@ -288,56 +290,11 @@ func (s *previewService) appendAnnotation(w http.ResponseWriter, r *http.Request
 		annotationError(w, r, 400, "invalid_event")
 		return
 	}
-	if strings.HasPrefix(r.URL.Path, "/_annotations/v2/") {
-		s.writeCurrentAnnotation(w, r, cap, src, grant, secret, request)
+	if strings.HasPrefix(r.URL.Path, "/_annotations/v1/") {
+		annotationError(w, r, 409, "annotation_upgrade_required")
 		return
 	}
-	if err := request.Validate(); err != nil {
-		annotationFailure(w, r, err)
-		return
-	}
-	state, snap, page, err := s.annotationDocument(r.Context(), cap, src)
-	if err != nil {
-		annotationFailure(w, r, err)
-		return
-	}
-	// An identical committed operation is checked by the writer before revisions.
-	if _, exists := snap.Operations[request.OperationID]; !exists {
-		if request.SourceRevision != state.SourceRevision {
-			annotationError(w, r, 409, "stale_source")
-			return
-		}
-		if request.BodyRevision != state.BodyRevision {
-			annotationError(w, r, 409, "stale_body")
-			return
-		}
-		if request.Target.HeadingID != "" && page.explicitIDs[request.Target.HeadingID] == "" {
-			annotationError(w, r, 400, "invalid_selector")
-			return
-		}
-		_, match := annotation.Resolve(request.Target, page.bodyText, page.headingSpans)
-		if match != "resolved" {
-			annotationError(w, r, 409, "target_"+match)
-			return
-		}
-	}
-	receipt, retry, err := s.annotationWriter.Append(r.Context(), grant.location, grant.source, grant.author, secret, request)
-	s.annotationPollMu.Lock()
-	for key := range s.annotationPolls {
-		if strings.Contains(key, "\x00"+src.canonical+"\x00") {
-			delete(s.annotationPolls, key)
-		}
-	}
-	s.annotationPollMu.Unlock()
-	if err != nil {
-		annotationFailure(w, r, err)
-		return
-	}
-	status := 201
-	if retry {
-		status = 200
-	}
-	annotationResponse(w, r, status, receipt)
+	s.writeCurrentAnnotation(w, r, cap, src, grant, secret, request)
 }
 
 func annotationErrorCode(err error) string {
@@ -358,7 +315,7 @@ func annotationFailure(w http.ResponseWriter, r *http.Request, err error) {
 	code := annotationErrorCode(err)
 	status := 503
 	switch code {
-	case "invalid_event", "invalid_source", "invalid_label":
+	case "invalid_event", "invalid_source", "invalid_label", "invalid_selector":
 		status = 400
 	case "target_unavailable":
 		status = 404
@@ -384,6 +341,16 @@ func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.R
 		}
 		if base.revision != annotation.Digest(snap.RawSource) || annotation.Digest([]byte(base.bodyText)) != request.BodyRevision {
 			return -1, &annotation.Failure{Code: "stale_body"}
+		}
+		if target.Type == "point" && target.HeadingID != "" && base.explicitIDs[target.HeadingID] == "" {
+			return -1, &annotation.Failure{Code: "invalid_selector"}
+		}
+		if target.Type == "text" {
+			resolved, match := annotation.Resolve(*target, base.bodyText, base.headingSpans)
+			if match != "resolved" {
+				return -1, &annotation.Failure{Code: "point_unmappable"}
+			}
+			*target = annotation.Target{Type: "point", Position: resolved.End, Run: resolved.Exact, RunOffset: utf8.RuneCountInString(resolved.Exact)}
 		}
 		at, err := annotation.SourcePointCandidate(snap.RawSource, annotationFormat(src), target.Run, target.RunOffset)
 		if err != nil {

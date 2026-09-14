@@ -1,5 +1,5 @@
 // ABOUTME: Exercises storage transitions and uncertain writes on real temporary files.
-// ABOUTME: Injects faults only at the owned append and synchronization boundary.
+// ABOUTME: Injects faults only at the owned replacement and synchronization boundary.
 package annotation
 
 import (
@@ -40,7 +40,7 @@ func requestFixture(t *testing.T, snap Snapshot) Request {
 		}
 		return value
 	}
-	return Request{OperationID: id(), AnnotationID: id(), ComposerID: id(), Sequence: 1, Revision: snap.Revision, SourceRevision: snap.SourceRevision, BodyRevision: Digest([]byte("Source Preserved prose.")), Kind: "draft", Target: Target{Type: "document"}, Text: "A draft"}
+	return Request{OperationID: id(), AnnotationID: id(), ComposerID: id(), Sequence: 1, Revision: snap.Revision, SourceRevision: snap.SourceRevision, BodyRevision: Digest([]byte("Source Preserved prose.")), Action: "upsert", Label: "reviewer-" + id(), Target: Target{Type: "point", Position: 8, Run: "Preserved prose.", RunOffset: 1}, Text: "A draft"}
 }
 
 func TestRT007_4_ReadOnlySidecarAndPermissionTransition(t *testing.T) {
@@ -53,7 +53,7 @@ func TestRT007_4_ReadOnlySidecarAndPermissionTransition(t *testing.T) {
 	}
 	w := NewWriter(FileOperations{})
 	first := requestFixture(t, initial)
-	saved, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "first", first)
+	saved, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "first", first)
 	if err != nil || saved.Storage != "sidecar" {
 		t.Fatalf("sidecar append: %+v %v", saved, err)
 	}
@@ -68,7 +68,7 @@ func TestRT007_4_ReadOnlySidecarAndPermissionTransition(t *testing.T) {
 		t.Fatal(err)
 	}
 	second := requestFixture(t, current)
-	saved, _, err = w.Append(t.Context(), loc, current.SourceInfo, "Another reviewer", "second", second)
+	saved, _, err = saveFixture(w, t.Context(), loc, &current.SourceInfo, "Another reviewer", "second", second)
 	if err != nil || saved.Storage != "embedded" {
 		t.Fatalf("embedded transition: %+v %v", saved, err)
 	}
@@ -78,11 +78,11 @@ func TestRT007_4_ReadOnlySidecarAndPermissionTransition(t *testing.T) {
 	}
 }
 
-func TestRT007_6_ShortAppendRetainsEarlierEvents(t *testing.T) {
+func TestRT007_6_ShortReplacementRetainsEarlierValue(t *testing.T) {
 	loc, initial := sourceFixture(t, "work.org")
 	w := NewWriter(FileOperations{})
 	first := requestFixture(t, initial)
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", first); err != nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", first); err != nil {
 		t.Fatal(err)
 	}
 	before, err := os.ReadFile(loc.Path)
@@ -94,14 +94,14 @@ func TestRT007_6_ShortAppendRetainsEarlierEvents(t *testing.T) {
 	second.Sequence = 2
 	second.OperationID = "10000000-0000-4000-8000-000000000002"
 	second.Text = "Updated"
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", second); !errors.Is(err, io.ErrShortWrite) {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", second); !errors.Is(err, io.ErrShortWrite) {
 		t.Fatalf("short append=%v", err)
 	}
 	current, err := Read(loc)
-	if err != nil || current.Reason == "" || !bytes.HasPrefix(current.RawSource, before) || len(current.Events) != 1 {
+	if err != nil || current.Reason != "" || !bytes.Equal(current.RawSource, before) || len(current.Events) != 1 {
 		t.Fatalf("partial preservation=%+v %v", current, err)
 	}
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", second); err == nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", second); err == nil {
 		t.Fatal("appended after partial tail")
 	}
 }
@@ -116,17 +116,17 @@ func TestRT007_6_SyncFailureRetriesAndContinuesComposer(t *testing.T) {
 		return f.Sync()
 	}})
 	first := requestFixture(t, initial)
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", first); err == nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", first); err == nil {
 		t.Fatal("sync failure reported success")
 	}
 	failSync = false
-	if _, retry, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", first); err != nil || !retry {
+	if _, retry, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", first); err != nil || retry {
 		t.Fatalf("uncertain retry=%t %v", retry, err)
 	}
 	first.Sequence = 2
 	first.OperationID = "10000000-0000-4000-8000-000000000002"
 	first.Text = "Continuing after retry"
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", first); err != nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", first); err != nil {
 		t.Fatalf("active composer lost after synchronization retry: %v", err)
 	}
 }
@@ -135,19 +135,19 @@ func TestRT007_5_RetrySecretAndRecoveredDraft(t *testing.T) {
 	loc, initial := sourceFixture(t, "retry.org")
 	w := NewWriter(FileOperations{})
 	request := requestFixture(t, initial)
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", request); err != nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "other secret", request); err == nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "other secret", request); err == nil {
 		t.Fatal("active composer accepted a retry with another secret")
 	}
 	recovered := NewWriter(FileOperations{})
-	if _, retry, err := recovered.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", request); err != nil || !retry {
+	if _, retry, err := saveFixture(recovered, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err != nil || !retry {
 		t.Fatalf("recovered exact retry=%v %v", retry, err)
 	}
 	request.Sequence = 2
 	request.OperationID = "10000000-0000-4000-8000-000000000002"
-	if _, _, err := recovered.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", request); err == nil {
+	if _, _, err := saveFixture(recovered, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err == nil {
 		t.Fatal("recovered draft accepted a new event")
 	}
 }
@@ -156,7 +156,7 @@ func TestRT007_6_RetryHonoursFilesystemLock(t *testing.T) {
 	loc, initial := sourceFixture(t, "lock.org")
 	w := NewWriter(FileOperations{})
 	request := requestFixture(t, initial)
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", request); err != nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err != nil {
 		t.Fatal(err)
 	}
 	f, err := os.OpenFile(loc.Path, os.O_WRONLY, 0)
@@ -176,7 +176,7 @@ func TestRT007_6_RetryHonoursFilesystemLock(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", request); err == nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err == nil {
 		t.Fatal("retry bypassed another writer's advisory lock")
 	}
 }
@@ -187,11 +187,11 @@ func TestRT007_6_CancelledSyncDoesNotAcknowledge(t *testing.T) {
 	defer cancel()
 	w := NewWriter(FileOperations{Sync: func(f *os.File) error { cancel(); return f.Sync() }})
 	request := requestFixture(t, initial)
-	if _, _, err := w.Append(ctx, loc, initial.SourceInfo, "Reviewer", "secret", request); !errors.Is(err, context.Canceled) {
+	if _, _, err := saveFixture(w, ctx, loc, &initial.SourceInfo, "Reviewer", "secret", request); !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancelled operation acknowledged: %v", err)
 	}
 	w.operations.Sync = func(f *os.File) error { return f.Sync() }
-	if _, retry, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", request); err != nil || !retry {
+	if _, retry, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err != nil || retry {
 		t.Fatalf("cancelled sync retry=%v %v", retry, err)
 	}
 }
@@ -230,7 +230,7 @@ func TestRT007_7_IdentityAliasesAndStaleSource(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if _, _, err := NewWriter(FileOperations{}).Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", request); err == nil {
+			if _, _, err := saveFixture(NewWriter(FileOperations{}), t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err == nil {
 				t.Fatal("unsafe mutation accepted")
 			}
 			after, err := os.ReadFile(loc.Path)
@@ -250,20 +250,31 @@ func TestRT007_10_ComposerCapacityAndClosedRelease(t *testing.T) {
 		if i == 0 {
 			first = request
 		}
-		if _, _, err := w.Append(context.Background(), loc, initial.SourceInfo, "Reviewer", "secret", request); err != nil {
+		if _, _, err := saveFixture(w, context.Background(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", requestFixture(t, initial)); err == nil || !strings.Contains(err.Error(), "composer_capacity") {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", requestFixture(t, initial)); err == nil || !strings.Contains(err.Error(), "composer_capacity") {
 		t.Fatalf("capacity=%v", err)
 	}
 	first.Sequence = 2
-	first.Kind = "close"
+	first.Action = "close"
 	first.OperationID = "10000000-0000-4000-8000-000000000002"
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", first); err != nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", first); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := w.Append(t.Context(), loc, initial.SourceInfo, "Reviewer", "secret", requestFixture(t, initial)); err != nil {
+	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", requestFixture(t, initial)); err != nil {
 		t.Fatal("closed composer did not release capacity")
 	}
+}
+
+// saveFixture mirrors the service's retained inode update after replacement.
+// Source-point proof is separately exercised through the real HTTP renderer;
+// these tests inject the known byte boundary in their fixed synthetic prose.
+func saveFixture(w *Writer, ctx context.Context, loc Location, expected *os.FileInfo, author, secret string, request Request) (Receipt, bool, error) {
+	result, err := w.Replace(ctx, loc, *expected, author, secret, request, func(context.Context, Snapshot, *Target) (int, error) { return len("* Source\nP"), nil })
+	if result.SourceInfo != nil {
+		*expected = result.SourceInfo
+	}
+	return result.Receipt, result.Retry, err
 }

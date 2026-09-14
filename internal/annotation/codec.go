@@ -243,12 +243,21 @@ func Project(events []Event) ([]Event, map[string]Event, error) {
 	var failure error
 	for _, event := range events {
 		if old, exists := operations[event.OperationID]; exists {
-			if old != event {
-				failure = errors.New("conflicting operation")
+			if old == event {
+				continue
 			}
-			continue
+			if old.Schema == event.Schema || !sameCurrentValue(old, event) {
+				failure = errors.New("conflicting operation")
+				continue
+			}
+			// A migrated current record and the untouched other store can
+			// describe the same operation with different storage schemas.
+			if event.Schema == 2 {
+				operations[event.OperationID] = event
+			}
+		} else {
+			operations[event.OperationID] = event
 		}
-		operations[event.OperationID] = event
 		if event.Schema == 2 {
 			if prior, ok := current[event.AnnotationID]; ok && prior.Sequence == event.Sequence && prior != event {
 				failure = errors.New("conflicting current annotation")
@@ -273,7 +282,7 @@ func Project(events []Event) ([]Event, map[string]Event, error) {
 		}
 		if previous != nil {
 			if note, ok := current[previous.AnnotationID]; ok {
-				if note.Sequence == previous.Sequence && (note.Text != previous.Text || note.Author != previous.Author || note.CreatedAt != previous.CreatedAt || note.Kind != previous.Kind) {
+				if note.Sequence == previous.Sequence && !sameCurrentValue(note, *previous) {
 					failure = errors.New("conflicting migrated annotation")
 				}
 				if note.Sequence >= previous.Sequence {
@@ -294,4 +303,8 @@ func Project(events []Event) ([]Event, map[string]Event, error) {
 		return latest[i].CreatedAt < latest[j].CreatedAt
 	})
 	return latest, operations, failure
+}
+
+func sameCurrentValue(a, b Event) bool {
+	return a.AnnotationID == b.AnnotationID && a.OperationID == b.OperationID && a.Sequence == b.Sequence && a.Text == b.Text && a.Author == b.Author && a.CreatedAt == b.CreatedAt && a.RecordedAt == b.RecordedAt && a.Kind == b.Kind
 }

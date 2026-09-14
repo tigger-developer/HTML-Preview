@@ -192,7 +192,7 @@ export class AnnotationComposer {
   }
 
   suspend(reason) { this.paused = true; this.error = new Error(reason); this.error.code = 'target_unresolved'; this.cancelTimer(); this.emit(); }
-  restoreSaved() { this.input(this.savedText); }
+  restoreSaved() { this.setLabel(this.savedLabel); this.input(this.savedText); }
 
   dispose() {
     this.disposed = true; this.cancelTimer();

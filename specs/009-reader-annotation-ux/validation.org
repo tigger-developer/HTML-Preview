@@ -5,7 +5,7 @@
 
 - Native reading :: RT009.6 first failed for both formats with zero recognized
   notes. The v2 service-state test failed with HTTP 404. These were expected
-  baseline failures; the endpoint remains under implementation.
+  baseline failures; the current endpoint is now covered by the HTTP checks below.
 - Current codec :: The focused annotation package now passes native recognition,
   literal exclusion and twenty current-value replacements, including label changes.
 - Username defaults :: The native-browser runner first failed because the
@@ -14,7 +14,43 @@
 - Environment :: 14 September 2026, macOS arm64, Go 1.26.8; browser identified
   itself as Chrome 147.0.0.0. These are increment checks, not final delivery evidence.
 
+* Current integration checks - 14 September 2026
+
+- Scope :: Working tree following =5fd43a8= (persistent reader controls and native
+  endnote view). These are implementation checks, not operator acceptance.
+- Legacy import :: Save tests first failed with =unsupported_store= for Org and
+  Markdown. Current checks preserve authored bytes, latest text, author and dates;
+  discard superseded draft values; preserve a read-only legacy source when writing
+  its sidecar; and reject equal-version conflicts across stores.
+- Served endnotes :: The sidecar HTTP check first failed because its comment was
+  absent from the page. Both formats now retain one native endnotes section,
+  resolved virtual positions and unchanged source bytes/body revision. Changed
+  source text produces visible unplaced notes without false source links.
+- Retired writer :: The old-protocol check first returned HTTP 201. It now returns
+  HTTP 409 =annotation_upgrade_required= without changing source bytes. The legacy
+  filesystem writer was removed; existing permission, recovery, locking and
+  capacity checks exercise current-value replacement instead.
+- Replacement boundary :: An injected hard link during staging first bypassed the
+  final check. The writer now rechecks source/destination aliases and metadata
+  before rename; focused race checks pass. Platform qualification remains separate.
+- Static/security :: =make lint= passes with temporary StyLua 2.5.2; the official
+  macOS arm64 archive matches the earlier recorded SHA-256. =make vulncheck=
+  reports no vulnerabilities. =oxlint --deny-warnings assets/web= passes after
+  the guarded-transition changes. No browser-fixture execution was used.
+- Regression scope :: The full Go race suite passed before the last save/refresh
+  corrections (preview package: 627.318 seconds). After those corrections,
+  =go test -race ./internal/annotation ./internal/preview -run '^TestRT007_|^TestRT009_' -count=1=
+  passed (annotation: 3.614 seconds; preview: 17.905 seconds). These focused
+  results supplement the earlier full suite; they are not a new full-suite run.
+- Source entry :: Service pages without annotation polling now fetch the existing
+  authorized page before displaying plaintext. JavaScript lint passes; executed
+  interaction remains part of the paired source-view test.
+- Remaining :: Current rendered-output checks, paired browser interaction, native
+  replacement qualification, and the combined implementation review remain to be
+  recorded. Linux/WSL remain pending as previously agreed.
+
 * Pending human and native qualification
+
 
 - Testing amendment, 14 September 2026 :: The operator stopped browser-fixture
   execution and directed the standard WEB.md/TESTING.md tools. Earlier browser
@@ -31,7 +67,7 @@
   =assets/web/preview.css= pass after the current reader changes.
 - Candidate :: Working tree following =3ab50f4= (current footnote writer and
   insertion-point validation). These checks do not establish full W009 delivery;
-  legacy migration, sidecar preview attachment and user validation remain open.
+  broader regression qualification and paired user validation remain open.
 
 ** UT009.1 - Responsive reading and composition
 - Status :: PENDING.

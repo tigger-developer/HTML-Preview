@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"io"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"unicode/utf8"
 )
 
 type Replacement struct {
@@ -32,6 +34,9 @@ type currentSave struct {
 }
 
 func validateCurrentRequest(r Request) error {
+	if len(r.Text) > 16384 || utf8.RuneCountInString(r.Text) > 4000 || len(r.Target.Run) > 8192 || utf8.RuneCountInString(r.Target.Prefix) > 64 || utf8.RuneCountInString(r.Target.Suffix) > 64 || len(r.Target.HeadingID) > 4096 {
+		return fail("body_limit")
+	}
 	if !ValidLabel(r.Label) {
 		return fail("invalid_label")
 	}
@@ -40,6 +45,16 @@ func validateCurrentRequest(r Request) error {
 	}
 	if len(r.SourceRevision) != 64 || len(r.BodyRevision) != 64 || len(r.Revision) != 64 {
 		return fail("invalid_event")
+	}
+	for _, revision := range []string{r.SourceRevision, r.BodyRevision, r.Revision} {
+		if _, err := hex.DecodeString(revision); err != nil {
+			return fail("invalid_event")
+		}
+	}
+	for _, value := range []string{r.Target.Run, r.Target.Prefix, r.Target.Suffix, r.Target.HeadingID} {
+		if !utf8.ValidString(value) || strings.ContainsRune(value, 0) {
+			return fail("invalid_event")
+		}
 	}
 	if r.Target.Type != "point" || len(r.Target.Run) > 8192 || r.Target.Position < 0 || r.Target.RunOffset < 0 {
 		return fail("point_unmappable")
@@ -137,6 +152,9 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	}
 	position := -1
 	if missing && r.Text != "" {
+		if r.Target.BodyRevision != "" && r.Target.BodyRevision != r.BodyRevision {
+			return Replacement{}, fail("stale_body")
+		}
 		if verify == nil {
 			return Replacement{}, fail("point_unmappable")
 		}
@@ -171,9 +189,9 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	if storage == "sidecar" {
 		data, format = snap.RawSidecar, "org"
 	}
-	// Legacy import and sidecar point projection share this current-value boundary.
-	if len(snap.Embedded.Events) != len(snap.Embedded.Notes) || len(snap.Sidecar.Events) != len(snap.Sidecar.Notes) {
-		return Replacement{}, fail("unsupported_store")
+	data, position, err = migrateCurrent(ctx, snap, data, format, r.Label, position, storage == "sidecar", verify)
+	if err != nil {
+		return Replacement{}, err
 	}
 	data, err = updateFootnote(data, format, *header, event, r.Label, position, storage == "sidecar")
 	if err != nil {
@@ -247,6 +265,10 @@ func (w *Writer) syncReplacement(ctx context.Context, loc Location, snap Snapsho
 		return err
 	}
 	defer func() { err = errors.Join(err, f.Close(), root.Close()) }()
+	if err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		return fail("busy")
+	}
+	defer func() { err = errors.Join(err, syscall.Flock(int(f.Fd()), syscall.LOCK_UN)) }()
 	if err = destinationIdentity(loc, storage, root, f, snap); err != nil {
 		return err
 	}
@@ -265,6 +287,9 @@ func (w *Writer) syncReplacement(ctx context.Context, loc Location, snap Snapsho
 		return err
 	}
 	if err = errors.Join(w.operations.Sync(parent), parent.Close()); err != nil {
+		return err
+	}
+	if err = ctx.Err(); err != nil {
 		return err
 	}
 	current, err := Read(loc)
@@ -304,12 +329,17 @@ func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, s
 		return updated, err
 	}
 	defer func() { err = errors.Join(err, root.Close()) }()
+	var original *os.File
 	if info != nil {
-		original, openErr := root.OpenFile(rel, os.O_WRONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
+		var openErr error
+		original, openErr = root.OpenFile(rel, os.O_WRONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
 		if openErr != nil {
 			return updated, openErr
 		}
 		defer func() { err = errors.Join(err, original.Close()) }()
+		if err = destinationIdentity(loc, storage, root, original, snap); err != nil {
+			return updated, err
+		}
 		if err = replacementMetadata(original); err != nil {
 			return updated, err
 		}
@@ -366,6 +396,34 @@ func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, s
 	if current.Revision != snap.Revision || !os.SameFile(current.SourceInfo, snap.SourceInfo) || current.SourceInfo.Mode() != snap.SourceInfo.Mode() {
 		return updated, fail("source_changed")
 	}
+	if !writableFile(current.SourceInfo) {
+		return updated, fail("unsafe_source")
+	}
+	if snap.SideInfo != nil && (current.SideInfo == nil || !os.SameFile(snap.SideInfo, current.SideInfo) || snap.SideInfo.Mode() != current.SideInfo.Mode() || !writableFile(current.SideInfo)) {
+		return updated, fail("store_changed")
+	}
+	if original != nil {
+		if err = destinationIdentity(loc, storage, root, original, snap); err != nil {
+			return updated, err
+		}
+		if err = replacementMetadata(original); err != nil {
+			return updated, err
+		}
+	}
+	tempInfo, err := f.Stat()
+	if err != nil {
+		return updated, err
+	}
+	tempPath, err := root.Lstat(temp)
+	if err != nil {
+		return updated, err
+	}
+	if !writableFile(tempInfo) || !os.SameFile(tempInfo, tempPath) || tempPath.Mode()&os.ModeSymlink != 0 {
+		return updated, fail("unsafe_source")
+	}
+	if err = replacementMetadata(f); err != nil {
+		return updated, err
+	}
 	if err = ctx.Err(); err != nil {
 		return updated, err
 	}
@@ -378,6 +436,9 @@ func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, s
 		return updated, err
 	}
 	if err = errors.Join(w.operations.Sync(parent), parent.Close()); err != nil {
+		return updated, err
+	}
+	if err = ctx.Err(); err != nil {
 		return updated, err
 	}
 	updated, err = Read(loc)

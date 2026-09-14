@@ -31,6 +31,7 @@ func replacementMetadata(f *os.File) error {
 	binary.LittleEndian.PutUint16(attributes[:2], 5)
 	binary.LittleEndian.PutUint32(attributes[4:8], 0x00400000)
 	var result [12]byte
+	// #nosec G103 -- Fixed stack arrays and their exact lengths remain live for this synchronous syscall.
 	_, _, errno = syscall.Syscall6(syscall.SYS_FGETATTRLIST, f.Fd(), uintptr(unsafe.Pointer(&attributes[0])), uintptr(unsafe.Pointer(&result[0])), uintptr(len(result)), 0, 0)
 	if errno != 0 {
 		return errno

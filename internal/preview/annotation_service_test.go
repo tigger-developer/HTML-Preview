@@ -1,5 +1,5 @@
 // ABOUTME: Exercises attributed annotation persistence through real service HTTP.
-// ABOUTME: Verifies source preservation, read-only registration and append-only history.
+// ABOUTME: Verifies source preservation, read-only registration and current footnote values.
 package preview
 
 import (
@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 	"golang.org/x/net/html"
 )
 
@@ -36,14 +37,14 @@ func annotationRegistrationURL(t *testing.T, s *runningTestService, path string,
 	if err := json.Unmarshal(response, &result); err != nil || len(result.Results) != 1 || result.Results[0].URL == "" {
 		t.Fatalf("annotation registration returned no page: %s, %v", response, err)
 	}
-	return s.origin + "/_annotations/v1/" + strings.TrimPrefix(result.Results[0].URL, s.origin+"/")
+	return s.origin + "/_annotations/v2/" + strings.TrimPrefix(result.Results[0].URL, s.origin+"/")
 }
 
 func TestRT007_1_ReaderSelectionSurvivesAnnotationRefresh(t *testing.T) {
 	s := startTestService(t, NativeHost())
 	path := source(t, s.root, "reader.md", "# Heading\n\nLiteral **emphasis**.\n")
 	endpoint := annotationRegistrationURL(t, s, path, "Reviewer")
-	pageURL := s.origin + "/" + strings.TrimPrefix(endpoint, s.origin+"/_annotations/v1/") + "?htmlpreview-format=markdown_strict"
+	pageURL := s.origin + "/" + strings.TrimPrefix(endpoint, s.origin+"/_annotations/v2/") + "?htmlpreview-format=markdown_strict"
 	status, data, err := testHTTPBody(s.client, pageURL)
 	if err != nil || status != 200 {
 		t.Fatal(status, err)
@@ -119,7 +120,7 @@ func TestRT007_1_AnnotationRegistrationAndReadOnlyCompatibility(t *testing.T) {
 		t.Fatalf("annotation state: %d %#v", status, state)
 	}
 	readURL := s.register(t, "old.org", "* Old client\n")
-	oldEndpoint := s.origin + "/_annotations/v1/" + strings.TrimPrefix(readURL, s.origin+"/")
+	oldEndpoint := s.origin + "/_annotations/v2/" + strings.TrimPrefix(readURL, s.origin+"/")
 	status, state = annotationJSON(t, s, "GET", oldEndpoint, nil, nil)
 	if status != 200 || state["writable"] != false || state["write_token"] != nil {
 		t.Fatalf("old registration acquired write authority: %d %#v", status, state)
@@ -133,7 +134,7 @@ func TestRT007_1_AnnotationRegistrationAndReadOnlyCompatibility(t *testing.T) {
 	}
 }
 
-func TestRT007_3_EmbeddedHistoryPreservesSource(t *testing.T) {
+func TestRT007_3_CurrentFootnotesPreserveAuthoredSource(t *testing.T) {
 	s := startTestService(t, NativeHost())
 	for _, format := range []string{"org", "md"} {
 		t.Run(format, func(t *testing.T) {
@@ -145,14 +146,14 @@ func TestRT007_3_EmbeddedHistoryPreservesSource(t *testing.T) {
 				t.Fatalf("state: %d %#v", status, state)
 			}
 			headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
-			event := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "kind": "draft", "target": map[string]any{"type": "document"}, "text": "Check <script> and -->, #+end_comment safely."}
+			event := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "upsert", "label": "tadg-001", "target": map[string]any{"type": "point", "position": 1, "run": "A preserved paragraph.", "run_offset": 1}, "text": "Check <script> and -->, #+end_comment safely."}
 			status, saved := annotationJSON(t, s, "POST", endpoint, event, headers)
 			if status != 201 {
 				t.Fatalf("save: %d %#v", status, saved)
 			}
 			// #nosec G304 -- Path is allocated by this test inside its temporary root.
 			first, err := os.ReadFile(path)
-			if err != nil || !bytes.HasPrefix(first, original) || bytes.Equal(first, original) {
+			if err != nil || !bytes.Equal(annotation.Parse(first, map[string]string{"org": "org", "md": "markdown"}[format]).Source, original) || bytes.Equal(first, original) {
 				t.Fatalf("existing prefix changed: %v", err)
 			}
 			status, retry := annotationJSON(t, s, "POST", endpoint, event, headers)
@@ -169,12 +170,12 @@ func TestRT007_3_EmbeddedHistoryPreservesSource(t *testing.T) {
 			if status != 201 {
 				t.Fatalf("second draft: %d %#v", status, saved)
 			}
-			event["operation_id"], event["sequence"], event["kind"] = "10000000-0000-4000-8000-000000000003", 3, "close"
+			event["operation_id"], event["sequence"], event["action"] = "10000000-0000-4000-8000-000000000003", 3, "close"
 			status, saved = annotationJSON(t, s, "POST", endpoint, event, headers)
 			if status != 201 || saved["closed"] != true {
 				t.Fatalf("close: %d %#v", status, saved)
 			}
-			event["operation_id"], event["sequence"], event["kind"] = "10000000-0000-4000-8000-000000000004", 4, "draft"
+			event["operation_id"], event["sequence"], event["action"] = "10000000-0000-4000-8000-000000000004", 4, "upsert"
 			status, _ = annotationJSON(t, s, "POST", endpoint, event, headers)
 			if status != 409 {
 				t.Fatalf("closed comment accepted a revision: %d", status)
@@ -183,11 +184,11 @@ func TestRT007_3_EmbeddedHistoryPreservesSource(t *testing.T) {
 			if status != 200 || projected["source_revision"] != state["source_revision"] {
 				t.Fatalf("annotation changed authored revision: %d %#v", status, projected)
 			}
-			events := projected["events"].([]any)
+			events := projected["comments"].([]any)
 			if len(events) != 1 || events[0].(map[string]any)["author"] != "Taḋg" || events[0].(map[string]any)["text"] != "Second draft" {
 				t.Fatalf("projection=%#v", events)
 			}
-			pageURL := s.origin + "/" + strings.TrimPrefix(endpoint, s.origin+"/_annotations/v1/")
+			pageURL := s.origin + "/" + strings.TrimPrefix(endpoint, s.origin+"/_annotations/v2/")
 			status, page, err := testHTTPBody(s.client, pageURL)
 			if err != nil || status != 200 || bytes.Contains(page, []byte("htmlpreview-annotation-event:v1")) {
 				t.Fatal("owned frames leaked into rendered document")
@@ -215,7 +216,7 @@ func TestRT007_11_PollsShareSnapshotButWritesReread(t *testing.T) {
 		t.Fatal("immediate poll did not share the one-second snapshot")
 	}
 	headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
-	event := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "kind": "draft", "target": map[string]any{"type": "document"}, "text": "Must not use cached source"}
+	event := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "upsert", "label": "reviewer-001", "target": map[string]any{"type": "point", "position": 8, "run": "Original text.", "run_offset": 1}, "text": "Must not use cached source"}
 	status, response := annotationJSON(t, s, "POST", endpoint, event, headers)
 	if status != 409 || response["error"] != "stale_source" {
 		t.Fatalf("stale write=%d %#v", status, response)

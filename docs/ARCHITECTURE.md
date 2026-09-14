@@ -126,7 +126,7 @@ requirements remain applicable.
 ## Reader and footnote proposal - 14 September 2026
 
 [W009 - Persistent reader controls and native footnote annotations](../specs/009-reader-annotation-ux/spec.org)
-proposes one sticky info bar and a shared responsive grid in the existing page
+implements one sticky info bar and a shared responsive grid in the existing page
 template. It replaces the fixed navigation width and floating annotation panel;
 phone annotation mode reserves the larger lower pane for comments while keeping
 document text selectable above. No iframe or additional browsing context is used.
@@ -137,7 +137,7 @@ scheduling. The comment box gets initial focus, with a secondary editable footno
 label below. One guarded close path handles point changes,
 leaving annotation mode and entering plaintext without hiding unacknowledged text.
 Native date formatting changes display only. The annotation package now owns a
-proposed native-footnote codec and current-record replacement, superseding the
+native-footnote codec and current-record replacement, superseding the
 earlier event-log writer and selected-text anchors. Each current record retains
 attribution, state and the latest retry identity, with no permanent autosave
 history or JSON in the document. Closed comments remain read-only in the UI.
@@ -167,11 +167,26 @@ the notes. Refresh and print restore placement through the reader lifecycle;
 canonical insertion-point text excludes endnotes and reference labels in both
 Go and browser mappings. The separate annotation list/print appendix is retired.
 
-This is a definition proposal awaiting full amended sign-off, not an implementation
-claim. Taḋg withdrew permanent autosave history and selected footnotes and point
-insertion on 14 September. Its specification identifies the superseded W005/W007
-presentation, storage and mutation requirements; the earlier paragraphs remain
-historical baseline. Root confinement and passive-content contracts remain.
+This is a paired implementation candidate. Taḋg withdrew permanent autosave history
+and selected footnotes and point insertion on 14 September. Its specification
+identifies the superseded W005/W007 presentation, storage and mutation requirements;
+the earlier paragraphs remain historical baseline. Root confinement and
+passive-content contracts remain. The legacy filesystem writer and v1 HTTP
+mutation path are retired. The legacy decoder reads old stores until an authorized
+save imports the selected destination's latest values.
+
+For sidecars and unplaced or legacy notes, a temporary projection combines native
+footnotes with the original document for Pandoc. Private markers verify virtual
+positions against the original canonical text; unverified positions become
+explicitly unplaced endnotes without false backlinks. The projection never
+replaces the source payload or authored revision. This uses the existing conversion
+and output budgets, with no separate annotation HTML renderer.
+
+Current verification uses Go/HTTP regressions and the standard native HTML/JS/CSS
+checks. On 14 September the operator stopped browser-fixture execution in favour
+of paired human interaction checks. That instruction supersedes the W007 browser
+runner prescription above. [W009 validation](../specs/009-reader-annotation-ux/validation.org)
+records objective evidence separately from pending browser/platform qualification.
 
 ## System shape
 

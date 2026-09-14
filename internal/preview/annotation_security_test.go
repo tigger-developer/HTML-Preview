@@ -15,7 +15,7 @@ func TestRT007_7_AnnotationHTTPAuthority(t *testing.T) {
 	path := source(t, s.root, "secure.org", "* Secure source\nA passage to review.\n")
 	endpoint := annotationRegistrationURL(t, s, path, "Reviewer")
 	_, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
-	request := annotation.Request{OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Revision: state["revision"].(string), SourceRevision: state["source_revision"].(string), BodyRevision: state["body_revision"].(string), Kind: "draft", Target: annotation.Target{Type: "document"}, Text: "Review comment"}
+	request := annotation.Request{OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Revision: state["revision"].(string), SourceRevision: state["source_revision"].(string), BodyRevision: state["body_revision"].(string), Action: "upsert", Label: "reviewer-001", Target: annotation.Target{Type: "point", Position: 15, Run: "A passage to review.", RunOffset: 1}, Text: "Review comment"}
 	base := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
 	// #nosec G304 -- This test creates the source in its own temporary root.
 	original, err := os.ReadFile(path)
@@ -52,7 +52,7 @@ func TestRT007_9_AnnotationSelectorValidation(t *testing.T) {
 	endpoint := annotationRegistrationURL(t, s, path, "Reviewer")
 	_, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
 	base := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
-	request := annotation.Request{OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Revision: state["revision"].(string), SourceRevision: state["source_revision"].(string), BodyRevision: state["body_revision"].(string), Kind: "draft", Target: annotation.Target{Type: "text", BodyRevision: state["body_revision"].(string), Exact: "café", Start: 10, End: 14}, Text: "A selected comment"}
+	request := annotation.Request{OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Revision: state["revision"].(string), SourceRevision: state["source_revision"].(string), BodyRevision: state["body_revision"].(string), Action: "upsert", Label: "reviewer-001", Target: annotation.Target{Type: "point", BodyRevision: state["body_revision"].(string), Position: 14, Run: "A café passage.", RunOffset: 6}, Text: "A selected comment"}
 	request.Target.HeadingID = "heading"
 	if status, _ := annotationJSON(t, s, "POST", endpoint, request, base); status != 400 {
 		t.Fatalf("generated heading accepted as provenance: %d", status)

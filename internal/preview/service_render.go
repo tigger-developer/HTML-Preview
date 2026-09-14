@@ -81,6 +81,20 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 	if err = s.render(ctx, p, input); err != nil {
 		return nil, renderStatus(ctx, err)
 	}
+	var locations map[string]bool
+	if cap.settings.annotations && annotationFormat(src) != "" {
+		snap, readErr := annotation.Read(annotation.Location{Root: cap.root, Path: src.canonical, Format: annotationFormat(src), Limit: min(cap.settings.sourceBytes, cap.settings.totalBytes)})
+		if readErr != nil {
+			return nil, renderStatus(ctx, readErr)
+		}
+		if !bytes.Equal(snap.RawSource, input) {
+			return nil, 409
+		}
+		locations, err = s.renderFootnotes(ctx, p, snap)
+		if err != nil {
+			return nil, renderStatus(ctx, err)
+		}
+	}
 	if err = service.resolveHTTP(ctx, s, p, cap); err != nil {
 		return nil, renderStatus(ctx, err)
 	}
@@ -111,7 +125,7 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 		return nil, 413
 	}
 	bodyText, headingSpans := annotation.CanonicalDocument(p.dom, p.explicitIDs)
-	return &httpPage{annotationSourceRevision: p.annotationSourceRevision, bodyText: bodyText, headingSpans: headingSpans, explicitIDs: p.explicitIDs, data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants, cap: cap, catalogueSensitive: p.catalogueSensitive}, 200
+	return &httpPage{annotationLocations: locations, annotationSourceRevision: p.annotationSourceRevision, bodyText: bodyText, headingSpans: headingSpans, explicitIDs: p.explicitIDs, data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants, cap: cap, catalogueSensitive: p.catalogueSensitive}, 200
 }
 func renderStatus(ctx context.Context, err error) int {
 	if ctx.Err() != nil || errors.Is(err, context.DeadlineExceeded) {

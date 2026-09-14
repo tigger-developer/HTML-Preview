@@ -16,7 +16,7 @@ func TestRT007_7_10_EventSchemaAndLimits(t *testing.T) {
 	_, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
 	headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
 	original := []byte("* Limits\nA passage.\n")
-	base := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "kind": "draft", "target": map[string]any{"type": "document"}, "text": "A valid draft"}
+	base := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "upsert", "label": "reviewer-001", "target": map[string]any{"type": "point", "position": 8, "run": "A passage.", "run_offset": 1}, "text": "A valid draft"}
 	for _, tc := range []struct {
 		name, key string
 		value     any

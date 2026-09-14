@@ -68,6 +68,7 @@ func TestRT009_6_NativeExportPreservesLiteralComment(t *testing.T) {
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
+			// #nosec G204 -- The reader is one of the two literal fixture formats above; no shell is used.
 			command := exec.CommandContext(ctx, "pandoc", "--from="+format, "--to=html5")
 			command.Stdin = bytes.NewReader(data)
 			output, err := command.Output()
