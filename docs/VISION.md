@@ -103,7 +103,7 @@ references link to readable definitions.
 Pandoc renders comments as ordinary footnotes at the document end. Annotation
 mode moves that same footnote list into the right column, or the larger lower
 pane of a phone split view. Switching it off restores the endnotes. Ordinary
-footnotes participate in this view without becoming editable.
+footnotes participate in this view and are editable in writable annotation mode.
 
 Show plaintext reveals literal Org/Markdown source, including embedded footnotes,
 while retaining the info bar and disabling annotation. TXT, code wrappers,
@@ -114,13 +114,13 @@ Taḋg accepted the phone layout and literal-source scope on 13 September and
 selected native footnotes, insertion points and the secondary ID field in the
 14 September amendment. Permanent autosave history was explicitly withdrawn:
 only the current annotation values belong in sources and sidecars. Git history
-is outside the application. Closed comments remain read-only in the UI.
+is outside the application. Closed comments remain editable as native footnotes; deletion stays excluded.
 
 This direction supersedes the event-history and selected-passage requirements
 above; those paragraphs describe the existing candidate and its original design.
 The candidate retains the service/root boundary and uses verified source patches,
 current-value replacement and legacy reading/import. Read-only sources use sidecars
-with virtual preview markers; ordinary native footnotes remain untouched.
+with virtual preview markers; unselected native footnotes remain untouched.
 [W009 validation](../specs/009-reader-annotation-ux/validation.org) records the
 current objective checks and pending paired browser/platform qualification.
 The earlier W007 event-history description is superseded by this candidate.
@@ -130,7 +130,8 @@ The earlier W007 event-history description is superseded by this candidate.
 The operator approved editing supported native footnotes regardless of whether
 HTMLPreview created them. This supersedes the read-only closed/ordinary-note
 restrictions above. Editing preserves native IDs, references and existing
-attribution; unattributed notes remain unattributed. Autosave retains only the
+attribution structure; edits refresh a matching Author line with the current
+reviewer and Edited timestamp. Unattributed notes remain unattributed. Autosave retains only the
 current value and protects against conflicting file edits. Reading stays
 non-mutating, and file-mode previews remain reading-only.
 
@@ -308,7 +309,8 @@ reconstruction after restart. Original notes without attribution stay unattribut
 
 The later paired attribution amendment refreshes a matching final `Author:` line
 on saved edits, using the current reviewer and local time in
-`Author: Taḋg; Edited: [2026-09-14 Mon 03:12]` format. The first save uses Created; unchanged closes and retries preserve the label and timestamp. This supersedes preservation
-of that attribution on edits. Notes without attribution remain valid. Creation
+`Author: Taḋg; Edited: [2026-09-14 Mon 03:12]` format. The first save uses Created;
+unchanged closes and retries preserve the label and timestamp. This supersedes
+preservation of that attribution on edits. Notes without attribution remain valid. Creation
 and editing use the same native footnote markup, guarded against breaking out of
 the selected definition; they do not infer origin from literal blocks or fences.

@@ -51,11 +51,7 @@ func nativeSidecarEvents(data []byte) []Event {
 		}
 		sum := sha256.Sum256([]byte(note.Label))
 		id := fmt.Sprintf("%x-%x-%x-%x-%x", sum[:4], sum[4:6], sum[6:8], sum[8:10], sum[10:16])
-		text, err := decodeFootnoteText(note.Text, "org")
-		if err != nil {
-			text = note.Text
-		}
-		events = append(events, Event{Schema: 2, AnnotationID: id, OperationID: id, Sequence: 1, Kind: "close", Label: note.Label, Text: text, Author: note.Author, CreatedAt: note.CreatedAt, RecordedAt: note.CreatedAt, Target: target})
+		events = append(events, Event{Schema: 2, AnnotationID: id, OperationID: id, Sequence: 1, Kind: "close", Label: note.Label, Text: note.Text, Author: note.Author, CreatedAt: note.CreatedAt, RecordedAt: note.CreatedAt, Target: target})
 	}
 	return events
 }

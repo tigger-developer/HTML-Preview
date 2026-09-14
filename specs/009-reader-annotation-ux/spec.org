@@ -36,7 +36,7 @@
 - *Annotation mode is explicit* and starts off; leaving it safely finishes the active comment.
 - *Plaintext disables annotation* and is absent for text wrappers, code, HTML and binary documents.
 - *New document-wide comments leave the UI*; existing document-wide records remain readable.
-- *Autosave replaces the current annotation*. Existing native footnotes, including closed comments, can be edited while retaining their ID and attribution.
+- *Autosave replaces the current annotation*. Existing native footnotes, including closed comments, can be edited while retaining their ID and refreshing matching attribution.
 
 ** Unchanged
 
@@ -60,96 +60,18 @@
 
 ** Decisions
 
-- Operator, 14 September 2026, batch delivery :: Batch the remaining paired
-  implementation changes and run one combined implementation audit at the end;
-  do not audit each small refinement. Continue proportionate local checks.
-- Operator, 14 September 2026, attribution wording :: First save writes =Created:=.
-  A later text change replaces that label with =Edited:= alongside the current
-  author and Org timestamp. Further edits retain =Edited:=; unchanged closes and
-  retries preserve the existing label and timestamp. Read both native forms in
-  the editor and sidebar, including sidecars and after service restart. This
-  supersedes the preceding always-Created wording for edits.
-- Operator, 14 September 2026, annotation cursor :: Use =✎= (Unicode U+270E)
-  over eligible prose in annotation mode, with the click hotspot at the pencil
-  tip. Package the small cursor within the page; retain a crosshair fallback
-  and the existing link, code and control cursors.
-- Operator, 14 September 2026, attribution on edit :: On each saved edit, replace
-  a final non-empty line that begins =Author:= and ends in an inactive Org
-  timestamp with =Author: CURRENT USER; Created: [YYYY-MM-DD Day HH:MM]=.
-  Use the current captured display name and local date/time. This supersedes
-  earlier author/date preservation for matched attribution lines. Unattributed
-  notes still need no tool-origin marker. Use Org timestamp presentation in the
-  sidebar as well, replacing the earlier full-calendar-date display alternative.
-- Native text consistency :: Creation and editing use the same native footnote
-  markup. Re-parse the proposed definition and refuse text that escapes it,
-  retaining the draft and original source. This supersedes automatic literal
-  wrappers for new comment text: there is no origin-dependent decoding of
-  ordinary authored EXAMPLE blocks or fences. Existing native markup stays native.
-- Concurrent notes :: An acknowledged application write updates the source
-  identity used by all active composers for that document. Editing one ordinary
-  footnote must not invalidate an unrelated live draft; changes to the same
-  definition still produce a conflict.
-
-- Operator, 14 September 2026, simpler native notes :: Remove redundant annotation
-  COMMENT metadata blocks from newly saved definitions. Keep optional author
-  attribution and use native inactive Org timestamps, such as
-  =[2026-09-14 Mon 03:12]=, with 24-hour time. Existing ordinary notes need no
-  attribution or tool-origin marker to be editable. Earlier owned-metadata and
-  ISO-display prescriptions below are superseded by this amendment.
-- Persistence amendment :: Native labels, references and definition digests identify
-  saved notes. Only the active creation session retains its latest receipt and
-  draft context in bounded service memory; service restart ends that creation
-  session, while reopening reads the native definition
-  from disk. No session history or hidden ownership block is written. Authored-body revisions
-  exclude native footnote definitions and references regardless of origin; full-store
-  and definition digests retain conflict detection. Existing
-  old records remain readable; editing an old definition replaces its redundant
-  metadata with the ordinary current note and preserves attribution. Read-only
-  sidecars retain their readable context and native notes for reconstruction.
-- Presentation amendment :: The sidebar heading is *Annotations & Footnotes*;
-  the toggle remains *Annotations*. Each individual footnote has a subtle
-  background and its content area opens editing, without an Edit button.
-  Links, selection and keyboard operation retain their actions. Optional
-  attribution uses an Org timestamp or a full day-first date with 24-hour time,
-  never a US month-first or 12-hour clock presentation.
-- Verification amendment :: Exercise repeated native saves without hidden records,
-  retries, reopening and edits, competing changes, read-only sidecar reconstruction,
-  preservation of optional attribution and native timestamps. Human paired review
-  checks clickable blocks, keyboard access, links and timestamp presentation.
-
-- Operator, 14 September 2026, editable footnotes :: *Allow editing any supported
-  native footnote*, including ordinary authored notes and closed HTMLPreview
-  annotations. The file and native ID identify it, not browser memory. Preserve
-  the ID, references and existing attribution; do not assign authorship to an
-  unattributed note. Autosave replaces only its current definition, checks for
-  competing disk edits and retains unsaved text on conflict. This supersedes the
-  closed/ordinary-note read-only restrictions below; deletion remains excluded.
-- Existing-note lifecycle :: An =edit= action uses =target.type: footnote=,
-  =target.exact= as the definition digest and =target.run= as =embedded= or
-  =sidecar=. Acknowledgements include =footnote_revision=. The editor finishes
-  locally after its latest save; there is no new persistent close record.
-  Empty text is refused for existing notes, since deletion is outside scope.
-  A =Use current footnote= recovery action explicitly discards the unsaved
-  proposal in favour of the current definition; Copy draft remains available.
-- Implementation for this paired increment :: Reuse the authenticated v2 endpoint
-  and atomic writer. An edit carries the native ID, storage location, current
-  definition digest and source/store revisions. Reading reconstructs the editable
-  definitions from disk. Ordinary footnotes retain native markup without added
-  ownership records. Existing annotation metadata is retained for compatibility.
-  The edit composer keeps the ID read-only, uses the same autosave feedback and
-  finishes on outside activation. Native labels and their repeated references
-  survive editing. Unresolvable or ambiguous definitions remain visible with an
-  explanation rather than being guessed. Read-only original definitions cannot
-  be changed through a sidecar; existing sidecar annotations remain editable.
-- Verification for this paired increment :: Extend current-value writer and HTTP
-  regression cases for ordinary Org/Markdown notes, repeated references,
-  attribution, reload, stale edits, byte preservation and write refusal. Extend
-  the existing paired composer review to opening, changing and reopening a
-  footnote, preserving markup and observing a competing-edit error.
-- Taḋg requested these changes on *13 September 2026* and accepted the *phone split view*.
-- Taḋg clarified that plaintext means *literal Org/Markdown source without highlighting*, with *no binary extraction*.
-- On *14 September 2026*, Taḋg selected native footnotes, insertion-point clicks,
-  current values only, and an editable ID below the initially focused comment box.
+- *Paired implementation is authorized*. Batch changes and run one combined
+  implementation audit at the end, followed by retrospective definition review.
+- *All supported named footnotes are editable*, independent of origin. Native
+  labels and source definitions identify them; no hidden ownership record is added.
+- *Only current text is stored*. Earlier event history, COMMENT metadata and
+  closed-note immutability are superseded by the recorded paired refinements.
+- *Created becomes Edited after a text change*. Use the captured reviewer name
+  and an inactive Org timestamp; unchanged closes/retries preserve attribution.
+- *Native markup remains native*. Refuse definition breakouts without modifying
+  the source or discarding the draft. No automatic literal-wrapper encoding.
+- *Go/HTTP and native static checks provide automated evidence*. UI interaction
+  uses paired human review; browser-fixture execution and CLI JavaScript are excluded.
 
 ** Next step
 
@@ -207,8 +129,8 @@ source* in the same preview on desktop and phone layouts.
 - Annotation baseline :: [[file:../007-service-annotations/spec.org][W007 - Attributed autosaved annotations]], especially Browser interaction, Autosave and automatic refresh, and Targets and reattachment.
 - Supersession :: This change *replaces W007's stored event history, append-only
   byte-prefix rule, selected-passage targets and mutation representation*, plus
-  Add comment/document-wide creation UI. Closed comments remain read-only through
-  the application. W005's fixed navigation width and non-sticky filename row are
+  Add comment/document-wide creation UI. The paired amendment also replaces
+  closed-note immutability with editing of supported native footnotes. W005's fixed navigation width and non-sticky filename row are
   replaced. Footnote references/definitions are intentional, bounded source edits;
   other authored bytes are preserved. Earlier specifications describe the existing
   candidate and remain historical evidence, not authority to retain withdrawn behaviour.
@@ -219,7 +141,7 @@ source* in the same preview on desktop and phone layouts.
 - Withdrawn assumption :: Taḋg explicitly rejected *permanent autosave history*:
   only current annotations belong in the document; version history belongs in Git.
   The application does not initialize repositories, commit, or manage history.
-- Implementation evidence :: [[file:../../assets/web/page.html][Page template]], [[file:../../assets/web/preview.css][Reader styles]], [[file:../../assets/web/preview.js][Reader lifecycle]], [[file:../../assets/web/annotations.js][Annotation panel]], [[file:../../assets/web/annotation-composer.js][Composer]], [[file:../../assets/web/annotation-text.js][Passage mapping]], [[file:../../internal/preview/render.go][Rendering]] and [[file:../../internal/preview/testdata/annotations-browser.js][Browser regressions]], inspected at =fa90a62= (annotation qualification checkpoint).
+- Implementation evidence :: [[file:../../assets/web/page.html][Page template]], [[file:../../assets/web/preview.css][Reader styles]], [[file:../../assets/web/preview.js][Reader lifecycle]], [[file:../../assets/web/annotations.js][Annotation panel]], [[file:../../assets/web/annotation-composer.js][Composer]], [[file:../../assets/web/annotation-text.js][Passage mapping]], [[file:../../internal/preview/render.go][Rendering]] and [[file:../../internal/preview/testdata/annotations-browser.js][Historical browser fixture, retired from this workflow]], inspected at =fa90a62= (annotation qualification checkpoint).
 - Prior art :: The operator-directed Writeback inspection found *sentence-span
   click activation, 300 ms comment updates, small status text and green/amber/red
   feedback*. Its X action deletes comments and its close path does not await
@@ -245,6 +167,27 @@ source* in the same preview on desktop and phone layouts.
 
 ** Decisions
 
+- Consolidation, 14 September 2026 :: The final paired contract below replaces
+  conflicting intermediate wording. Earlier text and decisions remain in Git
+  at =35dd645= (Created/Edited attribution checkpoint); no new behaviour is
+  authorized by consolidation.
+- Operator, 14 September 2026 :: *Any supported native footnote is editable*,
+  including ordinary notes and closed annotations. Preserve its label, references,
+  native markup and unrelated bytes. An unattributed note remains unattributed.
+- Operator, 14 September 2026 :: *Remove redundant COMMENT metadata*. Native
+  definitions contain current text and optional readable attribution only.
+- Operator, 14 September 2026 :: *Use Created initially and Edited after a text
+  change*, with current reviewer and inactive Org date/time. A matching final
+  non-empty Author line is replaced; no attribution history is accumulated.
+  Unchanged closes/retries retain its label and timestamp.
+- Operator, 14 September 2026 :: The sidebar heading is *Annotations & Footnotes*;
+  shaded note blocks open editing on click or keyboard. No separate Edit button.
+- Operator, 14 September 2026 :: Use *✎ (U+270E)* for annotation-add cursor,
+  with the hotspot at its tip and a crosshair fallback. Keep control cursors.
+- Native markup decision :: Creation/editing use native syntax and a reparse
+  guard. Automatic literal wrappers and origin-dependent decoding are superseded.
+- Operator, 14 September 2026 :: *Batch the remaining implementation and audit
+  at the end*, not after every small code change. Retain proportionate local checks.
 - Operator, 14 September 2026, paired refinement :: *Remove X/check buttons*.
   Clicking outside the editor or moving keyboard focus out finishes the current
   comment through the guarded close path; Escape remains a keyboard alternative.
@@ -320,7 +263,7 @@ source* in the same preview on desktop and phone layouts.
 - Criterion :: A source inside the serving or invoking user's home has a *leading
   tilde in its displayed path*. Copying still yields the *full original absolute
   path*, and paths outside that home remain unchanged.
-- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]].
+- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]], [[#ut-009-1][UT009.1 - Responsive reading and composition]].
 
 ** AC009.3 - Truthful mode controls
 :PROPERTIES:
@@ -330,7 +273,7 @@ source* in the same preview on desktop and phone layouts.
 - Criterion :: Controls share a common appearance with *visible and accessible
   active/inactive states*. Annotation activation is restricted to its on state;
   plaintext and annotation composition cannot be active together.
-- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]], [[#rt-009-2][RT009.2 - Point activation]].
+- Proven by :: [[#rt-009-1][RT009.1 - Info bar and reader states]], [[#rt-009-2][RT009.2 - Point activation]], [[#ut-009-1][UT009.1 - Responsive reading and composition]].
 
 ** AC009.4 - Content-sized navigation and visible annotations
 :PROPERTIES:
@@ -370,8 +313,10 @@ source* in the same preview on desktop and phone layouts.
 :END:
 
 - Criterion :: Saved comments show *author, local calendar date and minute-level
-  time*, with the original UTC timestamp available to inspect. Display formatting
-  does not change stored attribution or timestamps.
+  time* in inactive Org syntax. First save uses *Created*; changed text uses
+  *Edited* with the current captured author/time. Unchanged closes and retries
+  preserve attribution. Existing date-only notes remain readable; ordinary
+  unattributed notes gain no invented attribution.
 - Proven by :: [[#rt-009-4][RT009.4 - Date presentation]], [[#ut-009-2][UT009.2 - Point insertion, save feedback and recovery]].
 
 ** AC009.8 - Literal source view
@@ -402,9 +347,10 @@ source* in the same preview on desktop and phone layouts.
 
 - Criterion :: Repeated autosaves leave *one current record per annotation*,
   including the current active draft. Superseded draft text and closing-event
-  duplicates are not retained. Closed comments cannot be edited/deleted through
-  the UI; the application neither requires nor invokes Git.
-- Proven by :: [[#rt-009-6][RT009.6 - Native footnotes and current values]].
+  duplicates are not retained. *Existing native notes can be edited*, including
+  closed annotations, without changing their IDs/references. Deletion of existing
+  notes remains excluded; the application neither requires nor invokes Git.
+- Proven by :: [[#rt-009-6][RT009.6 - Native footnotes and current values]], [[#rt-009-7][RT009.7 - Replacement, concurrency and legacy stores]].
 
 ** AC009.11 - Native footnote identity and source placement
 :PROPERTIES:
@@ -413,7 +359,8 @@ source* in the same preview on desktop and phone layouts.
 
 - Criterion :: Writable Org/Markdown sources contain a *native reference at the
   accepted insertion point and a matching readable definition*. Ordinary
-  footnotes remain untouched. Read-only sources remain unchanged and retain
+  footnotes remain untouched unless explicitly selected for editing. Read-only
+  sources remain unchanged and retain
   current annotations in the existing Org sidecar, with markers in the preview.
 - Proven by :: [[#rt-009-6][RT009.6 - Native footnotes and current values]], [[#ut-009-4][UT009.4 - Footnote source and portability]].
 
@@ -434,8 +381,8 @@ source* in the same preview on desktop and phone layouts.
 :CUSTOM_ID: ac-009-13
 :END:
 
-- Criterion :: Saves modify *only owned annotation definitions and their reference
-  tokens* against freshly verified source bytes. Detected concurrent changes or
+- Criterion :: Saves modify *only the selected native definition*, or the active
+  new annotation's reference/definition, against freshly verified source bytes. Detected concurrent changes or
   a failed replacement retain the prior readable file and an honest recoverable
   save state, without broadening filesystem authority.
 - Proven by :: [[#rt-009-7][RT009.7 - Replacement, concurrency and legacy stores]], [[#ot-009-1][OT009.1 - Native replacement qualification]].
@@ -467,11 +414,13 @@ source* in the same preview on desktop and phone layouts.
 :CUSTOM_ID: test-definitions
 :END:
 
-Extend the *existing Go and browser-native regression runner*. Use its owned
-clock/transport seams to control scheduling and failures; retain real-browser
-DOM, selection and layout evidence. Go cases run under =go test ./...= and
-browser cases under =make test-browser=. Write each changed boundary's regression
-and observe its *intended RED before implementation*. No Node/npm or mock DOM.
+Use *Go writer, service and Pandoc regression tests* for observable data and
+HTTP boundaries. Use *native oxlint, biome, tidy, htmlq and htmltest* for static
+and generated-output checks. Browser interaction, focus, pointer accuracy and
+responsive presentation are covered by the linked human procedures, not by
+lint or mock DOM assertions. Do not run =make test-browser=, Chromium, a CLI
+JavaScript runtime or a replacement browser framework. The prior browser-runner
+prescription is superseded by the operator's paired testing instruction.
 
 ** RT009.1 - Info bar and reader states
 :PROPERTIES:
@@ -484,14 +433,14 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   home path, a sibling path with the same prefix and an outside-home path.
 - Action :: Render; copy the path through the existing clipboard seam; scroll;
   activate each outline preset, manually change a fold, toggle annotations,
-  resize the runner's same-origin fixture viewport to 320, 390, 768 and 1440 CSS pixels.
+  resize the human-reviewed browser viewport to 320, 390, 768 and 1440 CSS pixels.
 - Expected :: Display abbreviates *only the home boundary*, copy stays absolute;
   bar stays visible, no horizontal page overflow, controls remain reachable.
   Short navigation is narrower than its cap; long labels wrap. Active states
   match the mode contract; mixed outline state selects no preset. The phone
   composer and document both retain visible scrollable space.
-- Retention :: *Persistent Go/browser regressions*; use element bounds and actual
-  actions, not stylesheet string assertions. Human zoom and keyboard review is below.
+- Retention :: *Go rendering regressions and human layout checks*. Assess actual
+  layout/actions in paired review; stylesheet strings do not prove UI behaviour.
 
 ** RT009.2 - Point activation
 :PROPERTIES:
@@ -510,7 +459,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   no selected-passage target, stale selection or document fallback is created.
   Excluded clicks and dragging preserve their ordinary actions. Unavailable or
   ambiguous mapping reports a bounded explanation without writing or guessing.
-- Retention :: *Persistent Go/browser regressions*. Actual pointer accuracy and
+- Retention :: *Persistent Go regressions plus the linked human UI checks*. Actual pointer accuracy and
   touch/keyboard usability also require the human procedure below.
 
 ** RT009.3 - Composer transitions and refresh
@@ -519,8 +468,9 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 :END:
 
 - Covers :: [[#ac-009-6][Safe closing]], [[#ac-009-9][Mutation and compatibility boundaries]].
-- Boundary :: Browser composer with controlled clock/transport, plus existing real-service refresh tests.
-- Setup :: An active draft, existing document and passage comments, slow/lost
+- Boundary :: Existing real-service refresh tests; browser composer transitions
+  are exercised by the linked human procedure without executing the retired runner.
+- Setup :: An active draft, existing native and legacy comments, slow/lost
   acknowledgements, failed replacements, moved markers and ambiguous unsaved points.
 - Action :: Type; click outside, move focus out, use annotation toggle, Show plaintext and a new
   point during pending save; retry failures; refresh the document; print and return.
@@ -530,7 +480,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   text is saved. Refresh retains composer/focus and mode; ambiguous targets pause
   saving. Existing document comments remain readable. Print returns the same
   footnotes to the document end and restores the interactive layout afterwards.
-- Retention :: *Persistent browser and Go service regressions*. Preserve W007's
+- Retention :: *Persistent Go service regressions and human UI checks*. Preserve W007's
   security/scheduling coverage; replace expectations for the retired event protocol.
 
 ** RT009.4 - Date presentation
@@ -539,15 +489,19 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 :END:
 
 - Covers :: [[#ac-009-7][Readable timestamps]].
-- Boundary :: Browser date presentation using controlled locale/timezone parameters.
-- Setup :: Two UTC timestamps either side of a daylight-saving transition and
-  a date crossing midnight in another zone; an attributed saved record.
-- Action :: Format using =en-IE= with =Europe/Dublin= and =en-US= with
-  =America/New_York= through Intl's locale/timezone arguments; render the record.
-- Expected :: *Calendar date and minute-level local time agree with the timezone*;
-  no fractional seconds appear; the semantic time element retains the exact UTC
-  value. Author and stored record are unchanged. Assert date parts, not punctuation.
-- Retention :: *Persistent browser regressions*; host timezone is not a test dependency.
+- Boundary :: Native definition parsing, writer attribution and service reads;
+  sidebar presentation is verified under [[#ut-009-2][Human insertion/editing review]].
+- Setup :: Org/Markdown notes with no attribution, a date-only Org stamp and a
+  full Org stamp; a writer with a controlled local clock and two reviewer names.
+- Action :: Create, change an active draft, close unchanged, reopen with a fresh
+  writer, edit twice and retry a saved request. Read the native source and API.
+- Expected :: *Created on first save, Edited on changed text*, current reviewer
+  and local minute-level Org timestamp. Unchanged close/retry preserves the line.
+  Both labels remain recognized after restart; attribution stays outside editable
+  note text. Unattributed notes remain unattributed. Sidecar projections retain
+  Edited when rendered as Org and Markdown; reading causes no source write.
+- Retention :: *Persistent Go writer/service regressions*. Human review confirms
+  the visible Org date format and readable author text.
 
 ** RT009.5 - Literal source and format boundaries
 :PROPERTIES:
@@ -565,13 +519,13 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - Expected :: *Original Unicode text and line endings survive the payload*;
   visible layout preserves lines/tabs without highlighting. Embedded annotations
   appears, sidecar records do not. Only genuine Org/Markdown offer plaintext;
-  unsupported formats and forced binary readers do not. Own just-saved events
+  unsupported formats and forced binary readers do not. Just-saved native definitions
   appear on entry in service mode. Existing refresh updates the visible source
   where enabled; file mode retains its snapshot. No source executes or fetches
   resources, no new route or file access is granted, and budgets fail with the
   existing bounded error rather than truncated source. Returning restores the
   reader with annotation mode off. Printed plaintext contains source only.
-- Retention :: *Persistent Go/browser regressions*, including unchanged file hashes
+- Retention :: *Persistent Go regressions plus the linked human UI checks*, including unchanged file hashes
   for reading/toggling without a draft.
 
 ** UT009.1 - Responsive reading and composition
@@ -579,7 +533,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 :CUSTOM_ID: ut-009-1
 :END:
 
-- Covers :: [[#ac-009-1][Persistent bar]], [[#ac-009-4][Responsive panes]], [[#ac-009-9][Reader compatibility]], [[#ac-009-15][Native endnotes]].
+- Covers :: [[#ac-009-1][Persistent bar]], [[#ac-009-2][Path identity]], [[#ac-009-3][Mode states]], [[#ac-009-4][Responsive panes]], [[#ac-009-9][Reader compatibility]], [[#ac-009-15][Native endnotes]].
 - Reviewer :: Taḋg or named human tester.
 - Procedure :: On the running service, read linked Org/Markdown samples, scroll
   both panes, fold sections, copy a long source path and use each mode. Review
@@ -611,7 +565,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   comment box receives initial focus; the ID is secondary but usable. Save feedback is
   quiet but legible and honest; failure retains editable text. Controls have
   clear names; author/date reads naturally; dragging/selecting text does not
-  create a comment. No closed comment offers edit/delete or an editable ID.
+  create a comment. Existing notes open editing with a fixed ID; no delete control is offered.
 - Record :: Actual browser/device and accessibility tool, observations and dated
   result in =validation.org=; native Linux/WSL remain pending if unavailable.
 
@@ -646,27 +600,27 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   reply. Try invalid/duplicate IDs, including concurrent use of the same ID.
   Parse/export the saved files with their native Pandoc readers.
 - Expected :: One current definition and one owned reference per new annotation;
-  only the final text survives. Attribution and stable internal identity persist;
+  only the final text survives. Native labels and current attribution persist;
   old draft text/event logs do not. Native exports associate the comment with the
   reference. For author =Taḋg=, default label is =tadg-010=;
   =Tadhg O'Brien= produces =tadhg-o-brien-001= in a fresh namespace. Composed
   and decomposed accents agree; punctuation, empty normalized prefixes, long
   names, case-only collisions, sidecar labels and concurrent saves are covered.
   Invalid/colliding IDs write nothing.
-  Rename updates exactly the owned reference and definition. Existing ordinary
+  Rename updates exactly the owned reference and definition. Unselected ordinary
   footnotes and literal marker examples remain byte-identical. Sidecar mode does
   not insert a physical marker into the read-only source. Clearing removes only
   the active draft's reference/definition, never closed comments or unrelated
   bytes; retry is harmless. No Git process runs.
-- Retention :: *Persistent Go/browser regressions*. The browser assertions verify
-  actual focus, field placement/order, field errors and disabled close behaviour.
+- Retention :: *Persistent Go regressions plus the linked human UI checks*. The linked human checks verify
+  focus, field placement/order, field errors and guarded closing.
 
 ** RT009.7 - Replacement, concurrency and legacy stores
 :PROPERTIES:
 :CUSTOM_ID: rt-009-7
 :END:
 
-- Covers :: [[#ac-009-13][Constrained replacement]], [[#ac-009-14][Legacy preservation]].
+- Covers :: [[#ac-009-10][Current editable values]], [[#ac-009-11][Native placement]], [[#ac-009-13][Constrained replacement]], [[#ac-009-14][Legacy preservation]].
 - Boundary :: Rooted writer and real service, with existing owned filesystem/clock seams.
 - Setup :: Current native records, old valid multi-event stores, malformed old
   tails, duplicate IDs, an unresolved legacy point, two clients, restricted modes,
@@ -681,6 +635,11 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   old events; malformed stores remain unchanged and block saving. Unplaced
   comments stay visible. Old mutations reject with reload guidance. Limits,
   permissions and rooted access remain enforced; no partial multi-file migration.
+- Native edit cases :: Edit ordinary multiline, CRLF, Unicode-labelled and
+  literal-block notes; preserve references and unrelated bytes. Reopen without
+  browser identity, reject stale definition digests/duplicates/read-only originals,
+  edit an existing sidecar, and keep another active composer usable after an
+  application write. Reject empty existing-note text and definition breakouts.
 - Retention :: *Persistent Go/service regressions*. Do not claim that tests can
   prevent an uncooperative external editor writing after the final check.
 
@@ -736,8 +695,8 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   Toggling changes placement, not contents, canonical point offsets or source bytes.
   No duplicate IDs/list, lost focus or dead backlink appears after refresh.
   Print places current saved footnotes at the end once. Empty footnote lists do
-  not prevent opening the composer. Ordinary footnotes receive no write controls.
-- Retention :: *Persistent Go/browser regressions*, using parsed DOM and real
+  not prevent opening the composer. Ordinary named notes open editing only in writable annotation mode.
+- Retention :: *Persistent Go regressions plus the linked human UI checks*, using parsed DOM and real
   navigation rather than matching HTML strings alone.
 
 * Edge Cases
@@ -764,7 +723,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - Condition :: An embedded comment was just acknowledged, or a read-only source
   stores its comments in a separate sidecar.
 - Required behaviour :: Service plaintext shows the *current source including
-  acknowledged embedded events*; it does not read the sidecar as source content.
+  acknowledged embedded footnotes*; it does not read the sidecar as source content.
 - Covered by :: [[#ac-009-8][Literal source]] and [[#rt-009-5][Literal source and format boundaries]].
 
 * Solution Design
@@ -892,8 +851,12 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   permit choosing another point; never snap to a paragraph end or guess a match.
 - Composer :: *Outline the insertion point in the document while editing*,
   without a context snippet in the sidebar. A different point waits for guarded close. Clicking
-  an existing annotation marker opens its current comment read-only after close;
-  corrections create another annotation.
+  a shaded native note opens its current text for editing while annotation mode
+  is on. Its native ID stays read-only; links and selection retain their actions.
+  Focus/hover and editing outlines use the shared accent colour.
+- Cursor :: Package a 32-pixel SVG containing *✎ (U+270E)* with white edging,
+  a hotspot at the lower-right tip and crosshair fallback. Apply only to eligible
+  prose in annotation mode; links, code and fold controls retain their own cursors.
 - Footnote ID :: Below the textarea, show a *small, subdued labelled text input*.
   Derive its prefix from the registered display name (existing
   =HTMLPREVIEW_USER_DISPLAY_NAME= then =USER= resolution). Apply Unicode NFD,
@@ -918,82 +881,60 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   both fields. Do not silently rename. The textarea keeps initial focus; closed
   comments expose the ID read-only.
 - Feedback :: Below the textarea, use small legible text: *Saving*, *Not saved*,
-  =✔ Auto saved= or *Save failed*, matching actual composer state. A subtle
+  *Auto saved* or *Save failed*, matching actual composer state. Auto saved
+  holds for two seconds then fades; no check or X button is present. A subtle
   green/amber/red outline reinforces status; colour never replaces text.
   Preserve retry, explicit copy and recovery actions. Use a polite live region
   on state changes, not a repeated announcement for every keystroke.
-- Timestamps :: Use *Intl.DateTimeFormat*, browser locale/timezone, medium date
-  and short time. Show the author's name separately and use a =time= element
-  whose =datetime= and inspectable title retain the *exact recorded UTC timestamp*.
-  Formatting never changes stored records.
+- Timestamps :: Render *inactive Org date/time* as authored, for example
+  =[2026-09-14 Mon 03:12]=; retain existing date-only stamps. Normalize legacy
+  ISO values for display using local 24-hour date parts. Use a semantic =time=
+  element. Display formatting never writes source; saving changed text updates
+  a matching final attribution line as specified below.
 
 *** Native footnote representation
 :PROPERTIES:
 :CUSTOM_ID: footnote-storage
 :END:
 
-- Native syntax :: *Org references* use =[fn:annotation01]= and column-zero
-  definitions use =[fn:annotation01] Comment text=. *Markdown references* use
-  =[^annotation01]= and definitions use =[^annotation01]: Comment text=.
-  IDs are per-document labels, independent of the stable internal annotation UUID.
+- Syntax :: *Org* uses =[fn:tadg-001]= and column-zero named definitions;
+  *Markdown* uses =[^tadg-001]= and =[^tadg-001]:= with indented continuation.
   [[https://orgmode.org/manual/Creating-Footnotes.html][Org named footnotes]] and
-  [[https://pandoc.org/MANUAL.html#footnotes][Pandoc Markdown footnotes]] define the syntax.
-- Current record :: Store *one definition per annotation*. It contains the
-  current comment text plus one owned metadata block with schema version, UUID,
-  author, created/updated UTC timestamps, draft/closed state, latest operation
-  UUID and monotonic revision. Those last two values support retry recognition;
-  *no previous operations, values or timestamps form a persisted history*.
-- Keys :: The metadata fields are =DOCUMENT_ID=, =UUID=, =AUTHOR=, =CREATED=,
-  =UPDATED=, =STATE= (=draft= or =closed=), =OPERATION= and =REVISION= (the latest
-  accepted sequence). The document UUID is shared across its source and sidecar;
-  the annotation UUID stays stable when its visible label changes. A sidecar or
-  legacy unplaced note also carries =POINT=, =BEFORE=, =AFTER= and optional
-  =HEADING_ID=. A legacy document-wide note uses =POINT: unplaced=, never a
-  guessed zero offset. No absolute source path or capability is persisted.
-- Metadata :: Use a native uppercase =#+BEGIN_COMMENT= / =#+END_COMMENT= block
-  inside the Org definition, and an indented HTML comment inside the Markdown
-  definition. The first line is =HTMLPREVIEW_ANNOTATION: 2=, followed by fixed
-  uppercase =KEY: value= lines. Values are single-line UTF-8; encode =&=, =<=,
-  =>= and the second hyphen of any =--= using numeric character references and
-  decode those only in owned metadata. UUID hyphens remain ordinary hyphens.
-  No JSON object is persisted. Unknown/duplicate keys or invalid values block
-  mutation rather than being adopted as an ordinary note.
-- Visible attribution :: The definition includes a final *Author and Created
-  attribution paragraph* in readable text, before its hidden metadata. It is
-  generated from the authoritative metadata, not taken from browser fields.
-  Browser display continues to localize dates; stored UTC dates are stable.
-- Text encoding :: Keep safe plain paragraphs readable. For text that could
-  introduce definitions, directives, headings or metadata delimiters, use a
-  literal block for the *whole comment body*: uppercase Org EXAMPLE with Org's
-  comma escaping, or an indented Markdown code fence longer than any matching
-  run in the text. The owned codec reverses this exactly. This does not add rich
-  text comments; all comment text stays inert in HTML Preview and native export.
-- Ownership :: Recognize only syntactically valid *named footnote definitions
-  with the complete owned metadata block*. Similar labels, literal examples,
-  ordinary comments and ordinary footnotes are not owned. Use the source's
-  literal-region handling before recognizing definitions and references.
-- Placement :: Insert the owned reference *at the verified source point* and
-  add its definition at a safe top-level location at EOF, separated according to
-  the native footnote grammar. Reject an unterminated literal/comment context.
-  On edits, patch only its reference token, body and metadata. Preserve all other
-  source bytes, BOM, line endings, ordinary footnotes and comments.
-- Rendering :: *Leave references and definitions for Pandoc to render normally*;
-  remove only hidden owned metadata from the conversion input. Keep native
-  footnote content at the document end, outside heading folding and navigation.
-  Annotation creation does not install a parallel comment renderer. Comments
-  remain passive under the existing sanitizer; ordinary notes retain their content.
-  Markdown portability requires a reader supporting footnotes.
-- Reading without annotation UI :: File previews and service registrations without
-  annotation UI retain native endnotes without gaining writes. Existing reference
-  clicks follow their normal link to the endnote; they do not automatically enter
-  annotation mode. The mode button controls relocation explicitly.
-- Read-only sources :: Keep the established full-basename =-annotations.org=
-  sidecar. It contains a readable context line with an Org footnote reference and
-  one matching current definition. Metadata additionally stores source identity,
-  canonical point and 64-scalar before/after context for reattachment. *Never
-  insert a physical reference into a read-only source*. Its preview gets virtual
-  markers; external readers need the sidecar and cannot display those as inline
-  source footnotes automatically.
+  [[https://pandoc.org/MANUAL.html#footnotes][Pandoc Markdown footnotes]] define the native forms.
+- Current value :: Persist *one current native definition*, with optional readable
+  attribution. No new JSON, COMMENT metadata, UUID, operation history or durable
+  draft/closed state is written. Creation receipts are bounded transient service
+  state; native labels and definition digests identify saved notes after restart.
+- Attribution :: First save writes =Author: NAME; Created: [YYYY-MM-DD Day HH:MM]=.
+  On a text change, replace a recognized final non-empty =Author:= line ending in
+  an Org timestamp with =Author: CURRENT NAME; Edited: [YYYY-MM-DD Day HH:MM]=.
+  Parse both Created and Edited. The private CLI registration supplies the author;
+  the service supplies local date/time. Unchanged close/retry preserves the line;
+  no line is invented for an ordinary unattributed note.
+- Native text :: Creation and edits retain *native footnote markup*. Reparse the
+  candidate definition; refuse text that escapes its label/span or cannot round-trip
+  without losing text. Keep the draft and source intact on refusal. Ordinary
+  EXAMPLE blocks/fences remain authored syntax, never inferred ownership encodings.
+  Published HTML remains passive under the existing policy.
+- Recognition :: Parse *supported named definitions outside literal regions*,
+  regardless of origin. Duplicate labels and ambiguous/unsupported forms remain
+  readable but cannot be guessed into edit targets. Org definitions end at a
+  heading, another definition or two consecutive blank lines. Markdown follows
+  native continuation indentation. Inline anonymous forms are not named edit targets.
+- Placement :: A new annotation inserts *one verified reference* and its definition
+  at a safe top-level EOF boundary. Active ID changes patch that reference and
+  definition together. Editing an existing note changes only its definition;
+  preserve all references, BOM, line endings and unrelated bytes.
+- Rendering :: *Pandoc renders the native notes*. Temporary conversion markers map
+  rendered notes to their source labels and are removed before publication.
+  Legacy hidden metadata is excluded from conversion and migrated only on save.
+  File previews retain normal endnotes without acquiring write capabilities.
+- Read-only source :: Use the established full-basename =-annotations.org= sidecar,
+  with a readable =Context: BEFORE | AFTER[fn:label]= line and native definition.
+  No physical marker is inserted into the read-only source. Preview projection
+  reconstructs virtual references from that context after restart. Existing notes
+  inside the read-only original cannot be edited through a sidecar; existing
+  sidecar notes are editable. External readers need the separate sidecar.
 
 *** Native endnotes and sidebar placement
 :PROPERTIES:
@@ -1014,8 +955,10 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - One DOM list :: The reader remembers the *original endnotes position*. On
   annotation-mode entry, move that existing section into the annotation aside;
   on exit, move it back. Do not clone, renumber or separately generate its notes.
-  All ordinary and owned footnotes participate; only the active owned composer
-  can write. Keep the composer distinct from the read-only native footnotes.
+  All native footnotes participate. In writable annotation mode, a shaded note
+  block opens its composer by click or Enter/Space. Controls/links and selection
+  preserve their normal actions. The heading is *Annotations & Footnotes*; the
+  toggle remains *Annotations*. Outside annotation mode, notes are ordinary endnotes.
 - Navigation :: Preserve native IDs and hrefs. Reference links scroll to their
   target in whichever pane currently contains it; backlinks reveal a folded
   source section and return to the reference. Keyboard focus and fragment scroll
@@ -1061,7 +1004,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   state. Persist no selected-text range. External edits do not silently move a
   marker to the nearest paragraph.
 - Save transaction :: Under the existing per-document lock, *reread the rooted
-  source and selected store*, validate ownership/revision/label, and build the
+  source and selected store*, validate grant/revision/label, and build the
   patched bytes. Write a private sibling temporary file through the same root,
   flush it, preserve required metadata, then recheck original identity/content
   immediately before atomic rename. Sync the containing directory before success.
@@ -1092,58 +1035,63 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 :CUSTOM_ID: footnote-transition
 :END:
 
-- HTTP :: Use =/_annotations/v2/<read-token>/<root-relative-path>= with the same
-  reader selectors, rooted admission, exact-origin/write/composer tokens,
-  limits and private author registration as W007. GET returns =protocol: 2=,
-  revisions, storage/writable/reason and a =comments= list of current records;
-  it does not expose an event-history API. HEAD remains non-mutating.
-- Mutation :: POST carries =operation_id=, =annotation_id=, monotonic =sequence=,
-  =composer_id=, =action: upsert|close=, =label=, =text=, =target= and W007's fresh revision
-  preconditions. Author/timestamps are server-owned. Use one in-flight request
-  per composer and the existing 300 ms debounce/two-second maximum wait.
-  Upsert replaces only the current active value; close sets closed state without
-  duplicating its text. An empty active upsert removes only that active record;
-  empty initial composition does not create a store. No DELETE for closed notes.
-- Point interface :: A new target has =type: point=, =body_revision=,
-  =position= (canonical scalar offset), =run= (clicked text-node text) and
-  =run_offset= (scalar offset within it). The server verifies all fields and
-  derives before/after context and structural identity. Subsequent mutations
-  retain the annotation UUID and resolve its current owned reference. GET's
-  current records expose =annotation_id=, =label=, =text=, author/timestamps,
-  sequence, state and resolved/unplaced status; they never expose composer secrets.
-- Revisions :: Preserve *authored-source versus full-store revision separation*:
-  exclude owned footnote tokens/definitions when calculating authored-source
-  revision. The full revision includes current source and sidecar records.
-  Another comment save does not by itself invalidate an authored point, but
-  each mutation rereads and merges the current records and checks its own sequence.
-- Retry :: Persist only the *latest operation/sequence* in each current record.
-  A matching retry returns that current result; an older request cannot replace
-  newer text. Keep bounded latest-operation state for active composers (including
-  clearing) in existing grants. After restart, saved drafts are recovered read-only
-  and stale composers must reload; the browser retains unsaved text for copying.
-- Errors :: Retain W007 status/error conventions; add field-scoped
-  =invalid_label= (400), =label_conflict= (409), =point_unmappable= (409) and
-  =storage_metadata_unsupported= (409). They pause saving with text/ID intact.
-  Old v1 mutation requests receive 409 =annotation_upgrade_required= and reload
-  guidance. Version-1 GET may return the same upgrade error; no dual write path.
-- Existing records :: *Read version-1 stores with the existing decoder*. On the
-  next successful save to that destination, project the latest valid value per
-  annotation, preserve UUID/author/timestamps, and replace its owned log with
-  native current records in the same transaction. Historical draft text is not
-  copied into another file or committed to Git. Invalid/incomplete logs block
-  mutation and remain intact. Reading alone never migrates a source.
-- Legacy anchors :: For a uniquely resolved old passage, place its new marker at
-  the *end of that passage*. A document target or unresolved range becomes an
-  explicitly unplaced current definition, visible in the endnotes/sidebar with its
-  original context; do not invent a location or discard the comment.
-- Two stores :: Migrate *only the destination being written*. A source and sidecar
-  are not an atomic pair; continue reading both and reconcile by UUID/sequence,
-  rejecting equal-version conflicts. An unwritable legacy store stays readable
-  until it can be explicitly saved. Never perform a silent multi-file conversion.
-- Compatibility :: This replaces the unreleased candidate's annotation writer;
-  older binaries are not compatible writers for native current records. Rebuild
-  and restart the service during delivery and reload its review pages. The old
-  event writer is retired; the decoder remains solely for legacy reading/import.
+- HTTP :: Use =/_annotations/v2/<read-token>/<root-relative-path>= with the
+  existing rooted admission, exact-origin/write/composer tokens, byte limits and
+  private author registration. GET supplies =protocol: 2=, source/store/body
+  revisions, storage/writable/reason, native =footnotes=, labels and legacy
+  =comments=. A native note includes label, text, definition revision, storage
+  and optional author/date. The compatibility field =created_at= carries its
+  current attribution date for either Created or Edited; no new history API.
+- New composer :: POST includes =operation_id=, =annotation_id=, =composer_id=,
+  monotonic =sequence=, =action: upsert|close=, =label=, =text=, =target= and fresh
+  revisions. Author/time are server-owned. Keep one in-flight request, 300 ms
+  debounce and a two-second maximum wait. Upsert replaces current text; clearing
+  a saved active draft removes only that draft's reference/definition. Closing
+  preserves current text and finishes transient composer state, without adding
+  a persistent close record. An empty initial composer writes nothing.
+- Point target :: =type: point=, canonical =position=, clicked =run= and scalar
+  =run_offset= are checked against current body revision and rendered text.
+  Browser offsets never authorize arbitrary source byte writes. The service
+  derives context; subsequent draft saves verify the native definition/reference.
+- Existing-note edit :: POST uses =action: edit= with the same fields and fixed
+  label, =target.type: footnote=, =target.exact= as definition digest, and
+  =target.run: embedded|sidecar=. The shared atomic writer checks source/store
+  revisions, permissions and the selected definition. The receipt includes
+  =footnote_revision=. No persisted ownership marker or browser memory is needed
+  to reopen a note. Empty text is refused because existing-note deletion is excluded.
+- Revisions :: *Authored-source revision excludes all native definitions and
+  references*, independently of origin. Full-store and per-definition digests
+  detect note changes. An application replacement advances the source identity
+  for every active composer on that document; an unrelated note edit does not
+  invalidate another live draft. Same-note conflicts retain unsaved text.
+- Retries :: Bounded creation-session receipts retain only the latest request and
+  result, including clear/close, for retry recognition. Saved native definitions
+  are reread and digest-checked. Service restart ends that creation session; the
+  browser retains unsaved text for copying and saved notes reopen through edit.
+  Existing-note retries compare current text and return the current digest without
+  changing attribution. *No retry history is persisted*.
+- Recovery :: Stale document revisions refresh/rebase while a selected definition
+  remains unchanged. Changed definitions report =footnote_conflict=; *Copy draft*
+  and explicit *Use current footnote* retain operator control. The latter replaces
+  the local proposal only after that explicit action.
+- Errors :: Retain W007 error conventions; use =invalid_label= (400),
+  =label_conflict= (409), =point_unmappable= (409), =invalid_footnote= (409),
+  =footnote_conflict= (409), =read_only_footnote= (409) and metadata refusal.
+  Field/definition failures retain draft text. Old v1 mutation receives
+  =annotation_upgrade_required= (409); no dual write path is maintained.
+- Legacy :: Read old stores without changing them. On an authorized save, migrate
+  only the selected writable destination's latest valid values and attribution
+  to native definitions, discarding its old autosave history. Editing the selected
+  legacy note refreshes its attribution; unrelated imported notes retain theirs.
+  Old UUID/sequence metadata is decoded for migration, not persisted in new notes.
+  Invalid/incomplete stores block mutation and remain intact.
+- Legacy placement :: A uniquely resolved old passage places its new reference at
+  the passage end. Document-wide or unresolved notes remain explicitly unplaced
+  with readable context. No guessed location or silent loss. Source and sidecar
+  are not an atomic pair; migration never silently writes both stores.
+- Compatibility :: The unreleased event writer is retired; old binaries cannot
+  write this native format. Rebuild/restart only when needed for a new candidate;
+  retain legacy reading and bounded source-preserving import.
 
 *** Literal source payload and view
 :PROPERTIES:
@@ -1164,7 +1112,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   No linkification, source editing or source-code copy takeover in this view.
 - Service entry :: After any guarded close, *fetch the existing authorized page
   URL* through the current refresh path before showing its source payload. This
-  includes newly acknowledged embedded events without a new endpoint or query.
+  includes newly acknowledged embedded footnotes without a new endpoint or query.
   A failed fetch leaves the current readable view and reports the failure.
 - Refresh :: Where W007 polling is enabled, *plaintext follows full source/store
   revision changes*, including annotation-only replacements, through the existing
@@ -1245,16 +1193,16 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - Threat boundary :: *Same authorized document and loopback service*. The v2
   annotation adapter replaces v1 mutation; no new roots, general file routes,
   external resources or wider capabilities. Current-value writes now replace
-  owned portions rather than merely append; fresh checks and atomic publication
+  selected native portions rather than merely append; fresh checks and atomic publication
   protect the larger write consequence.
 - Data :: Plaintext *reveals already admitted source text*, including embedded
   current comments hidden from the article. It never merges sidecars or
   follows includes. Document this difference; do not log payloads or tokens.
 - Passive rendering :: *Base64 transport and textContent* keep all source inert;
   retain CSP and template provenance. Source attributes cannot forge owned controls.
-- Mutation :: *Only the constrained annotation upsert/close path writes*.
+- Mutation :: *Only constrained annotation upsert/close/edit operations write*.
   Reading, empty initial activation and source mode are non-mutating. Clearing
-  an active saved draft removes only that draft; closed comments remain immutable.
+  an active saved draft removes only that draft; existing named notes remain editable, with no deletion action.
 
 *** Other relevant qualities
 

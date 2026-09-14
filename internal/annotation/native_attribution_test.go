@@ -259,3 +259,26 @@ func TestRT009_4_AttributionLifecycle(t *testing.T) {
 		}
 	}
 }
+
+func TestRT009_6_NativeSidecarKeepsAuthoredExample(t *testing.T) {
+	loc, _ := sourceFixture(t, "note.org")
+	if err := os.WriteFile(loc.Path, []byte("Body.\n"), 0400); err != nil {
+		t.Fatal(err)
+	}
+	body := "\n#+BEGIN_EXAMPLE\n*literal* <text>\n#+END_EXAMPLE"
+	sidecar := "Context: Body. | [fn:ordinary]\n\n[fn:ordinary] " + body + "\n\nAuthor: Reviewer; Edited: [2026-09-14 Mon 03:12]\n"
+	if err := os.WriteFile(loc.Path+"-annotations.org", []byte(sidecar), 0600); err != nil {
+		t.Fatal(err)
+	}
+	snap, err := Read(loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	preview, _, err := PreviewFootnotes(t.Context(), snap, "org", "Body.", nil, "review")
+	if err != nil || !strings.Contains(string(preview), body) {
+		t.Fatalf("ordinary sidecar block changed: %v\n%s", err, preview)
+	}
+	if string(snap.RawSource) != "Body.\n" || string(snap.RawSidecar) != sidecar {
+		t.Fatal("reading changed source or sidecar")
+	}
+}

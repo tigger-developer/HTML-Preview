@@ -192,7 +192,8 @@ classification; it is provenance, not current state.
   author attribution. The original event-history/selected-passage implementation
   remains the review baseline; *those requirements were withdrawn on 14 September*
   in favour of [[file:../specs/009-reader-annotation-ux/spec.org][W009 - Native footnote annotations]].
-  Closed comments remain read-only through the application.
+  The later paired amendment also supersedes the closed-comment read-only rule;
+  supported native footnotes can now be edited.
 - Dependency :: *W006 delivery and recorded service qualification precede W007
   implementation*. On 13 September the operator authorized continuation on the
   working macOS service with Linux/WSL qualification remaining pending; see the

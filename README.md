@@ -19,7 +19,8 @@ distinguishes regression evidence from pending native qualification.
 
 Service previews of genuine Org and Markdown sources also offer
 [attributed annotations](docs/ANNOTATIONS.md). The composer autosaves current native
-footnotes and freezes the comment on close. Source changes refresh without
+footnotes. Existing native notes remain editable after close, with their IDs
+preserved and attribution labelled Created or Edited. Source changes refresh without
 discarding an active draft; read-only sources use an adjacent Org sidecar.
 The persistent info bar also offers literal Org/Markdown source inspection.
 [Reader validation](specs/009-reader-annotation-ux/validation.org) records the
@@ -59,7 +60,7 @@ Org previews render `#+TITLE` and `#+SUBTITLE` as leading document headings.
 When present, `#+AUTHOR` and `#+DATE` follow them as document metadata.
 Leading Org fields share one left-aligned, initially open frontmatter panel
 above the separator, using compact Iosevka text and a settings glyph. The
-filename alone remains right-aligned. Frontmatter never activates path copying.
+filename is left-aligned in the sticky info bar, with controls to the right. Frontmatter never activates path copying.
 The title also supplies the browser tab title, with the filename as fallback.
 Successful path and code copying briefly overlays the copied text with a fading
 confirmation; refused clipboard writes retain the manual-copy fallback.
@@ -136,8 +137,8 @@ Validated local/container rasters are embedded in file previews and served
 through authorized asset routes in HTTP previews, replacing original-file image
 URLs. Original source context remains the basis for relative references.
 
-Reading leaves sources unchanged; annotation composition updates its owned
-records in service mode. Source scripts, event handlers, executable embeds,
+Reading leaves sources unchanged; annotation composition updates selected native
+footnote definitions and new-note references in service mode. Source scripts, event handlers, executable embeds,
 and automatic remote resources are removed or made passive. Org includes remain
 visible without expansion. Literal source/example blocks remain literal.
 This is a local preview, not a portable export or a whole-process sandbox.
@@ -283,7 +284,9 @@ Provision development tools separately: golangci-lint 1.64.8, StyLua 2.5.2,
 and govulncheck 1.7.0 are the inspected tool versions for this delivery.
 Lint includes Go formatting, vet, the selected Go linters, StyLua, and a Lua
 check in Pandoc's own host. No Node/npm or standalone Lua runtime is used;
-CSS and browser JavaScript require source review and the recorded browser tests.
+Native oxlint and biome check browser JavaScript and CSS; paired human checks
+cover actual browser interaction and appearance. The historical browser fixture
+is retired from the current workflow and is not execution evidence.
 The vulnerability target neither installs tools nor updates dependencies.
 
 ```sh

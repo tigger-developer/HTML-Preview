@@ -120,7 +120,7 @@
 - Expected :: Readable native definitions and normal footnote references in both formats.
 
 ** OT009.1 - Native replacement qualification
-- Status :: PENDING.
+- Status :: PASS for macOS on the 14 September final batch below; Linux/WSL PENDING.
 - Requirement/procedure :: Follow [[file:spec.org::#ot-009-1][Native replacement qualification]].
 - Expected :: Durable acknowledged values, preserved permissions/metadata and bounded failure.
 - macOS result :: PASS on 14 September 2026, macOS 26.6 (25G5065a), arm64,
@@ -261,3 +261,45 @@
   refinement; current verification targets the affected writer and service paths.
   Human cursor, editing and visual checks, plus Linux/WSL qualification, remain
   pending. The combined implementation review is batched under operator direction.
+
+* Final paired batch: consolidation and native qualification
+
+- Implementation :: =35dd645= (Created/Edited native attribution), plus the
+  help-text correction. The current specification consolidates earlier paired
+  amendments; it introduces no new product scope. Earlier requirement wording
+  remains available at that Git checkpoint.
+- OT009.1 macOS result :: PASS through the actual built service on 14 September
+  2026, macOS arm64. A bounded one-off used two disposable files per format and
+  11 mutation attempts, below the 20-attempt limit. Org and Markdown retained
+  current values, owner/mode and acknowledged saves after restart. The interrupted
+  request left a readable current value. Read-only originals stayed unchanged
+  while sidecars received notes. Extended attributes and ACLs caused explicit
+  metadata-preservation refusal without changing original bytes or metadata.
+  The check stopped its own service and removed its document/runtime directories.
+  The operator's separate demo remained running. Linux/WSL remains PENDING.
+- Static checks :: Final =make lint= and =make build= passed; =make vulncheck=
+  reported no vulnerabilities. A one-off document review found all 45 custom IDs
+  unique, all 94 fragment references resolved and all 19 local spec links present.
+- Provisional latest feedback :: Taḋg reported a demo save error, then "weird,
+  it's working now" and "i cannot reproduce it currently". The observed candidate
+  was the native attribution build. Service reads showed newly saved notes.
+  The earlier error's cause remains unconfirmed; no speculative fix or general
+  save-recovery qualification is inferred. Browser version and viewport were not
+  captured for this observation.
+- Documentation :: The specification, Vision, Architecture, command help and
+  work ledger are reconciled with editable native notes and current attribution.
+  The annotation guide already describes that behaviour. README now reflects
+  editable notes, left-aligned filename and current native/manual test boundaries. Historical validation entries
+  above remain evidence for their explicitly named earlier candidates.
+- Human boundary :: The UT entries remain provisional/pending until the operator
+  confirms the consolidated observations. General positive feedback does not
+  establish keyboard, screen-reader, phone-keyboard or Linux/WSL qualification.
+- Later sidecar regression :: The final source review found native sidecar preview
+  still decoding ordinary EXAMPLE syntax through the former literal decoder.
+  The added regression observed the block disappear, then passed after that
+  decoding was removed. Ordinary authored sidecar text now reaches conversion
+  unchanged. Focused W007/W009 race checks passed (annotation 4.733 s,
+  preview 19.928 s).
+- Full-suite sequencing :: The preceding full =make test= passed (integration
+  29.954 s, annotation 5.218 s, preview 632.906 s). A fresh full run is underway
+  after the sidecar correction; its result will be recorded once available.

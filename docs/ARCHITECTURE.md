@@ -136,17 +136,20 @@ a collapsed insertion point and delegates to canonical text mapping and composer
 scheduling. The comment box gets initial focus, with a secondary editable footnote
 label below. One guarded close path handles point changes,
 leaving annotation mode and entering plaintext without hiding unacknowledged text.
-Native date formatting changes display only. The annotation package now owns a
+Native Org timestamps provide the displayed and saved attribution format.
+The annotation package now owns a
 native-footnote codec and current-record replacement, superseding the
 earlier event-log writer and selected-text anchors. Each current record retains
-attribution, state and the latest retry identity, with no permanent autosave
-history or JSON in the document. Closed comments remain read-only in the UI.
+readable attribution without hidden metadata or history. Latest retry identity
+and composer state remain only in bounded service memory. Closed comments and
+ordinary named notes are editable in annotation mode.
 
 The source reference uses normal Org/Markdown notation and the editable label;
 a separate stable annotation identity supports renaming and retry handling.
 New insertion points require one bounded marker round-trip through the existing
 renderer. Unprovable points report an error rather than inserting elsewhere.
-Saves patch only owned reference tokens and definitions, then atomically replace
+New-note saves patch only their reference tokens and definitions; existing-note
+edits patch the selected definition, then atomically replace
 the freshly checked rooted file. Metadata that cannot be preserved blocks saving.
 The v2 annotation adapter retains existing grants/origin checks and retires v1
 mutation. The existing decoder remains for legacy reading and import on save.
@@ -194,8 +197,9 @@ The operator approved editing supported native footnotes, including ordinary
 notes and closed annotations. The parser reconstructs named definitions and
 byte spans from the current source or sidecar. An explicit edit identifies the
 label, store and definition digest through the existing authenticated v2 route.
-The shared atomic writer replaces only that definition, retains attribution and
-checks the file revision. Ordinary notes gain no ownership metadata. Equal
+The shared atomic writer replaces only that definition, refreshes a matching
+Author line to the current reviewer and Edited timestamp, and checks the file
+revision. Ordinary notes gain no ownership metadata. Equal
 current content makes a repeated save harmless; conflicting text retains the
 browser draft. An unrelated source change can refresh and retry while the
 selected definition digest remains unchanged.
@@ -809,7 +813,8 @@ reconstruction after restart. Original notes without attribution stay unattribut
 
 The later paired attribution amendment refreshes a matching final `Author:` line
 on saved edits, using the current reviewer and local time in
-`Author: Taḋg; Edited: [2026-09-14 Mon 03:12]` format. The first save uses Created; unchanged closes and retries preserve the label and timestamp. This supersedes preservation
-of that attribution on edits. Notes without attribution remain valid. Creation
+`Author: Taḋg; Edited: [2026-09-14 Mon 03:12]` format. The first save uses Created;
+unchanged closes and retries preserve the label and timestamp. This supersedes
+preservation of that attribution on edits. Notes without attribution remain valid. Creation
 and editing use the same native footnote markup, guarded against breaking out of
 the selected definition; they do not infer origin from literal blocks or fences.
