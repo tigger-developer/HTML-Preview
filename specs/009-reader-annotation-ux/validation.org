@@ -74,6 +74,23 @@
   insertion-point validation). These checks do not establish full W009 delivery;
   broader regression qualification and paired user validation remain open.
 
+** Provisional paired feedback - 14 September 2026
+
+- Reviewer :: Taḋg; desktop screenshot =screenshot-26-09-14-0302-48.png=,
+  1989 by 1255 image pixels, macOS. Browser version and zoom were not captured.
+- Candidate :: =fb9f71e= (current native footnote checkpoint), before the CSS
+  correction. The user reported missing/broken controls and overlapping text.
+  The screenshot shows the navigation links over the frontmatter.
+- Observation :: FAIL for the reviewed layout. The shared reader selector had
+  greater specificity than the responsive navigation placement, putting the
+  navigation in the article column. Expanded folding chevrons were hidden.
+- Correction :: Use a low-specificity child selector for shared reader sizing,
+  allowing the sidebar placement to apply; retain a visible downward chevron on
+  expanded folding bars. Both bar and heading click handlers remain present.
+- Evidence :: Native Biome CSS lint passes and the rebuilt service opened the
+  same disposable sample. Corrected interaction and visual validation remain
+  PENDING; no browser automation was invoked.
+
 ** UT009.1 - Responsive reading and composition
 - Status :: PENDING.
 - Requirement/procedure :: Follow [[file:spec.org::#ut-009-1][Responsive reading and composition]].
