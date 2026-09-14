@@ -358,47 +358,9 @@ audits:
           model: z-ai/glm-5.3
           reason: resume-failed-fallback
           updated: "2026-09-14T14:05:51Z"
-      external_round: 4
-      status: active
-      updated: "2026-09-14T14:17:04Z"
-      revision: 26a6d64
-      verdict: FAIL
-      response: |-
-        GATE: implementation
-        REVISION: 26a6d64
-        VERDICT: FAIL
-
-        Findings (both concrete defects in the current delta; remediation required together)
-
-        **1. Native footnote text is written literal-encoded but read back un-decoded — saved annotations are misreported and re-edited in a different encoding.**
-
-        - Evidence: `internal/annotation/native_attribution.go:53` (`encodeReadableFootnote`) passes every saved comment through `literalFootnoteBody` (`internal/annotation/footnote_patch.go:30`), whose `unsafe` test fires on any of `[]<>*_`~=#\&`, a leading/trailing space, **or any newline**. The published definition therefore contains `#+BEGIN_EXAMPLE`/`#+END_EXAMPLE` (Org) or a fence (Markdown) for most real comments, including any plain two-paragraph comment.
-        - The only reader for those definitions is now `EditableFootnotes` (`internal/annotation/footnote_edit.go:60-81`). Since the COMMENT block was removed, every newly written note is `owned == false`, so it takes the `else` branch, which sets `entry.Text` from `splitAttribution(strings.Join(body,"\n"))` and never calls `decodeFootnoteText`. The decoder exists and is applied on the sidecar path (`native_sidecar.go:54`) and on the owned path (`footnote.go:252`); the embedded readable path is the odd one out, and `decodeFootnoteText` even has a branch for the exact leading-newline form this encoder produces (`footnote.go:310`).
-        - Consequences, all observable at the authorized HTTP boundary: `state.Footnotes` (`internal/preview/service_annotations.go:185`) returns `"\n#+BEGIN_EXAMPLE\n…\n#+END_EXAMPLE"` instead of the text that was saved; `openComposer` loads that string into the textarea (`assets/web/annotations.js:215`) and `useCurrentFootnote` restores it (`annotation-composer.js:207`); and `patchEditableFootnote` (`footnote_edit.go:168-195`) writes the edit **raw**, so the create path and the edit path persist the same comment in two different encodings, and some text creation accepts is refused by the edit path as `invalid_footnote`.
-        - Why this is not covered: `TestRT009_6_NativeExportPreservesLiteralComment` still passes because it exercises `UpdateFootnote`/`Parse`, i.e. the framed intermediate buffer that `readableFootnotes` now converts away before publication; it no longer touches the published representation. Every create-path test uses plain text (`"Draft value N"`, `"A draft"`, `"First comment"`), so no test observes a create → reload → read round trip for the "annotation text containing markup/delimiter-like strings" that RT009.6's own setup requires.
-        - Required remediation: make the write and read encodings symmetric for definitions this tool writes, and add a regression that creates an annotation containing markup and multiple paragraphs, reloads it through the v2 GET, and asserts the returned `text` equals the saved text. Note that decoding unconditionally in `EditableFootnotes` would mangle *ordinary authored* notes that legitimately contain an EXAMPLE block or a fence, so either restrict decoding to the tool's own encoding, or drop the literal encoding from `encodeReadableFootnote` and rely on the same re-parse breakout guard the edit path already uses (`footnote_edit.go:192`). The choice is the implementer's; the round trip must hold and ordinary notes must remain byte-stable.
-
-        **2. `--hp-accent` is undefined, so the new clickable-footnote focus ring and the editing outline render nothing.**
-
-        - Evidence: `assets/web/preview.css:204` `.hp-annotations .hp-editable-footnote:focus-visible { outline: 2px solid var(--hp-accent); … }` and `:205` `.hp-editing-footnote { outline: 2px solid var(--hp-accent); … }`. The defined token is `--accent` (`preview.css:3,4`); `--hp-accent` is never defined in `preview.css`, `page.html`, the Go-generated CSS prefix (`internal/preview/html.go:275`, font faces only), or `preview.js` (the only custom property set from script is `--hp-bar-height`, `preview.js:414`).
-        - An unresolvable `var()` makes the declaration invalid at computed-value time, so `outline` computes to `unset` (initial `outline-style: none`) rather than falling back to the lower-specificity `:focus-visible` rule at `preview.css:19`. Result: the footnote blocks that this increment made keyboard-focusable (`annotations.js:418`, `tabIndex = 0`) have **no visible focus indicator**, and the `hp-editing-footnote` marker applied to the reference being edited (`annotations.js:462`) shows no outline.
-        - This defeats an explicit approved requirement — "Visible focus, named controls, textual state and reflow are required" (spec Accessibility impact) and "A visible outline marks the document insertion point while editing" (operator decision, 14 September) — and it is precisely the kind of defect the pending paired visual check would catch; that check is still PENDING in `validation.org`, so nothing else currently covers it. Biome does not validate custom-property references, so the recorded lint pass is not evidence here.
-        - Required remediation: reference the defined token (or define `--hp-accent`), and confirm the focus ring and editing outline in the paired review that is already pending.
-
-        Non-blocking observations (not conditions)
-
-        - Evidence currency: `validation.org` correctly records the full race suite as pending at this candidate (preview package outstanding). Remediating the above changes Go and CSS behaviour, so the complete `make test` must be run at the remediated revision; the focused W007/W009 runs quoted in the caller context do not substitute for it.
-        - `internal/preview/testdata/annotations-browser.js` (unchanged, `0229fa2e…`) remains stale against the current panel and is outside `make test` and prohibited from execution this iteration, so it manufactures no false evidence; it should be updated or removed at wrap-up.
-        - The operator-authored v1 annotation suffix at the end of `spec.org` is reserved for paired wrap-up per the caller context and the definition gate; it is not treated as an implementation instruction here.
-        - No audit findings, verdicts, revisions, round numbers or session IDs are duplicated in `spec.org`, `validation.org` or the docs; `validation.org:61` correctly links to the harness-owned record instead of restating it.
-
-        What is sound (for context, not re-litigation)
-
-        - Metadata removal is genuine and proven at the file boundary: `readableFootnotes` converts every owned frame to an ordinary definition before publication, frames exist only in the working buffer (`native_attribution.go:94`, `replace.go:212-229`), and `TestRT009_6_NoCommentMetadata` plus `TestRT009_7_HTTPCurrentFootnotes` assert no `#+BEGIN_COMMENT`/`HTMLPREVIEW_ANNOTATION` survives, with RED recorded for the hidden-metadata regression.
-        - Optional attribution and native timestamps round-trip byte-for-byte across both formats and all three attribution shapes (`TestRT009_4_OptionalNativeAttribution`), unattributed notes stay unattributed, and creation identity survives a fresh writer (`TestRT009_7_EditClosedPreservesAttribution`).
-        - Date display is day-first, 24-hour (`en-IE`, `hourCycle:'h23'`, `annotations.js:429`), native Org stamps are shown verbatim with a valid `datetime`, and the Edit buttons are gone in favour of the clickable/`Enter`-activated shaded block with an accessible name.
-        - The write boundary is unchanged in substance: shared lock, rooted `O_NOFOLLOW` handles, `nlink==1`, owner/mode preservation with refusal when metadata cannot be preserved, identity and alias recheck immediately before rename, directory sync, and honest uncertain-durability recovery — all still exercised by the injected-fault tests.
-        - Sidecar reconstruction from readable `Context:` lines, legacy read/import with history discarded, `409 annotation_upgrade_required` for v1 mutation, and the authored-body revision excluding all native footnotes regardless of origin all behave as the recorded authority describes.
+      external_round: 5
+      status: exhausted
+      updated: "2026-09-14T15:38:51Z"
       history:
         - cache_key: sha256:8c2ee746a00bb944293ca97fef5e3c8169e7b7ba608354124c8c990fc14ee605
           session_id: 20260914_025448_d87d50
@@ -1342,3 +1304,239 @@ audits:
             - The write boundary is unchanged in substance: shared lock, rooted `O_NOFOLLOW` handles, `nlink==1`, owner/mode preservation with refusal when metadata cannot be preserved, identity and alias recheck immediately before rename, directory sync, and honest uncertain-durability recovery — all still exercised by the injected-fault tests.
             - Sidecar reconstruction from readable `Context:` lines, legacy read/import with history discarded, `409 annotation_upgrade_required` for v1 mutation, and the authored-body revision excluding all native footnotes regardless of origin all behave as the recorded authority describes.
           updated: "2026-09-14T14:05:51Z"
+        - cache_key: sha256:b4b6f4ce4b38f93fd3487d703ff0b7e07ee82fb406848a945feed83f935f6d45
+          session_id: a200dc94-0196-4f16-87b9-24255b91daa3
+          harness: claude
+          model: claude-opus-5
+          incident: resume-failed
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 98738ed0a7d5e3856a936f31424232ca489ea7dfdb9638104412a6694869f965
+              bytes: 12313
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: bd32656992311c5b4da2f83ac154bfcb073a71fe987a8bf0d7618b05e7e5cf2c
+              bytes: 3994
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: 8545a6297e21423a9ed1797bc3b6f90ac4425600606ae20152252d2da3c0cc42
+              bytes: 16332
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 833de19319224d80f95ad94ab6923b3d4b1255d13a11bac50b07553efa675fc4
+              bytes: 11310
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: 59522d1f15d3d204a9a3e3a648e5eca106344aa87e6b6302077fd2af6e177d83
+              bytes: 2813
+            - path: /Users/tigger/.agents/sdlc/PAIRING.md
+              sha256: f37b1226779c5ad8ec5300c1ad6251de4f2bf25eb62be30731e0077c6e69ce6d
+              bytes: 5648
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 5ed902d49dbb8321ea093fd60db68d5195e59c95c763c02e4ca0c09f6fa1e932
+              bytes: 13561
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: cacf11b21a102f0b7ff114446d2489c15cc69f9822a1f8fd2ba9255295b54af4
+              bytes: 790
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 1f19029ba4d68332692162ebaefe6779f591a126407e8c81ce4f69280aea44a9
+              bytes: 16665
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-composer.js
+              sha256: 0df2b4a93c514a850591b24acd579f5c4ffe3bf78344e4e1c9c18f767ab37ef2
+              bytes: 10968
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: 848c0ed1db01dcc7c62a20e3dc2890118ef62b409bab8cf2202cfb571c118d23
+              bytes: 8245
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: e4f37b62bb2e05a38b3a8ad31cee58ab4326cbb35e0503cd481654384bbf4d6f
+              bytes: 38836
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: ceb0142fc0848897f8b4afeb20999597a82ad3a47014e8bfb78ce8e701170ca2
+              bytes: 1700
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: c5c538c8b14590bfc60d7130c1b04ceb8dc681e38118ea597b67647750047281
+              bytes: 20410
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: f68c3362f983d93b6babeac37e21e6eb745bd59c3d37b4e0c28e92055887b6cd
+              bytes: 22539
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: f280d5d3a85058d00b4d0944e8828428a82eb20ca442f32e0f406c286b47d27d
+              bytes: 11640
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: df8400e37bc31fe92a19ab2e21de5391e11be3003fd0ca15104b8c9e52640752
+              bytes: 51376
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 86c379512d9b42c89221c24d0b253ffbd445344367f479c30b3456563e271c30
+              bytes: 18150
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: b88e03f1ec826607a4e21159fe50f752c7b0e77d30a7625128fc0885233a649f
+              bytes: 5771
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 3e7f337a11b6f3d195ae96c896ee0f8f19d9a208434d24253266c302251c134a
+              bytes: 13231
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: 1ade6f1ba5461d9d4ce915f459488fceaa7d67d9e98381b341cd22be2443e223
+              bytes: 311
+            - path: /Users/tigger/code/tigoss/html-preview/go.sum
+              sha256: 07c6131b94054c0409e2f5067066a889f48d0671ba913d0ec95c0da81c17753d
+              bytes: 1179
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/codec.go
+              sha256: 96f15d80c8c65f2a5d2bbaf7b39f5fb51e5cacde9d8daa6a3e89e78cd04c1abf
+              bytes: 8672
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/destination.go
+              sha256: bdeb9b35e73946c2e3917a7456f3ba1be76e236e51962290bf28baa3c44bf6b1
+              bytes: 2184
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/event.go
+              sha256: a18e3ff024cb5fa305f29e8b0271b42325e13654baea2949cce82dfca1564834
+              bytes: 8471
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/files.go
+              sha256: 9ef4082d8337f289bea71266be438c2c126e9d3f6eead5cf75891e862a85d422
+              bytes: 6005
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote.go
+              sha256: 32f844fc85016fd173600cf004fada5b817d54244f03789343e2d8859c40f138
+              bytes: 11095
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_edit.go
+              sha256: 33ec9b83f85a899c45a0099f92eaf275896f0e52834a2737a08bc065b4bda7ed
+              bytes: 10939
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_edit_test.go
+              sha256: 4d5c97d36d1676d05f07ea58a6742a5654b5446204b7f5e74b4d69e022b204cb
+              bytes: 9170
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_patch.go
+              sha256: 80fa984fb3cbcb8bee492e12c9ac9f3b71ceac279be856f7c201e876aee3f2ec
+              bytes: 7624
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_test.go
+              sha256: 948074c815e4273b6cd217a2c9e2a43a3d6bc2ebb09f43cf31ab80f5648566c0
+              bytes: 5371
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/metadata_darwin.go
+              sha256: 168771d53b4e0698405482aa445b4489d618ab120a7b92cf58398a024fb6def7
+              bytes: 1430
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/metadata_linux.go
+              sha256: 91e433e1923d90f9ee9c89eac3527622c80b9b07f52e65852ba8d9cf148ecf1c
+              bytes: 516
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/migrate.go
+              sha256: f692d773b139df2bafef7d0a07c7c22bc55d835e8ae11c17cdf7d33c7737d989
+              bytes: 3096
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/migrate_test.go
+              sha256: eb7bb465d02f29d17e83242973d453bb3b1355bbea7315009ce0057a7df8fa7a
+              bytes: 5064
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/native_attribution.go
+              sha256: 1762decd17649763559ffbcac84e8534e9c96b6bac1739924ced9ebe46693f10
+              bytes: 6627
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/native_attribution_test.go
+              sha256: 9fc10f4e8032b6168cc481558545a1bee5ece3f827468867e8f4075bdfdd7296
+              bytes: 10124
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/native_sidecar.go
+              sha256: 31ec29efd027b8021c6aad846b2458bd7f635b102b9c463b38a0a4da4c482ad1
+              bytes: 1991
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/point.go
+              sha256: 30d20b2081c75164f4e620be36e6781a7905d5979b85317301424909fe155025
+              bytes: 3418
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/point_test.go
+              sha256: dded6693937a7bbee810d1eba85c8dd3d73a2d5fd78f10178a57583bb63fd8cf
+              bytes: 1104
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/preview.go
+              sha256: 9c8191ac1a56448cf1e387d30468628858ff24c697685b949faa9150a2739223
+              bytes: 5405
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/replace.go
+              sha256: b535bee328f10869621fcc4e41ab2a6a4a7bab9d3aa721a0133375e2fd69cf83
+              bytes: 15200
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/replace_test.go
+              sha256: e874af5a3c84e8844e92cd2e23e19ade77255dd3f52dcc0da7af4ffc6bf8e211
+              bytes: 11378
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/text.go
+              sha256: 1b0374ce77ed3274c88e27297f6f8b7948342dea097d463e51bc02b19aa551b6
+              bytes: 4195
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/writer.go
+              sha256: ce1d80e33ed37ccd6ff0c8ca702ab9bd495471ea6770edf38d29fbccb7483852
+              bytes: 2427
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/writer_test.go
+              sha256: fe48b24253d23b2a73eb8b7406ee3d38d275e410447a4d603a92f4f41cf3baad
+              bytes: 10772
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_limits_test.go
+              sha256: 45575146b68783cee0a38d2ae3c682e002191b8272460ecfd99b0ec1f826b6c2
+              bytes: 3123
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_security_test.go
+              sha256: cbb32660d4355a4a6067a076b83a72284ed41c67fe679e1599ae70bafc8deb3c
+              bytes: 3981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_service_test.go
+              sha256: fa9ba5eb8bce499885d465e936aaac23e5c5236128a7f18a4b04db1de91c49da
+              bytes: 10791
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/footnote_service_test.go
+              sha256: 1704f8ba656914a7f29d52b7deb92857678219e31e12ec725f409b0e9daaf90c
+              bytes: 20609
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 6eac1bfd4cd49abbcaddd210566d4cab123675cfd1b09a343e61c51bf11418ef
+              bytes: 11061
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/navigation_test.go
+              sha256: 8277b82fc93630130c84ad53b1d7cba988ec2f3cf33516194f62cff577a194ac
+              bytes: 1802
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/presentation_test.go
+              sha256: 5a27502cb1dd4b1331530023073ab14f96cabfd74c6cd02673d649627791ec30
+              bytes: 4050
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 9f4fec62bce111245cbb6fc087b6fdb672760eae2e82daa41f30407bfb69f5c8
+              bytes: 14297
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service.go
+              sha256: 4695a3b9e85d93fec2cf1bfc065df7ce4d2148199b08aeb2ce3e9494ec450ab7
+              bytes: 5323
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_annotations.go
+              sha256: 9a451f3483c38d1f6f8d6350e1fdbdaec2c777d4fa22b4c3e6587d1f10f3be4b
+              bytes: 15891
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache.go
+              sha256: 6fc7b2a4182c60000dc487459b8eacdc7288bf4ba6cde237d147c7b89b032a94
+              bytes: 5713
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
+              sha256: bd91c7a33e4251747715a0aaea9fb603fb0516ce451ccb4f6b2112a98893003f
+              bytes: 6174
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_render.go
+              sha256: ce1b057f2599cf486e9c2f2b25fa81c2610788dfe94a388ad6e0f6da052da505
+              bytes: 8469
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
+              sha256: 0229fa2e275ce80c5cca609caf64c7490e24ec9c5fd407a29b629545d0624256
+              bytes: 16277
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
+              bytes: 93437
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+              sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
+              bytes: 85482
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+              sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
+              bytes: 62969
+            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+              sha256: bb8573465acf626fc3eeefa727fffbca15e49b05c329d28445dd92d8e1d65511
+              bytes: 80277
+            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/validation.org
+              sha256: d5dbff29636109edcb9fca03ef575147bf5de9c2be8899d00a0697759f2e6750
+              bytes: 20894
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json
+              sha256: 88e4b2ed130175315f0ae8736b84f717e9e53d674316a911f3d2625f9edd1c40
+              bytes: 1128
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/hp9-final-audit-20260914-27119-cxl21s/delta.patch
+              sha256: bc3776b541e6d91b85597a9e4f45a59b7f6e5a77d18ffd8b10029adc31b8b5f9
+              bytes: 439780
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/hp9-final-native-20260914-21602-d82dub/check.rb
+              sha256: cb0227a6851b8eda4a385a0825d6fe1fcfd6d0fe9961989adc50a29709ac6f47
+              bytes: 7332
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/hp9-final-native-20260914-21602-d82dub/result.log
+              sha256: ac4926548a1b76a419bd51c306b9d4f21c17437a203251cd5362039a8b6357b6
+              bytes: 312
+          round: 5
+          updated: "2026-09-14T15:38:01Z"
