@@ -1,0 +1,44 @@
+---
+version: 1
+annotations:
+- id: d2803c06-6e3f-41d8-bf56-17ffe98d35b9
+  author: tigger
+  original_text: test annotation 1234
+  reviewed_revision: 
+  referenced_passage:
+    type: document
+  source_specification_sha256: bb8573465acf626fc3eeefa727fffbca15e49b05c329d28445dd92d8e1d65511
+  reason: Test-only feedback; no requirement change. The complete original record
+    is retained here.
+  affected_sections: []
+  resulting_specification_sha256: 97344813250ae785a543dda8ac187787c06791b06c21a0b5108cdaa56b080d88
+  original_block: |2
+
+    #+begin_comment
+    htmlpreview-annotations:v1
+    {"schema":1,"document_id":"5c6e953e\u002dcaf4\u002d4c71\u002d9132\u002d1afc632da00d","source_format":"org"}
+    #+end_comment
+    #+begin_comment
+    htmlpreview-annotation-event:v1
+    {"schema":1,"operation_id":"80e04fce\u002d37ce\u002d4a49\u002dad73\u002dca0625595f8c","annotation_id":"d2803c06\u002d6e3f\u002d41d8\u002dbf56\u002d17ffe98d35b9","composer_id":"f2fe1341\u002d3f32\u002d4358\u002d93d9\u002d3fac2b55db43","sequence":1,"kind":"draft","author":"tigger","created_at":"2026\u002d09\u002d13T23:30:15.292998Z","recorded_at":"2026\u002d09\u002d13T23:30:15.292998Z","target":{"type":"document"},"text":"t"}
+    #+end_comment
+    #+begin_comment
+    htmlpreview-annotation-event:v1
+    {"schema":1,"operation_id":"6468b3f2\u002d7418\u002d46ad\u002d877c\u002d0b77cfbe9ff1","annotation_id":"d2803c06\u002d6e3f\u002d41d8\u002dbf56\u002d17ffe98d35b9","composer_id":"f2fe1341\u002d3f32\u002d4358\u002d93d9\u002d3fac2b55db43","sequence":2,"kind":"draft","author":"tigger","created_at":"2026\u002d09\u002d13T23:30:15.292998Z","recorded_at":"2026\u002d09\u002d13T23:30:16.843824Z","target":{"type":"document"},"text":"tes"}
+    #+end_comment
+    #+begin_comment
+    htmlpreview-annotation-event:v1
+    {"schema":1,"operation_id":"bf32ff70\u002d61f2\u002d4136\u002d93d2\u002d6bd76779347a","annotation_id":"d2803c06\u002d6e3f\u002d41d8\u002dbf56\u002d17ffe98d35b9","composer_id":"f2fe1341\u002d3f32\u002d4358\u002d93d9\u002d3fac2b55db43","sequence":3,"kind":"draft","author":"tigger","created_at":"2026\u002d09\u002d13T23:30:15.292998Z","recorded_at":"2026\u002d09\u002d13T23:30:20.290932Z","target":{"type":"document"},"text":"test annotation 123"}
+    #+end_comment
+    #+begin_comment
+    htmlpreview-annotation-event:v1
+    {"schema":1,"operation_id":"7b529499\u002d69c0\u002d4a6f\u002d913b\u002d8827f1bc57a1","annotation_id":"d2803c06\u002d6e3f\u002d41d8\u002dbf56\u002d17ffe98d35b9","composer_id":"f2fe1341\u002d3f32\u002d4358\u002d93d9\u002d3fac2b55db43","sequence":4,"kind":"draft","author":"tigger","created_at":"2026\u002d09\u002d13T23:30:15.292998Z","recorded_at":"2026\u002d09\u002d13T23:30:21.057881Z","target":{"type":"document"},"text":"test annotation 1234"}
+    #+end_comment
+    #+begin_comment
+    htmlpreview-annotation-event:v1
+    {"schema":1,"operation_id":"d128f817\u002d2d04\u002d4c3f\u002d9bab\u002d813ed2cba435","annotation_id":"d2803c06\u002d6e3f\u002d41d8\u002dbf56\u002d17ffe98d35b9","composer_id":"f2fe1341\u002d3f32\u002d4358\u002d93d9\u002d3fac2b55db43","sequence":5,"kind":"close","author":"tigger","created_at":"2026\u002d09\u002d13T23:30:15.292998Z","recorded_at":"2026\u002d09\u002d13T23:30:23.209033Z","target":{"type":"document"},"text":"test annotation 1234"}
+    #+end_comment
+  disposition: answered
+  processing_date: '2026-09-14'
+  operator_authority: Operator confirmed this was an accidental test annotation and
+    explicitly authorized removal.
