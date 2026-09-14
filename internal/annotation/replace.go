@@ -68,11 +68,15 @@ func validateCurrentRequest(r Request) error {
 func (r Request) ValidateCurrent() error { return validateCurrentRequest(r) }
 
 func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo, author, secret string, r Request, verify PointVerifier) (Replacement, error) {
-	if r.Action == "edit" {
-		return w.editFootnote(ctx, loc, expected, author, r)
-	}
 	if err := validateCurrentRequest(r); err != nil {
 		return Replacement{}, err
+	}
+	// Native definitions use terminal line breaks as separators, not note text.
+	// Normalize after validation so whitespace-only or oversized requests cannot
+	// become valid clears, and use the same value for saves, retries and closes.
+	r.Text = strings.TrimRight(r.Text, "\r\n")
+	if r.Action == "edit" {
+		return w.editFootnote(ctx, loc, expected, author, r)
 	}
 	incoming := r
 	if author == "" || ValidateName(author) != nil {

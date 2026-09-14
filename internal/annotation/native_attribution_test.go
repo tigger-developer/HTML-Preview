@@ -282,3 +282,101 @@ func TestRT009_6_NativeSidecarKeepsAuthoredExample(t *testing.T) {
 		t.Fatal("reading changed source or sidecar")
 	}
 }
+
+func TestRT009_4_TrailingNewlinesPreserveAttribution(t *testing.T) {
+	for _, format := range []string{"org", "markdown"} {
+		for _, sidecar := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/sidecar=%v", format, sidecar), func(t *testing.T) {
+				loc, _ := sourceFixture(t, "note")
+				loc.Format = format
+				if sidecar {
+					if os.Geteuid() == 0 {
+						t.Skip("requires permission enforcement")
+					}
+					if err := os.Chmod(loc.Path, 0400); err != nil {
+						t.Fatal(err)
+					}
+				}
+				snap, err := Read(loc)
+				if err != nil {
+					t.Fatal(err)
+				}
+				original := string(snap.RawSource)
+				w := NewWriter(FileOperations{})
+				now := time.Date(2026, 9, 14, 14, 30, 0, 0, time.Local)
+				w.now = func() time.Time { return now }
+				r := requestFixture(t, snap)
+				r.Text = "A draft  \n\n"
+				result, err := w.Replace(t.Context(), loc, snap.SourceInfo, "Reviewer", "secret", r, func(context.Context, Snapshot, *Target) (int, error) { return 10, nil })
+				if err != nil {
+					t.Fatal("save with trailing newlines", err)
+				}
+				readNote := func(want string) (Snapshot, EditableFootnote, string) {
+					t.Helper()
+					current, err := Read(loc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					data, noteFormat, storage := current.RawSource, format, "embedded"
+					if sidecar {
+						data, noteFormat, storage = current.RawSidecar, "org", "sidecar"
+						if string(current.RawSource) != original {
+							t.Fatal("read-only original changed")
+						}
+					}
+					notes := EditableFootnotes(data, noteFormat, storage)
+					if len(notes) != 1 || notes[0].Text != want {
+						t.Fatalf("saved text: %#v, want %q", notes, want)
+					}
+					return current, notes[0], string(data)
+				}
+				snap, _, before := readNote("A draft  ")
+				if retry, err := w.Replace(t.Context(), loc, result.SourceInfo, "Reviewer", "secret", r, nil); err != nil || !retry.Retry {
+					t.Fatal("retry with trailing newlines", err)
+				}
+				now = now.Add(time.Hour)
+				r.Sequence++
+				r.OperationID = "10000000-0000-4000-8000-000000000009"
+				r.Text = "A draft  \r\n"
+				r.Revision, r.SourceRevision = snap.Revision, snap.SourceRevision
+				result, err = w.Replace(t.Context(), loc, result.SourceInfo, "Reviewer", "secret", r, nil)
+				if err != nil {
+					t.Fatal("save differing only in trailing line endings", err)
+				}
+				snap, note, after := readNote("A draft  ")
+				if after != before {
+					t.Fatal("trailing-newline change altered source or attribution")
+				}
+				r.Sequence++
+				r.OperationID = "10000000-0000-4000-8000-000000000010"
+				r.Action = "close"
+				r.Revision, r.SourceRevision = snap.Revision, snap.SourceRevision
+				result, err = w.Replace(t.Context(), loc, result.SourceInfo, "Reviewer", "secret", r, nil)
+				if err != nil || !result.Receipt.Closed {
+					t.Fatal("close with trailing newlines", err)
+				}
+				snap, note, after = readNote("A draft  ")
+				if after != before {
+					t.Fatal("close changed source or attribution")
+				}
+				edit := editRequest(snap, note, "Edited *body*.\n\nParagraph.  \r\n")
+				result, err = w.Replace(t.Context(), loc, result.SourceInfo, "Other reviewer", "other", edit, nil)
+				if err != nil {
+					t.Fatal("edit with trailing newlines", err)
+				}
+				_, note, before = readNote("Edited *body*.\n\nParagraph.  ")
+				if note.attribution != "Author: Other reviewer; Edited: [2026-09-14 Mon 15:30]" {
+					t.Fatal("edited attribution", note.attribution)
+				}
+				now = now.Add(time.Hour)
+				if retry, err := w.Replace(t.Context(), loc, result.SourceInfo, "Other reviewer", "other", edit, nil); err != nil || !retry.Retry {
+					t.Fatal("edit retry with trailing newlines", err)
+				}
+				_, _, after = readNote("Edited *body*.\n\nParagraph.  ")
+				if after != before {
+					t.Fatal("edit retry changed source or attribution")
+				}
+			})
+		}
+	}
+}

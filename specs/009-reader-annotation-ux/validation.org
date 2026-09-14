@@ -305,3 +305,25 @@
   run after the sidecar correction also passed: integration 29.978 s, annotation
   5.722 s and preview 628.188 s, exit status 0. This verifies the implementation
   committed in =ea9bada= (native sidecar preservation and paired consolidation).
+
+* Trailing-newline save regression, 14 September 2026
+
+- Scope :: Operator-authorized remediation of a self-review finding: a non-empty
+  comment ending in a line break must save in Org and Markdown. Attribution must
+  contain Created or Edited; the earlier invalid-attribution probe is withdrawn.
+- RED :: HTTP creation and ordinary-note editing returned 409 =invalid_footnote=
+  in both formats. Writer regressions also failed for embedded and sidecar saves.
+- Change :: The shared writer normalizes terminal CR/LF after validating the
+  original request. Internal paragraphs, spaces and native markup are retained;
+  the definition-breakout guard is unchanged. Save/retry/close comparisons use
+  the same normalized value, preserving attribution for unchanged content.
+- GREEN :: The affected W007/W009 race regressions passed: annotation 5.213 s,
+  preview 21.170 s. They cover repeated HTTP saves/reloads, ordinary and attributed
+  edits, read-only sidecars, CR/LF, internal paragraphs, significant trailing
+  spaces, retry/close attribution and unchanged unrelated source bytes.
+- Static/build :: =make lint= and =make build= passed. The first lint invocation
+  used an incomplete PATH and could not locate golangci-lint; restoring the
+  existing tool path allowed the normal lint target to run successfully.
+- Boundary :: The preceding full-suite result remains historical evidence.
+  This correction used affected regression checks; no browser automation or
+  independent audit ran. Browser and Linux/WSL qualification remain pending.

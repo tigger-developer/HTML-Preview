@@ -80,6 +80,10 @@ does not delete it. After a conflict, **Use current footnote** explicitly replac
 the editor contents with the current saved definition; **Copy draft** preserves
 the unsaved proposal first.
 
+Trailing line breaks are accepted while typing and omitted from the saved note
+text. Internal paragraph breaks, spaces and native markup remain intact. A change
+consisting only of trailing line breaks does not refresh the attribution.
+
 ## Reading and source inspection
 
 Pandoc renders ordinary and owned footnotes in one endnotes section. Annotation

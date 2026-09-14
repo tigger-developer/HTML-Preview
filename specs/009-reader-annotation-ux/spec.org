@@ -1059,6 +1059,13 @@ prescription is superseded by the operator's paired testing instruction.
   revisions, permissions and the selected definition. The receipt includes
   =footnote_revision=. No persisted ownership marker or browser memory is needed
   to reopen a note. Empty text is refused because existing-note deletion is excluded.
+- Terminal line breaks :: *Accept trailing CR/LF characters* on new and edited
+  comments, normalizing them away after request validation and before saving,
+  retry comparison or closing. Preserve internal paragraph breaks, spaces and
+  native markup. A terminal-line-break-only change retains attribution; limits,
+  whitespace-only refusal and definition-breakout guards remain in force.
+  Covered by [[#rt-009-6][Native current values]] and
+  [[#rt-009-7][Replacement and retry safety]].
 - Revisions :: *Authored-source revision excludes all native definitions and
   references*, independently of origin. Full-store and per-definition digests
   detect note changes. An application replacement advances the source identity

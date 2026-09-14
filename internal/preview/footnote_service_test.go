@@ -83,7 +83,7 @@ func TestRT009_7_HTTPCurrentFootnotes(t *testing.T) {
 			headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
 			request := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "upsert", "label": "tadg-001", "target": map[string]any{"type": "point", "position": 10, "run": "A sentence to annotate.", "run_offset": 10}, "text": "Draft value 1"}
 			for i := 1; i <= 20; i++ {
-				request["sequence"], request["operation_id"], request["text"] = i, fmt.Sprintf("10000000-0000-4000-8000-%012d", i), fmt.Sprintf("Draft value %d with *markup*.\n\nSecond paragraph with `code`.", i)
+				request["sequence"], request["operation_id"], request["text"] = i, fmt.Sprintf("10000000-0000-4000-8000-%012d", i), fmt.Sprintf("Draft value %d with *markup*.\n\nSecond paragraph with `code`.", i)+strings.Repeat("\n", i%3)
 				status, saved := annotationJSON(t, s, "POST", endpoint, request, headers)
 				if status != 201 {
 					t.Fatalf("save %d: %d %#v", i, status, saved)
@@ -101,7 +101,7 @@ func TestRT009_7_HTTPCurrentFootnotes(t *testing.T) {
 				t.Fatalf("current native value not retained: %s", data)
 			}
 			status, current := annotationJSON(t, s, "GET", endpoint, nil, nil)
-			if status != 200 || len(current["footnotes"].([]any)) != 1 || current["footnotes"].([]any)[0].(map[string]any)["text"] != request["text"] {
+			if status != 200 || len(current["footnotes"].([]any)) != 1 || current["footnotes"].([]any)[0].(map[string]any)["text"] != strings.TrimRight(request["text"].(string), "\n") {
 				t.Fatal(status, current)
 			}
 			// A different registered reviewer reopens the saved native definition.
@@ -112,7 +112,7 @@ func TestRT009_7_HTTPCurrentFootnotes(t *testing.T) {
 			}
 			note := current["footnotes"].([]any)[0].(map[string]any)
 			headers["X-HTMLPreview-Annotation-Token"] = current["write_token"].(string)
-			updatedText := "Edited *native* markup.\n\nAnother paragraph with `code`."
+			updatedText := "Edited *native* markup.\n\nAnother paragraph with `code`.\n\n"
 			edit := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000099", "annotation_id": "20000000-0000-4000-8000-000000000099", "composer_id": "30000000-0000-4000-8000-000000000099", "sequence": 1, "action": "edit", "label": note["label"], "text": updatedText, "revision": current["revision"], "source_revision": current["source_revision"], "body_revision": current["body_revision"], "target": map[string]any{"type": "footnote", "exact": note["revision"], "run": "embedded"}}
 			status, saved := annotationJSON(t, s, "POST", endpoint, edit, headers)
 			if status != 201 {
@@ -123,7 +123,7 @@ func TestRT009_7_HTTPCurrentFootnotes(t *testing.T) {
 				t.Fatal(status, current)
 			}
 			note = current["footnotes"].([]any)[0].(map[string]any)
-			if note["text"] != updatedText || note["author"] != "Another reviewer" || !strings.HasPrefix(note["created_at"].(string), "[") {
+			if note["text"] != strings.TrimRight(updatedText, "\n") || note["author"] != "Another reviewer" || !strings.HasPrefix(note["created_at"].(string), "[") {
 				t.Fatal("reopened native note or attribution changed incorrectly", note)
 			}
 
@@ -314,7 +314,7 @@ func TestRT009_7_EditOrdinaryFootnotes(t *testing.T) {
 				t.Fatal("native ID or text lost", note)
 			}
 			headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
-			request := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "edit", "label": "12", "target": map[string]any{"type": "footnote", "exact": note["revision"], "run": "embedded"}, "text": strings.Replace(note["text"].(string), "Original", "Updated", 1)}
+			request := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "edit", "label": "12", "target": map[string]any{"type": "footnote", "exact": note["revision"], "run": "embedded"}, "text": strings.Replace(note["text"].(string), "Original", "Updated", 1) + "\n"}
 			status, saved := annotationJSON(t, s, "POST", endpoint, request, headers)
 			if status != 201 {
 				t.Fatalf("edit refused: %d %#v", status, saved)
