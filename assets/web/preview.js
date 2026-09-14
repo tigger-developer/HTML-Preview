@@ -276,8 +276,12 @@ async function enhanceOutline(main, header, controller, dispose) {
     button.textContent = label;
     button.dataset.hpMode = mode;
     button.addEventListener('click', () => {
-      const change = new CustomEvent('hp-before-outline', { cancelable: true, detail: { apply: () => globalMode(mode) } });
-      if (document.dispatchEvent(change)) globalMode(mode);
+      const apply = () => {
+        if (document.body.classList.contains('hp-plaintext')) applyPlaintext(false);
+        globalMode(mode);
+      };
+      const change = new CustomEvent('hp-before-outline', { cancelable: true, detail: { apply } });
+      if (document.dispatchEvent(change)) apply();
     }, events);
     toolbar.append(button);
   }
@@ -431,6 +435,28 @@ function enhancePreview() {
   return { teardown, ready };
 }
 
+function applyPlaintext(on) {
+  const payload = document.getElementById('hp-source-data');
+  const view = document.getElementById('hp-source-text');
+  const button = document.getElementById('hp-plaintext-toggle');
+  if (!payload || !view || !button) throw new Error('Original source is unavailable.');
+  if (on) {
+    const bytes = Uint8Array.from(atob(payload.content.textContent), ch => ch.charCodeAt(0));
+    view.textContent = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+  }
+  document.body.classList.toggle('hp-plaintext', on); view.hidden = !on;
+  button.setAttribute('aria-pressed', String(on));
+  for (const control of document.querySelectorAll('#hp-header [data-hp-mode]')) {
+    if (on) {
+      control.dataset.hpRenderedPressed ??= control.getAttribute('aria-pressed');
+      control.setAttribute('aria-pressed', 'false');
+    } else if (control.dataset.hpRenderedPressed !== undefined) {
+      control.setAttribute('aria-pressed', control.dataset.hpRenderedPressed);
+      delete control.dataset.hpRenderedPressed;
+    }
+  }
+}
+
 function enhancePlaintext(header, controller, dispose) {
   const payload = document.getElementById('hp-source-data');
   const view = document.getElementById('hp-source-text');
@@ -438,23 +464,9 @@ function enhancePlaintext(header, controller, dispose) {
   const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Show plaintext'; button.id = 'hp-plaintext-toggle';
   button.setAttribute('aria-controls', view.id);
   header.querySelector('.hp-toolbar').append(button);
-  const apply = on => {
-    // A guarded save may have refreshed these regions while this click waited.
-    const currentPayload = document.getElementById('hp-source-data');
-    const currentView = document.getElementById('hp-source-text');
-    const currentButton = document.getElementById('hp-plaintext-toggle');
-    if (!currentPayload || !currentView || !currentButton) throw new Error('Original source is unavailable.');
-    if (on) {
-      const bytes = Uint8Array.from(atob(currentPayload.content.textContent), ch => ch.charCodeAt(0));
-      currentView.textContent = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
-    }
-    document.body.classList.toggle('hp-plaintext', on); currentView.hidden = !on;
-    for (const control of document.querySelectorAll('#hp-header [data-hp-mode]')) control.disabled = on;
-    currentButton.setAttribute('aria-pressed', String(on));
-  };
   button.addEventListener('click', async () => {
     const next = !document.body.classList.contains('hp-plaintext');
-    const change = new CustomEvent('hp-before-plaintext', { cancelable: true, detail: { apply: () => apply(next), on: next } });
+    const change = new CustomEvent('hp-before-plaintext', { cancelable: true, detail: { apply: () => applyPlaintext(next), on: next } });
     if (document.dispatchEvent(change)) {
       try {
         // Annotation-enabled pages own their guarded refresh above. Other
@@ -472,7 +484,7 @@ function enhancePlaintext(header, controller, dispose) {
           new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(Uint8Array.from(atob(fresh.content.textContent), ch => ch.charCodeAt(0)));
           document.getElementById('hp-source-data').replaceWith(document.importNode(fresh, true));
         }
-        apply(next);
+        applyPlaintext(next);
       }
       catch (error) {
         if (controller.signal.aborted) return;
@@ -482,7 +494,7 @@ function enhancePlaintext(header, controller, dispose) {
       } finally { button.disabled = false; }
     }
   }, { signal: controller.signal });
-  apply(document.body.classList.contains('hp-plaintext'));
+  applyPlaintext(document.body.classList.contains('hp-plaintext'));
   dispose(() => button.remove());
 }
 

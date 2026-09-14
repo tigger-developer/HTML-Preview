@@ -159,6 +159,21 @@ source* in the same preview on desktop and phone layouts.
 
 ** Decisions
 
+- Operator, 14 September 2026, paired refinement :: *Remove X/check buttons*.
+  Clicking outside the editor or moving keyboard focus out finishes the current
+  comment through the guarded close path; Escape remains a keyboard alternative.
+  *Auto saved* appears beneath the textarea after acknowledgement, holds for two
+  seconds and fades, with a green border flash visible in dark mode. Errors stay
+  visible and retain the editor. Remove the routine embedded-autosave notice.
+- Operator, 14 September 2026, paired refinement :: *Overview, Contents and Show
+  all return from plaintext to formatted content*. These controls remain usable
+  in plaintext, with only the current view shown active.
+- Operator, 14 September 2026, paired refinement :: Annotation mode uses a
+  *distinct insertion cursor*. A visible outline marks the document insertion
+  point while editing, including after refresh; remove the context snippet from
+  the sidebar. On close, remove the outline and retain the normal footnote
+  number/link. These changes amend [[#ut-009-1][Responsive reading]] and
+  [[#ut-009-2][Point insertion and save feedback]].
 - Operator, 14 September 2026 :: *Paired delivery; use the standard web tools
   from WEB.md and TESTING.md*. Do not invoke the Chromium/browser-fixture runner.
   Use =htmltest=, =htmlq= and =tidy= for generated HTML, =oxlint= for JavaScript,
@@ -177,8 +192,8 @@ source* in the same preview on desktop and phone layouts.
   editor*, including embedded annotations, without code formatting. Do not offer
   it for =.txt=, DOCX or any binary file. This definition also excludes code
   wrappers and native HTML; those retain W008's presentation.
-- Proposed closing convention :: *Check finishes the comment; X leaves annotation
-  mode*. Both preserve acknowledged text; neither deletes a saved comment.
+- Superseded closing convention :: The earlier *check finishes / X leaves annotation
+  mode* proposal is withdrawn by the paired refinement above; neither button remains.
 - Operator, 14 September 2026 :: *Native footnotes in Org and Markdown, insertion
   by click, no selection requirement, no stored autosave history*. Use the normal
   =[fn:annotation01]= / =[^annotation01]= notation and matching definitions.
@@ -258,8 +273,8 @@ source* in the same preview on desktop and phone layouts.
 :CUSTOM_ID: ac-009-6
 :END:
 
-- Criterion :: The composer presents *small textual autosave feedback and compact
-  named controls*. Closing, switching insertion points or leaving annotation mode does
+- Criterion :: The composer presents *small textual autosave feedback* and
+  *finishes safely when focus or a click leaves the editor*. Closing, switching insertion points or leaving annotation mode does
   not hide unacknowledged text; *save failure retains the editable composer*.
 - Proven by :: [[#rt-009-3][RT009.3 - Composer transitions and refresh]], [[#ut-009-2][UT009.2 - Point insertion, save feedback and recovery]].
 
@@ -421,7 +436,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - Boundary :: Browser composer with controlled clock/transport, plus existing real-service refresh tests.
 - Setup :: An active draft, existing document and passage comments, slow/lost
   acknowledgements, failed replacements, moved markers and ambiguous unsaved points.
-- Action :: Type; use check, X, annotation toggle, Show plaintext and a new
+- Action :: Type; click outside, move focus out, use annotation toggle, Show plaintext and a new
   point during pending save; retry failures; refresh the document; print and return.
 - Expected :: One transition awaits *latest text acknowledgement and close*;
   failure retains text, target and mode. Repeated activation does not duplicate
@@ -503,7 +518,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - Covers :: [[#ac-009-5][Point creation]], [[#ac-009-6][Safe closing]], [[#ac-009-7][Readable dates]], [[#ac-009-12][Editable ID]].
 - Reviewer :: Taḋg or named human tester.
 - Procedure :: Place insertion points with mouse/touch and keyboard, type with
-  an IME, edit the ID below the comment, switch points, use check/X and interrupt the foreground
+  an IME, edit the ID below the comment, switch points, click outside and interrupt the foreground
   service during a draft; reconnect and retry. Use keyboard and the platform
   screen reader to inspect control names, focus and save announcements.
 - Expected :: *The clicked point is used*, without selecting a sentence. The
@@ -648,7 +663,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 
 - Condition :: A mode change overlaps autosave, source replacement or an ambiguous target.
 - Required behaviour :: *Keep the composer visible* until existing W007 close and
-  reattachment rules permit the transition. Never interpret X as discard.
+  reattachment rules permit the transition. Clicking outside never discards a draft.
 - Covered by :: [[#ac-009-6][Safe closing]] and [[#rt-009-3][Composer transitions and refresh]].
 
 ** Very long paths and the on-screen keyboard
@@ -738,18 +753,18 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 |---------+------------------|
 | Overview / Contents / Show all | Existing folding presets, with at most one selected. Manual folds that match none show all inactive. Reapplying the selected preset is harmless. |
 | Annotations | Independent on/off toggle, initially off on each new document. Visible only where W007 exposes annotations; readable comments remain available when creation is unavailable. |
-| Show plaintext | Independent on/off toggle, initially off, only for genuine Org/Markdown. While on, disable outline controls and hide annotation control/panel. |
-| Check glyph | Finish the current comment through the current-value close protocol; keep annotation mode on. Accessible name: Finish comment. |
-| X glyph | Finish any current comment, then leave annotation mode. Accessible name: Exit annotations; tooltip states that saved text is retained. |
+| Show plaintext | Initially off, only for genuine Org/Markdown. While on, disable annotation composition. Overview, Contents or Show all exits plaintext and applies its folding preset. |
+| Check glyph (removed) | Superseded by clicking or moving focus outside the editor; guarded close keeps annotation mode on. Escape also finishes the comment. |
+| X glyph (removed) | Superseded by the Annotations toggle; no delete/cancel-shaped control appears in the composer. |
 
 - Semantics :: Buttons use *aria-pressed* for state and *aria-controls* for owned
   regions. Annotation toggle also exposes *aria-expanded*. Disabled actions
-  remain correctly named. X/check are native buttons, not clickable text.
+  remain correctly named. The composer has no X/check buttons.
 - Outline ties :: If several presets produce the same empty/simple outline,
   *retain the last selected matching preset*; before an explicit choice prefer
   Show all, then Contents, then Overview. With no foldable content, disable the
   outline buttons. Manual changes still recompute the matching state.
-- Transition :: Annotation off, X, plaintext entry and a different insertion point use
+- Transition :: Clicking/focusing outside, annotation off, plaintext entry and a different insertion point use
   *one guarded close path*. Capture the requested target once, await the latest
   text's flush and close acknowledgement, then change UI. Repeated actions while
   pending are coalesced; a failed close leaves the original mode and composer.
@@ -757,7 +772,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   Clearing a saved active draft removes that draft's owned reference/definition
   on the next acknowledged autosave. It does not restore old text or affect
   closed comments. Failed clearing retains the prior saved value and visible
-  unsaved state; check/X wait for the clearing acknowledgement before leaving.
+  unsaved state; closing waits for the clearing acknowledgement before leaving.
 - Refresh :: *Keep active mode, composer and focus outside replaced regions*.
   Reapply controls once after refresh, without duplicate handlers. Retain existing
   source reattachment and navigation guards; new document navigation starts modes off.
@@ -789,8 +804,8 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - Fallback :: If caret APIs are absent, use the keyboard placement path. If a
   point cannot be mapped safely, *retain the draft with a location error* and
   permit choosing another point; never snap to a paragraph end or guess a match.
-- Composer :: Show brief context around the point, with a caret indicator rather
-  than a selected quotation. A different point waits for guarded close. Clicking
+- Composer :: *Outline the insertion point in the document while editing*,
+  without a context snippet in the sidebar. A different point waits for guarded close. Clicking
   an existing annotation marker opens its current comment read-only after close;
   corrections create another annotation.
 - Footnote ID :: Below the textarea, show a *small, subdued labelled text input*.
@@ -1097,7 +1112,7 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 
 *** Retain composer scheduling, replace event persistence
 
-- Decision :: *Point changes and small closing controls share one guarded transition*;
+- Decision :: *Point changes, outside activation and mode controls share one guarded transition*;
   reuse scheduling and acknowledgement handling, replace persistence with current records.
 - Rationale :: Neither permanent event logging nor fire-and-forget close satisfies
   the operator's current-value storage and reliable autosave requirements.

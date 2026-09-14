@@ -141,3 +141,19 @@
   made no mutations and reported a too-long Unix socket path; the successful
   attempt used a shorter independently allocated runtime directory.
 - Platforms :: Overall status remains PENDING for Linux/WSL as agreed.
+
+** Provisional paired refinement - 14 September 2026
+
+- Operator observation :: Taḋg reported the corrected reader was "working quite
+  well" at =c84a094= (layout evidence checkpoint), then requested clearer save
+  feedback, removal of X/check controls, outside-click closing, direct exits from
+  plaintext, an insertion cursor and a document marker instead of the snippet.
+  This is provisional feedback, not a full responsive/accessibility test pass.
+- Changed interaction :: Current JavaScript/CSS uses the existing close/refresh
+  lifecycle for those actions. The visual marker is an overlay and does not edit
+  document text. Its DOM position follows the shared canonical text traversal.
+- Verification :: JavaScript execution, pointer placement, refresh/reflow marker
+  tracking, focus transitions and two-second dark-mode save feedback remain
+  PENDING paired validation under [[file:spec.org::#ut-009-1][Responsive reading]]
+  and [[file:spec.org::#ut-009-2][Point insertion and save feedback]]. No browser
+  runner or CLI JavaScript runtime is invoked for this iteration.

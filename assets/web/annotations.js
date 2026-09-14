@@ -81,7 +81,7 @@ export class AnnotationPanel {
     this.disposed = false; this.composer = null; this.poll = null; this.pendingRefresh = null; this.failures = 0;
     this.panel = annotationElement('aside', '', 'hp-annotations'); this.panel.id = 'hp-annotations'; this.panel.hidden = true;
     this.panel.setAttribute('aria-label', 'Annotations');
-    this.toggle = annotationButton('Annotations'); this.toggle.setAttribute('aria-controls', this.panel.id); this.toggle.setAttribute('aria-expanded', 'false');
+    this.toggle = annotationButton('Annotations'); this.toggle.setAttribute('aria-controls', this.panel.id); this.toggle.setAttribute('aria-expanded', 'false'); this.toggle.setAttribute('aria-pressed', 'false');
     this.connection = annotationElement('p', 'Loading annotations…', 'hp-annotation-status');
     this.connection.setAttribute('role', 'status'); this.connection.setAttribute('aria-live', 'polite');
     this.reconnect = annotationButton('Reconnect'); this.reconnect.hidden = true;
@@ -89,6 +89,10 @@ export class AnnotationPanel {
     this.panel.append(annotationElement('h2', 'Annotations'), this.connection, this.reconnect, this.editor, this.list);
     document.body.append(this.panel); this.attachToggle();
     this.listen();
+    if (typeof ResizeObserver === 'function') {
+      this.markerObserver = new ResizeObserver(() => this.positionCaret());
+      this.markerObserver.observe(document.body);
+    }
     this.ready = this.refresh().catch(error => this.showFailure(error));
   }
 
@@ -96,15 +100,22 @@ export class AnnotationPanel {
 
   listen() {
     document.addEventListener('hp-before-outline', event => {
-      if (!this.composer) return;
       event.preventDefault();
-      this.transition(event.detail.apply).catch(error => this.showComposerFailure(error));
+      this.transition(() => { event.detail.apply(); this.toggle.disabled = false; }).catch(error => this.showComposerFailure(error));
     }, this.events);
     document.addEventListener('hp-before-plaintext', event => {
       event.preventDefault();
-      this.transition(async () => { if (event.detail.on) { await this.refresh(); await this.replaceSource(this.state); } event.detail.apply(); this.applyMode(false); this.toggle.disabled = event.detail.on; }).catch(error => this.showComposerFailure(error));
+      this.transition(async current => {
+        if (event.detail.on) {
+          await this.refresh();
+          if (!current()) return;
+          await this.replaceSource(this.state);
+        }
+        if (!current()) return;
+        event.detail.apply(); this.applyMode(false); this.toggle.disabled = event.detail.on;
+      }).catch(error => this.showComposerFailure(error));
     }, this.events);
-    this.toggle.addEventListener('click', () => this.setMode(!(this.requestedMode ?? !this.panel.hidden)).catch(error => this.showComposerFailure(error)), this.events);
+    this.toggle.addEventListener('click', () => this.setMode(!(this.modeRequest?.on ?? !this.panel.hidden)).catch(error => this.showComposerFailure(error)), this.events);
     this.reconnect.addEventListener('click', () => this.refresh().catch(error => this.showFailure(error)), this.events);
     document.addEventListener('click', event => {
       if (this.panel.hidden || !this.state?.writable || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
@@ -145,13 +156,23 @@ export class AnnotationPanel {
       event.preventDefault(); this.closeComposer().catch(error => this.showComposerFailure(error));
     }, this.events);
     document.addEventListener('click', event => this.guardNavigation(event), { ...this.events, capture: true });
+    document.addEventListener('click', event => {
+      if (event.defaultPrevented || event.button !== 0 || !this.composer || !(event.target instanceof Element) || this.editor.contains(event.target) || event.target.closest('#hp-header')) return;
+      // Share the same pending close with a clicked insertion point or link.
+      // Failure keeps the editor visible instead of discarding the draft.
+      this.closeComposer().catch(error => this.showComposerFailure(error));
+    }, { ...this.events, capture: true });
+    this.editor.addEventListener('focusout', event => {
+      if (!event.relatedTarget || this.editor.contains(event.relatedTarget) || !this.composer) return;
+      this.closeComposer().catch(error => this.showComposerFailure(error));
+    }, this.events);
   }
 
   guardNavigation(event) {
     const link = event.target instanceof Element && event.target.closest('a[href]');
     if (!link || !this.composer || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === '_blank' || link.hasAttribute('download')) return;
     const url = new URL(link.href);
-    if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search)) return;
+    if (url.origin === location.origin && url.pathname === location.pathname && url.search === location.search) return;
     event.preventDefault(); event.stopImmediatePropagation();
     this.transition(() => location.assign(url.href)).catch(error => this.showComposerFailure(error));
   }
@@ -159,12 +180,14 @@ export class AnnotationPanel {
   async transition(action) {
     const version = this.transitionVersion = (this.transitionVersion || 0) + 1;
     await this.closeComposer();
-    if (!this.disposed && version === this.transitionVersion) await action();
+    const current = () => !this.disposed && version === this.transitionVersion;
+    if (current()) await action(current);
   }
 
   async setMode(on) {
-    this.requestedMode = on;
-    await this.transition(() => { this.applyMode(on); this.requestedMode = undefined; });
+    const request = { on }; this.modeRequest = request;
+    try { await this.transition(() => this.applyMode(on)); }
+    finally { if (this.modeRequest === request) this.modeRequest = undefined; }
   }
 
   applyMode(on) {
@@ -180,24 +203,25 @@ export class AnnotationPanel {
     if (!this.state?.writable || this.composer || target?.type !== 'point' || document.body.classList.contains('hp-plaintext')) return;
     this.clearCaret();
     this.editor.replaceChildren();
-    this.editor.append(annotationElement('p', (target.prefix || '') + ' │ ' + (target.suffix || ''), 'hp-annotation-quote'));
+    this.markInsertionPoint(target);
     this.textarea = annotationElement('textarea'); this.textarea.id = 'hp-annotation-text'; this.textarea.rows = 6;
     const label = annotationElement('label', 'Your comment'); label.htmlFor = this.textarea.id;
     this.status = annotationElement('p', 'Not saved', 'hp-annotation-status'); this.status.setAttribute('role', 'status'); this.status.setAttribute('aria-live', 'polite');
-    const close = annotationButton('✔'); close.setAttribute('aria-label', 'Finish comment');
-    const exit = annotationButton('×'); exit.setAttribute('aria-label', 'Finish comment and leave annotation mode'); const retry = annotationButton('Retry'); const copy = annotationButton('Copy draft'); const restore = annotationButton('Restore last autosave');
+    const retry = annotationButton('Retry'); const copy = annotationButton('Copy draft'); const restore = annotationButton('Restore last autosave');
     this.recovery = annotationElement('div', '', 'hp-annotation-actions'); this.recovery.hidden = true; this.recovery.append(retry, copy, restore);
     this.idInput = annotationElement('input'); this.idInput.id = 'hp-annotation-id'; this.idInput.type = 'text'; this.idInput.maxLength = 64;
     this.idInput.value = defaultFootnoteID(this.data.display_name || '', this.state.footnote_labels);
     const idLabel = annotationElement('label', 'Footnote ID', 'hp-annotation-id-label'); idLabel.htmlFor = this.idInput.id;
     this.idError = annotationElement('small'); this.idError.id = 'hp-annotation-id-error'; this.idInput.setAttribute('aria-describedby', this.idError.id);
-    this.editor.append(label, this.textarea, idLabel, this.idInput, this.idError, this.status, close, exit, this.recovery);
+    this.editor.append(label, this.textarea, this.status, idLabel, this.idInput, this.idError, this.recovery);
 
     this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, label: this.idInput.value,
       send: (request, secret) => this.request(this.data.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-HTMLPreview-Annotation-Token': this.state.write_token, 'X-HTMLPreview-Composer-Token': secret }, body: JSON.stringify(request) }),
       onState: state => {
-        this.status.textContent = (state.status === 'Autosaved draft' || state.status === 'Saved' ? '✔ Auto saved' : state.status) + (state.error ? ': ' + state.error.message : '');
-        this.editor.dataset.saveState = state.error ? 'error' : state.dirty ? 'pending' : this.composer?.sequence ? 'saved' : 'empty';
+        const saved = !state.error && !state.dirty && (state.status === 'Autosaved draft' || state.status === 'Saved');
+        this.status.textContent = (saved ? 'Auto saved' : state.status) + (state.error ? ': ' + state.error.message : '');
+        this.status.classList.toggle('hp-autosaved', saved);
+        this.editor.dataset.saveState = state.error ? 'error' : state.dirty ? 'pending' : saved ? 'saved' : 'empty';
         this.recovery.hidden = !state.error;
         const fieldError = ['invalid_label', 'label_conflict'].includes(state.error?.code);
         this.idInput.setAttribute('aria-invalid', String(fieldError)); this.idError.textContent = fieldError ? state.error.message : '';
@@ -210,11 +234,10 @@ export class AnnotationPanel {
     this.textarea.addEventListener('input', () => this.composer.input(this.textarea.value), this.events);
     this.textarea.addEventListener('compositionstart', () => this.composer.composition(true), this.events);
     this.textarea.addEventListener('compositionend', () => this.composer.composition(false), this.events);
-    exit.addEventListener('click', () => this.setMode(false).catch(error => this.showComposerFailure(error)), this.events);
-    close.addEventListener('click', () => this.closeComposer().catch(error => this.showComposerFailure(error)), this.events);
     retry.addEventListener('click', () => this.retryComposer(), this.events);
     restore.addEventListener('click', () => { this.textarea.value = this.composer.savedText; this.idInput.value = this.composer.savedLabel; this.composer.restoreSaved(); this.textarea.focus(); }, this.events);
     copy.addEventListener('click', () => {
+      this.status.classList.remove('hp-autosaved');
       if (!navigator.clipboard) { this.textarea.focus(); this.textarea.select(); this.status.textContent = 'Select and copy the draft using your keyboard.'; return; }
       navigator.clipboard.writeText(this.textarea.value).then(() => { this.status.textContent = 'Draft copied.'; }, () => { this.textarea.focus(); this.textarea.select(); this.status.textContent = 'Clipboard unavailable. Select and copy the draft.'; });
     }, this.events);
@@ -236,7 +259,9 @@ export class AnnotationPanel {
     this.textarea.readOnly = true; this.idInput.readOnly = true;
     try {
       await this.composer.close();
-      this.composer.dispose(); this.composer = null; this.editor.replaceChildren(); this.toggle.focus();
+      const restoreFocus = this.editor.contains(document.activeElement);
+      this.composer.dispose(); this.composer = null; this.editor.replaceChildren(); this.clearInsertionPoint();
+      if (restoreFocus) this.toggle.focus();
       await this.refresh();
     } finally { this.closing = null; if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = false; } }
   }
@@ -244,6 +269,7 @@ export class AnnotationPanel {
   showComposerFailure(error) {
     if (this.disposed) return;
     if (!this.composer) { this.showFailure(error); return; }
+    this.status.classList.remove('hp-autosaved'); this.editor.dataset.saveState = 'error';
     this.status.textContent = 'Not saved: ' + error.message; this.recovery.hidden = false;
     this.applyMode(true); this.textarea.focus();
   }
@@ -286,7 +312,7 @@ export class AnnotationPanel {
     const changed = !this.state || this.state.revision !== state.revision;
     this.state = state; this.data.revision = state.revision;
     this.reconnect.hidden = true; this.notice?.remove();
-    this.connection.textContent = state.writable ? (state.storage === 'sidecar' ? 'Comments autosave beside this read-only source.' : 'Comments autosave in this document.') : 'Reading only: ' + state.reason.replaceAll('_', ' ');
+    this.connection.textContent = state.writable ? (state.storage === 'sidecar' ? 'Read-only source; footnotes are saved in a sidecar.' : '') : 'Reading only: ' + state.reason.replaceAll('_', ' ');
     if (changed) this.renderComments(state.comments);
     if (this.composer) {
       if (!state.writable) this.composer.suspend('Saving is unavailable: ' + state.reason.replaceAll('_', ' '));
@@ -294,6 +320,8 @@ export class AnnotationPanel {
         const replacement = this.rebaseTarget(this.composer.target);
         if (replacement) this.composer.rebase(replacement.target, replacement.revisions);
       }
+      if (this.composer.paused) this.clearInsertionPoint();
+      else if (!this.insertionRange) this.markInsertionPoint(this.composer.target);
     }
     this.attachToggle();
   }
@@ -358,6 +386,20 @@ export class AnnotationPanel {
 
   clearCaret() { this.caretMarker?.remove(); this.caretMarker = null; this.keyboardCaret = null; }
 
+  markInsertionPoint(target) {
+    const map = canonicalMap(document.getElementById('hp-document'));
+    const resolved = resolveAnnotationTarget(target, map.text, this.data.body_revision, this.headingSpans());
+    this.insertionRange = resolved.status === 'resolved' ? map.rangeAt(resolved.target.position) : null;
+    if (!this.insertionRange) { this.clearInsertionPoint(); return; }
+    if (!this.insertionMarker) {
+      this.insertionMarker = annotationElement('span', '', 'hp-point-marker hp-insertion-marker');
+      this.insertionMarker.setAttribute('aria-hidden', 'true'); document.body.append(this.insertionMarker);
+    }
+    this.positionCaret();
+  }
+
+  clearInsertionPoint() { this.insertionMarker?.remove(); this.insertionMarker = null; this.insertionRange = null; }
+
   placeWithKeyboard(event) {
     if (this.panel.hidden || this.composer || !this.state?.writable || event.isComposing) return;
     if (event.key === 'Escape' && this.keyboardCaret) { event.preventDefault(); this.clearCaret(); return; }
@@ -400,6 +442,15 @@ export class AnnotationPanel {
   }
 
   positionCaret() {
+    if (this.insertionMarker && this.insertionRange) {
+      const bounds = this.insertionRange.getBoundingClientRect();
+      const top = document.getElementById('hp-header').getBoundingClientRect().bottom;
+      const reader = document.getElementById('hp-reader').getBoundingClientRect();
+      const bottom = document.body.classList.contains('hp-annotating') && reader.height > 0 ? Math.min(window.innerHeight, reader.bottom) : window.innerHeight;
+      this.insertionMarker.hidden = bounds.height === 0 || bounds.bottom <= top || bounds.top >= bottom;
+      this.insertionMarker.style.left = bounds.left + 'px'; this.insertionMarker.style.top = bounds.top + 'px';
+      this.insertionMarker.style.height = bounds.height + 'px';
+    }
     if (!this.keyboardCaret || !this.caretMarker) return;
     const bounds = this.keyboardRange().getBoundingClientRect();
     this.caretMarker.style.left = bounds.left + 'px'; this.caretMarker.style.top = bounds.top + 'px';
@@ -445,6 +496,7 @@ export class AnnotationPanel {
       const node = document.getElementById(id); const top = node?.getBoundingClientRect().top;
       if (top !== undefined && top <= 0) anchor = { key, top };
     }
+    this.clearInsertionPoint();
     await this.reinitialize(() => {
       for (const id of ['hp-header', 'hp-frontmatter', 'hp-toc', 'hp-document-title', 'hp-document', 'hp-source-data', 'hp-source-text', 'hp-annotation-data']) {
         const old = document.getElementById(id); const fresh = page.getElementById(id);
@@ -472,6 +524,7 @@ export class AnnotationPanel {
 
   dispose() {
     this.disposed = true; this.cancelPoll(); this.controller.abort(); this.composer?.dispose();
+    this.markerObserver?.disconnect(); this.clearInsertionPoint();
     this.prepareKeyboard(false);
     this.placeEndnotes(false); this.endnotesSlot?.remove(); document.body.classList.remove('hp-annotating');
     this.toggle.remove(); this.panel.remove(); this.notice?.remove();

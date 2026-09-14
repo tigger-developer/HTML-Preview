@@ -3,20 +3,47 @@
 const annotationBlocks = new Set('address article aside blockquote br caption dd details div dl dt figcaption figure h1 h2 h3 h4 h5 h6 hr li main ol p pre section summary table tbody td tfoot th thead tr ul'.split(' '));
 const annotationSpace = /\p{White_Space}+/gu;
 
-function authoredText(root) {
-  const pieces = [];
+function walkAuthored(root, text, boundary) {
   function visit(node) {
-    if (node.nodeType === Node.TEXT_NODE) { pieces.push(node.data); return; }
+    if (node.nodeType === Node.TEXT_NODE) return text(node) !== false;
     const tag = node.nodeType === Node.ELEMENT_NODE ? node.tagName.toLowerCase() : '';
-    if (['script', 'style', 'button', 'nav', 'textarea', 'template'].includes(tag)) return;
-    if (node.nodeType === Node.ELEMENT_NODE && node.matches('.footnotes, .footnote-ref, .footnote-back, .hp-point-marker')) return;
+    if (['script', 'style', 'button', 'nav', 'textarea', 'template'].includes(tag)) return true;
+    if (node.nodeType === Node.ELEMENT_NODE && node.matches('.footnotes, .footnote-ref, .footnote-back, .hp-point-marker')) return true;
     const block = annotationBlocks.has(tag);
-    if (block) pieces.push(' ');
-    for (const child of node.childNodes) visit(child);
-    if (block) pieces.push(' ');
+    if (block && boundary() === false) return false;
+    for (const child of node.childNodes) if (!visit(child)) return false;
+    return !block || boundary() !== false;
   }
   visit(root);
+}
+
+function authoredText(root) {
+  const pieces = [];
+  walkAuthored(root, node => { pieces.push(node.data); }, () => { pieces.push(' '); });
   return pieces.join('').replace(annotationSpace, ' ').replace(/^ | $/g, '');
+}
+
+function rangeAtPoint(root, position) {
+  if (!Number.isSafeInteger(position) || position < 0) return null;
+  let count = 0; let space = false; let last; let point;
+  walkAuthored(root, node => {
+    let offset = 0;
+    for (const character of node.data) {
+      if (/\p{White_Space}/u.test(character)) space = count > 0;
+      else {
+        if (space) {
+          if (count === position) { point = last; return false; }
+          count += 1; space = false;
+        }
+        if (count === position) { point = { node, offset }; return false; }
+        count += 1; last = { node, offset: offset + character.length };
+      }
+      offset += character.length;
+    }
+  }, () => { space = count > 0; });
+  if (!point && count === position) point = last;
+  if (!point) return null;
+  const range = document.createRange(); range.setStart(point.node, point.offset); range.collapse(true); return range;
 }
 
 export function canonicalMap(root) {
@@ -24,6 +51,7 @@ export function canonicalMap(root) {
   const scalars = Array.from(text);
   return {
     text,
+    rangeAt(position) { return rangeAtPoint(root, position); },
     point(range, bodyRevision, explicitIDs) {
       const node = range.startContainer;
       if (!range.collapsed || node.nodeType !== Node.TEXT_NODE || !root.contains(node)) return null;

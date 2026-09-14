@@ -40,8 +40,13 @@ Existing tabs and links retain their captured attribution.
 1. Activate **Annotations**, then click an insertion point in ordinary prose.
 2. Type in the focused comment box. **Auto saved** means the latest value was acknowledged.
 3. Optionally change the subdued **Footnote ID** below the comment box.
-4. Activate **Finish comment** (the check mark), or press Escape, to save and close.
-   The cross closes the comment and leaves annotation mode.
+4. Click outside the editor, move keyboard focus out, or press Escape to finish
+   the comment. Saving must be acknowledged before the editor closes.
+
+Annotation mode uses a crosshair over eligible prose. An outline marks the
+insertion point while editing; after close, the normal footnote number and link
+remain. **Auto saved** appears beneath the textarea for two seconds before
+fading, accompanied by a green border flash. Save failures remain visible.
 
 Keyboard placement uses Tab to reach a prose block, Enter to begin placing the
 caret, Left/Right or Home/End to move it, then Enter to open the composer.
@@ -77,7 +82,8 @@ Phone annotation mode keeps document text above a larger comment pane.
 
 **Show plaintext** displays the original Org or Markdown source, including
 embedded footnotes and their metadata. It disables annotation and retains the
-info bar. Sidecar content is not substituted for source text. TXT, source-code
+info bar. **Overview**, **Contents** or **Show all** returns to formatted content
+and applies that folding preset. Sidecar content is not substituted for source text. TXT, source-code
 wrappers, HTML and binary documents do not offer this view.
 
 ## Source changes and failures
