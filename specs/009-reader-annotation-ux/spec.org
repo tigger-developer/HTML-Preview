@@ -1225,21 +1225,23 @@ prescription is superseded by the operator's paired testing instruction.
   [[file:../006-local-preview-service/spec.org][W006 service contracts]], [[file:../008-input-formats/spec.org][W008 provenance/budgets]],
   [[file:../../docs/ANNOTATIONS.md][Annotation guide]] and the implementation/test files named under Context.
 - Entry conditions :: *Explicit operator sign-off and delivery authority*, with
-  current definition evidence in =audits.yaml= and the existing candidate under
+  the paired working specification and the existing candidate under
   [[#constraints-and-dependencies][Constraints and dependencies]]. This follow-up does not close W006/W007/W008.
-- First implementation step :: Write [[#rt-009-6][RT009.6 - Native footnotes and current values]]
-  and [[#rt-009-7][RT009.7 - Replacement, concurrency and legacy stores]] against the
-  current candidate and observe *RED for retained history/non-native storage*.
-  Then add [[#rt-009-2][Point activation]] and [[#rt-009-1][Info bar and reader states]]
-  before implementing their UI. Do not rerun unrelated implementation audits per edit.
+- Remaining delivery :: Retain current implementation/tests; do not restart
+  groundwork. Finish the consolidated checks and combined implementation review,
+  then retrospective definition review and operator validation/closure. The
+  historical browser fixture is not maintained or executed as current evidence.
+  Later refinements require only proportionate affected checks before the final batch.
 - Definition evidence :: [[file:audits.yaml][Retained definition audit]].
-- Validation evidence :: Create =validation.org= when recording actual UT results;
+- Validation evidence :: Retain dated results in =validation.org=;
   do not claim pending device/platform checks as passed.
 - Documentation impact :: Update =docs/ANNOTATIONS.md= and the reader usage in
   =README.md= during delivery; replace proposal wording in Vision/Architecture
   with evidenced implementation description while preserving history. Record
   lifecycle only in =docs/work.org=.
 - User trial :: Rebuild the checkout binary, restart the existing local service,
-  and open a disposable linked Org/Markdown sample with footnotes. Show its source
+  and open a disposable linked Org/Markdown sample with footnotes when a new
+  executable candidate is required. Preserve the current demo during documentation
+  work and any active user edits. Show its source
   after repeated autosaves. Do not ask the operator to review stale UI or run
   executable tests presented as documents. Native Linux/WSL checks remain pending.
