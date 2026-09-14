@@ -22,6 +22,7 @@ type composer struct {
 	secret                        [32]byte
 	storage, author, annotationID string
 	info                          os.FileInfo
+	current                       *currentSave
 }
 
 type Writer struct {
@@ -127,7 +128,7 @@ func (w *Writer) Append(ctx context.Context, loc Location, expected os.FileInfo,
 			w.mu.Unlock()
 			return Receipt{}, false, fail("composer_capacity")
 		}
-		w.composers[key] = composer{sha256.Sum256([]byte(secret)), storage, author, request.AnnotationID, snap.SourceInfo}
+		w.composers[key] = composer{secret: sha256.Sum256([]byte(secret)), storage: storage, author: author, annotationID: request.AnnotationID, info: snap.SourceInfo}
 		w.mu.Unlock()
 		// Failed initial writes do not retain an unacknowledged composer slot.
 		defer func() {

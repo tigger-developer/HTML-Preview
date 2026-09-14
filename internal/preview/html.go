@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"html/template"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -80,6 +81,10 @@ func (s *session) scrub(root *html.Node, p *page) {
 		}
 		attrs := n.Attr[:0]
 		for _, a := range n.Attr {
+			if a.Namespace == "" && a.Key == "role" && nativeFootnoteRole(n.Data, a.Val) {
+				attrs = append(attrs, a)
+				continue
+			}
 			if !strings.Contains(" "+passiveAttrs+" ", " "+a.Key+" ") || a.Namespace != "" {
 				s.log.notice("%q: unsupported attribute %s removed", p.source.logical, a.Key)
 				continue
@@ -118,6 +123,8 @@ func sanitizeDocument(body *html.Node) (string, error) {
 	policy.AllowAttrs("data-hp-org-drawer").OnElements("details")
 	policy.AllowAttrs("data-hp-level", "data-hp-visibility").OnElements("section")
 	policy.AllowAttrs("role", "aria-level").OnElements("div")
+	policy.AllowAttrs("role").Matching(regexp.MustCompile(`^doc-(noteref|backlink)$`)).OnElements("a")
+	policy.AllowAttrs("role").Matching(regexp.MustCompile(`^doc-endnotes$`)).OnElements("section")
 	policy.AllowURLSchemes("file", "http", "https", "mailto", "data")
 	policy.AllowRelativeURLs(true)
 	var rendered bytes.Buffer
@@ -127,6 +134,10 @@ func sanitizeDocument(body *html.Node) (string, error) {
 		}
 	}
 	return policy.Sanitize(rendered.String()), nil
+}
+
+func nativeFootnoteRole(tag, role string) bool {
+	return tag == "a" && (role == "doc-noteref" || role == "doc-backlink") || tag == "section" && role == "doc-endnotes"
 }
 
 func (s *session) document(p *page) ([]byte, error) {

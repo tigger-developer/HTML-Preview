@@ -1,0 +1,369 @@
+// ABOUTME: Saves the active annotation as one current native footnote value.
+// ABOUTME: Serializes composer writes and atomically replaces a freshly checked source.
+package annotation
+
+import (
+	"bytes"
+	"context"
+	"crypto/sha256"
+	"errors"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+	"syscall"
+	"time"
+)
+
+type Replacement struct {
+	Receipt                  Receipt
+	PreviousInfo, SourceInfo os.FileInfo
+	Retry                    bool
+}
+
+type PointVerifier func(context.Context, Snapshot, Target) (int, error)
+
+// A cleared draft has no record on disk. Retain only its latest acknowledgement
+// in its existing bounded composer slot so a lost response remains retryable.
+type currentSave struct {
+	request  Request
+	event    Event
+	revision string
+}
+
+func validateCurrentRequest(r Request) error {
+	if !ValidLabel(r.Label) {
+		return fail("invalid_label")
+	}
+	if !ValidID(r.OperationID) || !ValidID(r.AnnotationID) || !ValidID(r.ComposerID) || r.Sequence < 1 || (r.Action != "upsert" && r.Action != "close") || r.Kind != "" || (r.Text != "" && !ValidText(r.Text)) {
+		return fail("invalid_event")
+	}
+	if len(r.SourceRevision) != 64 || len(r.BodyRevision) != 64 || len(r.Revision) != 64 {
+		return fail("invalid_event")
+	}
+	if r.Target.Type != "point" || len(r.Target.Run) > 8192 || r.Target.Position < 0 || r.Target.RunOffset < 0 {
+		return fail("point_unmappable")
+	}
+	return nil
+}
+
+func (r Request) ValidateCurrent() error { return validateCurrentRequest(r) }
+
+func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo, author, secret string, r Request, verify PointVerifier) (Replacement, error) {
+	if err := validateCurrentRequest(r); err != nil {
+		return Replacement{}, err
+	}
+	if author == "" || ValidateName(author) != nil {
+		return Replacement{}, fail("invalid_event")
+	}
+	if err := w.begin(loc.Path); err != nil {
+		return Replacement{}, err
+	}
+	defer w.end(loc.Path)
+	snap, err := Read(loc)
+	if err != nil {
+		return Replacement{}, err
+	}
+	if expected == nil || !os.SameFile(expected, snap.SourceInfo) {
+		return Replacement{}, fail("source_replaced")
+	}
+	if snap.Reason != "" {
+		return Replacement{}, fail(snap.Reason)
+	}
+	key := loc.Path + "\x00" + r.ComposerID
+	w.mu.Lock()
+	owner, active := w.composers[key]
+	w.mu.Unlock()
+	if active && (owner.secret != sha256.Sum256([]byte(secret)) || owner.author != author || owner.annotationID != r.AnnotationID || !os.SameFile(owner.info, snap.SourceInfo)) {
+		return Replacement{}, fail("composer_conflict")
+	}
+	var previous *Event
+	for i := range snap.Events {
+		if snap.Events[i].AnnotationID == r.AnnotationID {
+			previous = &snap.Events[i]
+		}
+	}
+	missing := previous == nil
+	if missing && active && owner.current != nil && owner.current.event.Text == "" {
+		previous = &owner.current.event
+		if previous.OperationID == r.OperationID && (owner.current.request != r || owner.current.revision != snap.Revision) {
+			return Replacement{}, fail("operation_conflict")
+		}
+	}
+	if previous != nil && previous.OperationID == r.OperationID {
+		kind := "draft"
+		if r.Action == "close" {
+			kind = "close"
+		}
+		if previous.Text != r.Text || previous.Label != r.Label || previous.Sequence != r.Sequence || previous.Author != author || previous.Kind != kind {
+			return Replacement{}, fail("operation_conflict")
+		}
+		storage := currentStorage(snap, r.AnnotationID)
+		if active {
+			storage = owner.storage
+		}
+		if err := w.syncReplacement(ctx, loc, snap, storage); err != nil {
+			return Replacement{}, err
+		}
+		if previous.Kind == "close" {
+			w.mu.Lock()
+			delete(w.composers, key)
+			w.mu.Unlock()
+		}
+		return Replacement{Receipt: receipt(snap, *previous, r.BodyRevision, storage), PreviousInfo: snap.SourceInfo, SourceInfo: snap.SourceInfo, Retry: true}, nil
+	}
+	if previous != nil && (!active || previous.Kind == "close") {
+		return Replacement{}, fail("closed_comment")
+	}
+	if r.SourceRevision != snap.SourceRevision {
+		return Replacement{}, fail("stale_source")
+	}
+	if previous == nil && (r.Sequence != 1 || r.Action != "upsert") || previous != nil && r.Sequence != previous.Sequence+1 {
+		return Replacement{}, fail("sequence_conflict")
+	}
+	storage, err := Destination(loc, snap)
+	if err != nil {
+		return Replacement{}, err
+	}
+	if active {
+		storage = owner.storage
+	}
+	position := -1
+	if missing && r.Text != "" {
+		if verify == nil {
+			return Replacement{}, fail("point_unmappable")
+		}
+		position, err = verify(ctx, snap, r.Target)
+		if err != nil {
+			return Replacement{}, err
+		}
+	}
+	header := snap.Header
+	if header == nil {
+		id, err := NewID()
+		if err != nil {
+			return Replacement{}, err
+		}
+		header = &Header{1, id, loc.Format}
+	}
+	now := w.now().UTC().Format(time.RFC3339Nano)
+	event := Event{Schema: 2, OperationID: r.OperationID, AnnotationID: r.AnnotationID, Sequence: r.Sequence, Kind: "draft", Author: author, CreatedAt: now, RecordedAt: now, Target: r.Target, Text: r.Text, Label: r.Label}
+	if previous != nil {
+		event.CreatedAt = previous.CreatedAt
+	}
+	if r.Action == "close" {
+		event.Kind = "close"
+	}
+	if previous != nil && r.Action == "close" && (previous.Text != r.Text || previous.Label != r.Label) {
+		return Replacement{}, fail("sequence_conflict")
+	}
+	data, format := snap.RawSource, loc.Format
+	if storage == "sidecar" {
+		data, format = snap.RawSidecar, "org"
+	}
+	// Legacy import and sidecar point projection share this current-value boundary.
+	if len(snap.Embedded.Events) != len(snap.Embedded.Notes) || len(snap.Sidecar.Events) != len(snap.Sidecar.Notes) {
+		return Replacement{}, fail("unsupported_store")
+	}
+	data, err = UpdateFootnote(data, format, *header, event, r.Label, position)
+	if err != nil {
+		return Replacement{}, err
+	}
+	if !active {
+		w.mu.Lock()
+		if len(w.composers) >= 64 {
+			w.mu.Unlock()
+			return Replacement{}, fail("composer_capacity")
+		}
+		w.composers[key] = composer{secret: sha256.Sum256([]byte(secret)), storage: storage, author: author, annotationID: r.AnnotationID, info: snap.SourceInfo}
+		w.mu.Unlock()
+	}
+	updated, err := w.replaceFile(ctx, loc, snap, storage, data)
+	if err != nil {
+		// Rename may have succeeded before a directory synchronization failed.
+		// Retain only a byte-for-byte verified current value and its new inode;
+		// an identical retry must synchronize it before acknowledging it.
+		uncertain, readErr := Read(loc)
+		written := uncertain.RawSource
+		if storage == "sidecar" {
+			written = uncertain.RawSidecar
+		}
+		if readErr != nil || uncertain.Reason != "" || !bytes.Equal(written, data) {
+			if !active {
+				w.mu.Lock()
+				delete(w.composers, key)
+				w.mu.Unlock()
+			}
+			return Replacement{}, err
+		}
+		updated = uncertain
+	}
+	w.mu.Lock()
+	for name, item := range w.composers {
+		if strings.HasPrefix(name, loc.Path+"\x00") && os.SameFile(item.info, snap.SourceInfo) {
+			item.info = updated.SourceInfo
+			w.composers[name] = item
+		}
+	}
+	item := w.composers[key]
+	item.current = &currentSave{request: r, event: event, revision: updated.Revision}
+	w.composers[key] = item
+	if event.Kind == "close" && err == nil {
+		delete(w.composers, key)
+	}
+	w.mu.Unlock()
+	return Replacement{Receipt: receipt(updated, event, r.BodyRevision, storage), PreviousInfo: snap.SourceInfo, SourceInfo: updated.SourceInfo}, err
+}
+
+func (w *Writer) syncReplacement(ctx context.Context, loc Location, snap Snapshot, storage string) (err error) {
+	f, root, _, err := openDestination(loc, storage, false)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, f.Close(), root.Close()) }()
+	if err = destinationIdentity(loc, storage, root, f, snap); err != nil {
+		return err
+	}
+	if err = ctx.Err(); err != nil {
+		return err
+	}
+	if err = w.operations.Sync(f); err != nil {
+		return err
+	}
+	rel, err := loc.relative()
+	if err != nil {
+		return err
+	}
+	parent, err := root.Open(filepath.Dir(rel))
+	if err != nil {
+		return err
+	}
+	if err = errors.Join(w.operations.Sync(parent), parent.Close()); err != nil {
+		return err
+	}
+	current, err := Read(loc)
+	if err != nil {
+		return err
+	}
+	if current.Reason != "" || current.Revision != snap.Revision {
+		return fail("store_changed")
+	}
+	return destinationIdentity(loc, storage, root, f, current)
+}
+
+func currentStorage(snap Snapshot, id string) string {
+	for _, note := range snap.Embedded.Notes {
+		if note.Event.AnnotationID == id {
+			return "embedded"
+		}
+	}
+	return "sidecar"
+}
+
+func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, storage string, data []byte) (updated Snapshot, err error) {
+	if len(data) > MaxStore || storage == "embedded" && loc.Limit > 0 && int64(len(data)) > loc.Limit {
+		return updated, fail("store_limit")
+	}
+	rel, err := loc.relative()
+	if err != nil {
+		return updated, err
+	}
+	info := snap.SourceInfo
+	if storage == "sidecar" {
+		rel += "-annotations.org"
+		info = snap.SideInfo
+	}
+	root, err := os.OpenRoot(loc.Root)
+	if err != nil {
+		return updated, err
+	}
+	defer func() { err = errors.Join(err, root.Close()) }()
+	if info != nil {
+		original, openErr := root.OpenFile(rel, os.O_WRONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
+		if openErr != nil {
+			return updated, openErr
+		}
+		defer func() { err = errors.Join(err, original.Close()) }()
+		if err = replacementMetadata(original); err != nil {
+			return updated, err
+		}
+	}
+	id, err := NewID()
+	if err != nil {
+		return updated, err
+	}
+	temp := filepath.Join(filepath.Dir(rel), ".htmlpreview-"+id)
+	f, err := root.OpenFile(temp, os.O_CREATE|os.O_EXCL|os.O_RDWR|syscall.O_NOFOLLOW, 0600)
+	if err != nil {
+		return updated, err
+	}
+	published := false
+	defer func() {
+		err = errors.Join(err, f.Close())
+		if !published {
+			err = errors.Join(err, root.Remove(temp))
+		}
+	}()
+	if err = replacementMetadata(f); err != nil {
+		return updated, err
+	}
+	n, err := w.operations.Append(f, data)
+	if err != nil {
+		return updated, err
+	}
+	if n != len(data) {
+		return updated, io.ErrShortWrite
+	}
+	if info != nil {
+		stat := info.Sys().(*syscall.Stat_t)
+		current, statErr := f.Stat()
+		if statErr != nil {
+			return updated, statErr
+		}
+		fresh := current.Sys().(*syscall.Stat_t)
+		if fresh.Uid != stat.Uid || fresh.Gid != stat.Gid {
+			if err = f.Chown(int(stat.Uid), int(stat.Gid)); err != nil {
+				return updated, err
+			}
+		}
+		if err = f.Chmod(info.Mode()); err != nil {
+			return updated, err
+		}
+	}
+	if err = w.operations.Sync(f); err != nil {
+		return updated, err
+	}
+	current, err := Read(loc)
+	if err != nil {
+		return updated, err
+	}
+	if current.Revision != snap.Revision || !os.SameFile(current.SourceInfo, snap.SourceInfo) || current.SourceInfo.Mode() != snap.SourceInfo.Mode() {
+		return updated, fail("source_changed")
+	}
+	if err = ctx.Err(); err != nil {
+		return updated, err
+	}
+	if err = root.Rename(temp, rel); err != nil {
+		return updated, err
+	}
+	published = true
+	parent, err := root.Open(filepath.Dir(rel))
+	if err != nil {
+		return updated, err
+	}
+	if err = errors.Join(w.operations.Sync(parent), parent.Close()); err != nil {
+		return updated, err
+	}
+	updated, err = Read(loc)
+	if err != nil {
+		return updated, err
+	}
+	written := updated.RawSource
+	if storage == "sidecar" {
+		written = updated.RawSidecar
+	}
+	if updated.Reason != "" || !bytes.Equal(written, data) {
+		return updated, fail("store_changed")
+	}
+	return updated, nil
+}

@@ -117,6 +117,18 @@ try {
   const selection = map.selector(range, 'd'.repeat(64), {});
   assert(selection.exact === 'café 😀' && selection.start === 0 && selection.end === 6, 'Cross-node selection counts Unicode scalars');
 
+  const prose = document.createElement('div');
+  prose.innerHTML = '<p>A café 😀 sentence<a class="footnote-ref" href="#fn1">1</a>.</p><pre><code>Source code</code></pre>';
+  const caret = document.createRange(); caret.setStart(prose.querySelector('p').firstChild, 9); caret.collapse(true);
+  const point = app.canonicalMap(prose).point(caret, 'd'.repeat(64), {});
+  assert(point?.type === 'point' && point.position === 8 && point.run_offset === 8 && point.run === 'A café 😀 sentence', 'W009 point capture counts Unicode scalars without footnote numbers');
+  const moved = app.resolveAnnotationTarget(point, 'New paragraph. ' + app.canonicalMap(prose).text, 'e'.repeat(64));
+  assert(moved.status === 'resolved' && moved.target.position === 23, 'W009 point reattaches after text is inserted before its context');
+  const codeCaret = document.createRange(); codeCaret.setStart(prose.querySelector('code').firstChild, 3); codeCaret.collapse(true);
+  assert(app.canonicalMap(prose).point(codeCaret, 'd'.repeat(64), {}) === null, 'W009 point capture excludes literal code');
+  const numberCaret = document.createRange(); numberCaret.setStart(prose.querySelector('a').firstChild, 0); numberCaret.collapse(true);
+  assert(app.canonicalMap(prose).point(numberCaret, 'd'.repeat(64), {}) === null, 'W009 footnote numbers are navigation rather than insertion targets');
+
   assert(typeof app.AnnotationPanel === 'function', 'Packaged annotation presentation is available');
   const panelClock = new TestClock();
   const state = { protocol: 1, revision: 'a'.repeat(64), source_revision: 'b'.repeat(64), body_revision: 'c'.repeat(64), events: [], writable: true, write_token: 'test-token', storage: 'embedded', reason: '' };

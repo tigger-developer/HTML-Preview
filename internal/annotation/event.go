@@ -36,6 +36,9 @@ type Target struct {
 	Start        int    `json:"start,omitempty"`
 	End          int    `json:"end,omitempty"`
 	HeadingID    string `json:"heading_id,omitempty"`
+	Position     int    `json:"position,omitempty"`
+	Run          string `json:"run,omitempty"`
+	RunOffset    int    `json:"run_offset,omitempty"`
 }
 
 type Event struct {
@@ -50,6 +53,7 @@ type Event struct {
 	RecordedAt   string `json:"recorded_at"`
 	Target       Target `json:"target"`
 	Text         string `json:"text"`
+	Label        string `json:"label,omitempty"`
 }
 
 // Request contains only client-owned event fields; identity and time are server-owned.
@@ -64,6 +68,8 @@ type Request struct {
 	Kind           string `json:"kind"`
 	Target         Target `json:"target"`
 	Text           string `json:"text"`
+	Label          string `json:"label,omitempty"`
+	Action         string `json:"action,omitempty"`
 }
 
 var uuidPattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)

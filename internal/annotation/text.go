@@ -71,6 +71,15 @@ func CanonicalDocument(root *html.Node, explicit map[string]string) (string, map
 		if n.Type == html.ElementNode && (n.Data == "script" || n.Data == "style" || n.Data == "button" || n.Data == "nav" || n.Data == "textarea" || n.Data == "template") {
 			return
 		}
+		for _, attr := range n.Attr {
+			if attr.Key == "class" {
+				for _, class := range strings.Fields(attr.Val) {
+					if class == "footnotes" || class == "footnote-ref" || class == "footnote-back" {
+						return
+					}
+				}
+			}
+		}
 		block := strings.Contains(" "+BlockElements+" ", " "+n.Data+" ")
 		if block {
 			pending = count > 0

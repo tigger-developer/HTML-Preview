@@ -69,6 +69,9 @@ func Read(loc Location) (snap Snapshot, err error) {
 		snap.SideExists = true
 	}
 	snap.Sidecar = Parse(snap.RawSidecar, "org")
+	if len(snap.Sidecar.Notes) != 0 && snap.Sidecar.Header != nil {
+		snap.Sidecar.Header.SourceFormat = loc.Format
+	}
 	snap.SourceRevision = Digest(snap.Embedded.Source)
 	var tuple bytes.Buffer
 	// bytes.Buffer writes cannot fail; binary.Append supplies explicit tuple lengths.
@@ -136,7 +139,7 @@ func validateSnapshot(s *Snapshot, format string) {
 	if s.Reason == "" {
 		s.Reason = s.Sidecar.Reason
 	}
-	if s.SideExists && (s.Sidecar.Header == nil || len(s.Sidecar.Source) != 0) {
+	if s.SideExists && (s.Sidecar.Header == nil || (len(s.Sidecar.Notes) == 0 && len(s.Sidecar.Source) != 0)) {
 		s.Reason = "foreign_sidecar"
 	}
 	if !s.Embedded.Safe {

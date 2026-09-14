@@ -4,9 +4,28 @@ package annotation
 
 import (
 	"bytes"
+	"context"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+
+	"golang.org/x/net/html"
 )
+
+func TestRT009_6_ReadNativeSnapshot(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, "notes.org")
+	if err := os.WriteFile(path, []byte(nativeFixture("org", "Current")), 0600); err != nil {
+		t.Fatal(err)
+	}
+	snap, err := Read(Location{Root: root, Path: path, Format: "org"})
+	if err != nil || snap.Reason != "" || len(snap.Events) != 1 {
+		t.Fatalf("current snapshot: %v reason=%s notes=%d", err, snap.Reason, len(snap.Events))
+	}
+}
 
 func TestRT009_6_UpdatesReplaceCurrentFootnote(t *testing.T) {
 	for _, format := range []string{"org", "markdown"} {
@@ -29,6 +48,47 @@ func TestRT009_6_UpdatesReplaceCurrentFootnote(t *testing.T) {
 				if bytes.Contains(data, []byte("Old draft")) || bytes.Contains(data, []byte("tadg-001")) || string(current.Source) != "A sentence.\n" {
 					t.Fatalf("history, old label or authored-byte changes remained: %q", data)
 				}
+			}
+		})
+	}
+}
+
+func TestRT009_6_NativeExportPreservesLiteralComment(t *testing.T) {
+	for _, format := range []string{"org", "markdown"} {
+		t.Run(format, func(t *testing.T) {
+			store := Parse([]byte(nativeFixture(format, "Before")), format)
+			event := store.Events[0]
+			event.Text = "Literal <script> and [fn:fake].\n#+END_EXAMPLE\n* not a heading\n,comma\n```\nlast line"
+			data, err := UpdateFootnote([]byte(nativeFixture(format, "Before")), format, *store.Header, event, "tadg-001", -1)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := Parse(data, format); got.Reason != "" || len(got.Events) != 1 || got.Events[0].Text != event.Text {
+				t.Fatalf("native round-trip changed text: %q", data)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			command := exec.CommandContext(ctx, "pandoc", "--from="+format, "--to=html5")
+			command.Stdin = bytes.NewReader(data)
+			output, err := command.Output()
+			if err != nil {
+				t.Fatal(err)
+			}
+			dom, err := html.Parse(bytes.NewReader(output))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var literal strings.Builder
+			for node := range dom.Descendants() {
+				if node.Type == html.ElementNode && node.Data == "script" {
+					t.Fatal("annotation escaped its literal block")
+				}
+				if node.Type == html.TextNode {
+					literal.WriteString(node.Data)
+				}
+			}
+			if !strings.Contains(literal.String(), event.Text) {
+				t.Fatalf("native export changed annotation text: %s", output)
 			}
 		})
 	}

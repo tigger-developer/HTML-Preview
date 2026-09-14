@@ -27,6 +27,8 @@ type Footnote struct {
 	references           []byteRange
 }
 
+func (n Footnote) Located() bool { return len(n.references) == 1 }
+
 var labelPattern = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_-]{0,63}$`)
 var orgDefinition = regexp.MustCompile(`^\[fn:([^]\s]+)\][ \t]*(.*)$`)
 var mdDefinition = regexp.MustCompile(`^\[\^([^]\s]+)\]:[ \t]*(.*)$`)
@@ -233,15 +235,17 @@ func readFootnote(lines []sourceLine, start int, format string) (Footnote, int, 
 		}
 		text := strings.TrimRight(strings.Join(body, "\n"), "\n")
 		attribution := "Author: " + event.Author + "; Created: " + event.CreatedAt
-		if !strings.HasSuffix(text, "\n\n"+attribution) {
+		if !strings.HasSuffix(text, "\n"+attribution) {
 			return note, end, true, errors.New("missing attribution")
 		}
-		text = strings.TrimSuffix(text, "\n\n"+attribution)
+		text = strings.TrimSuffix(text, "\n"+attribution)
+		text = strings.TrimSuffix(text, "\n")
 		event.Text, err = decodeFootnoteText(text, format)
 		if err != nil || !ValidText(event.Text) {
 			return note, end, true, errors.New("invalid comment text")
 		}
 		note.Event = event
+		note.Event.Label = note.Label
 		note.metadata = byteRange{lines[i].offset, lines[end].end}
 		note.definition.end = lines[end].end
 		if note.definition.end-note.definition.start > MaxFrame {
@@ -300,7 +304,7 @@ func decodeFootnoteText(text, format string) (string, error) {
 		text = strings.TrimSuffix(strings.TrimPrefix(text, "#+BEGIN_EXAMPLE\n"), "\n#+END_EXAMPLE")
 		lines := strings.Split(text, "\n")
 		for i, line := range lines {
-			if strings.HasPrefix(line, ",") {
+			if strings.HasPrefix(line, ",") && orgEscapeLine(line[1:]) {
 				lines[i] = line[1:]
 			}
 		}
@@ -314,4 +318,9 @@ func decodeFootnoteText(text, format string) (string, error) {
 		return strings.TrimSuffix(body, "\n"+fence), nil
 	}
 	return text, nil
+}
+
+func orgEscapeLine(line string) bool {
+	text := strings.TrimLeft(strings.TrimLeft(line, " \t"), ",")
+	return strings.HasPrefix(text, "*") || strings.HasPrefix(text, "#+")
 }

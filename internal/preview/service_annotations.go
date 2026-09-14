@@ -14,8 +14,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 )
@@ -43,6 +45,7 @@ type annotationState struct {
 	Writable       bool             `json:"writable"`
 	Reason         string           `json:"reason"`
 	WriteToken     string           `json:"write_token,omitempty"`
+	Labels         []string         `json:"footnote_labels"`
 }
 
 type annotationPoll struct {
@@ -100,7 +103,7 @@ func annotationFormat(src sourceContext) string {
 
 func (s *previewService) annotationSource(r *http.Request) (*readCapability, sourceContext, error) {
 	parts, err := requestSegments(r.URL.EscapedPath())
-	if err != nil || len(parts) < 4 || parts[0] != "_annotations" || parts[1] != "v1" || len(r.RequestURI) > 16*1024 {
+	if err != nil || len(parts) < 4 || parts[0] != "_annotations" || (parts[1] != "v1" && parts[1] != "v2") || len(r.RequestURI) > 16*1024 {
 		return nil, sourceContext{}, errors.New("invalid annotation path")
 	}
 	s.mu.Lock()
@@ -151,7 +154,11 @@ func (s *previewService) serveAnnotations(w http.ResponseWriter, r *http.Request
 		annotationFailure(w, r, err)
 		return
 	}
-	annotationResponse(w, r, 200, state)
+	if strings.HasPrefix(r.URL.Path, "/_annotations/v2/") {
+		annotationResponse(w, r, 200, map[string]any{"protocol": 2, "revision": state.Revision, "source_revision": state.SourceRevision, "body_revision": state.BodyRevision, "comments": state.Events, "storage": state.Storage, "writable": state.Writable, "reason": state.Reason, "write_token": state.WriteToken, "footnote_labels": state.Labels})
+	} else {
+		annotationResponse(w, r, 200, state)
+	}
 }
 
 func (s *previewService) annotationDocument(ctx context.Context, cap *readCapability, src sourceContext) (annotationState, annotation.Snapshot, *httpPage, error) {
@@ -178,8 +185,28 @@ func (s *previewService) readAnnotationDocument(ctx context.Context, cap *readCa
 	}
 	state.Revision, state.SourceRevision, state.BodyRevision = snap.Revision, snap.SourceRevision, annotation.Digest([]byte(page.bodyText))
 	state.Reason = snap.Reason
+	labels := make(map[string]bool)
+	for label := range snap.Embedded.Labels {
+		labels[label] = true
+	}
+	for label := range snap.Sidecar.Labels {
+		labels[label] = true
+	}
+	state.Labels = make([]string, 0, len(labels))
+	for label := range labels {
+		state.Labels = append(state.Labels, label)
+	}
+	sort.Strings(state.Labels)
 	for _, event := range snap.Events {
 		_, match := annotation.Resolve(event.Target, page.bodyText, page.headingSpans)
+		if event.Schema == 2 {
+			match = "unplaced"
+			for _, note := range snap.Embedded.Notes {
+				if note.Event.AnnotationID == event.AnnotationID && note.Located() {
+					match = "resolved"
+				}
+			}
+		}
 		state.Events = append(state.Events, annotationView{event, match, event.Kind == "close"})
 	}
 	return state, snap, page, nil
@@ -230,9 +257,13 @@ func (s *previewService) appendAnnotation(w http.ResponseWriter, r *http.Request
 	}
 	key := cap.token + "\x00" + src.canonical
 	s.mu.Lock()
-	grant := s.annotationGrants[key]
+	storedGrant := s.annotationGrants[key]
+	var grant annotationGrant
+	if storedGrant != nil {
+		grant = *storedGrant
+	}
 	s.mu.Unlock()
-	if grant == nil || len(r.Header.Values("X-HTMLPreview-Annotation-Token")) != 1 || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-HTMLPreview-Annotation-Token")), []byte(grant.token)) != 1 {
+	if storedGrant == nil || len(r.Header.Values("X-HTMLPreview-Annotation-Token")) != 1 || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-HTMLPreview-Annotation-Token")), []byte(grant.token)) != 1 {
 		annotationError(w, r, 403, "write_refused")
 		return
 	}
@@ -255,6 +286,10 @@ func (s *previewService) appendAnnotation(w http.ResponseWriter, r *http.Request
 	var request annotation.Request
 	if annotation.Decode(data, &request) != nil {
 		annotationError(w, r, 400, "invalid_event")
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/_annotations/v2/") {
+		s.writeCurrentAnnotation(w, r, cap, src, grant, secret, request)
 		return
 	}
 	if err := request.Validate(); err != nil {
@@ -323,7 +358,7 @@ func annotationFailure(w http.ResponseWriter, r *http.Request, err error) {
 	code := annotationErrorCode(err)
 	status := 503
 	switch code {
-	case "invalid_event", "invalid_source":
+	case "invalid_event", "invalid_source", "invalid_label":
 		status = 400
 	case "target_unavailable":
 		status = 404
@@ -331,10 +366,73 @@ func annotationFailure(w http.ResponseWriter, r *http.Request, err error) {
 		status = 413
 	case "busy":
 		status = 429
-	case "stale_source", "stale_body", "source_replaced", "source_changed", "store_changed", "corrupt_store", "foreign_sidecar", "unsafe_source", "unsafe_sidecar", "unsupported_store", "operation_conflict", "composer_conflict", "sequence_conflict", "closed_comment":
+	case "stale_source", "stale_body", "source_replaced", "source_changed", "store_changed", "corrupt_store", "foreign_sidecar", "unsafe_source", "unsafe_sidecar", "unsupported_store", "operation_conflict", "composer_conflict", "sequence_conflict", "closed_comment", "label_conflict", "point_unmappable", "storage_metadata_unsupported", "target_unresolved":
 		status = 409
 	}
 	annotationError(w, r, status, code)
+}
+
+func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.Request, cap *readCapability, src sourceContext, grant annotationGrant, secret string, request annotation.Request) {
+	if err := request.ValidateCurrent(); err != nil {
+		annotationFailure(w, r, err)
+		return
+	}
+	verify := func(ctx context.Context, snap annotation.Snapshot, target annotation.Target) (int, error) {
+		base, status := s.currentPage(ctx, cap, src)
+		if status != 200 {
+			return -1, &annotation.Failure{Code: "render_unavailable"}
+		}
+		if base.revision != annotation.Digest(snap.RawSource) || annotation.Digest([]byte(base.bodyText)) != request.BodyRevision {
+			return -1, &annotation.Failure{Code: "stale_body"}
+		}
+		at, err := annotation.SourcePointCandidate(snap.RawSource, annotationFormat(src), target.Run, target.RunOffset)
+		if err != nil {
+			return -1, err
+		}
+		id, err := annotation.NewID()
+		if err != nil {
+			return -1, err
+		}
+		marker := "HPPOINT" + strings.ReplaceAll(id, "-", "")
+		input := append(append(append([]byte(nil), snap.RawSource[:at]...), []byte(marker)...), snap.RawSource[at:]...)
+		probeCap := *cap
+		probeCap.settings.annotations = false
+		probe, status := s.buildHTTP(ctx, &probeCap, src, input)
+		if status != 200 {
+			return -1, &annotation.Failure{Code: "point_unmappable"}
+		}
+		index := strings.Index(probe.bodyText, marker)
+		if index < 0 || strings.Count(probe.bodyText, marker) != 1 || utf8.RuneCountInString(probe.bodyText[:index]) != target.Position || strings.Replace(probe.bodyText, marker, "", 1) != base.bodyText {
+			return -1, &annotation.Failure{Code: "point_unmappable"}
+		}
+		return at, nil
+	}
+	result, err := s.annotationWriter.Replace(r.Context(), grant.location, grant.source, grant.author, secret, request, verify)
+	if result.PreviousInfo != nil && result.SourceInfo != nil {
+		s.mu.Lock()
+		for _, current := range s.annotationGrants {
+			if current.location.Path == src.canonical && os.SameFile(current.source, result.PreviousInfo) {
+				current.source = result.SourceInfo
+			}
+		}
+		s.mu.Unlock()
+	}
+	s.annotationPollMu.Lock()
+	for key := range s.annotationPolls {
+		if strings.Contains(key, "\x00"+src.canonical+"\x00") {
+			delete(s.annotationPolls, key)
+		}
+	}
+	s.annotationPollMu.Unlock()
+	if err != nil {
+		annotationFailure(w, r, err)
+		return
+	}
+	status := 201
+	if result.Retry {
+		status = 200
+	}
+	annotationResponse(w, r, status, result.Receipt)
 }
 
 func annotationError(w http.ResponseWriter, r *http.Request, status int, code string) {

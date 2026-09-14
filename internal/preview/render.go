@@ -48,8 +48,8 @@ type page struct {
 func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	if format := annotationFormat(p.source); format != "" {
 		store := annotation.Parse(data, format)
-		data = store.Source
-		p.annotationSourceRevision = annotation.Digest(data)
+		data = store.Rendered
+		p.annotationSourceRevision = annotation.Digest(store.Source)
 		if store.Reason != "" {
 			s.log.notice("annotation metadata unavailable: %s", store.Reason)
 		}

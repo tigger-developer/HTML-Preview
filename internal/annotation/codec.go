@@ -239,6 +239,7 @@ func AppendBytes(store Store, header *Header, event Event, format string) ([]byt
 func Project(events []Event) ([]Event, map[string]Event, error) {
 	operations := make(map[string]Event)
 	grouped := make(map[string][]Event)
+	current := make(map[string]Event)
 	var failure error
 	for _, event := range events {
 		if old, exists := operations[event.OperationID]; exists {
@@ -248,6 +249,15 @@ func Project(events []Event) ([]Event, map[string]Event, error) {
 			continue
 		}
 		operations[event.OperationID] = event
+		if event.Schema == 2 {
+			if prior, ok := current[event.AnnotationID]; ok && prior.Sequence == event.Sequence && prior != event {
+				failure = errors.New("conflicting current annotation")
+			}
+			if prior, ok := current[event.AnnotationID]; !ok || prior.Sequence < event.Sequence {
+				current[event.AnnotationID] = event
+			}
+			continue
+		}
 		grouped[event.AnnotationID] = append(grouped[event.AnnotationID], event)
 	}
 	latest := make([]Event, 0, len(grouped))
@@ -262,8 +272,20 @@ func Project(events []Event) ([]Event, map[string]Event, error) {
 			previous = &history[i]
 		}
 		if previous != nil {
+			if note, ok := current[previous.AnnotationID]; ok {
+				if note.Sequence == previous.Sequence && (note.Text != previous.Text || note.Author != previous.Author || note.CreatedAt != previous.CreatedAt || note.Kind != previous.Kind) {
+					failure = errors.New("conflicting migrated annotation")
+				}
+				if note.Sequence >= previous.Sequence {
+					previous = &note
+				}
+				delete(current, previous.AnnotationID)
+			}
 			latest = append(latest, *previous)
 		}
+	}
+	for _, note := range current {
+		latest = append(latest, note)
 	}
 	sort.Slice(latest, func(i, j int) bool {
 		if latest[i].CreatedAt == latest[j].CreatedAt {

@@ -38,7 +38,7 @@ func literalFootnoteBody(text, format string) string {
 		for i := range lines {
 			// Prefix every line consistently; the native reader removes only
 			// Org comma escapes, so plain lines need no comma.
-			if strings.HasPrefix(lines[i], ",") || strings.HasPrefix(lines[i], "*") || strings.HasPrefix(strings.TrimLeft(lines[i], " \t"), "#+") {
+			if orgEscapeLine(lines[i]) {
 				lines[i] = "," + lines[i]
 			}
 		}
@@ -73,7 +73,11 @@ func encodeFootnote(format string, header Header, event Event, label, ending str
 	if strings.HasPrefix(body, "#+BEGIN_EXAMPLE") || strings.HasPrefix(body, "```") {
 		body = "\n" + body
 	}
-	body += "\n\nAuthor: " + event.Author + "; Created: " + event.CreatedAt + "\n\n" + open + "\n" + nativeMarker + "\n"
+	separator := "\n\n"
+	if format == "org" && strings.Contains(body, "#+END_EXAMPLE") {
+		separator = "\n"
+	}
+	body += separator + "Author: " + event.Author + "; Created: " + event.CreatedAt + "\n\n" + open + "\n" + nativeMarker + "\n"
 	for _, pair := range meta {
 		body += pair[0] + ": " + metadataValue(pair[1]) + "\n"
 	}
