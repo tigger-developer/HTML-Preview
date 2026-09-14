@@ -301,5 +301,7 @@
   unchanged. Focused W007/W009 race checks passed (annotation 4.733 s,
   preview 19.928 s).
 - Full-suite sequencing :: The preceding full =make test= passed (integration
-  29.954 s, annotation 5.218 s, preview 632.906 s). A fresh full run is underway
-  after the sidecar correction; its result will be recorded once available.
+  29.954 s, annotation 5.218 s, preview 632.906 s). The final full race-enabled
+  run after the sidecar correction also passed: integration 29.978 s, annotation
+  5.722 s and preview 628.188 s, exit status 0. This verifies the implementation
+  committed in =ea9bada= (native sidecar preservation and paired consolidation).
