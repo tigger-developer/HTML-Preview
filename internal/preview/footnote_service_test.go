@@ -3,12 +3,45 @@
 package preview
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 	"os"
 	"strings"
 	"testing"
 )
+
+func TestRT009_5_LiteralSourcePayload(t *testing.T) {
+	for _, ext := range []string{"org", "md", "txt", "go"} {
+		t.Run(ext, func(t *testing.T) {
+			root := t.TempDir()
+			original := "A\tline.\r\n\r\n</template><script>not executable</script>\r\n"
+			path := source(t, root, "source."+ext, original)
+			result := run(t, root, nil, path)
+			if result.code != 0 {
+				t.Fatalf("preview failed: %#v", result)
+			}
+			var payload string
+			found := false
+			for _, n := range nodes(result.pages[0], "template") {
+				if attr(n, "id") == "hp-source-data" {
+					found = true
+					payload = textOf(n)
+				}
+			}
+			want := ext == "org" || ext == "md"
+			if found != want {
+				t.Fatalf("source payload offered=%v want=%v", found, want)
+			}
+			if want {
+				decoded, err := base64.StdEncoding.DecodeString(payload)
+				if err != nil || string(decoded) != original {
+					t.Fatalf("source bytes changed: %v %q", err, decoded)
+				}
+			}
+		})
+	}
+}
 
 func TestRT009_8_NativeNotesRemainInRenderedPage(t *testing.T) {
 	root := t.TempDir()

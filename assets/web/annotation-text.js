@@ -1,7 +1,7 @@
 // ABOUTME: Maps authored DOM selections to canonical Unicode scalar offsets.
 // ABOUTME: Reattaches only exact uniquely corroborated passages after source refresh.
 const annotationBlocks = new Set('address article aside blockquote br caption dd details div dl dt figcaption figure h1 h2 h3 h4 h5 h6 hr li main ol p pre section summary table tbody td tfoot th thead tr ul'.split(' '));
-const annotationSpace = /[\u0009-\u000d\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+/gu;
+const annotationSpace = /\p{White_Space}+/gu;
 
 function authoredText(root) {
   const pieces = [];

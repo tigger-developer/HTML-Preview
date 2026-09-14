@@ -21,7 +21,7 @@ type Replacement struct {
 	Retry                    bool
 }
 
-type PointVerifier func(context.Context, Snapshot, Target) (int, error)
+type PointVerifier func(context.Context, Snapshot, *Target) (int, error)
 
 // A cleared draft has no record on disk. Retain only its latest acknowledgement
 // in its existing bounded composer slot so a lost response remains retryable.
@@ -118,6 +118,13 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	if r.SourceRevision != snap.SourceRevision {
 		return Replacement{}, fail("stale_source")
 	}
+	if previous == nil && r.Text == "" {
+		return Replacement{}, fail("invalid_event")
+	}
+	label := strings.ToLower(r.Label)
+	if (snap.Embedded.Labels[label] || snap.Sidecar.Labels[label]) && (previous == nil || !strings.EqualFold(previous.Label, r.Label)) {
+		return Replacement{}, fail("label_conflict")
+	}
 	if previous == nil && (r.Sequence != 1 || r.Action != "upsert") || previous != nil && r.Sequence != previous.Sequence+1 {
 		return Replacement{}, fail("sequence_conflict")
 	}
@@ -133,7 +140,7 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 		if verify == nil {
 			return Replacement{}, fail("point_unmappable")
 		}
-		position, err = verify(ctx, snap, r.Target)
+		position, err = verify(ctx, snap, &r.Target)
 		if err != nil {
 			return Replacement{}, err
 		}
@@ -150,6 +157,9 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	event := Event{Schema: 2, OperationID: r.OperationID, AnnotationID: r.AnnotationID, Sequence: r.Sequence, Kind: "draft", Author: author, CreatedAt: now, RecordedAt: now, Target: r.Target, Text: r.Text, Label: r.Label}
 	if previous != nil {
 		event.CreatedAt = previous.CreatedAt
+		if !missing {
+			event.Target = previous.Target
+		}
 	}
 	if r.Action == "close" {
 		event.Kind = "close"
@@ -165,9 +175,25 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	if len(snap.Embedded.Events) != len(snap.Embedded.Notes) || len(snap.Sidecar.Events) != len(snap.Sidecar.Notes) {
 		return Replacement{}, fail("unsupported_store")
 	}
-	data, err = UpdateFootnote(data, format, *header, event, r.Label, position)
+	data, err = updateFootnote(data, format, *header, event, r.Label, position, storage == "sidecar")
 	if err != nil {
 		return Replacement{}, err
+	}
+	candidate := snap
+	if storage == "embedded" {
+		candidate.RawSource = data
+		candidate.Embedded = Parse(data, format)
+	} else {
+		candidate.RawSidecar = data
+		candidate.SideExists = true
+		candidate.Sidecar = Parse(data, format)
+		if candidate.Sidecar.Header != nil {
+			candidate.Sidecar.Header.SourceFormat = loc.Format
+		}
+	}
+	validateSnapshot(&candidate, loc.Format)
+	if candidate.Reason != "" {
+		return Replacement{}, fail(candidate.Reason)
 	}
 	if !active {
 		w.mu.Lock()

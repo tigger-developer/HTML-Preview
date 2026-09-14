@@ -33,8 +33,8 @@ func TestRT005_2_NavigationStructure(t *testing.T) {
 			for previous != nil && previous.Type != html.ElementNode {
 				previous = previous.PrevSibling
 			}
-			if previous != documentNode(t, r.pages[0], "hp-header") {
-				t.Fatal("navigation must immediately follow frontmatter/header in reading order")
+			if previous != documentNode(t, r.pages[0], "hp-content-rule") {
+				t.Fatal("navigation must follow the frontmatter separator in reading order")
 			}
 			for _, disabled := range []bool{false, true} {
 				file := path

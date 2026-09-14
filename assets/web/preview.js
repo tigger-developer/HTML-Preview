@@ -201,6 +201,8 @@ async function enhanceCode(main, copyValue, controller, dispose) {
 
 async function enhanceOutline(main, header, controller, dispose) {
   const events = { signal: controller.signal };
+  // Endnotes belong to the document, outside the final foldable section.
+  for (const notes of main.querySelectorAll('section.footnotes')) main.append(notes);
   const closeOwnedDrawers = root => { root.querySelectorAll('details[data-hp-org-drawer]').forEach(detail => { detail.open = false; }); };
   const owners = new WeakMap();
   const records = [];
@@ -242,6 +244,10 @@ async function enhanceOutline(main, header, controller, dispose) {
       record.node.classList.toggle('hp-folded', !expanded);
       record.node.setAttribute('data-hp-fold-mode', record.mode);
     }
+    for (const button of toolbar.querySelectorAll('[data-hp-mode]')) {
+      const expected = { overview: 'folded', content: 'children', showall: 'all' }[button.dataset.hpMode];
+      button.setAttribute('aria-pressed', String(records.length > 0 && records.every(record => record.mode === expected)));
+    }
   }
 
   function subtree(root, mode) {
@@ -267,7 +273,10 @@ async function enhanceOutline(main, header, controller, dispose) {
     button.type = 'button';
     button.textContent = label;
     button.dataset.hpMode = mode;
-    button.addEventListener('click', () => { globalMode(mode); }, events);
+    button.addEventListener('click', () => {
+      const change = new CustomEvent('hp-before-outline', { cancelable: true, detail: { apply: () => globalMode(mode) } });
+      if (document.dispatchEvent(change)) globalMode(mode);
+    }, events);
     toolbar.append(button);
   }
   dispose(() => {
@@ -334,7 +343,7 @@ async function enhanceOutline(main, header, controller, dispose) {
   }
   if (controller.signal.aborted) return;
   for (const record of records) record.button.disabled = false;
-  header.querySelector('#hp-header-row').prepend(toolbar);
+  header.querySelector('#hp-header-row').append(toolbar);
   globalMode(main.getAttribute('data-hp-startup'));
   for (const record of records) {
     const initial = record.node.getAttribute('data-hp-visibility');
@@ -396,9 +405,12 @@ function enhancePreview() {
   window.addEventListener('pagehide', teardown, { once: true, signal: controller.signal });
   const copyValue = clipboardService(controller, dispose);
   enhanceHeader(header, copyValue, { signal: controller.signal }, dispose);
+  const measureHeader = () => document.documentElement.style.setProperty('--hp-bar-height', header.getBoundingClientRect().height + 'px');
+  const observer = new ResizeObserver(measureHeader); observer.observe(header); dispose(() => observer.disconnect()); measureHeader();
   // Outline labels are captured before inline copy controls can affect headings.
   async function enhance() {
     await enhanceOutline(main, header, controller, dispose);
+    if (!controller.signal.aborted) enhancePlaintext(header, controller, dispose);
     if (!controller.signal.aborted) await enhanceCode(main, copyValue, controller, dispose);
   }
   const ready = enhance().catch(() => {
@@ -414,6 +426,31 @@ function enhancePreview() {
   return { teardown, ready };
 }
 
+function enhancePlaintext(header, controller, dispose) {
+  const payload = document.getElementById('hp-source-data');
+  const view = document.getElementById('hp-source-text');
+  if (!payload || !view) return;
+  const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Show plaintext'; button.id = 'hp-plaintext-toggle';
+  button.setAttribute('aria-controls', view.id);
+  header.querySelector('.hp-toolbar').append(button);
+  const apply = on => {
+    if (on) {
+      const bytes = Uint8Array.from(atob(payload.content.textContent), ch => ch.charCodeAt(0));
+      view.textContent = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+    }
+    document.body.classList.toggle('hp-plaintext', on); view.hidden = !on;
+    for (const control of header.querySelectorAll('[data-hp-mode]')) control.disabled = on;
+    button.setAttribute('aria-pressed', String(on));
+  };
+  button.addEventListener('click', () => {
+    const next = !document.body.classList.contains('hp-plaintext');
+    const change = new CustomEvent('hp-before-plaintext', { cancelable: true, detail: { apply: () => apply(next), on: next } });
+    if (document.dispatchEvent(change)) apply(next);
+  }, { signal: controller.signal });
+  apply(document.body.classList.contains('hp-plaintext'));
+  dispose(() => button.remove());
+}
+
 let previewLifecycle = enhancePreview();
 export async function reinitializePreview(replaceRegions) {
   previewLifecycle.teardown();
@@ -422,7 +459,7 @@ export async function reinitializePreview(replaceRegions) {
   await previewLifecycle.ready;
 }
 window.addEventListener('pageshow', event => {
-  if (event.persisted) reinitializePreview().catch(error => {
+  if (event.persisted) reinitializePreview().catch(() => {
     const status = document.createElement('p');
     status.setAttribute('role', 'status');
     status.textContent = 'Reader controls could not be restored.';

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -196,6 +197,7 @@ func (s *session) document(p *page) ([]byte, error) {
 		}
 	}
 	data := struct {
+		SourceData                                                              *string
 		AnnotationData                                                          string
 		Policy, Name, Source, Directory, Startup, Title, Subtitle, Author, Date string
 		Format                                                                  string
@@ -204,7 +206,8 @@ func (s *session) document(p *page) ([]byte, error) {
 		Script                                                                  template.JS
 		Body, TOC, FontNotices                                                  template.HTML
 	}{
-		Policy: policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: strings.TrimSuffix(p.source.logical, filepath.Base(p.source.logical)), Startup: p.startup, Title: p.title, Subtitle: p.subtitle, Author: p.author, Date: p.date, Frontmatter: p.frontmatter,
+		SourceData: p.sourceData,
+		Policy:     policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: displayDirectory(p.source.logical), Startup: p.startup, Title: p.title, Subtitle: p.subtitle, Author: p.author, Date: p.date, Frontmatter: p.frontmatter,
 		Format:         p.format,
 		AnnotationData: p.annotationData,
 		// #nosec G203 -- CSS, script, and notices come only from embed.FS; body has passed the passive allowlist.
@@ -291,4 +294,13 @@ func presentationCSS() (string, error) {
 	}
 	out.Write(style)
 	return out.String(), nil
+}
+
+func displayDirectory(path string) string {
+	directory := strings.TrimSuffix(path, filepath.Base(path))
+	home, err := os.UserHomeDir()
+	if err == nil && home != "" && strings.HasPrefix(directory, home+string(filepath.Separator)) {
+		return "~" + strings.TrimPrefix(directory, home)
+	}
+	return directory
 }

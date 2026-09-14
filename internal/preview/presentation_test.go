@@ -34,9 +34,9 @@ func TestRT004_3_ConsolidatedFrontmatter(t *testing.T) {
 	if !strings.Contains(textOf(body), "#+TITLE: literal source") {
 		t.Fatal("literal code was extracted as metadata")
 	}
-	header := documentNode(t, r.pages[0], "hp-header")
-	if front.Parent != header {
-		t.Fatal("frontmatter must span the header independently of the filename row")
+	reader := documentNode(t, r.pages[0], "hp-reader")
+	if front.Parent != reader {
+		t.Fatal("frontmatter must remain in the scrolling reader, independently of the info bar")
 	}
 	sourceHeader := documentNode(t, r.pages[0], "hp-source")
 	if sourceHeader.Parent == front || textOf(sourceHeader) != attr(sourceHeader, "data-hp-source") {

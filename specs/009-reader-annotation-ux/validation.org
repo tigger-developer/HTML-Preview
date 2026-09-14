@@ -16,6 +16,23 @@
 
 * Pending human and native qualification
 
+- Testing amendment, 14 September 2026 :: The operator stopped browser-fixture
+  execution and directed the standard WEB.md/TESTING.md tools. Earlier browser
+  runs above are historical increment evidence. Current interaction changes
+  remain pending paired human validation; no further browser automation was run.
+- Current-value writer :: Focused Go checks cover twenty HTTP autosaves in both
+  formats, rename, clearing and retry, injected write/directory-sync failure,
+  native export, Unicode points and read-only sidecar source preservation.
+- Generated output :: The disposable Org response passed =tidy= diagnostics and
+  =htmltest --skip-external=. =htmlq= confirmed the info bar, reader, metadata,
+  navigation, native endnotes and literal-source regions. External links were
+  not checked by that =htmltest= run.
+- Lint :: =oxlint --deny-warnings assets/web= and native =biome lint= for
+  =assets/web/preview.css= pass after the current reader changes.
+- Candidate :: Working tree following =3ab50f4= (current footnote writer and
+  insertion-point validation). These checks do not establish full W009 delivery;
+  legacy migration, sidecar preview attachment and user validation remain open.
+
 ** UT009.1 - Responsive reading and composition
 - Status :: PENDING.
 - Requirement/procedure :: Follow [[file:spec.org::#ut-009-1][Responsive reading and composition]].

@@ -96,7 +96,7 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 			service.diagnostics.Printf("annotation state unavailable: %s", annotationErrorCode(readErr))
 		}
 		pageURL := service.documentURL(cap, src.logical, src.input.reader, "", "")
-		endpoint := service.origin + "/_annotations/v1/" + strings.TrimPrefix(pageURL, service.origin+"/")
+		endpoint := service.origin + "/_annotations/v2/" + strings.TrimPrefix(pageURL, service.origin+"/")
 		metadata, marshalErr := json.Marshal(map[string]any{"endpoint": endpoint, "page_url": pageURL, "display_name": cap.settings.displayName, "revision": state.Revision, "source_revision": p.annotationSourceRevision, "body_revision": annotation.Digest([]byte(annotation.CanonicalText(p.dom))), "explicit_ids": p.explicitIDs})
 		if marshalErr != nil {
 			return nil, 422

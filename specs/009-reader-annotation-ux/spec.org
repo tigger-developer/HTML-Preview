@@ -159,6 +159,14 @@ source* in the same preview on desktop and phone layouts.
 
 ** Decisions
 
+- Operator, 14 September 2026 :: *Paired delivery; use the standard web tools
+  from WEB.md and TESTING.md*. Do not invoke the Chromium/browser-fixture runner.
+  Use =htmltest=, =htmlq= and =tidy= for generated HTML, =oxlint= for JavaScript,
+  and the installed native =biome= executable for CSS checks. Keep Go/HTTP
+  regression coverage. Browser interaction and visual checks are paired human
+  validation; prior browser-runner test prescriptions below are superseded for
+  this iteration. Lint and static HTML checks do not prove executed JavaScript.
+  Consolidate the specification at wrap-up; do not re-audit it on each change.
 - Operator, 13 September 2026 :: *Filename left, controls right, persistent full-width
   info bar; narrower navigation; visible annotation column; mode feedback;
   compact autosave controls and local dates*. The initial sentence/selection

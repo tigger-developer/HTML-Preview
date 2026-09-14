@@ -91,7 +91,7 @@ func SourcePointCandidate(data []byte, format, run string, runOffset int) (int, 
 func normalizedBytePositions(text string) (string, []int) {
 	var out bytes.Buffer
 	var positions []int
-	pending, whitespace := false, 0
+	pending, whitespace, end := false, 0, 0
 	for at, r := range text {
 		if WhiteSpace(r) {
 			if !pending {
@@ -107,7 +107,8 @@ func normalizedBytePositions(text string) (string, []int) {
 		}
 		positions = append(positions, at)
 		out.WriteRune(r)
+		end = at + utf8.RuneLen(r)
 	}
-	positions = append(positions, len(text))
+	positions = append(positions, end)
 	return out.String(), positions
 }

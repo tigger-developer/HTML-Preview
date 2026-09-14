@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -20,6 +21,7 @@ import (
 )
 
 type page struct {
+	sourceData                    *string
 	annotationData                string
 	annotationSourceRevision      string
 	explicitIDs                   map[string]string
@@ -47,6 +49,8 @@ type page struct {
 
 func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	if format := annotationFormat(p.source); format != "" {
+		encoded := base64.StdEncoding.EncodeToString(data)
+		p.sourceData = &encoded
 		store := annotation.Parse(data, format)
 		data = store.Rendered
 		p.annotationSourceRevision = annotation.Digest(store.Source)

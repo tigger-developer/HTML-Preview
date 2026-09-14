@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -24,7 +25,7 @@ func TestRT009_7_AtomicCurrentValues(t *testing.T) {
 	}
 	w := NewWriter(FileOperations{})
 	r := Request{OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Revision: snap.Revision, SourceRevision: snap.SourceRevision, BodyRevision: Digest([]byte("A sentence.")), Action: "upsert", Label: "tadg-001", Target: Target{Type: "point", Position: 10, Run: "A sentence.", RunOffset: 10}, Text: "First draft"}
-	verify := func(context.Context, Snapshot, Target) (int, error) { return 10, nil }
+	verify := func(context.Context, Snapshot, *Target) (int, error) { return 10, nil }
 	result, err := w.Replace(context.Background(), loc, snap.SourceInfo, "Taḋg", "secret", r, verify)
 	if err != nil {
 		t.Fatal(err)
@@ -82,7 +83,7 @@ func TestRT009_7_FailedReplacementRetainsSource(t *testing.T) {
 	}
 	w := NewWriter(FileOperations{Append: func(*os.File, []byte) (int, error) { return 0, errors.New("injected write failure") }})
 	r := Request{OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Revision: snap.Revision, SourceRevision: snap.SourceRevision, BodyRevision: Digest([]byte("A sentence.")), Action: "upsert", Label: "tadg-001", Target: Target{Type: "point", Run: "A sentence.", Position: 10, RunOffset: 10}, Text: "Must not be partially saved"}
-	_, err = w.Replace(context.Background(), loc, snap.SourceInfo, "Taḋg", "secret", r, func(context.Context, Snapshot, Target) (int, error) { return 10, nil })
+	_, err = w.Replace(context.Background(), loc, snap.SourceInfo, "Taḋg", "secret", r, func(context.Context, Snapshot, *Target) (int, error) { return 10, nil })
 	if err == nil {
 		t.Fatal("injected write failure was acknowledged")
 	}
@@ -122,7 +123,7 @@ func TestRT009_7_RetrySynchronizesPublishedReplacement(t *testing.T) {
 		return f.Sync()
 	}})
 	r := Request{OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Revision: snap.Revision, SourceRevision: snap.SourceRevision, BodyRevision: Digest([]byte("A sentence.")), Action: "upsert", Label: "tadg-001", Target: Target{Type: "point", Position: 10, Run: "A sentence.", RunOffset: 10}, Text: "Retain this current value"}
-	verify := func(context.Context, Snapshot, Target) (int, error) { return 10, nil }
+	verify := func(context.Context, Snapshot, *Target) (int, error) { return 10, nil }
 	result, err := w.Replace(context.Background(), loc, snap.SourceInfo, "Taḋg", "secret", r, verify)
 	if err == nil {
 		t.Fatal("uncertain durability was acknowledged")
@@ -133,5 +134,48 @@ func TestRT009_7_RetrySynchronizesPublishedReplacement(t *testing.T) {
 	result, err = w.Replace(context.Background(), loc, result.SourceInfo, "Taḋg", "secret", r, verify)
 	if err != nil || !result.Retry || syncs != 2 {
 		t.Fatalf("retry did not synchronize published value: %v, syncs=%d", err, syncs)
+	}
+}
+
+func TestRT009_6_CurrentSidecarPreservesReadOnlySource(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("requires native unprivileged permission checks")
+	}
+	root := t.TempDir()
+	path := filepath.Join(root, "notes.md")
+	if err := os.WriteFile(path, []byte("A sentence.\n"), 0400); err != nil {
+		t.Fatal(err)
+	}
+	loc := Location{Root: root, Path: path, Format: "markdown"}
+	snap, err := Read(loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := NewWriter(FileOperations{})
+	r := Request{OperationID: "10000000-0000-4000-8000-000000000001", AnnotationID: "20000000-0000-4000-8000-000000000001", ComposerID: "30000000-0000-4000-8000-000000000001", Sequence: 1, Revision: snap.Revision, SourceRevision: snap.SourceRevision, BodyRevision: Digest([]byte("A sentence.")), Action: "upsert", Label: "tadg-001", Target: Target{Type: "point", Position: 10, Run: "A sentence.", RunOffset: 10, Prefix: "A sentence", Suffix: "."}, Text: "Sidecar comment"}
+	result, err := w.Replace(context.Background(), loc, snap.SourceInfo, "Taḋg", "secret", r, func(context.Context, Snapshot, *Target) (int, error) { return 10, nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	current, err := Read(loc)
+	if err != nil || current.Reason != "" || len(current.Events) != 1 {
+		t.Fatalf("sidecar not readable: %v %s", err, current.Reason)
+	}
+	if string(current.RawSource) != "A sentence.\n" || !os.SameFile(snap.SourceInfo, current.SourceInfo) {
+		t.Fatal("read-only source changed")
+	}
+	if !strings.Contains(string(current.RawSidecar), "[fn:tadg-001]") || !strings.Contains(string(current.RawSidecar), "A sentence") {
+		t.Fatal("sidecar lacks native reference and readable context")
+	}
+	r.OperationID = "10000000-0000-4000-8000-000000000002"
+	r.Sequence = 2
+	r.Text = ""
+	_, err = w.Replace(context.Background(), loc, result.SourceInfo, "Taḋg", "secret", r, nil)
+	if err != nil {
+		t.Fatalf("clearing sidecar failed: %v", err)
+	}
+	current, err = Read(loc)
+	if err != nil || current.Reason != "" || len(current.Events) != 0 {
+		t.Fatalf("cleared sidecar unavailable: %v %s", err, current.Reason)
 	}
 }

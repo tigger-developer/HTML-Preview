@@ -11,6 +11,7 @@ func TestRT009_2_SourcePointCandidates(t *testing.T) {
 	}{
 		{"org", "* Heading\n\nA sentence.\n", "A sentence.", 10, len("* Heading\n\nA sentence")},
 		{"markdown", "A café 😀 here.\n", "A café 😀 here.", 8, len("A café 😀")},
+		{"org", "A sentence.\n\n", "A sentence.", 11, len("A sentence.")},
 		{"org", "A sentence.\n\nA sentence.\n", "A sentence.", 5, -1},
 		{"org", "#+BEGIN_SRC text\nA sentence.\n#+END_SRC\n", "A sentence.", 5, -1},
 		{"markdown", "```\nA sentence.\n```\n", "A sentence.", 5, -1},

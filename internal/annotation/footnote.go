@@ -5,7 +5,6 @@ package annotation
 import (
 	"bytes"
 	"errors"
-	"html"
 	"regexp"
 	"sort"
 	"strconv"
@@ -15,6 +14,8 @@ import (
 )
 
 const nativeMarker = "HTMLPREVIEW_ANNOTATION: 2"
+
+var metadataDecoder = strings.NewReplacer("&#38;", "&", "&#60;", "<", "&#62;", ">", "&#45;", "-")
 
 type byteRange struct{ start, end int }
 
@@ -201,12 +202,19 @@ func readFootnote(lines []sourceLine, start int, format string) (Footnote, int, 
 	if format != "org" {
 		indent, open, close = "    ", "<!--", "-->"
 	}
+	literal := literalContext{}
+	literal.consume(parts[2], format)
 	for i := start + 1; i < len(lines); i++ {
 		line := lines[i].text
 		if definitionPattern(format).MatchString(line) || (line != "" && !strings.HasPrefix(line, indent)) {
 			break
 		}
+		if literal.active() {
+			literal.consume(strings.TrimPrefix(line, indent), format)
+			continue
+		}
 		if strings.TrimSpace(line) != open || i+1 >= len(lines) || strings.TrimSpace(lines[i+1].text) != nativeMarker {
+			literal.consume(strings.TrimPrefix(line, indent), format)
 			continue
 		}
 		if !ValidLabel(note.Label) {
@@ -215,11 +223,12 @@ func readFootnote(lines []sourceLine, start int, format string) (Footnote, int, 
 		fields := make(map[string]string)
 		end := i + 2
 		for ; end < len(lines) && strings.TrimSpace(lines[end].text) != close; end++ {
-			key, value, ok := strings.Cut(strings.TrimSpace(lines[end].text), ": ")
-			if !ok || fields[key] != "" {
+			key, value, ok := strings.Cut(strings.TrimPrefix(lines[end].text, indent), ": ")
+			_, duplicate := fields[key]
+			if !ok || duplicate {
 				return note, end, true, errors.New("invalid metadata")
 			}
-			fields[key] = html.UnescapeString(value)
+			fields[key] = metadataDecoder.Replace(value)
 		}
 		if end >= len(lines) {
 			return note, end, true, errors.New("unclosed metadata")
@@ -286,7 +295,14 @@ func nativeMetadata(fields map[string]string, format string) (Event, Header, err
 	target := Target{Type: "point"}
 	if fields["POINT"] == "unplaced" {
 		target.Type = "document"
+	} else if value, exists := fields["POINT"]; exists {
+		position, err := strconv.Atoi(value)
+		if err != nil || position < 0 {
+			return Event{}, Header{}, errors.New("invalid point")
+		}
+		target.Position = position
 	}
+	target.Prefix, target.Suffix, target.HeadingID = fields["BEFORE"], fields["AFTER"], fields["HEADING_ID"]
 	return Event{Schema: 2, AnnotationID: fields["UUID"], OperationID: fields["OPERATION"], Author: fields["AUTHOR"], CreatedAt: fields["CREATED"], RecordedAt: fields["UPDATED"], Sequence: seq, Kind: kind, Target: target}, Header{1, fields["DOCUMENT_ID"], format}, nil
 }
 

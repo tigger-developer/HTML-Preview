@@ -61,7 +61,12 @@ func encodeFootnote(format string, header Header, event Event, label, ending str
 	}
 	meta := [][2]string{{"DOCUMENT_ID", header.DocumentID}, {"UUID", event.AnnotationID}, {"AUTHOR", event.Author}, {"CREATED", event.CreatedAt}, {"UPDATED", event.RecordedAt}, {"STATE", state}, {"OPERATION", event.OperationID}, {"REVISION", strconv.Itoa(event.Sequence)}}
 	if event.Target.Type == "document" {
-		meta = append(meta, [2]string{"POINT", "unplaced"})
+		meta = append(meta, [2]string{"POINT", "unplaced"}, [2]string{"BEFORE", event.Target.Prefix}, [2]string{"AFTER", event.Target.Suffix})
+	} else if event.Target.Prefix != "" || event.Target.Suffix != "" {
+		meta = append(meta, [2]string{"POINT", strconv.Itoa(event.Target.Position)}, [2]string{"BEFORE", event.Target.Prefix}, [2]string{"AFTER", event.Target.Suffix})
+	}
+	if event.Target.HeadingID != "" {
+		meta = append(meta, [2]string{"HEADING_ID", event.Target.HeadingID})
 	}
 	indent, open, close := "  ", "#+BEGIN_COMMENT", "#+END_COMMENT"
 	definition := footnoteReference(format, label)
@@ -100,6 +105,10 @@ func encodeFootnote(format string, header Header, event Event, label, ending str
 // UpdateFootnote patches a verified raw byte position for a new note. Later
 // updates find the existing reference through ownership, never a stale offset.
 func UpdateFootnote(data []byte, format string, header Header, event Event, label string, position int) ([]byte, error) {
+	return updateFootnote(data, format, header, event, label, position, false)
+}
+
+func updateFootnote(data []byte, format string, header Header, event Event, label string, position int, sidecar bool) ([]byte, error) {
 	store := Parse(data, format)
 	if store.Reason != "" {
 		return nil, fail(store.Reason)
@@ -139,6 +148,9 @@ func UpdateFootnote(data []byte, format string, header Header, event Event, labe
 		r := existing.definition
 		if clearing {
 			separator := []byte(store.Ending + store.Ending)
+			if sidecar {
+				separator = []byte(store.Ending)
+			}
 			if r.start >= len(separator) && bytes.Equal(data[r.start-len(separator):r.start], separator) {
 				r.start -= len(separator)
 			}
@@ -148,12 +160,30 @@ func UpdateFootnote(data []byte, format string, header Header, event Event, labe
 			var token []byte
 			if !clearing {
 				token = []byte(footnoteReference(format, label))
+			} else if sidecar {
+				// This line was generated with this sidecar's owned reference.
+				start := bytes.LastIndexByte(data[:ref.start], '\n') + 1
+				end := bytes.IndexByte(data[ref.end:], '\n')
+				if end < 0 {
+					end = len(data)
+				} else {
+					end += ref.end + 1
+				}
+				if strings.HasPrefix(string(data[start:ref.start]), "Context: ") {
+					ref = byteRange{start, end}
+				}
 			}
 			patches = append(patches, sourcePatch{ref, token})
 		}
 	} else {
 		if clearing {
 			return append([]byte(nil), data...), nil
+		}
+		if sidecar {
+			context := strings.NewReplacer("[", "\\[", "\r", " ", "\n", " ").Replace(event.Target.Prefix + " | " + event.Target.Suffix)
+			prefix := store.Ending + store.Ending + "Context: " + context + footnoteReference(format, label) + store.Ending + store.Ending
+			patches = append(patches, sourcePatch{byteRange{len(data), len(data)}, append([]byte(prefix), encoded...)})
+			return applySourcePatches(data, patches)
 		}
 		if event.Target.Type != "document" {
 			if position < 0 || position > len(data) {

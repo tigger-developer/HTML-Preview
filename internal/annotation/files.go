@@ -139,7 +139,7 @@ func validateSnapshot(s *Snapshot, format string) {
 	if s.Reason == "" {
 		s.Reason = s.Sidecar.Reason
 	}
-	if s.SideExists && (s.Sidecar.Header == nil || (len(s.Sidecar.Notes) == 0 && len(s.Sidecar.Source) != 0)) {
+	if s.SideExists && len(bytes.TrimSpace(s.RawSidecar)) != 0 && (s.Sidecar.Header == nil || (len(s.Sidecar.Notes) == 0 && len(s.Sidecar.Source) != 0)) {
 		s.Reason = "foreign_sidecar"
 	}
 	if !s.Embedded.Safe {

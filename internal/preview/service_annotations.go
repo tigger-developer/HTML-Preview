@@ -377,7 +377,7 @@ func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.R
 		annotationFailure(w, r, err)
 		return
 	}
-	verify := func(ctx context.Context, snap annotation.Snapshot, target annotation.Target) (int, error) {
+	verify := func(ctx context.Context, snap annotation.Snapshot, target *annotation.Target) (int, error) {
 		base, status := s.currentPage(ctx, cap, src)
 		if status != 200 {
 			return -1, &annotation.Failure{Code: "render_unavailable"}
@@ -404,6 +404,18 @@ func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.R
 		index := strings.Index(probe.bodyText, marker)
 		if index < 0 || strings.Count(probe.bodyText, marker) != 1 || utf8.RuneCountInString(probe.bodyText[:index]) != target.Position || strings.Replace(probe.bodyText, marker, "", 1) != base.bodyText {
 			return -1, &annotation.Failure{Code: "point_unmappable"}
+		}
+		body := []rune(base.bodyText)
+		target.BodyRevision = request.BodyRevision
+		target.Prefix = string(body[max(0, target.Position-64):target.Position])
+		target.Suffix = string(body[target.Position:min(len(body), target.Position+64)])
+		target.HeadingID = ""
+		smallest := len(body) + 1
+		for key, span := range base.headingSpans {
+			if span.Start <= target.Position && target.Position <= span.End && (span.End-span.Start < smallest || span.End-span.Start == smallest && key < target.HeadingID) {
+				smallest = span.End - span.Start
+				target.HeadingID = key
+			}
 		}
 		return at, nil
 	}
