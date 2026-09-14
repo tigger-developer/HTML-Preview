@@ -1,5 +1,23 @@
 // ABOUTME: Owns one annotation composer's autosave, acknowledgement and close lifecycle.
 // ABOUTME: Injects clock and transport boundaries for native-browser regression tests.
+export function defaultFootnoteID(author, labels = []) {
+  let prefix = author.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!prefix) prefix = 'annotation';
+  if (/^[0-9]/.test(prefix)) prefix = 'annotation-' + prefix;
+  prefix = prefix.slice(0, 48).replace(/-+$/g, '');
+  let highest = 0n;
+  for (const label of labels) {
+    const normalized = label.toLowerCase();
+    if (!normalized.startsWith(prefix + '-')) continue;
+    const suffix = normalized.slice(prefix.length + 1);
+    if (/^[0-9]+$/.test(suffix) && BigInt(suffix) > highest) highest = BigInt(suffix);
+  }
+  const result = prefix + '-' + String(highest + 1n).padStart(3, '0');
+  if (result.length > 64) throw new Error('The default footnote ID exceeds its limit. Enter a shorter unique ID.');
+  return result;
+}
+
 export class AnnotationComposer {
   constructor(options) {
     this.send = options.send;

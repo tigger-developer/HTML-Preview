@@ -3,7 +3,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: Taḋg, 2026-09-14: implement the agreed specification including normalized username-derived IDs; paired delivery explicitly selected.
 
 * Synopsis
 :PROPERTIES:
@@ -27,7 +27,7 @@
 - *Native Org/Markdown footnotes store only current annotation text*, without autosave history or embedded JSON.
 - *Pandoc renders all footnotes at the document end*. Annotation mode moves the
   same footnote section into the sidebar; switching off returns it to the end.
-- A *subtle editable Footnote ID field below the comment box* defaults to =annotationNN=.
+- A *subtle editable Footnote ID field below the comment box* defaults to a normalized username plus a collision-checked counter, such as =tadg-001=.
 - *Compact save feedback and readable dates* replace raw timestamps and large closing controls.
 - *Show plaintext reveals literal Org/Markdown source*, including embedded annotations, with the info bar retained.
 
@@ -42,7 +42,9 @@
 
 - *Autosave timing, author attribution and visible conflict recovery* retain W007's user-facing intent.
 - *Loopback/root authorization, passive content, fonts, copying and folding* retain their existing boundaries.
-- *File previews remain non-mutating*; native HTML retains its authored presentation.
+- *Reading does not modify the source*. Saving annotations in service mode
+  updates native footnotes in the source, or its sidecar. Standalone =file://=
+  previews cannot save annotations. Input HTML retains its permitted authored presentation.
 
 ** Edge cases
 :PROPERTIES:
@@ -65,7 +67,7 @@
 
 ** Next step
 
-- Definition review, then operator sign-off under [[#delivery-handoff][Delivery Handoff]].
+- Paired implementation and validation under [[#delivery-handoff][Delivery Handoff]].
 
 -----
 
@@ -172,16 +174,19 @@ source* in the same preview on desktop and phone layouts.
 - Operator, 14 September 2026 :: *Native footnotes in Org and Markdown, insertion
   by click, no selection requirement, no stored autosave history*. Use the normal
   =[fn:annotation01]= / =[^annotation01]= notation and matching definitions.
-- Operator, 14 September 2026 :: *Editable ID defaults to annotationNN*, shown
-  subtly below the comment text box. Initial focus remains in the comment box.
+- Operator, 14 September 2026 :: The earlier *annotationNN default is superseded*
+  by a normalized username plus a counter: =Tadhg O'Brien= gives
+  =tadhg-o-brien-001=; =Taḋg= gives =tadg-001=. The editable ID stays subtly
+  below the comment box, which receives initial focus. Check all footnotes for collisions.
 - Operator, 14 September 2026 :: *Render footnotes normally at the document end*.
   Annotation mode shows those footnotes in the sidebar; switching off restores
   their normal position. Ordinary footnotes participate without becoming editable.
 
 ** Unresolved blockers
 
-- *None*. Full definition sign-off remains pending; the closing convention is
-  part of that review, not a claim of prior operator approval.
+- *None*. On 14 September, Taḋg authorized implementation of the agreed
+  specification including ID generation, then explicitly selected *paired delivery*.
+  Consolidate the definition at paired wrap-up, without a definition audit per change.
 
 * Acceptance Criteria
 :PROPERTIES:
@@ -309,7 +314,8 @@ source* in the same preview on desktop and phone layouts.
 :END:
 
 - Criterion :: A new composer *focuses comment text* and shows a small labelled
-  ID field below it, prefilled with the next available =annotationNN= label.
+  ID field below it, prefilled with its normalized author prefix and the next
+  available numeric suffix, starting at =001=.
   An accepted edit updates both reference and definition. Invalid/duplicate IDs
   retain the draft with a field error and cannot overwrite another footnote.
 - Proven by :: [[#rt-009-6][RT009.6 - Native footnotes and current values]], [[#ut-009-2][UT009.2 - Point insertion, save feedback and recovery]].
@@ -522,8 +528,8 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 
 - Covers :: [[#ac-009-10][Current values]], [[#ac-009-11][Native placement]], [[#ac-009-12][Footnote ID]].
 - Boundary :: Browser composer, real service writes, and real Pandoc Org/Markdown readers.
-- Setup :: Both formats with ordinary footnotes, names already using annotation01
-  and annotation09, literal examples, read-only sources, two composers, UTF-8,
+- Setup :: Both formats with ordinary footnotes, names already using tadg-001
+  and tadg-009, literal examples, read-only sources, two composers, UTF-8,
   CRLF, blank lines and annotation text containing markup/delimiter-like strings.
 - Action :: Create at a verified point; autosave successively different text
   twenty times; rename the draft ID; retry an acknowledged request; close and
@@ -533,7 +539,11 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
 - Expected :: One current definition and one owned reference per new annotation;
   only the final text survives. Attribution and stable internal identity persist;
   old draft text/event logs do not. Native exports associate the comment with the
-  reference. Default label is annotation10; invalid/colliding IDs write nothing.
+  reference. For author =Taḋg=, default label is =tadg-010=;
+  =Tadhg O'Brien= produces =tadhg-o-brien-001= in a fresh namespace. Composed
+  and decomposed accents agree; punctuation, empty normalized prefixes, long
+  names, case-only collisions, sidecar labels and concurrent saves are covered.
+  Invalid/colliding IDs write nothing.
   Rename updates exactly the owned reference and definition. Existing ordinary
   footnotes and literal marker examples remain byte-identical. Sidecar mode does
   not insert a physical marker into the read-only source. Clearing removes only
@@ -776,10 +786,21 @@ and observe its *intended RED before implementation*. No Node/npm or mock DOM.
   an existing annotation marker opens its current comment read-only after close;
   corrections create another annotation.
 - Footnote ID :: Below the textarea, show a *small, subdued labelled text input*.
-  Its default is =annotation= plus the next number above all existing
-  =annotation[0-9]+= labels, padded to at least two digits, starting at
-  =annotation01=. Scan ordinary and owned references/definitions; do not reserve
-  numbers by writing on composer open. Final uniqueness is checked on every save.
+  Derive its prefix from the registered display name (existing
+  =HTMLPREVIEW_USER_DISPLAY_NAME= then =USER= resolution). Apply Unicode NFD,
+  remove combining marks, lowercase, replace runs outside ASCII letters/digits
+  with one hyphen and trim hyphens. Thus =Taḋg= becomes =tadg=, not =tag=.
+  Use =annotation= if empty; prefix =annotation-= if the result begins with a
+  digit. Bound the prefix to 48 ASCII characters and trim its trailing hyphen.
+  Browser-native normalization needs no new CLI dependency or call to =azonly.pl=.
+  Append a hyphen and the next number above all existing labels with that prefix,
+  padded to at least three digits starting at =001=. Scan ordinary and owned
+  references/definitions, including sidecars, case-insensitively. Do not reserve
+  numbers by writing on composer open. The server checks final uniqueness under
+  the document lock on every save; a concurrent collision retains the draft and
+  reports a field error. Different names may normalize identically; the prefix
+  is a readable label, not an identity or security boundary. Stored author names
+  retain their original Unicode spelling.
 - ID edits :: Accept *1-64 ASCII characters*, beginning with a letter and then
   letters, digits, underscores or hyphens. Treat case-only differences as
   collisions conservatively across formats. The field stays editable while the

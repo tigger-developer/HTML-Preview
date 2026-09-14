@@ -14,6 +14,9 @@ const eventMarker = "htmlpreview-annotation-event:v1"
 
 type Store struct {
 	Source    []byte
+	Rendered  []byte
+	Notes     []Footnote
+	Labels    map[string]bool
 	Header    *Header
 	Events    []Event
 	Reason    string
@@ -42,7 +45,7 @@ func sourceLines(data []byte) []sourceLine {
 	return lines
 }
 
-func Parse(data []byte, format string) Store {
+func parseLegacy(data []byte, format string) Store {
 	crlf := bytes.Count(data, []byte("\r\n"))
 	lf := bytes.Count(data, []byte("\n")) - crlf
 	ending := "\n"

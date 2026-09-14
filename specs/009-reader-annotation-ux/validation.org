@@ -1,0 +1,43 @@
+#+TITLE: W009 - Reader and footnote validation
+#+STARTUP: overview
+
+* Automated regression evidence
+
+- Native reading :: RT009.6 first failed for both formats with zero recognized
+  notes. The v2 service-state test failed with HTTP 404. These were expected
+  baseline failures; the endpoint remains under implementation.
+- Current codec :: The focused annotation package now passes native recognition,
+  literal exclusion and twenty current-value replacements, including label changes.
+- Username defaults :: The native-browser runner first failed because the
+  default-ID helper was absent. After implementation it passed 48 assertions,
+  including the specified accent/apostrophe examples, case collisions and suffixes.
+- Environment :: 14 September 2026, macOS arm64, Go 1.26.8; browser identified
+  itself as Chrome 147.0.0.0. These are increment checks, not final delivery evidence.
+
+* Pending human and native qualification
+
+** UT009.1 - Responsive reading and composition
+- Status :: PENDING.
+- Requirement/procedure :: Follow [[file:spec.org::#ut-009-1][Responsive reading and composition]].
+- Expected :: Reachable sticky controls, usable panes and native footnote navigation.
+
+** UT009.2 - Point insertion, save feedback and recovery
+- Status :: PENDING.
+- Requirement/procedure :: Follow [[file:spec.org::#ut-009-2][Point insertion and recovery]].
+- Expected :: Accurate pointer/keyboard placement, secondary ID field and retained drafts on failure.
+
+** UT009.3 - Original source inspection
+- Status :: PENDING.
+- Requirement/procedure :: Follow [[file:spec.org::#ut-009-3][Original source inspection]].
+- Expected :: Literal eligible source, current embedded comments and no substituted sidecar text.
+
+** UT009.4 - Footnote source and portability
+- Status :: PENDING.
+- Requirement/procedure :: Follow [[file:spec.org::#ut-009-4][Footnote source and portability]].
+- Expected :: Readable native definitions and normal footnote references in both formats.
+
+** OT009.1 - Native replacement qualification
+- Status :: PENDING.
+- Requirement/procedure :: Follow [[file:spec.org::#ot-009-1][Native replacement qualification]].
+- Expected :: Durable acknowledged values, preserved permissions/metadata and bounded failure.
+- Platforms :: macOS remains to be exercised; Linux/WSL remain pending as agreed.

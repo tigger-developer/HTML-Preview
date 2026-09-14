@@ -28,6 +28,17 @@ try {
   const app = await import('./module.js');
   assert(typeof app.AnnotationComposer === 'function', 'Packaged annotation composer is available');
   assert(typeof app.canonicalMap === 'function', 'Packaged canonical text mapper is available');
+  assert(typeof app.defaultFootnoteID === 'function', 'W009 username-derived footnote IDs are available');
+  for (const [name, labels, expected] of [
+    ["Tadhg O'Brien", [], 'tadhg-o-brien-001'],
+    ['Taḋg', [], 'tadg-001'],
+    ['Tad\u0307g', ['tadg-001', 'TADG-009'], 'tadg-010'],
+    ['  Tadhg... O__Brien  ', [], 'tadhg-o-brien-001'],
+    ['😀', [], 'annotation-001'],
+    ['123', [], 'annotation-123-001'],
+    ['x'.repeat(100), [], 'x'.repeat(48) + '-001'],
+    ['Taḋg', ['tadg-001', 'tadg-099', 'another-999'], 'tadg-100'],
+  ]) assert(app.defaultFootnoteID(name, labels) === expected, 'W009 normalized collision-free default: ' + expected);
   const fixtureResponse = await fetch('./text-fixtures.json');
   assert(fixtureResponse.ok, 'Shared canonical fixtures are available');
   for (const fixture of await fixtureResponse.json()) {
