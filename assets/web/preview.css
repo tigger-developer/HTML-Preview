@@ -198,7 +198,8 @@ body[data-hp-format=org] #hp-toc { display:none; }
 }
 
 /* Footnote editing is available only in the annotations view. */
-.hp-footnote-edit { display: none; }
-.hp-annotating .hp-footnote-edit { display: inline-block; font: inherit; font-size: .75rem; margin-block: .2rem; padding: .1rem .4rem; cursor: pointer; }
+.hp-annotations .footnotes > ol > li { background: color-mix(in srgb, var(--muted) 9%, transparent); border-radius: .35rem; padding: .5rem .6rem; margin-block: .6rem; }
+.hp-annotations .hp-editable-footnote[tabindex="0"] { cursor: pointer; }
+.hp-annotations .hp-editable-footnote:is(:hover,:focus-visible) { background: color-mix(in srgb, var(--muted) 16%, transparent); }
+.hp-annotations .hp-editable-footnote:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: .15rem; }
 .hp-editing-footnote { outline: 2px solid var(--hp-accent); outline-offset: .2rem; border-radius: .2rem; }
-@media print { .hp-annotating .hp-footnote-edit { display: none; } }

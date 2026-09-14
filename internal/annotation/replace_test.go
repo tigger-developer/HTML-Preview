@@ -37,10 +37,10 @@ func TestRT009_7_AtomicCurrentValues(t *testing.T) {
 		t.Fatal(err)
 	}
 	current, err := Read(loc)
-	if err != nil || current.Reason != "" || len(current.Events) != 1 || current.Events[0].Text != "Current value" {
+	if err != nil || current.Reason != "" || len(EditableFootnotes(current.RawSource, "org", "embedded")) != 1 || EditableFootnotes(current.RawSource, "org", "embedded")[0].Text != "Current value" {
 		t.Fatalf("latest value not readable: %v %s", err, current.Reason)
 	}
-	if string(current.Embedded.Source) != original || current.SourceInfo.Mode().Perm() != 0600 {
+	if string(FootnoteBodySource(current.RawSource, "org")) != original || current.SourceInfo.Mode().Perm() != 0600 {
 		t.Fatal("authored bytes or mode changed")
 	}
 	_, err = w.Replace(context.Background(), loc, result.SourceInfo, "Taḋg", "secret", r, verify)
@@ -160,7 +160,7 @@ func TestRT009_6_CurrentSidecarPreservesReadOnlySource(t *testing.T) {
 		t.Fatal(err)
 	}
 	current, err := Read(loc)
-	if err != nil || current.Reason != "" || len(current.Events) != 1 {
+	if err != nil || current.Reason != "" || len(EditableFootnotes(current.RawSidecar, "org", "sidecar")) != 1 {
 		t.Fatalf("sidecar not readable: %v %s", err, current.Reason)
 	}
 	if string(current.RawSource) != "A sentence.\n" || !os.SameFile(snap.SourceInfo, current.SourceInfo) {
@@ -177,7 +177,7 @@ func TestRT009_6_CurrentSidecarPreservesReadOnlySource(t *testing.T) {
 		t.Fatalf("clearing sidecar failed: %v", err)
 	}
 	current, err = Read(loc)
-	if err != nil || current.Reason != "" || len(current.Events) != 0 {
+	if err != nil || current.Reason != "" || len(EditableFootnotes(current.RawSidecar, "org", "sidecar")) != 0 {
 		t.Fatalf("cleared sidecar unavailable: %v %s", err, current.Reason)
 	}
 }
@@ -243,7 +243,7 @@ func TestRT009_7_NeighbouringEditRetainsOwnedReference(t *testing.T) {
 		t.Fatalf("owned reference was invalidated by neighbouring prose: %v", err)
 	}
 	current, err = Read(loc)
-	if err != nil || len(current.Embedded.Notes) != 1 || !current.Embedded.Notes[0].Located() || current.Events[0].Text != r.Text {
+	if err != nil || len(EditableFootnotes(current.RawSource, "org", "embedded")) != 1 || !strings.Contains(string(current.RawSource), footnoteReference("org", r.Label)) || EditableFootnotes(current.RawSource, "org", "embedded")[0].Text != r.Text {
 		t.Fatal("updated note lost its native reference", err)
 	}
 }

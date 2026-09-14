@@ -53,8 +53,9 @@ caret, Left/Right or Home/End to move it, then Enter to open the composer.
 Escape cancels caret placement. Links, code-copy controls and folding controls
 retain their own actions.
 
-Existing notes, including closed comments and ordinary authored footnotes, offer
-**Edit** in annotation mode. The editor loads the current content from the file.
+The **Annotations & Footnotes** sidebar gives each note a subtle background.
+Click a note's content area, or focus it and press Enter, to edit it. This applies
+to ordinary authored footnotes as well as comments created in HTML Preview. The editor loads the current content from the file.
 The existing ID is read-only and all references keep that ID. Ordinary notes
 retain their Org/Markdown markup; unattributed notes remain unattributed. Editing
 an HTMLPreview annotation preserves its original author and creation date.
@@ -89,7 +90,7 @@ source path. Wide viewports show navigation, the article and the annotation pane
 Phone annotation mode keeps document text above a larger comment pane.
 
 **Show plaintext** displays the original Org or Markdown source, including
-embedded footnotes and their metadata. It disables annotation and retains the
+embedded footnotes and their optional attribution. It disables annotation and retains the
 info bar. **Overview**, **Contents** or **Show all** returns to formatted content
 and applies that folding preset. Sidecar content is not substituted for source text. TXT, source-code
 wrappers, HTML and binary documents do not offer this view.
@@ -131,15 +132,26 @@ including their native continuation paragraphs. Inline anonymous definitions
 remain readable. Original definitions in read-only files cannot be changed;
 existing sidecar footnotes can be edited in their sidecar.
 
-## Storage and ownership
-
+## Native footnote storage
 
 Org uses `[fn:tadg-001]` references and named definitions. Markdown uses
-`[^tadg-001]` references and `[^tadg-001]:` definitions. Each owned definition
-contains readable current text, visible author/creation attribution, and one
-hidden native comment block carrying its stable UUID, editable label association,
-state and latest retry identity. There is no persisted autosave history. Comment
-text that resembles markup is encoded as literal text for native export.
+`[^tadg-001]` references and `[^tadg-001]:` definitions. New comments contain current
+text and readable author/creation attribution. No hidden COMMENT block or
+persistent autosave history is written. Existing notes may have no attribution.
+Comment text that resembles markup is encoded as literal text for native export.
+
+New attribution uses an inactive Org timestamp in the service's local time, for
+example `Author: Taḋg; Created: [2026-09-14 Mon 03:12]`. Date-only timestamps such
+as `[2026-09-14 Mon]` are also recognized. The sidebar retains that native format;
+older ISO dates display as, for example, **14 September 2026 at 03:12**. Editing
+an ordinary attributed note preserves its attribution. Editing an older managed
+note replaces its redundant hidden metadata with the native representation.
+
+This supersedes the earlier hidden UUID/state/operation block. The service keeps
+only bounded, transient creation-session receipts for retries. The native label
+and definition digest identify saved notes after reopening; browser memory is
+not required. A service restart ends active creation sessions: reopen the saved
+footnote rather than retrying the obsolete creation request.
 
 Sidecars use the complete filename: `notes.org-annotations.org` or
 `notes.md-annotations.org`. They contain Org footnotes and readable point context.
@@ -149,7 +161,7 @@ verified virtual references. Other readers require the separate sidecar.
 
 When source permissions change, an existing composer keeps its selected store;
 a new composer may use the writable source. Both stores are read together and
-reconciled by annotation UUID and revision. Saving migrates valid legacy records
+identified by their native labels and storage locations. Saving migrates valid legacy records
 only in the destination being written, retaining latest text, author, timestamps
 and identity. Reading alone never migrates. Invalid legacy records block writing.
 Unresolved legacy comments remain visible as unplaced notes. Older preview pages
@@ -164,7 +176,7 @@ introduced.
 Each source and sidecar is limited to 10 MiB. Combined annotation data is limited
 to 10 MiB and 10,000 current annotations, with a 64 KiB per-record limit.
 Previous draft versions no longer consume those quotas. The service permits
-64 active composers and 256 document write grants. Closing releases a composer;
+64 composer slots and 256 document write grants. Closing makes its slot reusable;
 restart releases grants; reopening the document reloads its editable footnotes.
 
 ## Verification

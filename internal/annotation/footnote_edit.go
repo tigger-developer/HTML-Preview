@@ -15,15 +15,18 @@ import (
 
 // EditableFootnote is reconstructed from the current file, including ordinary notes.
 type EditableFootnote struct {
-	Label      string `json:"label"`
-	Text       string `json:"text"`
-	Revision   string `json:"revision"`
-	Storage    string `json:"storage"`
-	Owned      bool   `json:"owned"`
-	definition byteRange
-	bodyStart  int
-	indent     string
-	note       Footnote
+	Label       string `json:"label"`
+	Text        string `json:"text"`
+	Revision    string `json:"revision"`
+	Storage     string `json:"storage"`
+	Owned       bool   `json:"owned"`
+	Author      string `json:"author,omitempty"`
+	CreatedAt   string `json:"created_at,omitempty"`
+	attribution string
+	definition  byteRange
+	bodyStart   int
+	indent      string
+	note        Footnote
 }
 
 // EditableFootnotes recognizes named definitions outside literal blocks. Org
@@ -53,6 +56,7 @@ func EditableFootnotes(data []byte, format, storage string) []EditableFootnote {
 		if owned {
 			entry.definition = note.definition
 			entry.Text = note.Event.Text
+			entry.Author, entry.CreatedAt = note.Event.Author, note.Event.CreatedAt
 		} else {
 			next = ordinaryNoteEnd(lines, i, format)
 			end := next
@@ -74,7 +78,7 @@ func EditableFootnotes(data []byte, format, storage string) []EditableFootnote {
 				}
 				body = append(body, text)
 			}
-			entry.Text = strings.Join(body, "\n")
+			entry.Text, entry.attribution, entry.Author, entry.CreatedAt = splitAttribution(strings.Join(body, "\n"))
 		}
 		entry.Revision = Digest(data[entry.definition.start:entry.definition.end])
 		if len(notes) >= MaxEvents {
@@ -157,7 +161,7 @@ func patchEditableFootnote(data []byte, format string, note EditableFootnote, te
 		event.Text, event.OperationID, event.RecordedAt = text, operation, now
 		event.Sequence++
 		var err error
-		encoded, err = encodeFootnote(format, Header{1, note.note.DocumentID, format}, event, note.Label, Parse(data, format).Ending)
+		encoded, err = encodeReadableFootnote(format, event, note.Label, Parse(data, format).Ending)
 		if err != nil {
 			return nil, err
 		}
@@ -166,7 +170,11 @@ func patchEditableFootnote(data []byte, format string, note EditableFootnote, te
 		if bytes.Contains(data[note.definition.start:note.definition.end], []byte("\r\n")) {
 			ending = "\r\n"
 		}
-		body := strings.Split(text, "\n")
+		bodyText := text
+		if note.attribution != "" {
+			bodyText += "\n\n" + note.attribution
+		}
+		body := strings.Split(bodyText, "\n")
 		encoded = append(encoded, data[note.definition.start:note.bodyStart]...)
 		for i, line := range body {
 			if i > 0 {

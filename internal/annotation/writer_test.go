@@ -58,7 +58,7 @@ func TestRT007_4_ReadOnlySidecarAndPermissionTransition(t *testing.T) {
 		t.Fatalf("sidecar append: %+v %v", saved, err)
 	}
 	current, err := Read(loc)
-	if err != nil || !bytes.Equal(initial.RawSource, current.RawSource) || len(current.Events) != 1 {
+	if err != nil || !bytes.Equal(initial.RawSource, current.RawSource) || len(EditableFootnotes(current.RawSidecar, "org", "sidecar")) != 1 {
 		t.Fatalf("sidecar/source: %v", err)
 	}
 	if current.SideInfo.Mode().Perm() != 0600 {
@@ -73,7 +73,7 @@ func TestRT007_4_ReadOnlySidecarAndPermissionTransition(t *testing.T) {
 		t.Fatalf("embedded transition: %+v %v", saved, err)
 	}
 	union, err := Read(loc)
-	if err != nil || union.Reason != "" || len(union.Events) != 2 || union.Embedded.Header.DocumentID != union.Sidecar.Header.DocumentID {
+	if err != nil || union.Reason != "" || len(EditableFootnotes(union.RawSource, "org", "embedded")) != 1 || len(EditableFootnotes(union.RawSidecar, "org", "sidecar")) != 1 {
 		t.Fatalf("union: %+v %v", union, err)
 	}
 }
@@ -98,7 +98,7 @@ func TestRT007_6_ShortReplacementRetainsEarlierValue(t *testing.T) {
 		t.Fatalf("short append=%v", err)
 	}
 	current, err := Read(loc)
-	if err != nil || current.Reason != "" || !bytes.Equal(current.RawSource, before) || len(current.Events) != 1 {
+	if err != nil || current.Reason != "" || !bytes.Equal(current.RawSource, before) || len(EditableFootnotes(current.RawSource, "org", "embedded")) != 1 {
 		t.Fatalf("partial preservation=%+v %v", current, err)
 	}
 	if _, _, err := saveFixture(w, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", second); err == nil {
@@ -142,8 +142,8 @@ func TestRT007_5_RetrySecretAndRecoveredDraft(t *testing.T) {
 		t.Fatal("active composer accepted a retry with another secret")
 	}
 	recovered := NewWriter(FileOperations{})
-	if _, retry, err := saveFixture(recovered, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err != nil || !retry {
-		t.Fatalf("recovered exact retry=%v %v", retry, err)
+	if _, retry, err := saveFixture(recovered, t.Context(), loc, &initial.SourceInfo, "Reviewer", "secret", request); err == nil || retry {
+		t.Fatalf("a restarted creation session must reopen the persisted native note: retry=%v %v", retry, err)
 	}
 	request.Sequence = 2
 	request.OperationID = "10000000-0000-4000-8000-000000000002"

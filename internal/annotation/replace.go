@@ -25,12 +25,12 @@ type Replacement struct {
 
 type PointVerifier func(context.Context, Snapshot, *Target) (int, error)
 
-// A cleared draft has no record on disk. Retain only its latest acknowledgement
-// in its existing bounded composer slot so a lost response remains retryable.
+// Keep only the current creation request and acknowledgement in a bounded slot.
+// Native definitions carry no operation history or hidden session metadata.
 type currentSave struct {
-	request  Request
-	event    Event
-	revision string
+	request            Request
+	event              Event
+	definitionRevision string
 }
 
 func validateCurrentRequest(r Request) error {
@@ -74,6 +74,7 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	if err := validateCurrentRequest(r); err != nil {
 		return Replacement{}, err
 	}
+	incoming := r
 	if author == "" || ValidateName(author) != nil {
 		return Replacement{}, fail("invalid_event")
 	}
@@ -105,13 +106,31 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 		}
 	}
 	missing := previous == nil
-	if missing && active && owner.current != nil && owner.current.event.Text == "" {
+	if active && owner.current != nil {
 		previous = &owner.current.event
-		if previous.OperationID == r.OperationID && (owner.current.request != r || owner.current.revision != snap.Revision) {
+		missing = previous.Text == ""
+		if previous.OperationID == r.OperationID && owner.current.request != r {
 			return Replacement{}, fail("operation_conflict")
 		}
 	}
+	if active && owner.current != nil && previous.Text != "" {
+		data, format := snap.RawSource, loc.Format
+		if owner.storage == "sidecar" {
+			data, format = snap.RawSidecar, "org"
+		}
+		found := false
+		for _, note := range EditableFootnotes(data, format, owner.storage) {
+			if note.Label == previous.Label {
+				found = note.Revision == owner.current.definitionRevision
+				break
+			}
+		}
+		if !found {
+			return Replacement{}, fail("footnote_conflict")
+		}
+	}
 	if previous != nil && previous.OperationID == r.OperationID {
+
 		kind := "draft"
 		if r.Action == "close" {
 			kind = "close"
@@ -125,11 +144,6 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 		}
 		if err := w.syncReplacement(ctx, loc, snap, storage); err != nil {
 			return Replacement{}, err
-		}
-		if previous.Kind == "close" {
-			w.mu.Lock()
-			delete(w.composers, key)
-			w.mu.Unlock()
 		}
 		return Replacement{Receipt: receipt(snap, *previous, r.BodyRevision, storage), PreviousInfo: snap.SourceInfo, SourceInfo: snap.SourceInfo, Retry: true}, nil
 	}
@@ -195,11 +209,21 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	if storage == "sidecar" {
 		data, format = snap.RawSidecar, "org"
 	}
+	if active && owner.current != nil {
+		data, err = restoreCurrentFrame(data, format, *header, owner.current)
+		if err != nil {
+			return Replacement{}, err
+		}
+	}
 	data, position, err = migrateCurrent(ctx, snap, data, format, r.Label, position, storage == "sidecar", verify)
 	if err != nil {
 		return Replacement{}, err
 	}
 	data, err = updateFootnote(data, format, *header, event, r.Label, position, storage == "sidecar")
+	if err != nil {
+		return Replacement{}, err
+	}
+	data, err = readableFootnotes(data, format)
 	if err != nil {
 		return Replacement{}, err
 	}
@@ -221,6 +245,14 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	}
 	if !active {
 		w.mu.Lock()
+		if len(w.composers) >= 64 {
+			for oldKey, old := range w.composers {
+				if old.current != nil && old.current.event.Kind == "close" {
+					delete(w.composers, oldKey)
+					break
+				}
+			}
+		}
 		if len(w.composers) >= 64 {
 			w.mu.Unlock()
 			return Replacement{}, fail("composer_capacity")
@@ -256,11 +288,13 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 		}
 	}
 	item := w.composers[key]
-	item.current = &currentSave{request: r, event: event, revision: updated.Revision}
-	w.composers[key] = item
-	if event.Kind == "close" && err == nil {
-		delete(w.composers, key)
+	item.current = &currentSave{request: incoming, event: event}
+	for _, note := range EditableFootnotes(data, format, storage) {
+		if note.Label == r.Label {
+			item.current.definitionRevision = note.Revision
+		}
 	}
+	w.composers[key] = item
 	w.mu.Unlock()
 	return Replacement{Receipt: receipt(updated, event, r.BodyRevision, storage), PreviousInfo: snap.SourceInfo, SourceInfo: updated.SourceInfo}, err
 }

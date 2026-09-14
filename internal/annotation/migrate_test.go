@@ -47,14 +47,15 @@ func TestRT009_7_SaveMigratesOnlyCurrentLegacyValues(t *testing.T) {
 			if err != nil || current.Reason != "" {
 				t.Fatalf("unreadable migration: %v %s", err, current.Reason)
 			}
-			if string(current.Embedded.Source) != string(original) || len(current.Events) != 2 || strings.Contains(string(current.RawSource), headerMarker) || strings.Contains(string(current.RawSource), "Old draft") {
+			if string(FootnoteBodySource(current.RawSource, format)) != string(original) || len(EditableFootnotes(current.RawSource, format, "embedded")) != 2 || strings.Contains(string(current.RawSource), headerMarker) || strings.Contains(string(current.RawSource), "Old draft") {
 				t.Fatal("migration retained history or changed authored bytes")
 			}
-			for _, event := range current.Events {
-				if event.AnnotationID == legacy.AnnotationID && (event.Text != legacy.Text || event.Author != legacy.Author || event.CreatedAt != legacy.CreatedAt || event.RecordedAt != legacy.RecordedAt || event.Target.Type != "document") {
-					t.Fatalf("legacy value or unplaced identity changed: %+v", event)
+			for _, note := range EditableFootnotes(current.RawSource, format, "embedded") {
+				if note.Label == "annotation-"+legacy.AnnotationID && (!strings.Contains(note.Text, legacy.Text) || note.Author != legacy.Author || note.CreatedAt != orgTimestamp(legacy.CreatedAt)) {
+					t.Fatalf("legacy value or attribution changed: %+v", note)
 				}
 			}
+
 		})
 	}
 }
@@ -100,7 +101,7 @@ func TestRT009_7_ReadOnlyLegacySourceRemainsUnmodifiedWhenSavingSidecar(t *testi
 		t.Fatal(err)
 	}
 	current, err := Read(loc)
-	if err != nil || current.Reason != "" || string(current.RawSource) != string(original) || len(current.Events) != 2 || len(current.Sidecar.Notes) != 1 {
+	if err != nil || current.Reason != "" || string(current.RawSource) != string(original) || len(current.Events) != 1 || len(EditableFootnotes(current.RawSidecar, "org", "sidecar")) != 1 {
 		t.Fatalf("save crossed destination boundary: %v %s", err, current.Reason)
 	}
 }

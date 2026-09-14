@@ -4,7 +4,6 @@ package preview
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 	"os"
@@ -98,11 +97,11 @@ func TestRT009_7_HTTPCurrentFootnotes(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if strings.Count(string(data), "HTMLPREVIEW_ANNOTATION: 2") != 1 || strings.Contains(string(data), "Draft value 19") || !strings.Contains(string(data), "Draft value 20") {
+			if strings.Contains(string(data), "HTMLPREVIEW_ANNOTATION") || strings.Contains(string(data), "BEGIN_COMMENT") || !strings.Contains(string(data), "Author: Taḋg; Created: [") || strings.Contains(string(data), "Draft value 19") || !strings.Contains(string(data), "Draft value 20") {
 				t.Fatalf("current native value not retained: %s", data)
 			}
 			status, current := annotationJSON(t, s, "GET", endpoint, nil, nil)
-			if status != 200 || len(current["comments"].([]any)) != 1 {
+			if status != 200 || len(current["footnotes"].([]any)) != 1 {
 				t.Fatal(status, current)
 			}
 		})
@@ -160,9 +159,8 @@ func TestRT009_8_ReadOnlySidecarUsesNativeEndnotes(t *testing.T) {
 			if status != 200 || current["body_revision"] != state["body_revision"] {
 				t.Fatal("virtual footnote changed authored body", status, current)
 			}
-			encoded, err := json.Marshal(current["comments"])
-			if err != nil || !strings.Contains(string(encoded), `"status":"resolved"`) {
-				t.Fatalf("sidecar location not resolved: %s %v", encoded, err)
+			if len(current["footnotes"].([]any)) != 1 || !strings.Contains(string(data), `role="doc-noteref"`) || strings.Contains(string(data), "Unplaced annotation") {
+				t.Fatal("sidecar native reference unavailable")
 			}
 			// #nosec G304 -- Reads only the synthetic source allocated in this test's temporary root.
 			original, err := os.ReadFile(path)
@@ -239,11 +237,15 @@ func TestRT009_7_HTTPLegacyReadAndImport(t *testing.T) {
 				t.Fatal(status, saved)
 			}
 			current, err := annotation.Read(annotation.Location{Root: s.root, Path: path, Format: format})
-			if err != nil || current.Reason != "" || len(current.Embedded.Notes) != 2 || string(current.Embedded.Source) != body {
+			if err != nil || current.Reason != "" || len(annotation.EditableFootnotes(current.RawSource, format, "embedded")) != 2 || string(annotation.FootnoteBodySource(current.RawSource, format)) != body {
 				t.Fatalf("invalid migrated source: %v %s", err, current.Reason)
 			}
-			for _, note := range current.Embedded.Notes {
-				if !note.Located() {
+			for _, note := range annotation.EditableFootnotes(current.RawSource, format, "embedded") {
+				reference := "[fn:" + note.Label + "]"
+				if format != "org" {
+					reference = "[^" + note.Label + "]"
+				}
+				if strings.Count(string(current.RawSource), reference) != 2 {
 					t.Fatal("verified legacy passage did not receive native reference")
 				}
 			}

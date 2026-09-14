@@ -18,7 +18,7 @@ type VirtualNote struct {
 // PreviewFootnotes constructs conversion input only; callers retain the original
 // source payload and revision. Pandoc renders ordinary and virtual notes together.
 func PreviewFootnotes(ctx context.Context, snap Snapshot, format, body string, headings map[string]Span, prefix string) ([]byte, []VirtualNote, error) {
-	if snap.Reason != "" || snap.Header == nil {
+	if snap.Reason != "" {
 		return nil, nil, nil
 	}
 	data := parseLegacy(snap.RawSource, format).Source
@@ -31,7 +31,8 @@ func PreviewFootnotes(ctx context.Context, snap Snapshot, format, body string, h
 	var patches []sourcePatch
 	var tail []byte
 	var virtual []VirtualNote
-	for _, event := range snap.Events {
+	events := append(append([]Event{}, snap.Events...), nativeSidecarEvents(snap.RawSidecar)...)
+	for _, event := range events {
 		if err := ctx.Err(); err != nil {
 			return nil, nil, err
 		}
@@ -51,7 +52,7 @@ func PreviewFootnotes(ctx context.Context, snap Snapshot, format, body string, h
 			}
 			labels[strings.ToLower(label)] = true
 		}
-		encoded, err := encodeFootnote(format, *snap.Header, event, label, store.Ending)
+		encoded, err := encodeReadableFootnote(format, event, label, store.Ending)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -91,12 +92,25 @@ func PreviewFootnotes(ctx context.Context, snap Snapshot, format, body string, h
 			tail = append(tail, []byte(store.Ending+store.Ending+reference+store.Ending)...)
 		}
 	}
-	if len(patches) == 0 && len(tail) == 0 {
-		return nil, nil, nil
-	}
 	patches = append(patches, sourcePatch{byteRange{len(data), len(data)}, tail})
 	result, err := applySourcePatches(data, patches)
-	return result, virtual, err
+	if err != nil {
+		return nil, nil, err
+	}
+	references := nativeReferences(result, format)
+	for _, note := range EditableFootnotes(result, format, "embedded") {
+		if references[note.Label] > 0 {
+			continue
+		}
+		marker := prefix + strconv.Itoa(len(virtual)) + "Z"
+		virtual = append(virtual, VirtualNote{marker, "native:" + note.Label, "", -1})
+		result = append(result, []byte(store.Ending+store.Ending+marker+footnoteReference(format, note.Label)+store.Ending)...)
+	}
+	if len(result) > MaxStore {
+		return nil, nil, fail("store_limit")
+	}
+	return result, virtual, nil
+
 }
 
 // ResolvePoint accepts a unique current context, never the nearest paragraph.

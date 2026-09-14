@@ -87,13 +87,13 @@ export class
     this.controller = new AbortController(); this.events = { signal: this.controller.signal };
     this.disposed = false; this.composer = null; this.poll = null; this.pendingRefresh = null; this.failures = 0;
     this.panel = annotationElement('aside', '', 'hp-annotations'); this.panel.id = 'hp-annotations'; this.panel.hidden = true;
-    this.panel.setAttribute('aria-label', 'Annotations');
+    this.panel.setAttribute('aria-label', 'Annotations & Footnotes');
     this.toggle = annotationButton('Annotations'); this.toggle.setAttribute('aria-controls', this.panel.id); this.toggle.setAttribute('aria-expanded', 'false'); this.toggle.setAttribute('aria-pressed', 'false');
     this.connection = annotationElement('p', 'Loading annotations…', 'hp-annotation-status');
     this.connection.setAttribute('role', 'status'); this.connection.setAttribute('aria-live', 'polite');
     this.reconnect = annotationButton('Reconnect'); this.reconnect.hidden = true;
     this.list = annotationElement('div'); this.editor = annotationElement('div');
-    this.panel.append(annotationElement('h2', 'Annotations'), this.connection, this.reconnect, this.editor, this.list);
+    this.panel.append(annotationElement('h2', 'Annotations & Footnotes'), this.connection, this.reconnect, this.editor, this.list);
     document.body.append(this.panel); this.attachToggle();
     this.listen();
     if (typeof ResizeObserver === 'function') {
@@ -402,23 +402,40 @@ export class
       this.endnotes?.remove(); this.endnotes = null; this.endnotesSlot = null;
     }
     for (const item of this.endnotes?.querySelectorAll('li[data-hp-footnote-label]') || []) {
-      if (item.querySelector('.hp-footnote-edit')) continue;
-      const edit = annotationButton('Edit'); edit.className = 'hp-footnote-edit';
-      edit.setAttribute('aria-label', 'Edit footnote ' + item.dataset.hpFootnoteLabel);
-      edit.disabled = !this.state.writable;
-      edit.addEventListener('click', () => this.editFootnote(item.dataset.hpFootnoteLabel), this.events);
-      item.append(edit);
-    }
-    for (const paragraph of this.endnotes?.querySelectorAll('li > p:last-of-type') || []) {
-      const comment = this.state?.comments.find(item => paragraph.textContent.startsWith('Author: ' + item.author + '; Created: ' + item.created_at));
-      if (!comment) continue;
-      const date = new Date(comment.created_at);
-      if (Number.isNaN(date.getTime())) continue;
-      const backlinks = [...paragraph.querySelectorAll('a.footnote-back')];
-      const timestamp = annotationElement('time', new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date));
-      timestamp.dateTime = comment.created_at; timestamp.title = comment.created_at;
-      paragraph.replaceChildren(document.createTextNode(comment.author + ' · '), timestamp, document.createTextNode(' '), ...backlinks);
-      paragraph.classList.add('hp-annotation-author');
+      if (!item.classList.contains('hp-editable-footnote')) {
+        item.classList.add('hp-editable-footnote');
+        item.title = 'Click or press Enter to edit this footnote.';
+        item.addEventListener('click', event => {
+          if (this.panel.hidden || !this.state?.writable || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || window.getSelection()?.isCollapsed === false) return;
+          if (!(event.target instanceof Element) || event.target.closest('a,button,input,textarea,code,pre')) return;
+          this.editFootnote(item.dataset.hpFootnoteLabel);
+        }, this.events);
+        item.addEventListener('keydown', event => {
+          if (event.target !== item || this.panel.hidden || !this.state?.writable || !['Enter',' '].includes(event.key)) return;
+          event.preventDefault(); this.editFootnote(item.dataset.hpFootnoteLabel);
+        }, this.events);
+      }
+      item.tabIndex = !this.panel.hidden && this.state?.writable ? 0 : -1;
+      const note = this.state?.footnotes.find(note => note.label === item.dataset.hpFootnoteLabel);
+      if (!note?.author || !note.created_at) continue;
+      for (const paragraph of item.querySelectorAll(':scope > p')) {
+        if (!paragraph.textContent.startsWith('Author: ' + note.author + '; Created: ')) continue;
+        const nativeDate = /^\[\d{4}-\d{2}-\d{2} [A-Za-z]{3}(?: \d{2}:\d{2})?\]$/.test(note.created_at);
+        const date = new Date(note.created_at);
+        if (!nativeDate && Number.isNaN(date.getTime())) continue;
+        const backlinks = [...paragraph.querySelectorAll('a.footnote-back')];
+        let display = note.created_at;
+        if (!nativeDate) {
+          const parts = new Intl.DateTimeFormat('en-IE', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(date);
+          const part = name => parts.find(item => item.type === name)?.value || '';
+          display = `${part('day')} ${part('month')} ${part('year')} at ${part('hour')}:${part('minute')}`;
+        }
+        const timestamp = annotationElement('time', display);
+        timestamp.dateTime = nativeDate ? note.created_at.slice(1,11) + (note.created_at.length > 16 ? 'T' + note.created_at.slice(16,21) : '') : note.created_at;
+        timestamp.title = note.created_at;
+        paragraph.replaceChildren(document.createTextNode(note.author + ' · '), timestamp, document.createTextNode(' '), ...backlinks);
+        paragraph.classList.add('hp-annotation-author');
+      }
     }
   }
 
@@ -522,6 +539,7 @@ export class
   }
 
   placeEndnotes(sidebar) {
+    for (const item of this.endnotes?.querySelectorAll('.hp-editable-footnote') || []) item.tabIndex = sidebar && this.state?.writable ? 0 : -1;
     if (!this.endnotes || !this.endnotesSlot?.isConnected) return;
     if (sidebar) this.list.append(this.endnotes);
     else this.endnotesSlot.after(this.endnotes);

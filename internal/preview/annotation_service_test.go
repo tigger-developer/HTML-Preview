@@ -153,7 +153,7 @@ func TestRT007_3_CurrentFootnotesPreserveAuthoredSource(t *testing.T) {
 			}
 			// #nosec G304 -- Path is allocated by this test inside its temporary root.
 			first, err := os.ReadFile(path)
-			if err != nil || !bytes.Equal(annotation.Parse(first, map[string]string{"org": "org", "md": "markdown"}[format]).Source, original) || bytes.Equal(first, original) {
+			if err != nil || !bytes.Equal(annotation.FootnoteBodySource(first, map[string]string{"org": "org", "md": "markdown"}[format]), original) || bytes.Equal(first, original) {
 				t.Fatalf("existing prefix changed: %v", err)
 			}
 			status, retry := annotationJSON(t, s, "POST", endpoint, event, headers)
@@ -184,7 +184,7 @@ func TestRT007_3_CurrentFootnotesPreserveAuthoredSource(t *testing.T) {
 			if status != 200 || projected["source_revision"] != state["source_revision"] {
 				t.Fatalf("annotation changed authored revision: %d %#v", status, projected)
 			}
-			events := projected["comments"].([]any)
+			events := projected["footnotes"].([]any)
 			if len(events) != 1 || events[0].(map[string]any)["author"] != "Taḋg" || events[0].(map[string]any)["text"] != "Second draft" {
 				t.Fatalf("projection=%#v", events)
 			}

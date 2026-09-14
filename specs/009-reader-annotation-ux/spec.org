@@ -60,6 +60,33 @@
 
 ** Decisions
 
+- Operator, 14 September 2026, simpler native notes :: Remove redundant annotation
+  COMMENT metadata blocks from newly saved definitions. Keep optional author
+  attribution and use native inactive Org timestamps, such as
+  =[2026-09-14 Mon 03:12]=, with 24-hour time. Existing ordinary notes need no
+  attribution or tool-origin marker to be editable. Earlier owned-metadata and
+  ISO-display prescriptions below are superseded by this amendment.
+- Persistence amendment :: Native labels, references and definition digests identify
+  saved notes. Only the active creation session retains its latest receipt and
+  draft context in bounded service memory; service restart ends that creation
+  session, while reopening reads the native definition
+  from disk. No session history or hidden ownership block is written. Authored-body revisions
+  exclude native footnote definitions and references regardless of origin; full-store
+  and definition digests retain conflict detection. Existing
+  old records remain readable; editing an old definition replaces its redundant
+  metadata with the ordinary current note and preserves attribution. Read-only
+  sidecars retain their readable context and native notes for reconstruction.
+- Presentation amendment :: The sidebar heading is *Annotations & Footnotes*;
+  the toggle remains *Annotations*. Each individual footnote has a subtle
+  background and its content area opens editing, without an Edit button.
+  Links, selection and keyboard operation retain their actions. Optional
+  attribution uses an Org timestamp or a full day-first date with 24-hour time,
+  never a US month-first or 12-hour clock presentation.
+- Verification amendment :: Exercise repeated native saves without hidden records,
+  retries, reopening and edits, competing changes, read-only sidecar reconstruction,
+  preservation of optional attribution and native timestamps. Human paired review
+  checks clickable blocks, keyboard access, links and timestamp presentation.
+
 - Operator, 14 September 2026, editable footnotes :: *Allow editing any supported
   native footnote*, including ordinary authored notes and closed HTMLPreview
   annotations. The file and native ID identify it, not browser memory. Preserve

@@ -53,7 +53,7 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		p.sourceData = &encoded
 		store := annotation.Parse(data, format)
 		data = store.Rendered
-		p.annotationSourceRevision = annotation.Digest(store.Source)
+		p.annotationSourceRevision = annotation.Digest(annotation.FootnoteBodySource(store.Source, annotationFormat(p.source)))
 		if store.Reason != "" {
 			s.log.notice("annotation metadata unavailable: %s", store.Reason)
 		}

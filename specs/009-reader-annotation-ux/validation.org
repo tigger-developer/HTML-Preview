@@ -189,3 +189,25 @@
   attribution, source markup, reference outline and normal endnotes outside
   annotation mode. Exercise Copy draft / Use current footnote after a competing
   edit. JavaScript interaction has not been executed by an automated browser.
+
+* Paired refinement: native attribution and clickable footnotes
+
+- Operator observation, 14 September 2026 :: "looks really good" is provisional
+  feedback on the preceding candidate. The operator requested removal of COMMENT
+  metadata, native timestamps, optional attribution, clickable shaded footnotes
+  and the sidebar heading "Annotations & Footnotes". This does not establish
+  keyboard, accessibility or platform qualification.
+- Initial regression :: The new current-save case failed because a saved native
+  footnote contained hidden COMMENT metadata. The implementation was then amended.
+- Focused checks :: Current W007/W009 Go writer and HTTP regressions passed in
+  annotation and preview packages. These cover current saves, retry refusal and
+  acknowledgement, conflicts, edits after reopening, optional native attribution,
+  sidecar rendering and source preservation. Native lint checks also passed.
+- Review sample :: The checkout binary was rebuilt and the isolated service
+  restarted. The actual CLI opened a native Org footnote sample in the system
+  default browser, with a linked Markdown sample. Attributed, date-only and
+  unattributed notes are present. No browser automation was invoked. Tidy and
+  htmltest passed for the served HTML; htmlq found all three native source labels.
+- Pending on this candidate :: Full race-enabled regression suite,
+  implementation review and paired browser observation of
+  the new clickable blocks and date presentation. Linux/WSL remains unqualified.

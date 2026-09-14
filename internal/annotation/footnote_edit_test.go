@@ -80,11 +80,11 @@ func TestRT009_7_EditClosedPreservesAttribution(t *testing.T) {
 				t.Fatal(err)
 			}
 			current, err := Read(loc)
-			if err != nil || current.Reason != "" || len(current.Events) != 1 {
+			if err != nil || current.Reason != "" || len(EditableFootnotes(current.RawSource, format, "embedded")) != 1 {
 				t.Fatalf("invalid edit: %v %#v", err, current.Events)
 			}
-			got := current.Events[0]
-			if got.Author != event.Author || got.CreatedAt != event.CreatedAt || got.AnnotationID != event.AnnotationID || got.Kind != "close" || got.Text != "Revised comment" {
+			got := EditableFootnotes(current.RawSource, format, "embedded")[0]
+			if got.Author != event.Author || got.CreatedAt != orgTimestamp(event.CreatedAt) || got.Label != "original-001" || strings.Contains(string(current.RawSource), nativeMarker) || got.Text != "Revised comment" {
 				t.Fatal("attribution or state changed", got)
 			}
 			// A new writer has no browser/session memory but can reopen the persisted note.
@@ -186,7 +186,7 @@ func TestRT009_6_EditExistingSidecar(t *testing.T) {
 		t.Fatal(err)
 	}
 	current, err := Read(loc)
-	if err != nil || string(current.RawSource) != string(original) || current.Events[0].Text != "Edited sidecar" || current.Events[0].Author != "Original author" {
+	if err != nil || string(current.RawSource) != string(original) || len(EditableFootnotes(current.RawSidecar, "org", "sidecar")) != 1 || EditableFootnotes(current.RawSidecar, "org", "sidecar")[0].Text != "Edited sidecar" || EditableFootnotes(current.RawSidecar, "org", "sidecar")[0].Author != "Original author" {
 		t.Fatal("sidecar edit changed source or attribution", err)
 	}
 }

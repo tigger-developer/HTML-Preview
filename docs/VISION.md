@@ -290,3 +290,18 @@ Success should be demonstrated by installing the packaged command, reading
 representative Markdown and Org documents, following their supported references,
 and verifying that source files remain unchanged and cleanup affects only the
 invocation's own temporary output. Visual quality requires human review.
+
+### Native footnote simplification, 14 September 2026
+
+The paired W009 refinement supersedes hidden annotation COMMENT metadata.
+Newly saved notes use ordinary native footnote definitions with optional readable
+author attribution and inactive Org timestamps, for example
+`[2026-09-14 Mon 03:12]`. All supported named footnotes are editable regardless of
+origin. The sidebar is labelled **Annotations & Footnotes**; its subtly shaded
+note blocks open editing by click or keyboard, without separate Edit buttons.
+The toolbar toggle remains **Annotations**.
+
+Native labels and definition digests identify notes on disk. Creation-session
+receipts remain bounded and transient; they do not create persisted history.
+Read-only sidecars retain native definitions and readable point context, allowing
+reconstruction after restart. Original notes without attribution stay unattributed.
