@@ -3,6 +3,7 @@
 package annotation
 
 import (
+	"regexp"
 	"strings"
 	"time"
 )
@@ -50,10 +51,7 @@ func encodeReadableFootnote(format string, event Event, label, ending string) ([
 	if event.Target.Type == "document" && event.Target.Prefix+event.Target.Suffix != "" {
 		text += "\n\nUnplaced annotation. Context: " + event.Target.Prefix + " | " + event.Target.Suffix
 	}
-	body := literalFootnoteBody(text, format)
-	if strings.HasPrefix(body, "#+BEGIN_EXAMPLE") || strings.HasPrefix(body, "```") {
-		body = "\n" + body
-	}
+	body := text
 	if event.Author != "" && date != "" {
 		body += "\n\nAuthor: " + event.Author + "; Created: " + date
 	}
@@ -68,7 +66,12 @@ func encodeReadableFootnote(format string, event Event, label, ending string) ([
 	if len(result) > MaxFrame {
 		return nil, fail("body_limit")
 	}
-	return []byte(result), nil
+	encoded := []byte(result)
+	notes := EditableFootnotes(encoded, format, "embedded")
+	if len(notes) != 1 || notes[0].Label != label || notes[0].Text != text || notes[0].definition.end != len(encoded) || !Parse(encoded, format).Safe {
+		return nil, fail("invalid_footnote")
+	}
+	return encoded, nil
 }
 
 // Old frames are decoded for compatibility, then emitted as ordinary current
@@ -177,4 +180,14 @@ func nativeReferences(data []byte, format string) map[string]int {
 		}
 	}
 	return result
+}
+
+var nativeAttributionLine = regexp.MustCompile(`^Author:.*\[[0-9]{4}-[0-9]{2}-[0-9]{2} [A-Za-z]{3}(?: [0-9]{2}:[0-9]{2})?\]$`)
+
+func refreshAttribution(line, author, now string) string {
+	if !nativeAttributionLine.MatchString(strings.TrimSpace(line)) {
+		return line
+	}
+	indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
+	return indent + "Author: " + author + "; Created: " + orgTimestamp(now)
 }

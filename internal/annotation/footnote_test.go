@@ -53,7 +53,7 @@ func TestRT009_6_UpdatesReplaceCurrentFootnote(t *testing.T) {
 	}
 }
 
-func TestRT009_6_NativeExportPreservesLiteralComment(t *testing.T) {
+func TestRT009_6_LegacyNativeExportPreservesLiteralComment(t *testing.T) {
 	for _, format := range []string{"org", "markdown"} {
 		t.Run(format, func(t *testing.T) {
 			store := Parse([]byte(nativeFixture(format, "Before")), format)

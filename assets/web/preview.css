@@ -142,7 +142,8 @@ body.hp-plaintext #hp-reader > :is(#hp-frontmatter,#hp-content-rule,#hp-toc,#hp-
 #hp-annotation-id-error { display:block; color:var(--syntax-error); }
 .hp-annotation-actions { margin:.5rem 0; }
 .hp-annotation-actions button { margin:.2rem; font-size:.8rem; }
-.hp-annotating #hp-document :is(p,li,td,th) { cursor:crosshair; }
+/* U+270E pencil; hotspot at its lower-right tip. White edging keeps it visible in both themes. */
+.hp-annotating #hp-document :is(p,li,td,th) { cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ctext%20x%3D%222%22%20y%3D%2227%22%20font-family%3D%22serif%22%20font-size%3D%2228%22%20fill%3D%22black%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%20paint-order%3D%22stroke%22%3E%E2%9C%8E%3C%2Ftext%3E%3C%2Fsvg%3E") 22 28,crosshair; }
 .hp-annotating #hp-document [data-hp-org-drawer] :is(p,li,td,th) { cursor:auto; }
 .hp-annotating #hp-document :is(pre,code) { cursor:copy; }
 .hp-annotating #hp-document :is(a,button,summary) { cursor:pointer; }
@@ -201,5 +202,5 @@ body[data-hp-format=org] #hp-toc { display:none; }
 .hp-annotations .footnotes > ol > li { background: color-mix(in srgb, var(--muted) 9%, transparent); border-radius: .35rem; padding: .5rem .6rem; margin-block: .6rem; }
 .hp-annotations .hp-editable-footnote[tabindex="0"] { cursor: pointer; }
 .hp-annotations .hp-editable-footnote:is(:hover,:focus-visible) { background: color-mix(in srgb, var(--muted) 16%, transparent); }
-.hp-annotations .hp-editable-footnote:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: .15rem; }
-.hp-editing-footnote { outline: 2px solid var(--hp-accent); outline-offset: .2rem; border-radius: .2rem; }
+.hp-annotations .hp-editable-footnote:focus-visible { outline: 2px solid var(--accent); outline-offset: .15rem; }
+.hp-editing-footnote { outline: 2px solid var(--accent); outline-offset: .2rem; border-radius: .2rem; }

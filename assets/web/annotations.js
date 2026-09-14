@@ -426,14 +426,14 @@ export class
         const backlinks = [...paragraph.querySelectorAll('a.footnote-back')];
         let display = note.created_at;
         if (!nativeDate) {
-          const parts = new Intl.DateTimeFormat('en-IE', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(date);
+          const parts = new Intl.DateTimeFormat('en-IE', { day:'2-digit', month:'2-digit', year:'numeric', weekday:'short', hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(date);
           const part = name => parts.find(item => item.type === name)?.value || '';
-          display = `${part('day')} ${part('month')} ${part('year')} at ${part('hour')}:${part('minute')}`;
+          display = `[${part('year')}-${part('month')}-${part('day')} ${part('weekday')} ${part('hour')}:${part('minute')}]`;
         }
         const timestamp = annotationElement('time', display);
         timestamp.dateTime = nativeDate ? note.created_at.slice(1,11) + (note.created_at.length > 16 ? 'T' + note.created_at.slice(16,21) : '') : note.created_at;
         timestamp.title = note.created_at;
-        paragraph.replaceChildren(document.createTextNode(note.author + ' · '), timestamp, document.createTextNode(' '), ...backlinks);
+        paragraph.replaceChildren(document.createTextNode('Author: ' + note.author + '; Created: '), timestamp, document.createTextNode(' '), ...backlinks);
         paragraph.classList.add('hp-annotation-author');
       }
     }

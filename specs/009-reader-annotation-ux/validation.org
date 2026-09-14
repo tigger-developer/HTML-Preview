@@ -211,3 +211,34 @@
 - Pending on this candidate :: Full race-enabled regression suite,
   implementation review and paired browser observation of
   the new clickable blocks and date presentation. Linux/WSL remains unqualified.
+
+* Subsequent paired attribution amendment and regression evidence
+
+- Operator, 14 September 2026 :: Requested replacement of a matching final
+  attribution line on saved edits with the current reviewer and local date/time,
+  always using inactive Org timestamp syntax.
+- Historical full-suite evidence :: The preceding candidate's complete
+  =make test= passed: annotation 4.834 s, integration 29.416 s and preview
+  628.148 s. Its dependency vulnerability check also reported no vulnerabilities.
+  These results precede the subsequent corrections below.
+- RED observations :: Updated writer tests retained the previous author/time
+  instead of refreshing them. Editing another footnote interrupted an active
+  draft with =composer_conflict=. The HTTP multiline round-trip returned literal
+  fences instead of the saved text; the Org case could not render the saved note.
+- Current focused evidence :: W007/W009 writer and HTTP regressions pass in both
+  packages (annotation 1.585 s, preview 8.528 s). The HTTP case creates markup
+  with multiple paragraphs, reloads it, edits as a different registered reviewer
+  and checks current text and attribution. Native EXAMPLE/fence fixtures preserve
+  their authored syntax on edits. The separate live-composer regression passes.
+- Current objective evidence :: The full race-enabled =make test= passed
+  (annotation 4.339 s, preview 621.735 s; integration reused its passing cache).
+  After the cursor-only CSS refinement, =make lint= and =make build= passed.
+  The rebuilt isolated service opened the same native Org sample through the
+  actual CLI and default browser; its served HTML passed tidy and htmltest.
+- Cursor refinement :: The operator requested =✎= (U+270E). A 32-pixel SVG
+  embeds that glyph with white edging and the hotspot at its lower-right tip.
+  Native raster inspection confirms the glyph and orientation. Existing CSP
+  permits the embedded image; no external cursor asset or broader policy is needed.
+- Pending :: Paired review of the pencil cursor, click targets, focus outlines,
+  attribution display and current save feedback. Linux/WSL qualification remains
+  pending. No automated browser interaction was performed.

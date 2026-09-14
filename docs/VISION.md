@@ -305,3 +305,10 @@ Native labels and definition digests identify notes on disk. Creation-session
 receipts remain bounded and transient; they do not create persisted history.
 Read-only sidecars retain native definitions and readable point context, allowing
 reconstruction after restart. Original notes without attribution stay unattributed.
+
+The later paired attribution amendment refreshes a matching final `Author:` line
+on saved edits, using the current reviewer and local time in
+`Author: Taḋg; Created: [2026-09-14 Mon 03:12]` format. This supersedes preservation
+of that attribution on edits. Notes without attribution remain valid. Creation
+and editing use the same native footnote markup, guarded against breaking out of
+the selected definition; they do not infer origin from literal blocks or fences.

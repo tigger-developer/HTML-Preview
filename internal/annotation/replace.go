@@ -69,7 +69,7 @@ func (r Request) ValidateCurrent() error { return validateCurrentRequest(r) }
 
 func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo, author, secret string, r Request, verify PointVerifier) (Replacement, error) {
 	if r.Action == "edit" {
-		return w.editFootnote(ctx, loc, expected, r)
+		return w.editFootnote(ctx, loc, expected, author, r)
 	}
 	if err := validateCurrentRequest(r); err != nil {
 		return Replacement{}, err
@@ -194,7 +194,9 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	now := w.now().UTC().Format(time.RFC3339Nano)
 	event := Event{Schema: 2, OperationID: r.OperationID, AnnotationID: r.AnnotationID, Sequence: r.Sequence, Kind: "draft", Author: author, CreatedAt: now, RecordedAt: now, Target: r.Target, Text: r.Text, Label: r.Label}
 	if previous != nil {
-		event.CreatedAt = previous.CreatedAt
+		if previous.Text == r.Text && previous.Label == r.Label {
+			event.CreatedAt = previous.CreatedAt
+		}
 		if !missing {
 			event.Target = previous.Target
 		}
@@ -280,13 +282,8 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 		}
 		updated = uncertain
 	}
+	w.rememberReplacement(loc.Path, snap.SourceInfo, updated.SourceInfo)
 	w.mu.Lock()
-	for name, item := range w.composers {
-		if strings.HasPrefix(name, loc.Path+"\x00") && os.SameFile(item.info, snap.SourceInfo) {
-			item.info = updated.SourceInfo
-			w.composers[name] = item
-		}
-	}
 	item := w.composers[key]
 	item.current = &currentSave{request: incoming, event: event}
 	for _, note := range EditableFootnotes(data, format, storage) {

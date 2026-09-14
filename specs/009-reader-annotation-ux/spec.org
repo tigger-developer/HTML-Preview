@@ -60,6 +60,27 @@
 
 ** Decisions
 
+- Operator, 14 September 2026, annotation cursor :: Use =✎= (Unicode U+270E)
+  over eligible prose in annotation mode, with the click hotspot at the pencil
+  tip. Package the small cursor within the page; retain a crosshair fallback
+  and the existing link, code and control cursors.
+- Operator, 14 September 2026, attribution on edit :: On each saved edit, replace
+  a final non-empty line that begins =Author:= and ends in an inactive Org
+  timestamp with =Author: CURRENT USER; Created: [YYYY-MM-DD Day HH:MM]=.
+  Use the current captured display name and local date/time. This supersedes
+  earlier author/date preservation for matched attribution lines. Unattributed
+  notes still need no tool-origin marker. Use Org timestamp presentation in the
+  sidebar as well, replacing the earlier full-calendar-date display alternative.
+- Native text consistency :: Creation and editing use the same native footnote
+  markup. Re-parse the proposed definition and refuse text that escapes it,
+  retaining the draft and original source. This supersedes automatic literal
+  wrappers for new comment text: there is no origin-dependent decoding of
+  ordinary authored EXAMPLE blocks or fences. Existing native markup stays native.
+- Concurrent notes :: An acknowledged application write updates the source
+  identity used by all active composers for that document. Editing one ordinary
+  footnote must not invalidate an unrelated live draft; changes to the same
+  definition still produce a conflict.
+
 - Operator, 14 September 2026, simpler native notes :: Remove redundant annotation
   COMMENT metadata blocks from newly saved definitions. Keep optional author
   attribution and use native inactive Org timestamps, such as

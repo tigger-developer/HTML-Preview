@@ -43,7 +43,8 @@ Existing tabs and links retain their captured attribution.
 4. Click outside the editor, move keyboard focus out, or press Escape to finish
    the comment. Saving must be acknowledged before the editor closes.
 
-Annotation mode uses a crosshair over eligible prose. An outline marks the
+Annotation mode uses a ✎ pencil cursor over eligible prose, with a crosshair
+fallback. An outline marks the
 insertion point while editing; after close, the normal footnote number and link
 remain. **Auto saved** appears beneath the textarea for two seconds before
 fading, accompanied by a green border flash. Save failures remain visible.
@@ -57,8 +58,9 @@ The **Annotations & Footnotes** sidebar gives each note a subtle background.
 Click a note's content area, or focus it and press Enter, to edit it. This applies
 to ordinary authored footnotes as well as comments created in HTML Preview. The editor loads the current content from the file.
 The existing ID is read-only and all references keep that ID. Ordinary notes
-retain their Org/Markdown markup; unattributed notes remain unattributed. Editing
-an HTMLPreview annotation preserves its original author and creation date.
+retain their Org/Markdown markup; unattributed notes remain unattributed. On a
+saved edit, a matching final Author line receives the current reviewer's name
+and local date/time in Org format.
 Closing and reopening the page does not affect editability. This supersedes the
 earlier closed-comment and HTMLPreview-only editing restrictions.
 The ID defaults to a normalized display name and the next unused counter:
@@ -138,14 +140,17 @@ Org uses `[fn:tadg-001]` references and named definitions. Markdown uses
 `[^tadg-001]` references and `[^tadg-001]:` definitions. New comments contain current
 text and readable author/creation attribution. No hidden COMMENT block or
 persistent autosave history is written. Existing notes may have no attribution.
-Comment text that resembles markup is encoded as literal text for native export.
+Creation and editing use native footnote markup. Text that would break out of
+the definition is refused with the draft retained; ordinary authored code blocks
+are not decoded or rewritten as tool-specific content.
 
 New attribution uses an inactive Org timestamp in the service's local time, for
 example `Author: Taḋg; Created: [2026-09-14 Mon 03:12]`. Date-only timestamps such
 as `[2026-09-14 Mon]` are also recognized. The sidebar retains that native format;
-older ISO dates display as, for example, **14 September 2026 at 03:12**. Editing
-an ordinary attributed note preserves its attribution. Editing an older managed
-note replaces its redundant hidden metadata with the native representation.
+older ISO dates are displayed in Org format too. Each saved edit replaces a
+matching final non-empty `Author:` line ending in an Org timestamp with
+`Author: CURRENT USER; Created: [YYYY-MM-DD Day HH:MM]`. Editing an older managed
+note also replaces its redundant hidden metadata with the native representation.
 
 This supersedes the earlier hidden UUID/state/operation block. The service keeps
 only bounded, transient creation-session receipts for retries. The native label

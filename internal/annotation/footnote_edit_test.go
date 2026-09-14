@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func editRequest(s Snapshot, n EditableFootnote, text string) Request {
@@ -19,6 +20,8 @@ func TestRT009_7_NativeFootnoteMarkup(t *testing.T) {
 	cases := []struct{ name, format, source, text string }{
 		{"org paragraphs", "org", "Body[fn:one].\n\n[fn:one] /First/ paragraph.\n\nSecond paragraph.\n\n\nOutside.\n", "/First/ paragraph.\n\nSecond paragraph."},
 		{"markdown CRLF", "markdown", "Body[^1].\r\n\r\n[^1]: **First** paragraph.\r\n\r\n    Second paragraph.\r\n\r\nOutside.\r\n", "**First** paragraph.\n\nSecond paragraph."},
+		{"org literal block", "org", "Body[fn:one].\n\n[fn:one]\n#+BEGIN_EXAMPLE\nFirst <text>.\n#+END_EXAMPLE\n", "\n#+BEGIN_EXAMPLE\nFirst <text>.\n#+END_EXAMPLE"},
+		{"markdown literal block", "markdown", "Body[^one].\n\n[^one]:\n    ```\n    First <text>.\n    ```\n", "\n```\nFirst <text>.\n```"},
 		{"unicode ID", "org", "Body[fn:réf].\n\n[fn:réf] First note.", "First note."},
 	}
 	for _, tc := range cases {
@@ -53,7 +56,7 @@ func TestRT009_7_NativeFootnoteMarkup(t *testing.T) {
 	}
 }
 
-func TestRT009_7_EditClosedPreservesAttribution(t *testing.T) {
+func TestRT009_7_EditClosedRefreshesAttribution(t *testing.T) {
 	for _, format := range []string{"org", "markdown"} {
 		t.Run(format, func(t *testing.T) {
 			root := t.TempDir()
@@ -75,6 +78,7 @@ func TestRT009_7_EditClosedPreservesAttribution(t *testing.T) {
 			note := EditableFootnotes(data, format, "embedded")[0]
 			request := editRequest(snap, note, "Revised comment")
 			writer := NewWriter(FileOperations{})
+			writer.now = func() time.Time { return time.Date(2026, 9, 14, 14, 30, 0, 0, time.Local) }
 			_, err = writer.Replace(context.Background(), loc, snap.SourceInfo, "Different reviewer", "secret", request, nil)
 			if err != nil {
 				t.Fatal(err)
@@ -84,7 +88,7 @@ func TestRT009_7_EditClosedPreservesAttribution(t *testing.T) {
 				t.Fatalf("invalid edit: %v %#v", err, current.Events)
 			}
 			got := EditableFootnotes(current.RawSource, format, "embedded")[0]
-			if got.Author != event.Author || got.CreatedAt != orgTimestamp(event.CreatedAt) || got.Label != "original-001" || strings.Contains(string(current.RawSource), nativeMarker) || got.Text != "Revised comment" {
+			if got.Author != "Different reviewer" || got.CreatedAt != "[2026-09-14 Mon 14:30]" || got.Label != "original-001" || strings.Contains(string(current.RawSource), nativeMarker) || got.Text != "Revised comment" {
 				t.Fatal("attribution or state changed", got)
 			}
 			// A new writer has no browser/session memory but can reopen the persisted note.
@@ -186,7 +190,7 @@ func TestRT009_6_EditExistingSidecar(t *testing.T) {
 		t.Fatal(err)
 	}
 	current, err := Read(loc)
-	if err != nil || string(current.RawSource) != string(original) || len(EditableFootnotes(current.RawSidecar, "org", "sidecar")) != 1 || EditableFootnotes(current.RawSidecar, "org", "sidecar")[0].Text != "Edited sidecar" || EditableFootnotes(current.RawSidecar, "org", "sidecar")[0].Author != "Original author" {
+	if err != nil || string(current.RawSource) != string(original) || len(EditableFootnotes(current.RawSidecar, "org", "sidecar")) != 1 || EditableFootnotes(current.RawSidecar, "org", "sidecar")[0].Text != "Edited sidecar" || EditableFootnotes(current.RawSidecar, "org", "sidecar")[0].Author != "Reviewer" {
 		t.Fatal("sidecar edit changed source or attribution", err)
 	}
 }

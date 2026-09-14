@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestRT009_6_NoCommentMetadata(t *testing.T) {
@@ -98,17 +99,76 @@ func TestRT009_4_OptionalNativeAttribution(t *testing.T) {
 					t.Fatal(notes)
 				}
 				r := editRequest(snap, notes[0], "Revised text.")
-				if _, err := NewWriter(FileOperations{}).Replace(t.Context(), loc, snap.SourceInfo, "Another reviewer", "secret", r, nil); err != nil {
+				writer := NewWriter(FileOperations{})
+				writer.now = func() time.Time { return time.Date(2026, 9, 14, 14, 30, 0, 0, time.Local) }
+				if _, err := writer.Replace(t.Context(), loc, snap.SourceInfo, "Another reviewer", "secret", r, nil); err != nil {
 					t.Fatal(err)
 				}
 				after, err := Read(loc)
 				if err != nil {
 					t.Fatal(err)
 				}
-				if string(after.RawSource) != strings.Replace(original, "Original text.", "Revised text.", 1) {
+				expected := strings.Replace(original, "Original text.", "Revised text.", 1)
+				if date != "" {
+					expected = strings.Replace(expected, "Author: Original author; Created: "+date, "Author: Another reviewer; Created: [2026-09-14 Mon 14:30]", 1)
+				}
+				if string(after.RawSource) != expected {
 					t.Fatalf("native attribution or unrelated bytes changed: %s", after.RawSource)
 				}
 			})
 		}
+	}
+}
+
+func TestRT009_7_EditOtherNoteRetainsActiveComposer(t *testing.T) {
+	loc, _ := sourceFixture(t, "notes.org")
+	if err := os.WriteFile(loc.Path, []byte("A sentence[fn:ordinary].\n\n[fn:ordinary] Existing note.\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	snap, err := Read(loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := NewWriter(FileOperations{})
+	r := requestFixture(t, snap)
+	r.Label = "new-note"
+	r.Text = "Draft one"
+	r.Target = Target{Type: "point", Position: 1, Run: "A sentence", RunOffset: 1}
+	r.BodyRevision = Digest([]byte("A sentence."))
+	first, err := w.Replace(t.Context(), loc, snap.SourceInfo, "Reviewer", "secret", r, func(context.Context, Snapshot, *Target) (int, error) { return 1, nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	snap, err = Read(loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ordinary EditableFootnote
+	for _, note := range EditableFootnotes(snap.RawSource, "org", "embedded") {
+		if note.Label == "ordinary" {
+			ordinary = note
+		}
+	}
+	edited, err := w.Replace(t.Context(), loc, first.SourceInfo, "Reviewer", "other", editRequest(snap, ordinary, "An edited ordinary note."), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	snap, err = Read(loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.OperationID = "10000000-0000-4000-8000-000000000009"
+	r.Sequence = 2
+	r.Text = "Draft two"
+	r.Revision, r.SourceRevision = snap.Revision, snap.SourceRevision
+	if _, err = w.Replace(t.Context(), loc, edited.SourceInfo, "Reviewer", "secret", r, nil); err != nil {
+		t.Fatal("unrelated edit interrupted active draft", err)
+	}
+	snap, err = Read(loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(snap.RawSource), "An edited ordinary note.") || !strings.Contains(string(snap.RawSource), "Draft two") {
+		t.Fatal("current notes missing")
 	}
 }

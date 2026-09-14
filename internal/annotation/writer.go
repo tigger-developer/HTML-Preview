@@ -4,6 +4,7 @@ package annotation
 
 import (
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -63,4 +64,17 @@ func (w *Writer) end(path string) { w.mu.Lock(); delete(w.active, path); w.mu.Un
 
 func receipt(s Snapshot, event Event, body, storage string) Receipt {
 	return Receipt{"", event.AnnotationID, event.Sequence, s.Revision, s.SourceRevision, body, event.RecordedAt, storage, event.Kind == "close"}
+}
+
+// Both creation and generic edits replace the source inode. Keep other live
+// composers on that document attached to the verified replacement as well.
+func (w *Writer) rememberReplacement(path string, before, after os.FileInfo) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for name, item := range w.composers {
+		if strings.HasPrefix(name, path+"\x00") && os.SameFile(item.info, before) {
+			item.info = after
+			w.composers[name] = item
+		}
+	}
 }

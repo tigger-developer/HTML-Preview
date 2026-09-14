@@ -154,11 +154,12 @@ func validateFootnoteEdit(r Request) error {
 	return nil
 }
 
-func patchEditableFootnote(data []byte, format string, note EditableFootnote, text, operation, now string) ([]byte, error) {
+func patchEditableFootnote(data []byte, format string, note EditableFootnote, text, operation, now, author string) ([]byte, error) {
 	var encoded []byte
 	if note.Owned {
 		event := note.note.Event
 		event.Text, event.OperationID, event.RecordedAt = text, operation, now
+		event.Author, event.CreatedAt = author, now
 		event.Sequence++
 		var err error
 		encoded, err = encodeReadableFootnote(format, event, note.Label, Parse(data, format).Ending)
@@ -172,7 +173,7 @@ func patchEditableFootnote(data []byte, format string, note EditableFootnote, te
 		}
 		bodyText := text
 		if note.attribution != "" {
-			bodyText += "\n\n" + note.attribution
+			bodyText += "\n\n" + refreshAttribution(note.attribution, author, now)
 		}
 		body := strings.Split(bodyText, "\n")
 		encoded = append(encoded, data[note.definition.start:note.bodyStart]...)
@@ -199,7 +200,10 @@ func patchEditableFootnote(data []byte, format string, note EditableFootnote, te
 
 // editFootnote shares the normal writer lock and atomic replacement. The source
 // label and definition digest are sufficient across browser/service restarts.
-func (w *Writer) editFootnote(ctx context.Context, loc Location, expected os.FileInfo, r Request) (Replacement, error) {
+func (w *Writer) editFootnote(ctx context.Context, loc Location, expected os.FileInfo, author string, r Request) (Replacement, error) {
+	if ValidateName(author) != nil {
+		return Replacement{}, fail("invalid_event")
+	}
 	if err := validateFootnoteEdit(r); err != nil {
 		return Replacement{}, err
 	}
@@ -253,7 +257,7 @@ func (w *Writer) editFootnote(ctx context.Context, loc Location, expected os.Fil
 	if snap.Revision != r.Revision || snap.SourceRevision != r.SourceRevision {
 		return Replacement{}, fail("stale_source")
 	}
-	data, err = patchEditableFootnote(data, format, *note, r.Text, r.OperationID, w.now().UTC().Format(time.RFC3339Nano))
+	data, err = patchEditableFootnote(data, format, *note, r.Text, r.OperationID, w.now().UTC().Format(time.RFC3339Nano), author)
 	if err != nil {
 		return Replacement{}, err
 	}
@@ -269,10 +273,12 @@ func (w *Writer) editFootnote(ctx context.Context, loc Location, expected os.Fil
 			written = current.RawSidecar
 		}
 		if readErr == nil && current.Reason == "" && bytes.Equal(written, data) {
+			w.rememberReplacement(loc.Path, snap.SourceInfo, current.SourceInfo)
 			return editReceipt(snap, current, r, storage, format, false), err
 		}
 		return Replacement{}, err
 	}
+	w.rememberReplacement(loc.Path, snap.SourceInfo, updated.SourceInfo)
 	return editReceipt(snap, updated, r, storage, format, false), nil
 }
 
