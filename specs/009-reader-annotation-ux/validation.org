@@ -174,7 +174,12 @@
   preview 19.558s). Subsequent markup-preservation checks passed after moving
   conversion markers into their own leading paragraph; lists and literal blocks
   retain their structure. The build, complete static lint and vulnerability
-  checks pass. The current full regression run is in progress.
+  checks pass. The full =make test= race suite passed at =0d754ac=
+  (native footnote editing): integration 28.621s, annotation 4.619s and preview
+  633.121s. The later =aae3e27= help correction changes no Go/JavaScript behaviour.
+  The rebuilt command exposes that corrected help. The live HTML response passes
+  =tidy -errors -quiet -utf8= and =htmltest --skip-external=; =htmlq= confirms
+  native labels for ordinary and generated notes. No browser automation ran.
 - Review sample :: The rebuilt foreground service uses the same isolated
   OS-temporary document root and opens its Org index through the real CLI and
   system default browser. Existing sample annotations were retained.
