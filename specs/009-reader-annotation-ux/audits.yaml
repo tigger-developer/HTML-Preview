@@ -342,3 +342,264 @@ audits:
 
             No blocking findings. Optional observation only (not grounds for FAIL): test-definition ordering places RT009.8 after UT009.4/OT009.1, which is cosmetic and does not affect traceability.
           updated: "2026-09-13T23:25:58Z"
+    - work_item: W009-reader-annotation-ux
+      gate: implementation
+      session_id: 20260914_025448_d87d50
+      harness: hermes
+      provider: nous
+      model: z-ai/glm-5.3
+      configured:
+        harness: hermes
+        provider: nous
+        model: z-ai/glm-5.3
+      external_round: 1
+      status: passed
+      updated: "2026-09-14T01:56:33Z"
+      revision: fb9f71e
+      verdict: PROVISIONAL PASS
+      response: |-
+        GATE: implementation
+        REVISION: fb9f71e
+        VERDICT: PROVISIONAL PASS
+
+        Findings (none blocking; sign-off not invalidated):
+
+        1. Full-suite currency — bounded follow-up. The last recorded full race-suite pass (preview package, 627.318s) predates the final save/refresh edge corrections; only the focused annotation/preview RT007/RT009 runs (3.614s / 17.905s, race-enabled) cover the corrected code. The focused runs do cover the changed packages and requirements, and no unrelated package was touched, so this is not a defect — but the complete `make test` suite should be rerun once at the current revision before closure. Reversible, mechanical.
+
+        Rationale for verdict:
+
+        - Scope and supersession: the delta implements exactly the operator-authorized W009 scope (native footnotes, current values only, pointer insertion, normalized username-derived labels with the specified NFD/mark-stripping/hyphenation/48-char bound/3-digit suffix, persistent responsive reader controls, literal source mode, v1 writer retirement with legacy read/import only). W007 event history and selected-passage mutation contracts are superseded as recorded. No unexplained parallel old/new write path remains: v1 POST returns 409 annotation_upgrade_required (TestRT009_7_PreviousProtocolCannotAppendHistory), and the v1 GET path is permitted by the specification.
+        - Testing amendment compliance: no Chromium/browser-fixture execution is claimed as current evidence; the validation record uses Go/HTTP, tidy, htmltest, htmlq, oxlint, biome and correctly labels the historical browser runs. The retained runner code and its updated assertions are maintenance of existing code, not a prohibited stack — no browser automation was demanded or run. Pending human UT (UT009.1–009.4) and OT009.1 remain explicitly PENDING, as required.
+        - Test quality and evidence: implemented tests exercise the real HTTP boundary (twenty autosaves per format, rename, clearing, retry, capacity, permission transitions, stale/alias/metadata rechecks, legacy import, read-only sidecar with unplaced fallback and false-backlink removal), the writer boundary with fault injection (short write, sync failure, directory sync, cancelled context, hard-link race), and the codec round-trip including literal-context exclusion and native Pandoc export. RED evidence is recorded per category in validation.org. Assertions are behavioural (file bytes, DOM structure, status codes), not source greps.
+        - Design conformance: Pandoc owns footnote rendering — the reader relocates the existing native endnotes section rather than regenerating it; roles doc-noteref/backlink/endnotes are narrowly re-admitted through the sanitizer with fixed values; insertion points are proven by a bounded marker round-trip through the real renderer before first write; saves patch only owned spans and atomically replace through a rooted private temp file with owner/mode preservation and refusal of unsupported ACLs/xattrs (metadata_darwin.go/metadata_linux.go); the canonical text excludes endnotes and footnote labels in both Go and browser mappers (shared fixtures). No iframe, no second lifecycle, no new dependency (go.mod unchanged).
+        - Security: origin/write/composer token checks, constant-time compare, rooted handles, O_NOFOLLOW, nlink==1, same-file rechecks before rename, and byte-verified uncertain-acknowledgement recovery all retained and tested; plaintext uses base64 + textContent, never innerHTML.
+        - Audit-state hygiene: no audit findings, verdicts, round numbers or session IDs are duplicated in spec.org, validation.org or the delta. The trailing v1 test annotation in spec.org is human-authored data whose resolution is reserved for paired wrap-up per the caller context and is therefore not treated as an unresolved implementation instruction here; the retrospective definition review owns its disposition.
+
+        Conditions for PROVISIONAL PASS to become effective:
+        - Run the complete `make test` race suite at fb9f71e (or later unchanged revision) and record the result in validation.org. No other remediation is required.
+      history:
+        - cache_key: sha256:8c2ee746a00bb944293ca97fef5e3c8169e7b7ba608354124c8c990fc14ee605
+          session_id: 20260914_025448_d87d50
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 98738ed0a7d5e3856a936f31424232ca489ea7dfdb9638104412a6694869f965
+              bytes: 12313
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 833de19319224d80f95ad94ab6923b3d4b1255d13a11bac50b07553efa675fc4
+              bytes: 11310
+            - path: /Users/tigger/.agents/sdlc/PAIRING.md
+              sha256: f37b1226779c5ad8ec5300c1ad6251de4f2bf25eb62be30731e0077c6e69ce6d
+              bytes: 5648
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 5ed902d49dbb8321ea093fd60db68d5195e59c95c763c02e4ca0c09f6fa1e932
+              bytes: 13561
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: cacf11b21a102f0b7ff114446d2489c15cc69f9822a1f8fd2ba9255295b54af4
+              bytes: 790
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 1ff1181d0fe3208fbdd67d65a2397b8fecfe6a2aacc252c8b730477dfa136861
+              bytes: 16351
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-composer.js
+              sha256: 61aa96069178b4eacd2684294776dda134981bf823c9210b780ad40389ae9991
+              bytes: 9839
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: 0d9f10c0a7b9d368071ef9cff85553681adc76d3b9d98e6e5873cb34952df3d1
+              bytes: 7093
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: a74c2d78af7a422ee934ce92e96c7bb6098d3f6c641f75f7e9a6647bf55ab292
+              bytes: 30570
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: ceb0142fc0848897f8b4afeb20999597a82ad3a47014e8bfb78ce8e701170ca2
+              bytes: 1700
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: 23c4017bc53e9f5d146518d4ea42464d47e67c008319999aed19b6525175392a
+              bytes: 18357
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: d6e5ab5348ee227d6eee1bbb64b0c6b3df61652cf7dc8047ace835b6eb61629f
+              bytes: 22234
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: 60139a90538881c18e413d05959e380a60c4007c77e220fd30ea0bf1f81a3069
+              bytes: 8492
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: ba8421c0ff0d6371631357e0e93da7a86a5ca855cba47828b90da2b2209dd5cc
+              bytes: 48322
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: b49e46cb10f7d189028b105352e0b502ecb044e184c9d3c8e021bfab58def8b0
+              bytes: 16065
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 94ecc526c636fa184147c8d11ef7f4a32824d80893c8ad2491f2beb72c2ce780
+              bytes: 13163
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: 1ade6f1ba5461d9d4ce915f459488fceaa7d67d9e98381b341cd22be2443e223
+              bytes: 311
+            - path: /Users/tigger/code/tigoss/html-preview/go.sum
+              sha256: 07c6131b94054c0409e2f5067066a889f48d0671ba913d0ec95c0da81c17753d
+              bytes: 1179
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/codec.go
+              sha256: 96f15d80c8c65f2a5d2bbaf7b39f5fb51e5cacde9d8daa6a3e89e78cd04c1abf
+              bytes: 8672
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/destination.go
+              sha256: bdeb9b35e73946c2e3917a7456f3ba1be76e236e51962290bf28baa3c44bf6b1
+              bytes: 2184
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/event.go
+              sha256: a18e3ff024cb5fa305f29e8b0271b42325e13654baea2949cce82dfca1564834
+              bytes: 8471
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/files.go
+              sha256: 369125949e774253ce013d665e1da747cc505eadf73b3b8c1dc8e6823ff960e7
+              bytes: 5927
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote.go
+              sha256: 32f844fc85016fd173600cf004fada5b817d54244f03789343e2d8859c40f138
+              bytes: 11095
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_patch.go
+              sha256: 80fa984fb3cbcb8bee492e12c9ac9f3b71ceac279be856f7c201e876aee3f2ec
+              bytes: 7624
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_test.go
+              sha256: 2f7f8b1b28b152acdf4407a64478782c0e111f04489348c95694ed4d6ef6d77b
+              bytes: 5365
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/metadata_darwin.go
+              sha256: 168771d53b4e0698405482aa445b4489d618ab120a7b92cf58398a024fb6def7
+              bytes: 1430
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/metadata_linux.go
+              sha256: 91e433e1923d90f9ee9c89eac3527622c80b9b07f52e65852ba8d9cf148ecf1c
+              bytes: 516
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/migrate.go
+              sha256: f692d773b139df2bafef7d0a07c7c22bc55d835e8ae11c17cdf7d33c7737d989
+              bytes: 3096
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/migrate_test.go
+              sha256: 106e49d000d9e7a4dec0d4c3544ee64bc357a0b597be27c5ff75b82eabe5a0ea
+              bytes: 4973
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/point.go
+              sha256: 30d20b2081c75164f4e620be36e6781a7905d5979b85317301424909fe155025
+              bytes: 3418
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/point_test.go
+              sha256: dded6693937a7bbee810d1eba85c8dd3d73a2d5fd78f10178a57583bb63fd8cf
+              bytes: 1104
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/preview.go
+              sha256: 69d109f3dacd50e6756c226e01096d1bf368336e0aa2f21f8bf8e952b4a125f6
+              bytes: 4639
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/replace.go
+              sha256: f56a87d5f3c8eee15549bb0cf4486da10a2f745d3a343a62fb39b64fcb7b2d73
+              bytes: 14094
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/replace_test.go
+              sha256: 3984e730debb88ce7c00c30c69383c9624a4870dd60a07cdc3c5bf9302fe3af0
+              bytes: 11076
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/text.go
+              sha256: 1b0374ce77ed3274c88e27297f6f8b7948342dea097d463e51bc02b19aa551b6
+              bytes: 4195
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/writer.go
+              sha256: 0ad6d79f6ae88f6ad44ccf6f2bc400d75d2e6846f147551f96444590712ae451
+              bytes: 1892
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/writer_test.go
+              sha256: 970de10ab3767150e36cd7ad54f6c548c12461ece13c7434d526414f00ce3f9d
+              bytes: 10602
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_limits_test.go
+              sha256: 45575146b68783cee0a38d2ae3c682e002191b8272460ecfd99b0ec1f826b6c2
+              bytes: 3123
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_security_test.go
+              sha256: cbb32660d4355a4a6067a076b83a72284ed41c67fe679e1599ae70bafc8deb3c
+              bytes: 3981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_service_test.go
+              sha256: 782b91ef1ea6e3727494d5fbb517cdb425cf3d48e176ad56ff57c29a69344ab0
+              bytes: 10784
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/footnote_service_test.go
+              sha256: 0f8e2049f5bd07b6cc19b577d0940089e41047f11151bc77d7eebd1f07f999a5
+              bytes: 13707
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 52d63e936a929fc367737f36d01f00a1cdd54f9b7322a895b8a7cb8d756784e9
+              bytes: 10999
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/navigation_test.go
+              sha256: 8277b82fc93630130c84ad53b1d7cba988ec2f3cf33516194f62cff577a194ac
+              bytes: 1802
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/presentation_test.go
+              sha256: 5a27502cb1dd4b1331530023073ab14f96cabfd74c6cd02673d649627791ec30
+              bytes: 4050
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 7a5bb65918131d38af0cd68a4ab0557466e0d8fbfd2e5462a9901171440ba01f
+              bytes: 14238
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service.go
+              sha256: 4695a3b9e85d93fec2cf1bfc065df7ce4d2148199b08aeb2ce3e9494ec450ab7
+              bytes: 5323
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_annotations.go
+              sha256: 3af058e7fcbbd13c977e30d67dbad14a06c0cff42b79e660ad8829d570158b59
+              bytes: 15439
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache.go
+              sha256: 6fc7b2a4182c60000dc487459b8eacdc7288bf4ba6cde237d147c7b89b032a94
+              bytes: 5713
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
+              sha256: 8b70693e07f2c5ecede04cf53091abce52c7ab5315a589998e7ecd5e8cd77e9f
+              bytes: 4128
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_render.go
+              sha256: ce1b057f2599cf486e9c2f2b25fa81c2610788dfe94a388ad6e0f6da052da505
+              bytes: 8469
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
+              sha256: 0229fa2e275ce80c5cca609caf64c7490e24ec9c5fd407a29b629545d0624256
+              bytes: 16277
+            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+              sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
+              bytes: 93437
+            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+              sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
+              bytes: 85482
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+              sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
+              bytes: 62969
+            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+              sha256: faeb34f3231619f3887184ab57126bee7f2a7fcf75d88366d645d3ae6103c542
+              bytes: 75682
+            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/validation.org
+              sha256: 94a17f42d1fb273693c61a9e0bf26303dc10543608b93a1228aee226a50e644b
+              bytes: 6074
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json
+              sha256: 88e4b2ed130175315f0ae8736b84f717e9e53d674316a911f3d2625f9edd1c40
+              bytes: 1128
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w009-audit-20260914-55331-1rl2vf8/delta.patch
+              sha256: 68d4b5ca21222cd891ec37e24f4025c73a0c53f31ee4586b8a92fc8b91fda010
+              bytes: 277472
+          round: 1
+          revision: fb9f71e
+          verdict: PROVISIONAL PASS
+          response: |-
+            GATE: implementation
+            REVISION: fb9f71e
+            VERDICT: PROVISIONAL PASS
+
+            Findings (none blocking; sign-off not invalidated):
+
+            1. Full-suite currency — bounded follow-up. The last recorded full race-suite pass (preview package, 627.318s) predates the final save/refresh edge corrections; only the focused annotation/preview RT007/RT009 runs (3.614s / 17.905s, race-enabled) cover the corrected code. The focused runs do cover the changed packages and requirements, and no unrelated package was touched, so this is not a defect — but the complete `make test` suite should be rerun once at the current revision before closure. Reversible, mechanical.
+
+            Rationale for verdict:
+
+            - Scope and supersession: the delta implements exactly the operator-authorized W009 scope (native footnotes, current values only, pointer insertion, normalized username-derived labels with the specified NFD/mark-stripping/hyphenation/48-char bound/3-digit suffix, persistent responsive reader controls, literal source mode, v1 writer retirement with legacy read/import only). W007 event history and selected-passage mutation contracts are superseded as recorded. No unexplained parallel old/new write path remains: v1 POST returns 409 annotation_upgrade_required (TestRT009_7_PreviousProtocolCannotAppendHistory), and the v1 GET path is permitted by the specification.
+            - Testing amendment compliance: no Chromium/browser-fixture execution is claimed as current evidence; the validation record uses Go/HTTP, tidy, htmltest, htmlq, oxlint, biome and correctly labels the historical browser runs. The retained runner code and its updated assertions are maintenance of existing code, not a prohibited stack — no browser automation was demanded or run. Pending human UT (UT009.1–009.4) and OT009.1 remain explicitly PENDING, as required.
+            - Test quality and evidence: implemented tests exercise the real HTTP boundary (twenty autosaves per format, rename, clearing, retry, capacity, permission transitions, stale/alias/metadata rechecks, legacy import, read-only sidecar with unplaced fallback and false-backlink removal), the writer boundary with fault injection (short write, sync failure, directory sync, cancelled context, hard-link race), and the codec round-trip including literal-context exclusion and native Pandoc export. RED evidence is recorded per category in validation.org. Assertions are behavioural (file bytes, DOM structure, status codes), not source greps.
+            - Design conformance: Pandoc owns footnote rendering — the reader relocates the existing native endnotes section rather than regenerating it; roles doc-noteref/backlink/endnotes are narrowly re-admitted through the sanitizer with fixed values; insertion points are proven by a bounded marker round-trip through the real renderer before first write; saves patch only owned spans and atomically replace through a rooted private temp file with owner/mode preservation and refusal of unsupported ACLs/xattrs (metadata_darwin.go/metadata_linux.go); the canonical text excludes endnotes and footnote labels in both Go and browser mappers (shared fixtures). No iframe, no second lifecycle, no new dependency (go.mod unchanged).
+            - Security: origin/write/composer token checks, constant-time compare, rooted handles, O_NOFOLLOW, nlink==1, same-file rechecks before rename, and byte-verified uncertain-acknowledgement recovery all retained and tested; plaintext uses base64 + textContent, never innerHTML.
+            - Audit-state hygiene: no audit findings, verdicts, round numbers or session IDs are duplicated in spec.org, validation.org or the delta. The trailing v1 test annotation in spec.org is human-authored data whose resolution is reserved for paired wrap-up per the caller context and is therefore not treated as an unresolved implementation instruction here; the retrospective definition review owns its disposition.
+
+            Conditions for PROVISIONAL PASS to become effective:
+            - Run the complete `make test` race suite at fb9f71e (or later unchanged revision) and record the result in validation.org. No other remediation is required.
+          updated: "2026-09-14T01:54:47Z"

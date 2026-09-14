@@ -63,10 +63,12 @@ Linux/WSL $XDG_CACHE_HOME/htmlpreview/runtime (default ~/.cache).
 Read mode retains pages until Ctrl+C or SIGTERM. Standalone output is always on.
 Quick mode removes its private temporary directory after the grace period;
 the delay does not guarantee browser readiness. SIGKILL can leave that directory.
-Reading never modifies source files. Service annotations append their own records
-to genuine Org/Markdown sources, or an adjacent Org sidecar for read-only sources.
-The Annotations button opens the autosaving composer. Closing freezes a comment;
-later corrections are new comments. Source changes refresh without losing drafts.
+Reading never modifies source files. Service annotations update native footnotes
+in genuine Org/Markdown sources, or an adjacent Org sidecar for read-only sources.
+Annotations enables insertion by clicking in prose. Autosave retains current text
+only; closing freezes a comment, and corrections become new footnotes.
+Show plaintext displays eligible Org/Markdown source, including embedded footnotes.
+Source changes refresh without losing drafts.
 The display name permits 128 Unicode characters/512 UTF-8 bytes, without controls.
 Missing display name and USER permit reading only. See packaged ANNOTATIONS.md.
 The command never starts a service implicitly.

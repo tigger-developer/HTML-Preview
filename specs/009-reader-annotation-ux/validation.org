@@ -45,9 +45,14 @@
 - Source entry :: Service pages without annotation polling now fetch the existing
   authorized page before displaying plaintext. JavaScript lint passes; executed
   interaction remains part of the paired source-view test.
-- Remaining :: Current rendered-output checks, paired browser interaction, native
-  replacement qualification, and the combined implementation review remain to be
-  recorded. Linux/WSL remain pending as previously agreed.
+- Rendered output :: The rebuilt service response at =fb9f71e= (current native
+  footnote checkpoint) passes =tidy -errors -quiet -utf8= and
+  =htmltest --skip-external=. =htmlq= confirms the info bar, reader, frontmatter,
+  navigation, native endnotes and literal-source regions. These checks do not
+  execute JavaScript or establish link navigation in a browser.
+- Remaining :: The final full regression run and paired browser interaction remain
+  to be recorded. Linux/WSL remain pending as previously agreed. Review evidence
+  is retained only in [[file:audits.yaml][the harness-owned audit record]].
 
 * Pending human and native qualification
 
@@ -93,4 +98,21 @@
 - Status :: PENDING.
 - Requirement/procedure :: Follow [[file:spec.org::#ot-009-1][Native replacement qualification]].
 - Expected :: Durable acknowledged values, preserved permissions/metadata and bounded failure.
-- Platforms :: macOS remains to be exercised; Linux/WSL remain pending as agreed.
+- macOS result :: PASS on 14 September 2026, macOS 26.6 (25G5065a), arm64,
+  Pandoc 3.9.0.2, rebuilt =fb9f71e= (current native footnote checkpoint).
+  A separate service used only an OS-created temporary document root and private
+  runtime directory. Four disposable documents (two per format) and eleven
+  mutation attempts stayed within the stated bound.
+- Observed :: Org and Markdown create/update retained one current value and
+  preserved owner/group/mode. Added xattrs and restrictive ACLs caused HTTP 409
+  =storage_metadata_unsupported= with bytes and metadata unchanged. Read-only
+  source saves selected native sidecars and preserved the original bytes/mode.
+  SIGTERM after handing a mutation to the HTTP socket, followed by restart,
+  retained a readable current record; every earlier acknowledged value survived.
+  This does not establish safety against every possible interruption instant.
+- Evidence :: Native check output and bounded runner were retained under
+  =hp9q-20260914-56708-fcpimq= in the OS temporary directory. The check service
+  was stopped; the human review service is separate. The first setup attempt
+  made no mutations and reported a too-long Unix socket path; the successful
+  attempt used a shorter independently allocated runtime directory.
+- Platforms :: Overall status remains PENDING for Linux/WSL as agreed.
