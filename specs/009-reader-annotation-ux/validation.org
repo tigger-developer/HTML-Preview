@@ -50,9 +50,15 @@
   =htmltest --skip-external=. =htmlq= confirms the info bar, reader, frontmatter,
   navigation, native endnotes and literal-source regions. These checks do not
   execute JavaScript or establish link navigation in a browser.
-- Remaining :: The final full regression run and paired browser interaction remain
-  to be recorded. Linux/WSL remain pending as previously agreed. Review evidence
-  is retained only in [[file:audits.yaml][the harness-owned audit record]].
+- Final Go run :: =make test= passed with the race detector (integration:
+  29.493 seconds; annotation: 4.025 seconds; preview: 622.740 seconds). It tested
+  the =fb9f71e= implementation plus the help correction committed in =1f9db0e=.
+  The later CSS-only change in =27d218d= (navigation placement and folding
+  chevrons) was not part of that compiled test binary. No Go or JavaScript
+  behaviour changed after the run began.
+- Remaining :: Corrected paired browser interaction and documentation wrap-up
+  remain to be recorded. Linux/WSL remain pending as previously agreed. Review
+  evidence is retained only in [[file:audits.yaml][the harness-owned audit record]].
 
 * Pending human and native qualification
 
@@ -87,8 +93,10 @@
 - Correction :: Use a low-specificity child selector for shared reader sizing,
   allowing the sidebar placement to apply; retain a visible downward chevron on
   expanded folding bars. Both bar and heading click handlers remain present.
-- Evidence :: Native Biome CSS lint passes and the rebuilt service opened the
-  same disposable sample. Corrected interaction and visual validation remain
+- Evidence :: At =27d218d= (navigation placement and folding chevrons), native
+  Biome CSS lint passes. The rebuilt service opened the same disposable sample;
+  its response passes =tidy -errors -quiet -utf8= and
+  =htmltest --skip-external=. Corrected interaction and visual validation remain
   PENDING; no browser automation was invoked.
 
 ** UT009.1 - Responsive reading and composition
