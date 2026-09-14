@@ -188,7 +188,30 @@ of paired human interaction checks. That instruction supersedes the W007 browser
 runner prescription above. [W009 validation](../specs/009-reader-annotation-ux/validation.org)
 records objective evidence separately from pending browser/platform qualification.
 
+### Editable-footnote amendment - 14 September 2026
+
+The operator approved editing supported native footnotes, including ordinary
+notes and closed annotations. The parser reconstructs named definitions and
+byte spans from the current source or sidecar. An explicit edit identifies the
+label, store and definition digest through the existing authenticated v2 route.
+The shared atomic writer replaces only that definition, retains attribution and
+checks the file revision. Ordinary notes gain no ownership metadata. Equal
+current content makes a repeated save harmless; conflicting text retains the
+browser draft. An unrelated source change can refresh and retry while the
+selected definition digest remains unchanged.
+
+Conversion-only markers associate Pandoc's endnotes with native labels, including
+repeated references. Markers are removed before publication; application-owned
+attributes retain the mapping. The sidebar uses the existing composer and
+source refresh. An edit fixes the existing ID and finishes after its latest
+save acknowledgement, without a separate persisted close event. Earlier
+closed-comment and ordinary-note editing restrictions are superseded. Native
+named definitions support continuation paragraphs; ambiguous or unresolvable
+forms remain readable without unsafe guessed edits. Existing read-only source
+definitions remain unchanged; existing sidecar notes are edited in place.
+
 ## System shape
+
 
 The implementation uses `cmd/htmlpreview`, `internal/preview`, a root Go asset
 bundle, and `internal/buildtool` for build/package tasks. Editable presentation

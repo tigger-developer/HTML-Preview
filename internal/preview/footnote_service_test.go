@@ -268,3 +268,103 @@ func TestRT009_7_PreviousProtocolCannotAppendHistory(t *testing.T) {
 		t.Fatal("old request changed source", err)
 	}
 }
+
+func TestRT009_7_EditOrdinaryFootnotes(t *testing.T) {
+	s := startTestService(t, NativeHost())
+	for _, format := range []string{"org", "md"} {
+		t.Run(format, func(t *testing.T) {
+			original := "A[fn:12] and again[fn:12].\n\n[fn:12] *Original* note.\n\n\n* Next\n\nUnrelated text.\n"
+			if format == "md" {
+				original = "A[^12] and again[^12].\n\n[^12]: **Original** note.\n\n# Next\n\nUnrelated text.\n"
+			}
+			path := source(t, s.root, "editable."+format, original)
+			endpoint := strings.Replace(annotationRegistrationURL(t, s, path, "Reviewer"), "/_annotations/v1/", "/_annotations/v2/", 1)
+			status, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
+			notes, ok := state["footnotes"].([]any)
+			if status != 200 || !ok || len(notes) != 1 {
+				t.Fatalf("ordinary footnote unavailable for editing: %d %#v", status, state)
+			}
+			note := notes[0].(map[string]any)
+			if note["label"] != "12" || !strings.Contains(note["text"].(string), "Original") {
+				t.Fatal("native ID or text lost", note)
+			}
+			headers := map[string]string{"Origin": s.origin, "X-HTMLPreview-Annotation-Token": state["write_token"].(string), "X-HTMLPreview-Composer-Token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
+			request := map[string]any{"operation_id": "10000000-0000-4000-8000-000000000001", "annotation_id": "20000000-0000-4000-8000-000000000001", "composer_id": "30000000-0000-4000-8000-000000000001", "sequence": 1, "revision": state["revision"], "source_revision": state["source_revision"], "body_revision": state["body_revision"], "action": "edit", "label": "12", "target": map[string]any{"type": "footnote", "exact": note["revision"], "run": "embedded"}, "text": strings.Replace(note["text"].(string), "Original", "Updated", 1)}
+			status, saved := annotationJSON(t, s, "POST", endpoint, request, headers)
+			if status != 201 {
+				t.Fatalf("edit refused: %d %#v", status, saved)
+			}
+			// #nosec G304 -- Synthetic file within this test's isolated root.
+			data, err := os.ReadFile(path)
+			if err != nil || string(data) != strings.Replace(original, "Original", "Updated", 1) {
+				t.Fatalf("edit changed unrelated bytes: %v\n%s", err, data)
+			}
+			status, retry := annotationJSON(t, s, "POST", endpoint, request, headers)
+			if status != 200 {
+				t.Fatalf("lost-response retry: %d %#v", status, retry)
+			}
+			request["text"] = "Stale replacement"
+			status, conflict := annotationJSON(t, s, "POST", endpoint, request, headers)
+			if status != 409 || conflict["error"] != "footnote_conflict" {
+				t.Fatalf("stale edit accepted: %d %#v", status, conflict)
+			}
+			status, current := annotationJSON(t, s, "GET", endpoint, nil, nil)
+			if status != 200 || !strings.Contains(current["footnotes"].([]any)[0].(map[string]any)["text"].(string), "Updated") {
+				t.Fatal("reload lost current footnote", status, current)
+			}
+			pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
+			pageStatus, _, data := responseAsset(t, s, "GET", pageURL)
+			if pageStatus != 200 {
+				t.Fatal(pageStatus)
+			}
+			page := parseHTTPDocument(t, data)
+			mapped := 0
+			for _, node := range nodes(page, "li") {
+				if attr(node, "data-hp-footnote-label") == "12" {
+					mapped++
+				}
+			}
+			if mapped != 2 {
+				t.Fatalf("repeated rendered notes mapped=%d nodes=%v", mapped, nodes(page, "li")[0].Attr)
+			}
+		})
+	}
+}
+
+func TestRT009_8_EditableNotesPreserveRenderedMarkup(t *testing.T) {
+	s := startTestService(t, NativeHost())
+	for _, tc := range []struct{ format, body string }{
+		{"org", "Text[fn:a].\n\n[fn:a] - First item\n  - Second item\n\n#+BEGIN_EXAMPLE\n[fn:fake] literal\n#+END_EXAMPLE\n"},
+		{"md", "Text[^a].\n\n[^a]: - First item\n      - Second item\n\n    ```\n    [^fake]: literal\n    ```\n"},
+	} {
+		t.Run(tc.format, func(t *testing.T) {
+			path := source(t, s.root, "markup."+tc.format, tc.body)
+			endpoint := strings.Replace(annotationRegistrationURL(t, s, path, "Reviewer"), "/_annotations/v1/", "/_annotations/v2/", 1)
+			status, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
+			if status != 200 {
+				t.Fatal(status, state)
+			}
+			pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
+			status, _, data := responseAsset(t, s, "GET", pageURL)
+			if status != 200 {
+				t.Fatal(status)
+			}
+			page := parseHTTPDocument(t, data)
+			var mapped int
+			for _, node := range nodes(page, "li") {
+				if attr(node, "data-hp-footnote-label") == "a" {
+					mapped++
+					if len(nodes(node, "ul")) == 0 || len(nodes(node, "pre")) != 1 || !strings.Contains(textOf(node), "literal") {
+						t.Fatal("footnote markup changed", textOf(node))
+					}
+					if strings.Contains(textOf(node), "HPPREVIEW") {
+						t.Fatal("conversion token visible")
+					}
+				}
+			}
+			if mapped != 1 {
+				t.Fatalf("mapped footnotes=%d body=%s", mapped, textOf(nodes(page, "main")[0]))
+			}
+		})
+	}
+}

@@ -5,6 +5,7 @@ package preview
 import (
 	"context"
 	"errors"
+
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -21,14 +22,26 @@ func (s *session) renderFootnotes(ctx context.Context, p *page, snap annotation.
 	prefix := "HPPREVIEW" + strings.ReplaceAll(id, "-", "") + "X"
 	body, headings := annotation.CanonicalDocument(p.dom, p.explicitIDs)
 	input, markers, err := annotation.PreviewFootnotes(ctx, snap, annotationFormat(p.source), body, headings, prefix)
-	if err != nil || input == nil {
+	if err != nil {
 		return nil, err
 	}
+	if input == nil {
+		input = snap.RawSource
+	}
+	input, labels, err := annotation.MarkFootnotes(input, annotationFormat(p.source), prefix+"EDIT")
+	if err != nil {
+		return nil, err
+	}
+	if len(labels) == 0 && len(markers) == 0 {
+		return nil, nil
+	}
 	original, revision := p.sourceData, p.annotationSourceRevision
+	p.toc = nil // The second conversion supplies a fresh contents container.
 	if err := s.render(ctx, p, input); err != nil {
 		return nil, err
 	}
 	p.sourceData, p.annotationSourceRevision = original, revision
+	labelRenderedFootnotes(p.dom, labels, prefix+"EDIT")
 	return finalizeVirtualNotes(p.dom, markers, prefix, body)
 }
 
@@ -117,4 +130,51 @@ func finalizeVirtualNotes(root *html.Node, notes []annotation.VirtualNote, prefi
 		endnote.InsertBefore(label, endnote.FirstChild)
 	}
 	return located, nil
+}
+
+func labelRenderedFootnotes(root *html.Node, labels map[string]string, prefix string) {
+	pattern := regexp.MustCompile(regexp.QuoteMeta(prefix) + `[0-9]+Q`)
+	var markerParagraphs []*html.Node
+	for n := range root.Descendants() {
+		if n.Type != html.TextNode {
+			continue
+		}
+		for _, marker := range pattern.FindAllString(n.Data, -1) {
+			label, known := labels[marker]
+			if !known {
+				continue
+			}
+			n.Data = strings.ReplaceAll(n.Data, marker, "")
+			for parent := n.Parent; parent != nil; parent = parent.Parent {
+				if parent.Data == "li" && parent.Parent != nil && parent.Parent.Data == "ol" && parent.Parent.Parent != nil && attribute(parent.Parent.Parent, "role") == "doc-endnotes" {
+					setAttribute(parent, "data-hp-footnote-label", label)
+					if n.Parent.Data == "p" && n.Parent.Parent == parent {
+						markerParagraphs = append(markerParagraphs, n.Parent)
+					}
+					break
+				}
+			}
+		}
+	}
+	for _, paragraph := range markerParagraphs {
+		previous := paragraph.PrevSibling
+		for previous != nil && previous.Type == html.TextNode && strings.TrimSpace(previous.Data) == "" {
+			previous = previous.PrevSibling
+		}
+		// Restore Pandoc's usual backlink at the end of the preceding paragraph.
+		// Block-only notes retain their separate backlink paragraph.
+		if previous != nil && previous.Data == "p" {
+			for child := paragraph.FirstChild; child != nil; {
+				next := child.NextSibling
+				if child.Data == "a" && attribute(child, "role") == "doc-backlink" {
+					paragraph.RemoveChild(child)
+					previous.AppendChild(child)
+				}
+				child = next
+			}
+		}
+		if strings.TrimSpace(contentText(paragraph)) == "" {
+			paragraph.Parent.RemoveChild(paragraph)
+		}
+	}
 }

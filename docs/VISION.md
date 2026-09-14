@@ -125,7 +125,17 @@ with virtual preview markers; ordinary native footnotes remain untouched.
 current objective checks and pending paired browser/platform qualification.
 The earlier W007 event-history description is superseded by this candidate.
 
+### Editable-footnote amendment - 14 September 2026
+
+The operator approved editing supported native footnotes regardless of whether
+HTMLPreview created them. This supersedes the read-only closed/ordinary-note
+restrictions above. Editing preserves native IDs, references and existing
+attribution; unattributed notes remain unattributed. Autosave retains only the
+current value and protects against conflicting file edits. Reading stays
+non-mutating, and file-mode previews remain reading-only.
+
 ## Purpose
+
 
 `htmlpreview` makes local Markdown and Org documents comfortable to read in a
 browser. A globally installed command converts a document to a temporary HTML

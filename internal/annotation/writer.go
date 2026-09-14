@@ -39,14 +39,15 @@ func NewWriter(ops FileOperations) *Writer {
 }
 
 type Receipt struct {
-	AnnotationID   string `json:"annotation_id"`
-	Sequence       int    `json:"sequence"`
-	Revision       string `json:"revision"`
-	SourceRevision string `json:"source_revision"`
-	BodyRevision   string `json:"body_revision"`
-	StoredAt       string `json:"stored_at"`
-	Storage        string `json:"storage"`
-	Closed         bool   `json:"closed"`
+	FootnoteRevision string `json:"footnote_revision,omitempty"`
+	AnnotationID     string `json:"annotation_id"`
+	Sequence         int    `json:"sequence"`
+	Revision         string `json:"revision"`
+	SourceRevision   string `json:"source_revision"`
+	BodyRevision     string `json:"body_revision"`
+	StoredAt         string `json:"stored_at"`
+	Storage          string `json:"storage"`
+	Closed           bool   `json:"closed"`
 }
 
 func (w *Writer) begin(path string) error {
@@ -61,5 +62,5 @@ func (w *Writer) begin(path string) error {
 func (w *Writer) end(path string) { w.mu.Lock(); delete(w.active, path); w.mu.Unlock() }
 
 func receipt(s Snapshot, event Event, body, storage string) Receipt {
-	return Receipt{event.AnnotationID, event.Sequence, s.Revision, s.SourceRevision, body, event.RecordedAt, storage, event.Kind == "close"}
+	return Receipt{"", event.AnnotationID, event.Sequence, s.Revision, s.SourceRevision, body, event.RecordedAt, storage, event.Kind == "close"}
 }

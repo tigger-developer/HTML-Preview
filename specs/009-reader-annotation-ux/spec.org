@@ -36,7 +36,7 @@
 - *Annotation mode is explicit* and starts off; leaving it safely finishes the active comment.
 - *Plaintext disables annotation* and is absent for text wrappers, code, HTML and binary documents.
 - *New document-wide comments leave the UI*; existing document-wide records remain readable.
-- *Autosave replaces the active annotation*, including its ID if changed; closed comments remain read-only.
+- *Autosave replaces the current annotation*. Existing native footnotes, including closed comments, can be edited while retaining their ID and attribution.
 
 ** Unchanged
 
@@ -60,6 +60,35 @@
 
 ** Decisions
 
+- Operator, 14 September 2026, editable footnotes :: *Allow editing any supported
+  native footnote*, including ordinary authored notes and closed HTMLPreview
+  annotations. The file and native ID identify it, not browser memory. Preserve
+  the ID, references and existing attribution; do not assign authorship to an
+  unattributed note. Autosave replaces only its current definition, checks for
+  competing disk edits and retains unsaved text on conflict. This supersedes the
+  closed/ordinary-note read-only restrictions below; deletion remains excluded.
+- Existing-note lifecycle :: An =edit= action uses =target.type: footnote=,
+  =target.exact= as the definition digest and =target.run= as =embedded= or
+  =sidecar=. Acknowledgements include =footnote_revision=. The editor finishes
+  locally after its latest save; there is no new persistent close record.
+  Empty text is refused for existing notes, since deletion is outside scope.
+  A =Use current footnote= recovery action explicitly discards the unsaved
+  proposal in favour of the current definition; Copy draft remains available.
+- Implementation for this paired increment :: Reuse the authenticated v2 endpoint
+  and atomic writer. An edit carries the native ID, storage location, current
+  definition digest and source/store revisions. Reading reconstructs the editable
+  definitions from disk. Ordinary footnotes retain native markup without added
+  ownership records. Existing annotation metadata is retained for compatibility.
+  The edit composer keeps the ID read-only, uses the same autosave feedback and
+  finishes on outside activation. Native labels and their repeated references
+  survive editing. Unresolvable or ambiguous definitions remain visible with an
+  explanation rather than being guessed. Read-only original definitions cannot
+  be changed through a sidecar; existing sidecar annotations remain editable.
+- Verification for this paired increment :: Extend current-value writer and HTTP
+  regression cases for ordinary Org/Markdown notes, repeated references,
+  attribution, reload, stale edits, byte preservation and write refusal. Extend
+  the existing paired composer review to opening, changing and reopening a
+  footnote, preserving markup and observing a competing-edit error.
 - Taḋg requested these changes on *13 September 2026* and accepted the *phone split view*.
 - Taḋg clarified that plaintext means *literal Org/Markdown source without highlighting*, with *no binary extraction*.
 - On *14 September 2026*, Taḋg selected native footnotes, insertion-point clicks,
@@ -203,7 +232,7 @@ source* in the same preview on desktop and phone layouts.
   below the comment box, which receives initial focus. Check all footnotes for collisions.
 - Operator, 14 September 2026 :: *Render footnotes normally at the document end*.
   Annotation mode shows those footnotes in the sidebar; switching off restores
-  their normal position. Ordinary footnotes participate without becoming editable.
+  their normal position. The later paired amendment also enables editing ordinary named footnotes.
 
 ** Unresolved blockers
 

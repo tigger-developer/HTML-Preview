@@ -36,16 +36,17 @@ type annotationView struct {
 }
 
 type annotationState struct {
-	Protocol       int              `json:"protocol"`
-	Revision       string           `json:"revision"`
-	SourceRevision string           `json:"source_revision"`
-	BodyRevision   string           `json:"body_revision"`
-	Events         []annotationView `json:"events"`
-	Storage        string           `json:"storage"`
-	Writable       bool             `json:"writable"`
-	Reason         string           `json:"reason"`
-	WriteToken     string           `json:"write_token,omitempty"`
-	Labels         []string         `json:"footnote_labels"`
+	Footnotes      []annotation.EditableFootnote `json:"footnotes"`
+	Protocol       int                           `json:"protocol"`
+	Revision       string                        `json:"revision"`
+	SourceRevision string                        `json:"source_revision"`
+	BodyRevision   string                        `json:"body_revision"`
+	Events         []annotationView              `json:"events"`
+	Storage        string                        `json:"storage"`
+	Writable       bool                          `json:"writable"`
+	Reason         string                        `json:"reason"`
+	WriteToken     string                        `json:"write_token,omitempty"`
+	Labels         []string                      `json:"footnote_labels"`
 }
 
 type annotationPoll struct {
@@ -155,7 +156,7 @@ func (s *previewService) serveAnnotations(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/_annotations/v2/") {
-		response := map[string]any{"protocol": 2, "revision": state.Revision, "source_revision": state.SourceRevision, "body_revision": state.BodyRevision, "comments": state.Events, "storage": state.Storage, "writable": state.Writable, "reason": state.Reason, "footnote_labels": state.Labels}
+		response := map[string]any{"protocol": 2, "revision": state.Revision, "source_revision": state.SourceRevision, "body_revision": state.BodyRevision, "comments": state.Events, "storage": state.Storage, "writable": state.Writable, "reason": state.Reason, "footnote_labels": state.Labels, "footnotes": state.Footnotes}
 		if state.WriteToken != "" {
 			response["write_token"] = state.WriteToken
 		}
@@ -181,6 +182,7 @@ func (s *previewService) readAnnotationDocument(ctx context.Context, cap *readCa
 	}
 	state.Revision, state.SourceRevision, state.BodyRevision = snap.Revision, snap.SourceRevision, annotation.Digest([]byte(page.bodyText))
 	state.Reason = snap.Reason
+	state.Footnotes = append(annotation.EditableFootnotes(snap.RawSource, loc.Format, "embedded"), annotation.EditableFootnotes(snap.RawSidecar, "org", "sidecar")...)
 	labels := make(map[string]bool)
 	for label := range snap.Embedded.Labels {
 		labels[label] = true
@@ -323,7 +325,7 @@ func annotationFailure(w http.ResponseWriter, r *http.Request, err error) {
 		status = 413
 	case "busy":
 		status = 429
-	case "stale_source", "stale_body", "source_replaced", "source_changed", "store_changed", "corrupt_store", "foreign_sidecar", "unsafe_source", "unsafe_sidecar", "unsupported_store", "operation_conflict", "composer_conflict", "sequence_conflict", "closed_comment", "label_conflict", "point_unmappable", "storage_metadata_unsupported", "target_unresolved":
+	case "footnote_conflict", "read_only_footnote", "invalid_footnote", "stale_source", "stale_body", "source_replaced", "source_changed", "store_changed", "corrupt_store", "foreign_sidecar", "unsafe_source", "unsafe_sidecar", "unsupported_store", "operation_conflict", "composer_conflict", "sequence_conflict", "closed_comment", "label_conflict", "point_unmappable", "storage_metadata_unsupported", "target_unresolved":
 		status = 409
 	}
 	annotationError(w, r, status, code)

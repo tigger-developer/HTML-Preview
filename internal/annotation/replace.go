@@ -34,6 +34,9 @@ type currentSave struct {
 }
 
 func validateCurrentRequest(r Request) error {
+	if r.Action == "edit" {
+		return validateFootnoteEdit(r)
+	}
 	if len(r.Text) > 16384 || utf8.RuneCountInString(r.Text) > 4000 || len(r.Target.Run) > 8192 || utf8.RuneCountInString(r.Target.Prefix) > 64 || utf8.RuneCountInString(r.Target.Suffix) > 64 || len(r.Target.HeadingID) > 4096 {
 		return fail("body_limit")
 	}
@@ -65,6 +68,9 @@ func validateCurrentRequest(r Request) error {
 func (r Request) ValidateCurrent() error { return validateCurrentRequest(r) }
 
 func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo, author, secret string, r Request, verify PointVerifier) (Replacement, error) {
+	if r.Action == "edit" {
+		return w.editFootnote(ctx, loc, expected, r)
+	}
 	if err := validateCurrentRequest(r); err != nil {
 		return Replacement{}, err
 	}

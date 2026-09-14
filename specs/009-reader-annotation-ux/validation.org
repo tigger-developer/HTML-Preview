@@ -157,3 +157,30 @@
   PENDING paired validation under [[file:spec.org::#ut-009-1][Responsive reading]]
   and [[file:spec.org::#ut-009-2][Point insertion and save feedback]]. No browser
   runner or CLI JavaScript runtime is invoked for this iteration.
+
+** Editable-footnote paired increment - 14 September 2026
+
+- Scope :: The operator authorized editing supported native footnotes, including
+  ordinary notes and closed HTMLPreview annotations, preserving ID, references,
+  markup and attribution. This supersedes the earlier read-only editing boundary.
+- Regression evidence :: The new HTTP ordinary-note test first failed because
+  editable content was absent. Its Org and Markdown cases now pass through GET,
+  edit POST, repeated save, stale-save refusal and reload. Both rendered copies
+  of a repeated reference retain the same native label. Real-file tests cover
+  multiline/CRLF markup, Unicode labels, retained author/creation identity after
+  reopening with a fresh writer, duplicate labels, stale source/note, read-only
+  refusal, failed replacement and editing an existing sidecar.
+- Objective checks :: Focused W007/W009 race checks passed (annotation 4.036s;
+  preview 19.558s). Subsequent markup-preservation checks passed after moving
+  conversion markers into their own leading paragraph; lists and literal blocks
+  retain their structure. The build, complete static lint and vulnerability
+  checks pass. The current full regression run is in progress.
+- Review sample :: The rebuilt foreground service uses the same isolated
+  OS-temporary document root and opens its Org index through the real CLI and
+  system default browser. Existing sample annotations were retained.
+- Human checks :: PENDING under the existing responsive/composer/source user
+  tests: open Edit on an ordinary footnote and a saved annotation, change text,
+  observe Auto saved, click outside and reopen. Confirm the fixed ID, retained
+  attribution, source markup, reference outline and normal endnotes outside
+  annotation mode. Exercise Copy draft / Use current footnote after a competing
+  edit. JavaScript interaction has not been executed by an automated browser.

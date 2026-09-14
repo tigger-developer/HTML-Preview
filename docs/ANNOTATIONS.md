@@ -53,8 +53,13 @@ caret, Left/Right or Home/End to move it, then Enter to open the composer.
 Escape cancels caret placement. Links, code-copy controls and folding controls
 retain their own actions.
 
-Comments are read-only after closing. Corrections become new comments.
-Reopening a page exposes saved drafts as read-only recovered comments.
+Existing notes, including closed comments and ordinary authored footnotes, offer
+**Edit** in annotation mode. The editor loads the current content from the file.
+The existing ID is read-only and all references keep that ID. Ordinary notes
+retain their Org/Markdown markup; unattributed notes remain unattributed. Editing
+an HTMLPreview annotation preserves its original author and creation date.
+Closing and reopening the page does not affect editability. This supersedes the
+earlier closed-comment and HTMLPreview-only editing restrictions.
 The ID defaults to a normalized display name and the next unused counter:
 `Taḋg` produces `tadg-001`; `Tadhg O'Brien` produces `tadhg-o-brien-001`.
 Ordinary footnotes also reserve their labels. IDs accept 1--64 ASCII letters,
@@ -66,7 +71,10 @@ seconds during continuous typing. Input-method composition suspends submission.
 Comments accept up to 4,000 Unicode characters and 16 KiB. Opening an empty
 composer writes nothing. Clearing an active saved draft removes its owned
 reference and definition. **Restore last autosave** restores the acknowledged
-text and ID.
+text and ID. Editing an existing footnote requires non-empty text; clearing it
+does not delete it. After a conflict, **Use current footnote** explicitly replaces
+the editor contents with the current saved definition; **Copy draft** preserves
+the unsaved proposal first.
 
 ## Reading and source inspection
 
@@ -101,8 +109,8 @@ leaving annotation mode and application navigation wait for acknowledged saves.
 Browser navigation warnings are best effort: terminating the process can still
 lose text that was never acknowledged.
 
-Saves patch only owned reference tokens and definitions in a fresh source
-snapshot. A private sibling temporary file is flushed and atomically renamed,
+New annotations patch their own reference tokens and definitions. Explicit
+footnote edits patch only the selected definition in a fresh source snapshot. A private sibling temporary file is flushed and atomically renamed,
 then its directory is synchronized before success. Owner and mode are preserved;
 unsupported ACLs, extended attributes or flags prevent replacement rather than
 being silently removed. File identity, source content and permissions are
@@ -114,7 +122,17 @@ reloading when another tool has changed the file. A source rename requires
 reopening its new path. Restarting the service revokes URLs and write grants;
 open the document again through the command.
 
+Edits identify a native named definition by its label, storage location and
+content digest. A conflicting change to that definition pauses autosave; an
+unrelated source change refreshes the page before retrying. Duplicate or
+unresolvable definitions cannot be edited by guessing. Supported definitions use
+`[fn:name]` at the beginning of an Org definition or `[^name]:` in Markdown,
+including their native continuation paragraphs. Inline anonymous definitions
+remain readable. Original definitions in read-only files cannot be changed;
+existing sidecar footnotes can be edited in their sidecar.
+
 ## Storage and ownership
+
 
 Org uses `[fn:tadg-001]` references and named definitions. Markdown uses
 `[^tadg-001]` references and `[^tadg-001]:` definitions. Each owned definition
@@ -147,7 +165,7 @@ Each source and sidecar is limited to 10 MiB. Combined annotation data is limite
 to 10 MiB and 10,000 current annotations, with a 64 KiB per-record limit.
 Previous draft versions no longer consume those quotas. The service permits
 64 active composers and 256 document write grants. Closing releases a composer;
-restart releases grants and leaves saved drafts read-only.
+restart releases grants; reopening the document reloads its editable footnotes.
 
 ## Verification
 

@@ -27,13 +27,14 @@ export class AnnotationComposer {
     this.onStale = options.onStale;
     this.revisions = { ...options.revisions };
     this.target = structuredClone(options.target);
+    this.editing = Boolean(options.note);
     this.label = options.label || defaultFootnoteID(options.author || '', options.labels || []);
     this.savedLabel = this.label;
     this.annotationID = crypto.randomUUID();
     this.composerID = crypto.randomUUID();
     const secret = crypto.getRandomValues(new Uint8Array(32));
     this.secret = btoa(String.fromCharCode(...secret)).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
-    this.text = ''; this.savedText = ''; this.version = 0; this.savedVersion = 0;
+    this.text = options.note?.text || ''; this.savedText = this.text; this.version = 0; this.savedVersion = 0;
     this.sequence = 0; this.savedTarget = this.target;
     this.inFlight = null; this.failed = null; this.error = null;
     this.closed = false; this.disposed = false; this.composing = false; this.paused = false;
@@ -45,13 +46,14 @@ export class AnnotationComposer {
 
   emit() {
     if (this.disposed) return;
-    let status = this.closed ? 'Saved' : this.dirty ? 'Saving' : this.sequence ? 'Autosaved draft' : 'Not saved';
+    let status = this.closed ? 'Saved' : this.dirty ? 'Saving' : (this.sequence || this.editing) ? 'Autosaved draft' : 'Not saved';
     if (this.error || this.paused) status = 'Not saved';
     this.onState({ status, error: this.error, dirty: this.dirty, text: this.text, savedText: this.savedText, label: this.label, savedLabel: this.savedLabel, closed: this.closed, pending: Boolean(this.inFlight) });
   }
 
   input(text) {
     if (this.closed || this.disposed) return;
+    if (this.error?.code === 'invalid_footnote') { this.failed = null; this.error = null; }
     this.text = text; this.version += 1;
     if (text === this.savedText && this.label === this.savedLabel && !this.inFlight && !this.failed) this.savedVersion = this.version;
     if (!this.failed) this.error = null;
@@ -67,10 +69,10 @@ export class AnnotationComposer {
   }
 
   valid() {
-    if (!/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(this.label)) {
+    if (!this.editing && !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(this.label)) {
       this.error = new Error('Use 1–64 letters, digits, underscores or hyphens, beginning with a letter.'); this.error.code = 'invalid_label'; return false;
     }
-    return (this.text === '' || this.text.trim() !== '') && !this.text.includes('\0') && Array.from(this.text).length <= 4000 && new TextEncoder().encode(this.text).length <= 16384;
+    return ((!this.editing && this.text === '') || this.text.trim() !== '') && !this.text.includes('\0') && Array.from(this.text).length <= 4000 && new TextEncoder().encode(this.text).length <= 16384;
   }
 
   composition(active) {
@@ -94,6 +96,7 @@ export class AnnotationComposer {
   }
 
   snapshot(action) {
+    if (this.editing) action = 'edit';
     return { version: this.version, request: {
       operation_id: crypto.randomUUID(), annotation_id: this.annotationID, composer_id: this.composerID,
       sequence: this.sequence + 1, ...this.revisions, action,
@@ -146,6 +149,11 @@ export class AnnotationComposer {
       this.sequence = receipt.sequence;
       this.savedText = snapshot.request.text; this.savedTarget = snapshot.request.target;
       this.savedLabel = snapshot.request.label;
+      if (this.editing) {
+        if (!/^[a-f0-9]{64}$/.test(receipt.footnote_revision || '')) throw new Error('The service omitted the saved footnote revision.');
+        this.target.exact = receipt.footnote_revision;
+        this.savedTarget = structuredClone(this.target);
+      }
       this.savedVersion = snapshot.version; this.failed = null;
       for (const key of ['revision', 'source_revision', 'body_revision']) if (receipt[key]) this.revisions[key] = receipt[key];
       if (receipt.closed) this.closed = true;
@@ -181,17 +189,26 @@ export class AnnotationComposer {
     if (this.paused) throw new Error('The insertion point is unresolved. The draft remains available.');
     await this.flush();
     if (this.composing) throw new Error('Finish composing text before closing.');
+    if (this.editing) { this.closed = true; this.emit(); return; }
     await this.perform(this.snapshot('close'));
   }
 
   rebase(target, revisions) {
-    if (target.type !== this.target.type || target.exact !== this.target.exact) throw new Error('A comment cannot change its target.');
+    if (target.type !== this.target.type || (target.type !== 'footnote' && target.exact !== this.target.exact)) throw new Error('A comment cannot change its target.');
     this.target = structuredClone(target); this.revisions = { ...revisions }; this.paused = false;
     if (this.error?.code === 'stale_source' || this.error?.code?.startsWith('target_')) { this.error = null; this.failed = null; }
     if (!this.inFlight) this.schedule();
   }
 
   suspend(reason) { this.paused = true; this.error = new Error(reason); this.error.code = 'target_unresolved'; this.cancelTimer(); this.emit(); }
+  useCurrentFootnote(note, revisions) {
+    if (!this.editing || this.inFlight || note.label !== this.label || note.storage !== this.target.run) return;
+    this.cancelTimer(); this.failed = null; this.error = null; this.paused = false;
+    this.text = note.text; this.savedText = note.text; this.version += 1; this.savedVersion = this.version;
+    this.target.exact = note.revision; this.savedTarget = structuredClone(this.target);
+    this.revisions = { ...revisions }; this.emit();
+  }
+
   restoreSaved() { this.setLabel(this.savedLabel); this.input(this.savedText); }
 
   dispose() {

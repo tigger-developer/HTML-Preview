@@ -40,6 +40,9 @@ function annotationFailureMessage(code, status) {
   if (['source_replaced', 'source_changed', 'unsafe_source', 'unsafe_sidecar'].includes(code)) return 'The file identity changed or is unsafe to update. Copy the draft and reopen after checking the file.';
   if (['corrupt_store', 'store_changed', 'foreign_sidecar', 'unsupported_store'].includes(code)) return 'Stored annotation data needs inspection. Earlier records and this draft are retained; no repair is automatic.';
   if (['closed_comment', 'composer_conflict', 'sequence_conflict'].includes(code)) return 'This comment cannot accept another revision. Copy the draft and create a new comment.';
+  if (code === 'footnote_conflict') return 'This footnote changed on disk. Your draft is retained; copy it before reopening the current note.';
+  if (code === 'invalid_footnote') return 'This text would break out of the native footnote definition. Adjust its markup and retry.';
+  if (code === 'read_only_footnote') return 'The original footnote is read-only. Its source has not been changed.';
   if (code === 'operation_conflict') return 'The service found conflicting saved data. Copy the draft before retrying.';
   if (status === 413) return 'The comment, insertion context or annotation store exceeds its storage limit.';
   if (status === 403 || status === 404) return 'The preview no longer has access. Copy the draft and reopen the document through htmlpreview.';
@@ -69,10 +72,14 @@ function validateAnnotationState(state) {
       typeof state.reason !== 'string' || (state.writable && (!['embedded', 'sidecar'].includes(state.storage) || typeof state.write_token !== 'string' || !state.write_token))) {
     throw new Error('Unsupported annotation state.');
   }
+    if (!Array.isArray(state.footnotes) || state.footnotes.length > 10000 || !state.footnotes.every(note =>
+    note && typeof note.label === 'string' && typeof note.text === 'string' && typeof note.owned === 'boolean' &&
+    /^[a-f0-9]{64}$/.test(note.revision || '') && ['embedded', 'sidecar'].includes(note.storage))) throw new Error('Unsupported native footnote state.');
   return state;
 }
 
-export class AnnotationPanel {
+export class
+ AnnotationPanel {
   constructor(data, options = {}) {
     this.data = data; this.request = options.request || annotationRequest;
     this.clock = options.clock || { now: () => performance.now(), setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: id => clearTimeout(id) };
@@ -199,23 +206,25 @@ export class AnnotationPanel {
     this.placeEndnotes(on);
   }
 
-  openComposer(target) {
-    if (!this.state?.writable || this.composer || target?.type !== 'point' || document.body.classList.contains('hp-plaintext')) return;
+  openComposer(target, note = null) {
+    if (!this.state?.writable || this.composer || !['point', 'footnote'].includes(target?.type) || document.body.classList.contains('hp-plaintext')) return;
     this.clearCaret();
     this.editor.replaceChildren();
     this.markInsertionPoint(target);
     this.textarea = annotationElement('textarea'); this.textarea.id = 'hp-annotation-text'; this.textarea.rows = 6;
-    const label = annotationElement('label', 'Your comment'); label.htmlFor = this.textarea.id;
+    this.textarea.value = note?.text || '';
+    const label = annotationElement('label', note ? 'Edit footnote' : 'Your comment'); label.htmlFor = this.textarea.id;
     this.status = annotationElement('p', 'Not saved', 'hp-annotation-status'); this.status.setAttribute('role', 'status'); this.status.setAttribute('aria-live', 'polite');
-    const retry = annotationButton('Retry'); const copy = annotationButton('Copy draft'); const restore = annotationButton('Restore last autosave');
+    const retry = annotationButton('Retry'); const copy = annotationButton('Copy draft'); const restore = annotationButton(note ? 'Use current footnote' : 'Restore last autosave');
     this.recovery = annotationElement('div', '', 'hp-annotation-actions'); this.recovery.hidden = true; this.recovery.append(retry, copy, restore);
     this.idInput = annotationElement('input'); this.idInput.id = 'hp-annotation-id'; this.idInput.type = 'text'; this.idInput.maxLength = 64;
-    this.idInput.value = defaultFootnoteID(this.data.display_name || '', this.state.footnote_labels);
+    this.idInput.value = note?.label || defaultFootnoteID(this.data.display_name || '', this.state.footnote_labels);
+    this.idInput.readOnly = Boolean(note);
     const idLabel = annotationElement('label', 'Footnote ID', 'hp-annotation-id-label'); idLabel.htmlFor = this.idInput.id;
     this.idError = annotationElement('small'); this.idError.id = 'hp-annotation-id-error'; this.idInput.setAttribute('aria-describedby', this.idError.id);
     this.editor.append(label, this.textarea, this.status, idLabel, this.idInput, this.idError, this.recovery);
 
-    this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, label: this.idInput.value,
+    this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, note, label: this.idInput.value,
       send: (request, secret) => this.request(this.data.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-HTMLPreview-Annotation-Token': this.state.write_token, 'X-HTMLPreview-Composer-Token': secret }, body: JSON.stringify(request) }),
       onState: state => {
         const saved = !state.error && !state.dirty && (state.status === 'Autosaved draft' || state.status === 'Saved');
@@ -235,12 +244,24 @@ export class AnnotationPanel {
     this.textarea.addEventListener('compositionstart', () => this.composer.composition(true), this.events);
     this.textarea.addEventListener('compositionend', () => this.composer.composition(false), this.events);
     retry.addEventListener('click', () => this.retryComposer(), this.events);
-    restore.addEventListener('click', () => { this.textarea.value = this.composer.savedText; this.idInput.value = this.composer.savedLabel; this.composer.restoreSaved(); this.textarea.focus(); }, this.events);
+    restore.addEventListener('click', async () => {
+      try {
+        if (this.composer.editing) {
+          await this.refresh();
+          const current = this.state.footnotes.find(item => item.label === this.composer.label && item.storage === this.composer.target.run);
+          if (!current) throw new Error('The footnote was removed. Copy your draft before leaving.');
+          this.composer.useCurrentFootnote(current, annotationRevisions(this.state));
+        } else this.composer.restoreSaved();
+        this.textarea.value = this.composer.text; this.idInput.value = this.composer.label; this.textarea.focus();
+      } catch (error) { this.showComposerFailure(error); }
+    }, this.events);
+
     copy.addEventListener('click', () => {
       this.status.classList.remove('hp-autosaved');
       if (!navigator.clipboard) { this.textarea.focus(); this.textarea.select(); this.status.textContent = 'Select and copy the draft using your keyboard.'; return; }
       navigator.clipboard.writeText(this.textarea.value).then(() => { this.status.textContent = 'Draft copied.'; }, () => { this.textarea.focus(); this.textarea.select(); this.status.textContent = 'Clipboard unavailable. Select and copy the draft.'; });
     }, this.events);
+    if (note) this.markInsertionPoint(target);
     this.textarea.focus();
   }
 
@@ -263,7 +284,7 @@ export class AnnotationPanel {
       this.composer.dispose(); this.composer = null; this.editor.replaceChildren(); this.clearInsertionPoint();
       if (restoreFocus) this.toggle.focus();
       await this.refresh();
-    } finally { this.closing = null; if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = false; } }
+    } finally { this.closing = null; if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = this.composer.editing; } }
   }
 
   showComposerFailure(error) {
@@ -305,7 +326,9 @@ export class AnnotationPanel {
   }
 
   async loadState() {
+    const sequence = this.composer?.sequence;
     let state = validateAnnotationState(await this.request(this.data.endpoint));
+    if (sequence !== this.composer?.sequence) state = validateAnnotationState(await this.request(this.data.endpoint));
     if (this.disposed) return;
     if (state.revision !== this.data.revision) state = await this.replaceSource(state);
     if (this.disposed) return;
@@ -327,6 +350,15 @@ export class AnnotationPanel {
   }
 
   rebaseTarget(target) {
+    if (target.type === 'footnote') {
+      const note = this.state.footnotes.find(item => item.label === this.composer.label && item.storage === target.run);
+      if (!note || note.revision !== target.exact) {
+        this.composer.suspend('This footnote changed on disk. Copy your draft before reopening the current note.');
+        return null;
+      }
+      return { target, revisions: annotationRevisions(this.state) };
+    }
+
     const result = resolveAnnotationTarget(target, canonicalMap(document.getElementById('hp-document')).text, this.state.body_revision, this.headingSpans());
     if (result.status !== 'resolved') { this.composer?.suspend('The insertion point is ' + result.status + '. Your draft is retained.'); return null; }
     return { target: result.target, revisions: annotationRevisions(this.state) };
@@ -346,6 +378,17 @@ export class AnnotationPanel {
     return spans;
   }
 
+  editFootnote(label) {
+    this.transition(async () => {
+      await this.refresh();
+      const matches = this.state.footnotes.filter(note => note.label === label);
+      if (matches.length !== 1) { this.connection.textContent = 'This footnote definition is missing or ambiguous. Inspect its source before editing.'; return; }
+      const note = matches[0];
+      if (note.storage === 'embedded' && this.state.storage === 'sidecar') { this.connection.textContent = 'This original footnote is read-only.'; return; }
+      this.openComposer({ type: 'footnote', exact: note.revision, run: note.storage }, note);
+    }).catch(error => this.showComposerFailure(error));
+  }
+
   renderComments() {
     const main = document.getElementById('hp-document');
     const fresh = main.querySelector('section.footnotes');
@@ -357,6 +400,14 @@ export class AnnotationPanel {
       this.placeEndnotes(!this.panel.hidden);
     } else if (this.endnotesSlot && !this.endnotesSlot.isConnected) {
       this.endnotes?.remove(); this.endnotes = null; this.endnotesSlot = null;
+    }
+    for (const item of this.endnotes?.querySelectorAll('li[data-hp-footnote-label]') || []) {
+      if (item.querySelector('.hp-footnote-edit')) continue;
+      const edit = annotationButton('Edit'); edit.className = 'hp-footnote-edit';
+      edit.setAttribute('aria-label', 'Edit footnote ' + item.dataset.hpFootnoteLabel);
+      edit.disabled = !this.state.writable;
+      edit.addEventListener('click', () => this.editFootnote(item.dataset.hpFootnoteLabel), this.events);
+      item.append(edit);
     }
     for (const paragraph of this.endnotes?.querySelectorAll('li > p:last-of-type') || []) {
       const comment = this.state?.comments.find(item => paragraph.textContent.startsWith('Author: ' + item.author + '; Created: ' + item.created_at));
@@ -387,6 +438,15 @@ export class AnnotationPanel {
   clearCaret() { this.caretMarker?.remove(); this.caretMarker = null; this.keyboardCaret = null; }
 
   markInsertionPoint(target) {
+    if (target.type === 'footnote') {
+      const note = [...(this.endnotes?.querySelectorAll('li[data-hp-footnote-label]') || [])].find(node => node.dataset.hpFootnoteLabel === this.composer?.label);
+      const reference = note && [...document.querySelectorAll('#hp-document a.footnote-ref')].find(link => link.hash === '#' + note.id);
+      if (reference) {
+        reference.classList.add('hp-editing-footnote'); this.editingReference = reference;
+      }
+      return;
+    }
+
     const map = canonicalMap(document.getElementById('hp-document'));
     const resolved = resolveAnnotationTarget(target, map.text, this.data.body_revision, this.headingSpans());
     this.insertionRange = resolved.status === 'resolved' ? map.rangeAt(resolved.target.position) : null;
@@ -398,7 +458,7 @@ export class AnnotationPanel {
     this.positionCaret();
   }
 
-  clearInsertionPoint() { this.insertionMarker?.remove(); this.insertionMarker = null; this.insertionRange = null; }
+  clearInsertionPoint() { this.editingReference?.classList.remove('hp-editing-footnote'); this.editingReference = null; this.insertionMarker?.remove(); this.insertionMarker = null; this.insertionRange = null; }
 
   placeWithKeyboard(event) {
     if (this.panel.hidden || this.composer || !this.state?.writable || event.isComposing) return;
