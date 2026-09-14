@@ -27,13 +27,16 @@ func splitAttribution(text string) (body, attribution, author, created string) {
 	}
 	line := strings.TrimSpace(text[at+1:])
 	name, date, ok := strings.Cut(strings.TrimPrefix(line, "Author: "), "; Created: ")
+	if !ok {
+		name, date, ok = strings.Cut(strings.TrimPrefix(line, "Author: "), "; Edited: ")
+	}
 	if !ok || !strings.HasPrefix(line, "Author: ") || ValidateName(name) != nil || orgTimestamp(date) == "" {
 		return text, "", "", ""
 	}
 	return strings.TrimRight(text[:at], "\n"), text[at+1:], name, date
 }
 
-func encodeReadableFootnote(format string, event Event, label, ending string) ([]byte, error) {
+func encodeReadableFootnote(format string, event Event, label, ending string, edited bool) ([]byte, error) {
 	if !ValidText(event.Text) || (event.Author != "" && ValidateName(event.Author) != nil) {
 		return nil, fail("invalid_event")
 	}
@@ -53,7 +56,11 @@ func encodeReadableFootnote(format string, event Event, label, ending string) ([
 	}
 	body := text
 	if event.Author != "" && date != "" {
-		body += "\n\nAuthor: " + event.Author + "; Created: " + date
+		kind := "Created"
+		if edited {
+			kind = "Edited"
+		}
+		body += "\n\nAuthor: " + event.Author + "; " + kind + ": " + date
 	}
 	lines := strings.Split(body, "\n")
 	result := definition + " " + lines[0] + ending
@@ -76,14 +83,14 @@ func encodeReadableFootnote(format string, event Event, label, ending string) ([
 
 // Old frames are decoded for compatibility, then emitted as ordinary current
 // definitions on an authorized save. They are never written back as frames.
-func readableFootnotes(data []byte, format string) ([]byte, error) {
+func readableFootnotes(data []byte, format, editedLabel string) ([]byte, error) {
 	store := Parse(data, format)
 	if store.Reason != "" {
 		return nil, fail(store.Reason)
 	}
 	var patches []sourcePatch
 	for _, note := range store.Notes {
-		encoded, err := encodeReadableFootnote(format, note.Event, note.Label, store.Ending)
+		encoded, err := encodeReadableFootnote(format, note.Event, note.Label, store.Ending, note.Label == editedLabel)
 		if err != nil {
 			return nil, err
 		}
@@ -189,5 +196,5 @@ func refreshAttribution(line, author, now string) string {
 		return line
 	}
 	indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
-	return indent + "Author: " + author + "; Created: " + orgTimestamp(now)
+	return indent + "Author: " + author + "; Edited: " + orgTimestamp(now)
 }

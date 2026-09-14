@@ -4,6 +4,7 @@ package annotation
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -110,7 +111,7 @@ func TestRT009_4_OptionalNativeAttribution(t *testing.T) {
 				}
 				expected := strings.Replace(original, "Original text.", "Revised text.", 1)
 				if date != "" {
-					expected = strings.Replace(expected, "Author: Original author; Created: "+date, "Author: Another reviewer; Created: [2026-09-14 Mon 14:30]", 1)
+					expected = strings.Replace(expected, "Author: Original author; Created: "+date, "Author: Another reviewer; Edited: [2026-09-14 Mon 14:30]", 1)
 				}
 				if string(after.RawSource) != expected {
 					t.Fatalf("native attribution or unrelated bytes changed: %s", after.RawSource)
@@ -170,5 +171,91 @@ func TestRT009_7_EditOtherNoteRetainsActiveComposer(t *testing.T) {
 	}
 	if !strings.Contains(string(snap.RawSource), "An edited ordinary note.") || !strings.Contains(string(snap.RawSource), "Draft two") {
 		t.Fatal("current notes missing")
+	}
+}
+
+func TestRT009_4_AttributionLifecycle(t *testing.T) {
+	for _, format := range []string{"org", "markdown"} {
+		for _, changeDraft := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/changed=%v", format, changeDraft), func(t *testing.T) {
+				loc, _ := sourceFixture(t, "note")
+				loc.Format = format
+				snap, err := Read(loc)
+				if err != nil {
+					t.Fatal(err)
+				}
+				w := NewWriter(FileOperations{})
+				now := time.Date(2026, 9, 14, 14, 30, 0, 0, time.Local)
+				w.now = func() time.Time { return now }
+				r := requestFixture(t, snap)
+				r.Text = "First value"
+				result, err := w.Replace(t.Context(), loc, snap.SourceInfo, "Reviewer", "secret", r, func(context.Context, Snapshot, *Target) (int, error) { return 10, nil })
+				if err != nil {
+					t.Fatal(err)
+				}
+				check := func(want string) (Snapshot, EditableFootnote) {
+					t.Helper()
+					current, err := Read(loc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					notes := EditableFootnotes(current.RawSource, format, "embedded")
+					if len(notes) != 1 || notes[0].attribution != want {
+						t.Fatalf("attribution: %#v, want %s", notes, want)
+					}
+					return current, notes[0]
+				}
+				want := "Author: Reviewer; Created: [2026-09-14 Mon 14:30]"
+				snap, _ = check(want)
+				if changeDraft {
+					now = now.Add(time.Minute)
+					r.Sequence++
+					r.OperationID = "10000000-0000-4000-8000-000000000009"
+					r.Text = "Changed value"
+					r.Revision, r.SourceRevision = snap.Revision, snap.SourceRevision
+					result, err = w.Replace(t.Context(), loc, result.SourceInfo, "Reviewer", "secret", r, nil)
+					if err != nil {
+						t.Fatal(err)
+					}
+					want = "Author: Reviewer; Edited: [2026-09-14 Mon 14:31]"
+					snap, _ = check(want)
+				}
+				now = now.Add(time.Hour)
+				r.Sequence++
+				r.OperationID = "10000000-0000-4000-8000-000000000010"
+				r.Action = "close"
+				r.Revision, r.SourceRevision = snap.Revision, snap.SourceRevision
+				result, err = w.Replace(t.Context(), loc, result.SourceInfo, "Reviewer", "secret", r, nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				snap, note := check(want)
+				// Reopening and editing again must read Edited without including the attribution in the textarea.
+				for i := 0; i < 2; i++ {
+					w = NewWriter(FileOperations{})
+					now = now.Add(time.Minute)
+					w.now = func() time.Time { return now }
+					edit := editRequest(snap, note, fmt.Sprintf("Reopened edit %d", i))
+					result, err = w.Replace(t.Context(), loc, result.SourceInfo, "Other reviewer", "new", edit, nil)
+					if err != nil {
+						t.Fatal(err)
+					}
+					want = "Author: Other reviewer; Edited: " + now.Format("[2006-01-02 Mon 15:04]")
+					snap, note = check(want)
+					if note.Text != edit.Text {
+						t.Fatal("attribution leaked into editor", note.Text)
+					}
+					before := string(snap.RawSource)
+					now = now.Add(time.Hour)
+					if _, err = w.Replace(t.Context(), loc, result.SourceInfo, "Other reviewer", "new", edit, nil); err != nil {
+						t.Fatal(err)
+					}
+					snap, note = check(want)
+					if string(snap.RawSource) != before {
+						t.Fatal("retry changed source")
+					}
+				}
+			})
+		}
 	}
 }

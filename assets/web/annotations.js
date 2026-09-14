@@ -419,7 +419,8 @@ export class
       const note = this.state?.footnotes.find(note => note.label === item.dataset.hpFootnoteLabel);
       if (!note?.author || !note.created_at) continue;
       for (const paragraph of item.querySelectorAll(':scope > p')) {
-        if (!paragraph.textContent.startsWith('Author: ' + note.author + '; Created: ')) continue;
+        const attribution = ['Created', 'Edited'].map(kind => 'Author: ' + note.author + '; ' + kind + ': ').find(prefix => paragraph.textContent.startsWith(prefix));
+        if (!attribution) continue;
         const nativeDate = /^\[\d{4}-\d{2}-\d{2} [A-Za-z]{3}(?: \d{2}:\d{2})?\]$/.test(note.created_at);
         const date = new Date(note.created_at);
         if (!nativeDate && Number.isNaN(date.getTime())) continue;
@@ -433,7 +434,7 @@ export class
         const timestamp = annotationElement('time', display);
         timestamp.dateTime = nativeDate ? note.created_at.slice(1,11) + (note.created_at.length > 16 ? 'T' + note.created_at.slice(16,21) : '') : note.created_at;
         timestamp.title = note.created_at;
-        paragraph.replaceChildren(document.createTextNode('Author: ' + note.author + '; Created: '), timestamp, document.createTextNode(' '), ...backlinks);
+        paragraph.replaceChildren(document.createTextNode(attribution), timestamp, document.createTextNode(' '), ...backlinks);
         paragraph.classList.add('hp-annotation-author');
       }
     }

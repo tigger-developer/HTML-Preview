@@ -242,3 +242,22 @@
 - Pending :: Paired review of the pencil cursor, click targets, focus outlines,
   attribution display and current save feedback. Linux/WSL qualification remains
   pending. No automated browser interaction was performed.
+
+* Paired refinement: Created and Edited attribution
+
+- Operator scope :: Use Created on first save and Edited after changing the
+  comment. Batch remaining implementation and run the combined audit at the end.
+- RED evidence :: Org and Markdown attributed-note edit regressions first failed
+  because the updated native line still said Created.
+- Current checks :: Focused W007/W009 race regressions passed (annotation 5.214 s,
+  preview 19.678 s). Cases cover first save, changed drafts, unchanged closes,
+  reopening and repeated edits with a fresh writer, harmless retries, optional
+  attribution and sidecar conversion preserving Edited in Org and Markdown.
+  The HTTP multiple-save expectation now uses Edited. Lint and build passed.
+- Review sample :: The rebuilt isolated service reopened the existing native Org
+  sample in the system default browser. Served HTML passed tidy and htmltest.
+  Existing sample files and annotations were retained. No browser automation ran.
+- Evidence boundary :: The previous full race-suite result precedes this wording
+  refinement; current verification targets the affected writer and service paths.
+  Human cursor, editing and visual checks, plus Linux/WSL qualification, remain
+  pending. The combined implementation review is batched under operator direction.

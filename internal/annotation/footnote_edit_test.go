@@ -193,4 +193,11 @@ func TestRT009_6_EditExistingSidecar(t *testing.T) {
 	if err != nil || string(current.RawSource) != string(original) || len(EditableFootnotes(current.RawSidecar, "org", "sidecar")) != 1 || EditableFootnotes(current.RawSidecar, "org", "sidecar")[0].Text != "Edited sidecar" || EditableFootnotes(current.RawSidecar, "org", "sidecar")[0].Author != "Reviewer" {
 		t.Fatal("sidecar edit changed source or attribution", err)
 	}
+	// Conversion after reopening must keep Edited in both supported page formats.
+	for _, format := range []string{"org", "markdown"} {
+		preview, _, err := PreviewFootnotes(t.Context(), current, format, "Body.", nil, "review")
+		if err != nil || !strings.Contains(string(preview), "Author: Reviewer; Edited: [") {
+			t.Fatal("sidecar preview lost edited attribution", format, err, string(preview))
+		}
+	}
 }

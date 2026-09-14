@@ -162,7 +162,7 @@ func patchEditableFootnote(data []byte, format string, note EditableFootnote, te
 		event.Author, event.CreatedAt = author, now
 		event.Sequence++
 		var err error
-		encoded, err = encodeReadableFootnote(format, event, note.Label, Parse(data, format).Ending)
+		encoded, err = encodeReadableFootnote(format, event, note.Label, Parse(data, format).Ending, true)
 		if err != nil {
 			return nil, err
 		}

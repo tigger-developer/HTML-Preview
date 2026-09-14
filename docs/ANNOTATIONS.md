@@ -60,7 +60,8 @@ to ordinary authored footnotes as well as comments created in HTML Preview. The 
 The existing ID is read-only and all references keep that ID. Ordinary notes
 retain their Org/Markdown markup; unattributed notes remain unattributed. On a
 saved edit, a matching final Author line receives the current reviewer's name
-and local date/time in Org format.
+and local date/time in Org format, labelled **Edited**. The first save uses
+**Created**; unchanged closes and retries retain the existing attribution.
 Closing and reopening the page does not affect editability. This supersedes the
 earlier closed-comment and HTMLPreview-only editing restrictions.
 The ID defaults to a normalized display name and the next unused counter:
@@ -149,7 +150,7 @@ example `Author: Taḋg; Created: [2026-09-14 Mon 03:12]`. Date-only timestamps 
 as `[2026-09-14 Mon]` are also recognized. The sidebar retains that native format;
 older ISO dates are displayed in Org format too. Each saved edit replaces a
 matching final non-empty `Author:` line ending in an Org timestamp with
-`Author: CURRENT USER; Created: [YYYY-MM-DD Day HH:MM]`. Editing an older managed
+`Author: CURRENT USER; Edited: [YYYY-MM-DD Day HH:MM]`. Both Created and Edited lines are recognized. Editing an older managed
 note also replaces its redundant hidden metadata with the native representation.
 
 This supersedes the earlier hidden UUID/state/operation block. The service keeps

@@ -113,6 +113,7 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 			return Replacement{}, fail("operation_conflict")
 		}
 	}
+	edited := false
 	if active && owner.current != nil && previous.Text != "" {
 		data, format := snap.RawSource, loc.Format
 		if owner.storage == "sidecar" {
@@ -122,6 +123,7 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 		for _, note := range EditableFootnotes(data, format, owner.storage) {
 			if note.Label == previous.Label {
 				found = note.Revision == owner.current.definitionRevision
+				edited = strings.Contains(note.attribution, "; Edited: ")
 				break
 			}
 		}
@@ -194,8 +196,10 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	now := w.now().UTC().Format(time.RFC3339Nano)
 	event := Event{Schema: 2, OperationID: r.OperationID, AnnotationID: r.AnnotationID, Sequence: r.Sequence, Kind: "draft", Author: author, CreatedAt: now, RecordedAt: now, Target: r.Target, Text: r.Text, Label: r.Label}
 	if previous != nil {
-		if previous.Text == r.Text && previous.Label == r.Label {
+		if previous.Text == r.Text {
 			event.CreatedAt = previous.CreatedAt
+		} else if !missing {
+			edited = true
 		}
 		if !missing {
 			event.Target = previous.Target
@@ -225,7 +229,11 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	if err != nil {
 		return Replacement{}, err
 	}
-	data, err = readableFootnotes(data, format)
+	editedLabel := ""
+	if edited {
+		editedLabel = r.Label
+	}
+	data, err = readableFootnotes(data, format, editedLabel)
 	if err != nil {
 		return Replacement{}, err
 	}

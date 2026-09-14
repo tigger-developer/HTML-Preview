@@ -60,6 +60,15 @@
 
 ** Decisions
 
+- Operator, 14 September 2026, batch delivery :: Batch the remaining paired
+  implementation changes and run one combined implementation audit at the end;
+  do not audit each small refinement. Continue proportionate local checks.
+- Operator, 14 September 2026, attribution wording :: First save writes =Created:=.
+  A later text change replaces that label with =Edited:= alongside the current
+  author and Org timestamp. Further edits retain =Edited:=; unchanged closes and
+  retries preserve the existing label and timestamp. Read both native forms in
+  the editor and sidebar, including sidecars and after service restart. This
+  supersedes the preceding always-Created wording for edits.
 - Operator, 14 September 2026, annotation cursor :: Use =✎= (Unicode U+270E)
   over eligible prose in annotation mode, with the click hotspot at the pencil
   tip. Package the small cursor within the page; retain a crosshair fallback

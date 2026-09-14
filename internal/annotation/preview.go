@@ -31,6 +31,10 @@ func PreviewFootnotes(ctx context.Context, snap Snapshot, format, body string, h
 	var patches []sourcePatch
 	var tail []byte
 	var virtual []VirtualNote
+	editedSidecars := make(map[string]bool)
+	for _, note := range EditableFootnotes(snap.RawSidecar, "org", "sidecar") {
+		editedSidecars[note.Label] = strings.Contains(note.attribution, "; Edited: ")
+	}
 	events := append(append([]Event{}, snap.Events...), nativeSidecarEvents(snap.RawSidecar)...)
 	for _, event := range events {
 		if err := ctx.Err(); err != nil {
@@ -52,7 +56,7 @@ func PreviewFootnotes(ctx context.Context, snap Snapshot, format, body string, h
 			}
 			labels[strings.ToLower(label)] = true
 		}
-		encoded, err := encodeReadableFootnote(format, event, label, store.Ending)
+		encoded, err := encodeReadableFootnote(format, event, label, store.Ending, editedSidecars[event.Label])
 		if err != nil {
 			return nil, nil, err
 		}

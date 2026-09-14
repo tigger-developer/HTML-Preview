@@ -97,7 +97,7 @@ func TestRT009_7_HTTPCurrentFootnotes(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if strings.Contains(string(data), "HTMLPREVIEW_ANNOTATION") || strings.Contains(string(data), "BEGIN_COMMENT") || !strings.Contains(string(data), "Author: Taḋg; Created: [") || strings.Contains(string(data), "Draft value 19") || !strings.Contains(string(data), "Draft value 20") {
+			if strings.Contains(string(data), "HTMLPREVIEW_ANNOTATION") || strings.Contains(string(data), "BEGIN_COMMENT") || !strings.Contains(string(data), "Author: Taḋg; Edited: [") || strings.Contains(string(data), "Draft value 19") || !strings.Contains(string(data), "Draft value 20") {
 				t.Fatalf("current native value not retained: %s", data)
 			}
 			status, current := annotationJSON(t, s, "GET", endpoint, nil, nil)
