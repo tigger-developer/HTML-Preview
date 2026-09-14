@@ -66,7 +66,8 @@ the delay does not guarantee browser readiness. SIGKILL can leave that directory
 Reading never modifies source files. Service annotations update native footnotes
 in genuine Org/Markdown sources, or an adjacent Org sidecar for read-only sources.
 Annotations enables insertion by clicking in prose. Autosave retains current text
-only; closing freezes a comment, and corrections become new footnotes.
+only. Existing native footnotes can be edited, preserving IDs and attribution.
+Click outside the editor to finish after the latest save is acknowledged.
 Show plaintext displays eligible Org/Markdown source, including embedded footnotes.
 Source changes refresh without losing drafts.
 The display name permits 128 Unicode characters/512 UTF-8 bytes, without controls.
