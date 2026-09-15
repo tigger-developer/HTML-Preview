@@ -35,7 +35,10 @@ serve:
 ```
 
 An empty roots list serves no files. Configuration accepts at most 32 existing
-directory paths, written as absolute paths or with a leading `~/` for your home.\nDuplicate canonical paths collapse; the most specific
+directory paths, written as absolute paths, with a leading `~/` for your home,
+or as `$TMPDIR` / `${TMPDIR}` with an optional child path. TMPDIR is expanded
+from the process environment when configuration loads. An unset, empty or
+relative TMPDIR is an error; no shell expressions or other variables are expanded.\nDuplicate canonical paths collapse; the most specific
 configured root applies where roots overlap. Files must remain on the root's
 filesystem. Symlink escapes, directories and special files cannot be previewed.
 
@@ -267,12 +270,13 @@ Every archive contains the empty-root example and this guide under
 `service/htmlpreview.service.tmpl`.
 
 Archives cannot know your installation paths. Make an inactive copy without the
-`.tmpl` suffix and replace the three named substitutions before manager setup:
+`.tmpl` suffix and replace the named substitutions before manager setup:
 
 | Substitution | LaunchAgent value | systemd value |
 | --- | --- | --- |
 | `{{.Executable}}` | XML-escaped absolute executable path | Quoted absolute executable path |
 | `{{.Config}}` | XML-escaped absolute config path | Quoted `HTMLPREVIEW_CONFIG=/absolute/config/path` assignment |
+| `{{.Log}}` | XML-escaped absolute service log path | Not used; systemd captures stderr |
 | `{{.Path}}` | XML-escaped fixed PATH | Quoted `PATH=/pandoc/directory:/usr/bin:/bin` assignment |
 
 Use your installed Pandoc directory and platform system directories in PATH.
@@ -328,3 +332,26 @@ Stop or disable the selected user service before restoring a previous package
 version or removing your installed unit/plist. Preserve configuration and source
 trees. Run the user manager's reload operation after changing unit files. With
 no service running, the command retains file-preview fallback.
+
+## Service logs
+
+`make serve` creates a mode-0600 log file at
+`~/Library/Logs/htmlpreview/service.log` and directs the LaunchAgent's stdout
+and stderr there. The directory is created with mode 0700. Existing log content
+is retained. The service records startup/shutdown and annotation failures with a
+timestamp, HTTP method, status, error code and opaque document identifier.
+Annotation diagnostics omit document text, comment text, author names and
+capability URLs. Successful refresh requests are not access-logged.
+
+After updating an older installation, stop it and run `make serve` to regenerate
+and reload its plist. Reopen previews to load the current browser code. Inspect
+recent diagnostics without opening a browser:
+
+```sh
+tail -n 100 "$HOME/Library/Logs/htmlpreview/service.log"
+```
+
+The application does not rotate the log. Stop the service before archiving or
+truncating it. For manual/prefix LaunchAgent installation, create the private log
+directory/file before loading the generated plist. Linux user services use their
+existing journal; foreground mode writes diagnostics to stderr.

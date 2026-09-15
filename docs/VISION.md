@@ -314,3 +314,12 @@ unchanged closes and retries preserve the label and timestamp. This supersedes
 preservation of that attribution on edits. Notes without attribution remain valid. Creation
 and editing use the same native footnote markup, guarded against breaking out of
 the selected definition; they do not infer origin from literal blocks or fences.
+
+## Push updates and service diagnostics - 15 September 2026
+
+The operator selected SSE notifications for live annotation documents instead
+of one-second browser polling. Source revision checks remain mandatory on saves.
+Native directory notifications cover ordinary and atomic editor saves; manual
+browser UTs verify the reader experience. Persistent LaunchAgent logging makes
+service and annotation failures inspectable without recording document contents
+or capability URLs. These decisions are recorded in W010's paired amendments.

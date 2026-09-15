@@ -104,7 +104,10 @@ wrappers, HTML and binary documents do not offer this view.
 
 ## Source changes and failures
 
-Visible annotation-enabled pages check for changes once per second. Refresh
+Visible annotation-enabled pages keep one server-sent event connection open.
+The service watches the source directory for document and sidecar changes,
+including atomic replacements, and notifies the browser to refresh. This
+supersedes the previous one-second polling. Refresh
 preserves the active composer. A saved embedded reference identifies its source
 point; sidecar points use unique before/after context. Missing or ambiguous
 locations remain explicitly unplaced in the endnotes. There is no fuzzy matching
@@ -197,3 +200,17 @@ and CSS with native `biome`. These checks do not execute browser interactions.
 Current keyboard, responsive layout, save feedback and accessibility checks use
 paired human validation. The historical browser-fixture runner is not used for
 this iteration. Linux/WSL qualification remains pending.
+
+## Live-update connection
+
+Hidden tabs close their event connection; returning to a tab refreshes state and
+reconnects. The stream sends a notification on every connection so an edit made
+while disconnected is not missed. A 30-second heartbeat keeps the stream alive
+without reading the document. Native EventSource reconnects after a connection
+failure; Reconnect also explicitly renews the connection. Browsers without
+EventSource require manual refresh. There is no polling fallback.
+
+Save-time source revision checks still prevent conflicting writes. Filesystems
+without usable native change notifications require manual refresh; Linux/WSL
+filesystem behaviour remains a platform user test. The service admits at most
+32 simultaneous event streams. Changes are coalesced over 100 milliseconds.

@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"syscall"
 )
 
 func launchAgent(stop bool) error {
@@ -78,7 +79,26 @@ func startLaunchAgent(home, executable, config, pandoc string, run func(...strin
 	if !info.Mode().IsRegular() {
 		return errors.New("service config must be a regular file")
 	}
-	data, err := renderService("darwin", executable, config, filepath.Dir(pandoc)+":/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin")
+	logPath := filepath.Join(home, "Library/Logs/htmlpreview/service.log")
+	if err := os.MkdirAll(filepath.Dir(logPath), 0700); err != nil {
+		return err
+	}
+	// Refuse symlinks rather than following another file when enabling diagnostics.
+	if st, err := os.Lstat(logPath); err == nil && !st.Mode().IsRegular() {
+		return errors.New("service log must be a regular file")
+	} else if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	// #nosec G304 -- Fixed user service log; refuse symlinks and blocking special files.
+	logFile, err := os.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0600)
+	if err != nil {
+		return err
+	}
+	if err := errors.Join(logFile.Chmod(0600), logFile.Close()); err != nil {
+		return err
+	}
+	data, err := renderServiceLog("darwin", executable, config, filepath.Dir(pandoc)+":/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin", logPath)
+
 	if err != nil {
 		return err
 	}

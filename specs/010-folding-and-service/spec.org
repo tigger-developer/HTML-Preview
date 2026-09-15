@@ -58,3 +58,39 @@
 - Remaining :: Reconcile the full template and inspect implementation as one
   batch. Independent audits remain subject to the operator's existing instruction
   to proceed with self-review instead. No audit verdict is claimed here.
+
+* TMPDIR amendment - 15 September 2026
+
+- Authority :: The operator reported that =$TMPDIR= in =serve.roots= rejects
+  the configuration and prevents previewing temporary documents.
+- Contract :: Accept a leading =$TMPDIR= or =${TMPDIR}=, optionally followed
+  by a slash and child path. Read its value from the process environment;
+  require a non-empty absolute directory path. Unknown variables are rejected.
+  Existing canonical-root and filesystem checks still apply after expansion.
+- Superseded service proposal :: Generated LaunchAgents retain the invoking environment's TMPDIR
+  as a literal XML-escaped value, when present. No shell evaluation is used.
+- Verification :: =TestTMPDIRConfiguration= covers configuration admission and
+  rejection. The proposed =TestLaunchAgentTMPDIR= environment-preservation test
+  was withdrawn when runtime resolution superseded installation-time capture.
+
+* Paired logging and push-update amendment - 15 September 2026
+
+- Authority :: Taḋg requested persistent service diagnostics first, then explicitly
+  authorized server-sent events and confirmed the live service was stopped.
+- Logging :: LaunchAgents direct stdout/stderr to a private user log file.
+  Annotation failures record timestamp, method, HTTP status, bounded error code
+  and an opaque document identifier; never source text, comments or capability URLs.
+- Push :: Replace periodic browser GET polling with an authorized SSE stream for
+  the current Org/Markdown annotation document. Watch the containing directory
+  for source and adjacent sidecar changes, including atomic file replacement.
+  Coalesce bursts, notify without source data, and refresh through existing APIs.
+- Boundaries :: Keep source revision checks on saves and retain dirty composers.
+  Reconnect and returning to a visible tab refresh state. No browser automation.
+  Limit concurrent streams; disconnect and shutdown release watchers. Heartbeat
+  comments keep idle streams alive without fetching document state.
+- Dependency :: Use fsnotify for native macOS/Linux directory events; no recursive
+  watchers. Unsupported filesystem notification behaviour remains a platform UT.
+- Runtime temp path :: Supersedes the proposed plist TMPDIR capture above:
+  resolve the runtime environment value when loading config, not at installation.
+- Evidence :: Go HTTP tests for notification, replacement, refusal, disconnection
+  and error logs; generated plist assertions; manual UT for editor behaviour.

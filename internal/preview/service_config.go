@@ -223,8 +223,19 @@ func canonicalRoots(nodes []*yaml.Node) ([]string, error) {
 	return roots, nil
 }
 
-// Expand only this user's home notation; never shell variables or named users.
+// Expand home notation and the explicitly supported TMPDIR variable without a shell.
 func configuredRootPath(path, home string) (string, error) {
+	for _, prefix := range []string{"$TMPDIR", "${TMPDIR}"} {
+		if path == prefix || strings.HasPrefix(path, prefix+"/") {
+			temp := os.Getenv("TMPDIR")
+			if !filepath.IsAbs(temp) {
+				return "", errors.New("configuration TMPDIR must be set to an absolute path")
+			}
+			path = filepath.Join(temp, strings.TrimPrefix(strings.TrimPrefix(path, prefix), "/"))
+			break
+		}
+	}
+
 	if path == "~" || strings.HasPrefix(path, "~/") {
 		if !filepath.IsAbs(home) {
 			return "", errors.New("configuration home must be absolute")
@@ -232,7 +243,7 @@ func configuredRootPath(path, home string) (string, error) {
 		path = filepath.Join(home, strings.TrimPrefix(strings.TrimPrefix(path, "~"), "/"))
 	}
 	if !filepath.IsAbs(path) {
-		return "", errors.New("configuration roots require absolute paths or ~/ paths")
+		return "", errors.New("configuration roots require absolute paths, ~/ paths or $TMPDIR")
 	}
 	return path, nil
 }

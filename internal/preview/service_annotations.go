@@ -135,15 +135,24 @@ func (s *previewService) annotationSource(r *http.Request) (*readCapability, sou
 func (s *previewService) serveAnnotations(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodHead && r.Method != http.MethodPost {
 		w.Header().Set("Allow", "GET, HEAD, POST")
-		annotationError(w, r, 405, "method_not_allowed")
+		s.annotationError(w, r, 405, "method_not_allowed")
 		return
 	}
 	cap, src, err := s.annotationSource(r)
 	if err != nil {
-		annotationError(w, r, 404, "target_unavailable")
+		s.annotationError(w, r, 404, "target_unavailable")
+		return
+	}
+	if values, present := r.URL.Query()["events"]; present {
+		if r.Method != http.MethodGet || len(values) != 1 || values[0] != "1" {
+			s.annotationError(w, r, 400, "invalid_event_request")
+			return
+		}
+		s.serveAnnotationEvents(w, r, src)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+
 	defer cancel()
 	r = r.WithContext(ctx)
 	if r.Method == http.MethodPost {
@@ -152,7 +161,7 @@ func (s *previewService) serveAnnotations(w http.ResponseWriter, r *http.Request
 	}
 	state, err := s.polledAnnotations(ctx, cap, src)
 	if err != nil {
-		annotationFailure(w, r, err)
+		s.annotationFailure(w, r, err)
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/_annotations/v2/") {
@@ -256,7 +265,7 @@ func (s *previewService) authorizeAnnotations(state *annotationState, cap *readC
 
 func (s *previewService) appendAnnotation(w http.ResponseWriter, r *http.Request, cap *readCapability, src sourceContext) {
 	if !cap.settings.annotations || cap.settings.displayName == "" || len(r.Header.Values("Origin")) != 1 || r.Header.Get("Origin") != s.origin {
-		annotationError(w, r, 403, "write_refused")
+		s.annotationError(w, r, 403, "write_refused")
 		return
 	}
 	key := cap.token + "\x00" + src.canonical
@@ -268,32 +277,32 @@ func (s *previewService) appendAnnotation(w http.ResponseWriter, r *http.Request
 	}
 	s.mu.Unlock()
 	if storedGrant == nil || len(r.Header.Values("X-HTMLPreview-Annotation-Token")) != 1 || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-HTMLPreview-Annotation-Token")), []byte(grant.token)) != 1 {
-		annotationError(w, r, 403, "write_refused")
+		s.annotationError(w, r, 403, "write_refused")
 		return
 	}
 	secret := r.Header.Get("X-HTMLPreview-Composer-Token")
 	decoded, err := base64.RawURLEncoding.DecodeString(secret)
 	if err != nil || len(decoded) != 32 || len(r.Header.Values("X-HTMLPreview-Composer-Token")) != 1 {
-		annotationError(w, r, 403, "composer_refused")
+		s.annotationError(w, r, 403, "composer_refused")
 		return
 	}
 	kind, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil || kind != "application/json" {
-		annotationError(w, r, 400, "invalid_content_type")
+		s.annotationError(w, r, 400, "invalid_content_type")
 		return
 	}
 	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 65536))
 	if err != nil {
-		annotationError(w, r, 413, "body_limit")
+		s.annotationError(w, r, 413, "body_limit")
 		return
 	}
 	var request annotation.Request
 	if annotation.Decode(data, &request) != nil {
-		annotationError(w, r, 400, "invalid_event")
+		s.annotationError(w, r, 400, "invalid_event")
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/_annotations/v1/") {
-		annotationError(w, r, 409, "annotation_upgrade_required")
+		s.annotationError(w, r, 409, "annotation_upgrade_required")
 		return
 	}
 	s.writeCurrentAnnotation(w, r, cap, src, grant, secret, request)
@@ -313,7 +322,7 @@ func annotationErrorCode(err error) string {
 	return "storage_unavailable"
 }
 
-func annotationFailure(w http.ResponseWriter, r *http.Request, err error) {
+func (s *previewService) annotationFailure(w http.ResponseWriter, r *http.Request, err error) {
 	code := annotationErrorCode(err)
 	status := 503
 	switch code {
@@ -328,12 +337,12 @@ func annotationFailure(w http.ResponseWriter, r *http.Request, err error) {
 	case "footnote_conflict", "read_only_footnote", "invalid_footnote", "stale_source", "stale_body", "source_replaced", "source_changed", "store_changed", "corrupt_store", "foreign_sidecar", "unsafe_source", "unsafe_sidecar", "unsupported_store", "operation_conflict", "composer_conflict", "sequence_conflict", "closed_comment", "label_conflict", "point_unmappable", "storage_metadata_unsupported", "target_unresolved":
 		status = 409
 	}
-	annotationError(w, r, status, code)
+	s.annotationError(w, r, status, code)
 }
 
 func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.Request, cap *readCapability, src sourceContext, grant annotationGrant, secret string, request annotation.Request) {
 	if err := request.ValidateCurrent(); err != nil {
-		annotationFailure(w, r, err)
+		s.annotationFailure(w, r, err)
 		return
 	}
 	verify := func(ctx context.Context, snap annotation.Snapshot, target *annotation.Target) (int, error) {
@@ -406,7 +415,7 @@ func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.R
 	}
 	s.annotationPollMu.Unlock()
 	if err != nil {
-		annotationFailure(w, r, err)
+		s.annotationFailure(w, r, err)
 		return
 	}
 	status := 201
@@ -416,7 +425,10 @@ func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.R
 	annotationResponse(w, r, status, result.Receipt)
 }
 
-func annotationError(w http.ResponseWriter, r *http.Request, status int, code string) {
+func (s *previewService) annotationError(w http.ResponseWriter, r *http.Request, status int, code string) {
+	if s.diagnostics != nil {
+		s.diagnostics.Printf("annotation method=%q status=%d code=%q document=%s", r.Method, status, code, digestText([]byte(r.URL.Path))[:16])
+	}
 	if status == 429 || status == 503 {
 		w.Header().Set("Retry-After", "1")
 	}

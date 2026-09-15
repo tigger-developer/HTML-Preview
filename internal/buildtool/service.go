@@ -73,18 +73,31 @@ func installService(share, executable, goos string) error {
 }
 
 func renderService(goos, executable, config, path string) ([]byte, error) {
+	var logPath string
+	if goos == "darwin" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+		logPath = filepath.Join(home, "Library/Logs/htmlpreview/service.log")
+	}
+	return renderServiceLog(goos, executable, config, path, logPath)
+}
+
+func renderServiceLog(goos, executable, config, path, logPath string) ([]byte, error) {
+
 	name, err := serviceTemplate(goos)
 	if err != nil {
 		return nil, err
 	}
-	values := struct{ Executable, Config, Path string }{executable, config, path}
-	for _, value := range []string{executable, config, path} {
+	values := struct{ Executable, Config, Path, Log string }{executable, config, path, logPath}
+	for _, value := range []string{executable, config, path, logPath} {
 		if strings.ContainsAny(value, "\x00\r\n") {
 			return nil, errors.New("service installation paths cannot contain NUL or newlines")
 		}
 	}
 	if goos == "darwin" {
-		for _, field := range []*string{&values.Executable, &values.Config, &values.Path} {
+		for _, field := range []*string{&values.Executable, &values.Config, &values.Path, &values.Log} {
 			var escaped bytes.Buffer
 			if err := xml.EscapeText(&escaped, []byte(*field)); err != nil {
 				return nil, err

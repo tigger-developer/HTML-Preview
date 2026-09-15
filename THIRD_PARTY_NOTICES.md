@@ -46,6 +46,8 @@ They accompany prefix installations, release archives, and embedded HTML.
 
 | Module | Version | Purpose | Licence |
 | --- | --- | --- | --- |
+| `github.com/fsnotify/fsnotify` | 1.10.1 | Native filesystem change notifications | [BSD 3-Clause](assets/licenses/fsnotify-LICENSE) |
+| `golang.org/x/sys` | 0.47.0 | Filesystem notification OS bindings | [BSD 3-Clause](assets/licenses/golang-x-sys-LICENSE) |
 | `golang.org/x/net` | 0.58.0 | HTML5 parsing | [BSD 3-Clause](assets/licenses/golang-x-net-LICENSE) |
 | `github.com/microcosm-cc/bluemonday` | 1.0.27 | Passive HTML policy engine | [BSD 3-Clause](assets/licenses/bluemonday-LICENSE.md) |
 | `github.com/aymerick/douceur` | 0.2.0 | Transitive sanitizer dependency | [MIT](assets/licenses/douceur-LICENSE) |

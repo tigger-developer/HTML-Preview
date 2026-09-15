@@ -43,3 +43,48 @@
   annotation assertions stopped at panel activation; the folding assertions
   reached eight successes but the runner failed during teardown. Neither result
   is accepted as current validation or as a substitute for UT.
+
+* Logging, TMPDIR and SSE - focused regression evidence
+
+- Candidate :: 15 September 2026 paired logging/SSE working tree, preserved in
+  the associated commit; manual interaction remains untested.
+- RED :: SSE request returned application/json rather than text/event-stream;
+  annotation refusal produced no diagnostic; generated plist lacked output logs.
+  TMPDIR roots were rejected before parser implementation.
+- GREEN :: =go test -race ./internal/preview ./internal/buildtool -run 'TestDocumentEvents|TestAnnotationFailureLogging|TestLaunchAgent|TestTMPDIRConfiguration|TestConfiguredHomeRoots' -count=1=
+  passed: preview 2.026s, build tool 1.019s.
+- HTTP evidence :: Notifications after edits, atomic replacement and sidecar
+  creation; cancellation; foreign Origin, duplicate/invalid event selector and
+  unknown capability refusal. Save-refusal logs retain HTTP status/error code
+  without source names, author, text or capability URL.
+- Static checks :: Native oxlint passed; scoped golangci-lint passed after
+  documenting the bounded log/test-file reads. =govulncheck ./internal/preview/...=
+  reported no vulnerabilities. No full-suite rerun and no browser automation.
+- Dependency :: fsnotify 1.10.1 and x/sys 0.47.0 are pinned; their upstream BSD
+  licences are packaged. Platform documentation supports directory watching
+  across atomic replacement; actual Linux/WSL filesystems remain untested here.
+
+* UT010.2 - Live logging and push refresh - PENDING
+
+- Reviewer :: Taḋg, who confirmed the live service was stopped.
+- Procedure :: =make serve= regenerates the plist and starts the rebuilt service.
+  Reopen a preview to load the current JavaScript. Inspect the service log; edit
+  a disposable document externally and check automatic refresh. Compose a draft
+  during an external change and check preservation; hide/show the tab and retry
+  after disconnect. The Network panel should show a persistent event stream,
+  with state fetches on changes rather than every second.
+- Expected :: Current source appears; the draft survives; a failed save has a
+  non-2xx response and a corresponding diagnostic. No assertion here establishes
+  that the reported insertion-point mapping defect has been corrected.
+
+* Final candidate checks - 15 September 2026
+
+- Build :: =make build= passed.
+- Startup :: The rebuilt executable accepted the current user configuration,
+  including TMPDIR, and returned =ready=true= through its private Unix socket.
+  This bounded instance used an OS-allocated temporary runtime and log, received
+  TERM, and exited. Timestamped startup and shutdown messages were recorded.
+  The live LaunchAgent was not registered or started.
+- Focused recheck :: After adjusting notifications for loss of a watched parent
+  directory, =go test ./internal/preview -run ^TestDocumentEvents -count=1=
+  passed in 0.796s. No broader suite or browser run was repeated.

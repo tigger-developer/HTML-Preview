@@ -818,3 +818,22 @@ unchanged closes and retries preserve the label and timestamp. This supersedes
 preservation of that attribution on edits. Notes without attribution remain valid. Creation
 and editing use the same native footnote markup, guarded against breaking out of
 the selected definition; they do not infer origin from literal blocks or fences.
+
+### Paired service updates, 15 September 2026
+
+The operator replaced one-second browser polling with SSE invalidations for
+annotation-enabled Org/Markdown previews. The existing authorized annotation
+endpoint accepts `events=1` on GET. Each visible page keeps one stream; the server
+caps concurrent streams at 32 and releases watchers on disconnect or shutdown.
+`fsnotify` 1.10.1 provides native directory events, filtered to the selected source
+and adjacent sidecar. Directory watches retain coverage after atomic replacement;
+there are no recursive watches. Notifications contain no source data. A 100 ms
+coalescing window handles bursts; 30-second heartbeat comments do not read files.
+Reconnect triggers reconciliation, and saves retain revision guards. Browser
+interaction is manual UT; stream and filesystem behaviour use Go HTTP RTs.
+
+LaunchAgent generation captures stdout/stderr in the private service log described
+in SERVICE.md. Annotation failures log bounded codes and opaque document IDs,
+not request bodies or token-bearing URLs. This supersedes the former discarded
+service output. TMPDIR roots expand from the runtime environment when config
+loads; generated plists do not freeze a temporary-directory path.

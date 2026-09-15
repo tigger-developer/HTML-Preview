@@ -26,6 +26,7 @@ func TestLaunchAgentLifecycle(t *testing.T) {
 	if err := startLaunchAgent(home, exe, cfg, "/opt/pandoc/bin/pandoc", run); err != nil {
 		t.Fatal(err)
 	}
+	// #nosec G304 -- Reads only this test's generated plist beneath t.TempDir.
 	data, err := os.ReadFile(plist)
 	if err != nil {
 		t.Fatal(err)
@@ -41,6 +42,7 @@ func TestLaunchAgentLifecycle(t *testing.T) {
 	if !reflect.DeepEqual(calls, [][]string{{"load", plist}, {"unload", plist}}) {
 		t.Fatalf("manager calls: %v", calls)
 	}
+	// #nosec G304 -- Reads only this test's generated plist beneath t.TempDir.
 	after, err := os.ReadFile(plist)
 	if err != nil || !bytes.Equal(after, data) {
 		t.Fatal("stop changed plist")
@@ -52,5 +54,30 @@ func TestLaunchAgentLifecycle(t *testing.T) {
 	calls = nil
 	if err := startLaunchAgent(home, exe, filepath.Join(home, "missing.yaml"), "/opt/pandoc/bin/pandoc", run); err == nil || !strings.Contains(err.Error(), "config") || len(calls) != 0 {
 		t.Fatalf("missing config activation: %v %v", err, calls)
+	}
+}
+
+func TestLaunchAgentLogs(t *testing.T) {
+	t.Chdir("../..")
+	home := t.TempDir()
+	cfg := filepath.Join(home, "config.yaml")
+	if err := os.WriteFile(cfg, []byte("version: 1\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := startLaunchAgent(home, "/bin/htmlpreview", cfg, "/bin/pandoc", func(...string) error { return nil }); err != nil {
+		t.Fatal(err)
+	}
+	// #nosec G304 -- Reads only this test's generated plist beneath t.TempDir.
+	data, err := os.ReadFile(filepath.Join(home, "Library/LaunchAgents/org.htmlpreview.agent.plist"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(home, "Library/Logs/htmlpreview/service.log")
+	if !bytes.Contains(data, []byte("<key>StandardErrorPath</key><string>"+path+"</string>")) || !bytes.Contains(data, []byte("<key>StandardOutPath</key>")) {
+		t.Fatal("missing persistent stdout/stderr")
+	}
+	st, err := os.Stat(path)
+	if err != nil || st.Mode().Perm() != 0600 {
+		t.Fatalf("private log: %v", err)
 	}
 }

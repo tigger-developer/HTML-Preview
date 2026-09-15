@@ -85,7 +85,7 @@ export class
     this.clock = options.clock || { now: () => performance.now(), setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: id => clearTimeout(id) };
     this.reinitialize = options.reinitialize || reinitializePreview;
     this.controller = new AbortController(); this.events = { signal: this.controller.signal };
-    this.disposed = false; this.composer = null; this.poll = null; this.pendingRefresh = null; this.failures = 0;
+    this.disposed = false; this.composer = null; this.stream = null; this.refreshAgain = false; this.pendingRefresh = null; this.failures = 0;
     this.panel = annotationElement('aside', '', 'hp-annotations'); this.panel.id = 'hp-annotations'; this.panel.hidden = true;
     this.panel.setAttribute('aria-label', 'Annotations & Footnotes');
     this.toggle = annotationButton('Annotations'); this.toggle.setAttribute('aria-controls', this.panel.id); this.toggle.setAttribute('aria-expanded', 'false'); this.toggle.setAttribute('aria-pressed', 'false');
@@ -123,7 +123,7 @@ export class
       }).catch(error => this.showComposerFailure(error));
     }, this.events);
     this.toggle.addEventListener('click', () => this.setMode(!(this.modeRequest?.on ?? !this.panel.hidden)).catch(error => this.showComposerFailure(error)), this.events);
-    this.reconnect.addEventListener('click', () => this.refresh().catch(error => this.showFailure(error)), this.events);
+    this.reconnect.addEventListener('click', () => { this.stopEvents(); this.refresh().catch(error => this.showFailure(error)); }, this.events);
     document.addEventListener('click', event => {
       if (this.panel.hidden || !this.state?.writable || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       if (window.getSelection()?.isCollapsed === false) return;
@@ -147,7 +147,7 @@ export class
     window.addEventListener('beforeprint', () => this.placeEndnotes(false), this.events);
     window.addEventListener('afterprint', () => this.placeEndnotes(!this.panel.hidden), this.events);
     document.addEventListener('visibilitychange', () => {
-      this.cancelPoll();
+      this.stopEvents();
       if (!document.hidden) this.refresh().catch(error => this.showFailure(error));
       if (this.composer) this.composer.flush().catch(error => this.showComposerFailure(error));
     }, this.events);
@@ -306,23 +306,46 @@ export class
     if (this.composer && [403, 404].includes(error.status)) this.composer.suspend('The document is unavailable. Copy your draft before leaving.');
   }
 
-  cancelPoll() { if (this.poll !== null) this.clock.clearTimeout(this.poll); this.poll = null; }
+  stopEvents() { this.stream?.close(); this.stream = null; }
 
-  schedulePoll() {
-    this.cancelPoll();
-    if (this.disposed || document.hidden || this.lastError?.code === 'grant_capacity') return;
-    const delay = this.failures ? [2000, 4000, 8000, 30000][Math.min(this.failures - 1, 3)] : 1000;
-    this.poll = this.clock.setTimeout(() => { this.poll = null; this.refresh().catch(error => this.showFailure(error)); }, delay);
+  connectEvents() {
+    if (this.stream || this.disposed || document.hidden) return;
+    if (typeof EventSource !== 'function') {
+      this.connection.textContent = 'Live updates are unavailable in this browser. Use Reconnect to refresh.';
+      this.reconnect.hidden = false;
+      return;
+    }
+    const endpoint = new URL(this.data.endpoint, location.href);
+    endpoint.searchParams.set('events', '1');
+    const stream = new EventSource(endpoint.href);
+    this.stream = stream;
+    stream.addEventListener('change', () => {
+      if (this.stream !== stream || this.disposed) return;
+      if (this.pendingRefresh) { this.refreshAgain = true; return; }
+      this.refresh().catch(error => this.showFailure(error));
+    });
+    stream.onerror = () => {
+      if (this.stream !== stream || this.disposed) return;
+      this.connection.textContent = 'Live updates disconnected. Reconnecting; your draft is retained.';
+      this.reconnect.hidden = false;
+    };
   }
 
   async refresh() {
     if (this.disposed) return;
     if (this.pendingRefresh) return this.pendingRefresh;
-    this.cancelPoll();
     this.pendingRefresh = this.loadState();
     try { await this.pendingRefresh; this.failures = 0; this.lastError = null; }
     catch (error) { this.failures += 1; this.lastError = error; throw error; }
-    finally { this.pendingRefresh = null; this.schedulePoll(); }
+    finally {
+      this.pendingRefresh = null;
+      this.connectEvents();
+      if (this.refreshAgain) {
+        this.refreshAgain = false;
+        queueMicrotask(() => this.refresh().catch(error => this.showFailure(error)));
+      }
+    }
+
   }
 
   async loadState() {
@@ -606,7 +629,7 @@ export class
   }
 
   dispose() {
-    this.disposed = true; this.cancelPoll(); this.controller.abort(); this.composer?.dispose();
+    this.disposed = true; this.stopEvents(); this.controller.abort(); this.composer?.dispose();
     this.markerObserver?.disconnect(); this.clearInsertionPoint();
     this.prepareKeyboard(false);
     this.placeEndnotes(false); this.endnotesSlot?.remove(); document.body.classList.remove('hp-annotating');

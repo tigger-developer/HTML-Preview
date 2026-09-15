@@ -28,7 +28,7 @@ func (s *previewService) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	authority := strings.TrimPrefix(s.origin, "http://")
 	if err != nil || net.ParseIP(peer) == nil || !net.ParseIP(peer).IsLoopback() || r.Host != authority || (r.URL.IsAbs() && (r.URL.Host != authority || r.URL.Scheme != "http")) || !sameOriginHeaders(r.Header, s.origin) {
 		if strings.HasPrefix(r.URL.Path, "/_annotations/") {
-			annotationError(w, r, 403, "write_refused")
+			s.annotationError(w, r, 403, "write_refused")
 			return
 		}
 		publicError(w, r, 403, "Request authority refused")
