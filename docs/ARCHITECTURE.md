@@ -837,3 +837,14 @@ in SERVICE.md. Annotation failures log bounded codes and opaque document IDs,
 not request bodies or token-bearing URLs. This supersedes the former discarded
 service output. TMPDIR roots expand from the runtime environment when config
 loads; generated plists do not freeze a temporary-directory path.
+
+### Extended-attribute save correction, 15 September 2026
+
+Atomic annotation replacement copies extended attributes through already-open
+file descriptors, using the existing x/sys dependency. It snapshots the original,
+restores owner/mode and attributes on the staged file, then verifies both attribute
+sets before rename. An intervening metadata change or copying failure aborts the
+save without replacing the original. Names and binary values have a combined
+16 MiB allocation bound. This supports ordinary macOS metadata and existing
+sidecars; ACLs and macOS flags retain their explicit refusal. The W009 emergency
+amendment records the regression evidence and pending live platform checks.

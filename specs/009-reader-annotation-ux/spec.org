@@ -1258,3 +1258,42 @@ prescription is superseded by the operator's paired testing instruction.
   work and any active user edits. Show its source
   after repeated autosaves. Do not ask the operator to review stale UI or run
   executable tests presented as documents. Native Linux/WSL checks remain pending.
+
+* Emergency correction - extended-attribute saves, 15 September 2026
+:PROPERTIES:
+:CUSTOM_ID: extended-attribute-saves
+:END:
+
+- Authority :: Taḋg classified the README.md HTTP 409 refusal as a bug and
+  invoked BYPASS-GATE-7 to implement metadata-preserving saves immediately.
+- Diagnosis :: The writer rejected every extended attribute. Synthetic success
+  fixtures lacked attributes; earlier platform evidence expected refusal when
+  attributes were present. That expectation did not establish usable support.
+- Required outcome :: Creating or editing native footnotes preserves extended
+  attribute names and binary values, including empty values, on the replaced
+  source or existing sidecar. Owner and mode remain preserved. Sources with
+  ordinary macOS metadata must accept annotation saves.
+- Solution :: Reuse the pinned x/sys descriptor-based attribute APIs on macOS
+  and Linux. Snapshot attributes from the opened original; copy them to the
+  staged file after writing content and restoring owner/mode; verify both the
+  original snapshot and staged attributes before atomic publication. Remove only
+  unmatched attributes on the owned staging file. Never strip source metadata.
+- Failure contract :: Copy/read errors, concurrent metadata changes or metadata
+  exceeding the 16 MiB aggregate allocation bound prevent publication. Existing
+  root, alias, revision, durability and permission checks remain. ACLs and macOS
+  file flags retain their existing explicit refusal; this correction does not
+  claim support for those separate metadata mechanisms.
+- Security :: No new access, protocol, configuration, dependency version or
+  browser behaviour. Metadata values never enter diagnostic logs. Only the
+  current annotation value is persisted.
+- Regression evidence :: =TestAnnotationSavePreservesExtendedAttributes= covers
+  Org/Markdown creation and editing with binary and empty attributes plus mode
+  preservation. =TestAnnotationSaveRejectsConcurrentMetadataChange= covers a
+  metadata edit during staging and unchanged source bytes on refusal.
+  =TestAnnotationSidecarPreservesExtendedAttributes= covers existing sidecars
+  while the read-only source stays untouched.
+  =TestHTTPAnnotationSaveWithExtendedAttributes= exercises real HTTP and Pandoc
+  for both formats, requiring 201 and preserved on-disk attributes.
+- Compatibility :: The earlier blanket extended-attribute refusal is superseded.
+  Historical refusal evidence remains historical; live Linux/WSL testing remains
+  pending. No changes to the user's README or draft are authorized by these tests.

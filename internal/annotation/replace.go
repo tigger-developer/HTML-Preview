@@ -379,6 +379,7 @@ func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, s
 	}
 	defer func() { err = errors.Join(err, root.Close()) }()
 	var original *os.File
+	var attributes fileAttributes
 	if info != nil {
 		var openErr error
 		original, openErr = root.OpenFile(rel, os.O_WRONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
@@ -390,6 +391,10 @@ func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, s
 			return updated, err
 		}
 		if err = replacementMetadata(original); err != nil {
+			return updated, err
+		}
+		attributes, err = readFileAttributes(original)
+		if err != nil {
 			return updated, err
 		}
 	}
@@ -435,6 +440,11 @@ func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, s
 			return updated, err
 		}
 	}
+	if original != nil {
+		if err = attributes.apply(f); err != nil {
+			return updated, err
+		}
+	}
 	if err = w.operations.Sync(f); err != nil {
 		return updated, err
 	}
@@ -458,6 +468,9 @@ func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, s
 		if err = replacementMetadata(original); err != nil {
 			return updated, err
 		}
+		if err = attributes.verify(original); err != nil {
+			return updated, err
+		}
 	}
 	tempInfo, err := f.Stat()
 	if err != nil {
@@ -472,6 +485,11 @@ func (w *Writer) replaceFile(ctx context.Context, loc Location, snap Snapshot, s
 	}
 	if err = replacementMetadata(f); err != nil {
 		return updated, err
+	}
+	if original != nil {
+		if err = attributes.verify(f); err != nil {
+			return updated, err
+		}
 	}
 	if err = ctx.Err(); err != nil {
 		return updated, err

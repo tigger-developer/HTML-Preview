@@ -8,10 +8,10 @@ require (
 	github.com/tdewolff/parse/v2 v2.8.16
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/net v0.58.0
+	golang.org/x/sys v0.47.0
 )
 
 require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
-	golang.org/x/sys v0.47.0 // indirect
 )

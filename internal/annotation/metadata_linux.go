@@ -1,23 +1,18 @@
-// ABOUTME: Detects Linux xattrs, including POSIX ACLs, before current-value replacement.
-// ABOUTME: Refuses unsupported metadata rather than losing it during atomic rename.
+// ABOUTME: Detects Linux security metadata that cannot be copied as ordinary attributes.
+// ABOUTME: Retains ACL refusal while allowing user metadata to survive atomic replacement.
 package annotation
 
-import (
-	"errors"
-	"os"
-	"syscall"
-)
+import "os"
 
 func replacementMetadata(f *os.File) error {
-	n, _, errno := syscall.Syscall(syscall.SYS_FLISTXATTR, f.Fd(), 0, 0)
-	if errors.Is(errno, syscall.ENOTSUP) {
-		return nil
+	attrs, err := readFileAttributes(f)
+	if err != nil {
+		return err
 	}
-	if errno != 0 {
-		return errno
-	}
-	if n != 0 {
-		return fail("storage_metadata_unsupported")
+	for name := range attrs {
+		if name == "system.posix_acl_access" || name == "system.posix_acl_default" {
+			return fail("storage_metadata_unsupported")
+		}
 	}
 	return nil
 }

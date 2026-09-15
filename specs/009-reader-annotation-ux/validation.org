@@ -327,3 +327,41 @@
 - Boundary :: The preceding full-suite result remains historical evidence.
   This correction used affected regression checks; no browser automation or
   independent audit ran. Browser and Linux/WSL qualification remain pending.
+
+* Extended-attribute emergency regression evidence - 15 September 2026
+
+- Authority :: Operator BYPASS-GATE-7 for README.md saves returning HTTP 409
+  =storage_metadata_unsupported=; see [[file:spec.org::#extended-attribute-saves][Extended-attribute save correction]].
+- RED :: New writer regressions failed for Org and Markdown with
+  =storage_metadata_unsupported=. The concurrent-change regression confirmed
+  refusal happened before the injected staging action.
+- GREEN :: Focused writer and HTTP tests with the race detector passed:
+  annotation 1.228s; preview 2.176s. They include attribute persistence,
+  concurrent metadata edits, atomic replacement failures, retry synchronization,
+  alias rechecks and existing read-only-source handling. HTTP saves returned 201.
+  Added sidecar-attribute regression passed separately in 0.036s.
+- Static :: Scoped golangci-lint passed. No browser automation or full-suite run.
+- Review scope :: Descriptor-only metadata access, copying before synchronization,
+  original/staged verification before rename, bounded allocations, preservation
+  of empty/binary values, existing source and permission checks, and retained ACL
+  refusal were checked locally. External audit was not rerun under the operator's
+  standing instruction to proceed with self-review; no independent verdict is
+  claimed by this record.
+- Limitation :: The check covers macOS execution. Linux/WSL runtime verification
+  remains pending, separately from cross-compilation.
+
+* User test - README annotation with extended attributes - PENDING
+
+- Requirement :: [[file:spec.org::#extended-attribute-saves][Extended-attribute save correction]].
+- Reviewer :: Taḋg, in the existing browser workflow.
+- Procedure :: Retain any unsaved draft, restart the service using
+  =make service-stop= followed by =make serve=, reopen README.md, and create or
+  edit an annotation. Inspect the saved native footnote and service log.
+- Expected :: Autosave succeeds without =storage_metadata_unsupported= for the
+  ordinary =com.apple.lastuseddate#PS= attribute; the attribute remains present.
+- Status :: PENDING; automated HTTP evidence does not imply human validation.
+
+- Final build checks :: Native =make build= and Linux amd64 cross-compilation
+  passed. =govulncheck ./internal/annotation/...= reported no vulnerabilities.
+  The installed command symlink points to the rebuilt checkout executable.
+  The running LaunchAgent was not restarted by the agent.

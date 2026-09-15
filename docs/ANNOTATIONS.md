@@ -123,8 +123,8 @@ lose text that was never acknowledged.
 New annotations patch their own reference tokens and definitions. Explicit
 footnote edits patch only the selected definition in a fresh source snapshot. A private sibling temporary file is flushed and atomically renamed,
 then its directory is synchronized before success. Owner and mode are preserved;
-unsupported ACLs, extended attributes or flags prevent replacement rather than
-being silently removed. File identity, source content and permissions are
+extended attributes are copied and checked before replacement. Unsupported ACLs
+or file flags still prevent replacement rather than being silently removed. File identity, source content and permissions are
 rechecked before publication. Uncertain acknowledgement retains retry recovery.
 
 An unrelated editor can still save an old buffer over newer comments. Filesystem
