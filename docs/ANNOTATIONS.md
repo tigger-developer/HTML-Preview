@@ -214,3 +214,7 @@ Save-time source revision checks still prevent conflicting writes. Filesystems
 without usable native change notifications require manual refresh; Linux/WSL
 filesystem behaviour remains a platform user test. The service admits at most
 32 simultaneous event streams. Changes are coalesced over 100 milliseconds.
+
+Section heading text does not fold sections in either reading or annotation
+mode. Use the vertical bar/indicator or Show more button. Heading text and
+hyperlinks currently remain excluded from annotation insertion.

@@ -365,3 +365,25 @@
   passed. =govulncheck ./internal/annotation/...= reported no vulnerabilities.
   The installed command symlink points to the rebuilt checkout executable.
   The running LaunchAgent was not restarted by the agent.
+
+* User test - explicit section folding controls - PENDING
+
+- Requirement :: [[file:spec.org::#explicit-section-folding][Explicit section folding controls]].
+- Authority :: Operator BYPASS-GATE-7, 16 September 2026.
+- Procedure :: With the rebuilt service and a freshly opened preview, click
+  section heading text in reading and annotation modes. Click the bar/indicator
+  and Show more button; focus these controls and use Enter/Space.
+- Expected :: Heading text never folds. Explicit controls still fold/unfold.
+  Hyperlink navigation and annotation eligibility are unchanged.
+- Verification choice :: This change affects browser event dispatch and hover
+  styling; it is classified as manual UT. No automated browser or source-text
+  tests were run, and no RED/GREEN browser claim is made.
+- Static evidence :: Oxlint completed with the existing unused =detailIdentities=
+  warning, confirmed present in the parent revision. That unrelated function
+  was left unchanged. The two folding-control listeners remain in the code;
+  source review does not substitute for this pending interaction check.
+- Review :: Local delta review under the operator's standing self-review route;
+  no independent audit verdict is claimed.
+
+- Build evidence :: =make build= passed for the explicit section-folding change.
+  The running service was not restarted; the human interaction check remains pending.

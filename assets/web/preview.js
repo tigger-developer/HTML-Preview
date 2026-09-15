@@ -350,10 +350,6 @@ async function enhanceOutline(main, header, controller, dispose) {
     };
     button.addEventListener('click', toggle, events);
     more.addEventListener('click', toggle, events);
-    record.title.addEventListener('click', event => {
-      if (!(event.target instanceof Element) || event.target.closest('a,button,code,input,textarea,select') || hasSelection() || event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
-      toggle();
-    }, events);
     record.button = button;
     record.more = more;
     record.node.classList.add('hp-outline-section');

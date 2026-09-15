@@ -848,3 +848,12 @@ save without replacing the original. Names and binary values have a combined
 16 MiB allocation bound. This supports ordinary macOS metadata and existing
 sidecars; ACLs and macOS flags retain their explicit refusal. The W009 emergency
 amendment records the regression evidence and pending live platform checks.
+
+### Explicit section folding controls, 16 September 2026
+
+Section heading text no longer toggles folding in any mode. Only the existing
+bar/indicator and Show more controls perform the per-section toggle; toolbar
+outline actions and fragment reveal retain their roles. This supersedes the
+heading listener and clickable-heading styling described above. Removing the
+listener avoids mode-dependent heading behaviour. Heading and hyperlink
+annotation eligibility remains unchanged and is separate from folding.

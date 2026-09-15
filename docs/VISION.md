@@ -175,7 +175,8 @@ The reader should receive:
   screens, enabled by default through source heading level three in both formats.
   Narrow Org previews hide it; narrow Markdown previews place it after the
   header/frontmatter. Navigation can be disabled or given another depth.
-  Clickable margin bars and headings open and close sections.
+  Clickable margin bars and explicit buttons open and close sections.
+  Heading-text folding was withdrawn on 16 September 2026.
 - **Code copying:** inline code, Org verbatim and code blocks offer explicit
   copying with keyboard controls, honest feedback and manual fallback. Selection
   and links retain their normal actions. Code is never executed.

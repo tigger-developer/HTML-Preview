@@ -75,8 +75,6 @@ button { font:inherit; color:var(--fg); background:var(--panel); border:1px soli
 section[data-hp-level]:not(.hp-outline-section) section[data-hp-level]:not(.hp-outline-section) { margin-left:.6rem; padding-left:.7rem; }
 .hp-outline-section,section[data-hp-level] .hp-outline-section { position:relative; display:flow-root; border-left:0; margin-left:0; padding-left:1.8rem; min-height:1.5rem; }
 .hp-outline-section > :is(h2,h3,h4,h5,h6,[role=heading]) { margin-top:.8rem; }
-.hp-outline-section > :is(h2,h3,h4,h5,h6,[role=heading]) { cursor:pointer; }
-.hp-outline-section > :is(h2,h3,h4,h5,h6,[role=heading]):hover { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:.2em; }
 .hp-toggle { position:absolute; top:0; bottom:0; left:0; width:1.5rem; min-height:1.5rem; padding:0; border:0; border-radius:0; background:transparent; color:var(--accent); }
 .hp-toggle::before { content:""; position:absolute; top:0; bottom:0; left:calc(50% - 1px); width:1px; background:var(--muted); }
 .hp-toggle[aria-expanded=false]::before { width:4px; left:calc(50% - 2px); top:2.2rem; background:var(--accent); }

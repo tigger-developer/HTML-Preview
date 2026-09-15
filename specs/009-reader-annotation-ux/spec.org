@@ -1297,3 +1297,24 @@ prescription is superseded by the operator's paired testing instruction.
 - Compatibility :: The earlier blanket extended-attribute refusal is superseded.
   Historical refusal evidence remains historical; live Linux/WSL testing remains
   pending. No changes to the user's README or draft are authorized by these tests.
+
+* Emergency correction - explicit section folding controls, 16 September 2026
+:PROPERTIES:
+:CUSTOM_ID: explicit-section-folding
+:END:
+
+- Authority :: Taḋg invoked BYPASS-GATE-7 to make section folding consistent:
+  vertical bars and explicit buttons fold sections; heading text never does,
+  regardless of annotation mode. Hyperlink changes were requested as advice only.
+- Change :: Remove the heading-text click handler and its pointer/underline
+  affordance. Retain bar, indicator and Show more button behaviour, keyboard
+  activation, toolbar outline actions and fragment reveal.
+- Boundary :: Native drawer/frontmatter summary controls remain unchanged.
+  Annotation placement still excludes headings and hyperlinks; enabling either
+  requires its own source-mapping change. This fix makes no source-writing change.
+- Verification :: Human interaction is the meaningful boundary: click heading
+  text in reading and annotation modes and confirm no fold; activate each bar
+  and Show more button by mouse and keyboard and confirm folding. Native lint
+  and build check packaging. No source-text regression or automated browser
+  runner is introduced for this listener removal.
+- History :: This supersedes the earlier heading-text folding requirement.
