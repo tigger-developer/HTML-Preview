@@ -58,7 +58,7 @@ type annotationPoll struct {
 
 // Polls share a bounded one-second source snapshot; writes always bypass it.
 func (s *previewService) polledAnnotations(ctx context.Context, cap *readCapability, src sourceContext) (annotationState, error) {
-	key := fmt.Sprintf("%s\x00%s\x00%s\x00%t/%d/%d/%d/%d/%d", cap.root, src.canonical, src.input.key(), cap.settings.toc, cap.settings.tocDepth, cap.settings.sourceBytes, cap.settings.totalBytes, cap.settings.outputBytes, cap.settings.deadline)
+	key := fmt.Sprintf("%s\x00%s\x00%s\x00%t/%d/%d/%d/%d/%d", cap.root, src.canonical, src.input.key(), cap.settings.toc, cap.settings.tocDepth, cap.settings.sourceBytes, cap.settings.totalBytes, cap.settings.outputBytes, cap.settings.deadline) + fmt.Sprintf("\x00%v", cap.settings.folding)
 	s.annotationPollMu.Lock()
 	defer s.annotationPollMu.Unlock()
 	item, exists := s.annotationPolls[key]

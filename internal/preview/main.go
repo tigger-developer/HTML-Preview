@@ -48,6 +48,7 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 		log.warn("service configuration: %v", err)
 		return 2
 	}
+	cfg.folding = svc.folding
 	if info == "--serve" {
 		return runService(ctx, cfg, svc, host, log)
 	}

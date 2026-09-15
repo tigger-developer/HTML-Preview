@@ -401,6 +401,11 @@ current audit evidence has its sole home in [[file:audits.yaml][the audit record
 PENDING. Each regression first demonstrates its intended failure on the
 *delivered W006 baseline*; absent W006 infrastructure is not valid RED evidence.
 
+*Superseded testing prescription:* the operator's 14-15 September 2026
+instructions require *manual UTs for browser interaction* and Go/HTTP RTs for
+server and persistence behaviour. The browser runner and target have been
+removed. The following paragraphs remain historical design only.
+
 Go regressions join =make test=. Browser regressions join =make test-browser=:
 a Go test runner serves isolated fixtures and the real packaged browser modules
 on *127.0.0.1*, opens the system default browser, and receives native JavaScript

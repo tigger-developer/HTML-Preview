@@ -313,6 +313,9 @@ func run(t *testing.T, root string, settings []string, args ...string) result {
 		}
 	}
 	cmd.Env = append(cmd.Env, "TMPDIR="+t.TempDir(), "PWD="+root, "PREVIEW_TEST_CHILD=1", "PREVIEW_TEST_CAPTURE="+capture, "HTMLPREVIEW_GRACE=100ms")
+	// Preview fixtures must not read or register against the developer's config/service.
+	testConfig := source(t, capture, "config.yaml", "version: 1\nserve: {roots: []}\n")
+	cmd.Env = append(cmd.Env, "HTMLPREVIEW_CONFIG="+testConfig, "HTMLPREVIEW_RUNTIME_DIR="+filepath.Join(capture, "runtime"))
 	cmd.Env = append(cmd.Env, settings...)
 	var stdout, stderr bytes.Buffer
 	liveRead := false

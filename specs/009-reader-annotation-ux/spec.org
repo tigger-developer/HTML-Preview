@@ -141,7 +141,7 @@ source* in the same preview on desktop and phone layouts.
 - Withdrawn assumption :: Taḋg explicitly rejected *permanent autosave history*:
   only current annotations belong in the document; version history belongs in Git.
   The application does not initialize repositories, commit, or manage history.
-- Implementation evidence :: [[file:../../assets/web/page.html][Page template]], [[file:../../assets/web/preview.css][Reader styles]], [[file:../../assets/web/preview.js][Reader lifecycle]], [[file:../../assets/web/annotations.js][Annotation panel]], [[file:../../assets/web/annotation-composer.js][Composer]], [[file:../../assets/web/annotation-text.js][Passage mapping]], [[file:../../internal/preview/render.go][Rendering]] and [[file:../../internal/preview/testdata/annotations-browser.js][Historical browser fixture, retired from this workflow]], inspected at =fa90a62= (annotation qualification checkpoint).
+- Implementation evidence :: [[file:../../assets/web/page.html][Page template]], [[file:../../assets/web/preview.css][Reader styles]], [[file:../../assets/web/preview.js][Reader lifecycle]], [[file:../../assets/web/annotations.js][Annotation panel]], [[file:../../assets/web/annotation-composer.js][Composer]], [[file:../../assets/web/annotation-text.js][Passage mapping]], [[file:../../internal/preview/render.go][Rendering]] and Historical browser fixture, retired from this workflow (runner removed on 15 September 2026; retained in Git history), inspected at =fa90a62= (annotation qualification checkpoint).
 - Prior art :: The operator-directed Writeback inspection found *sentence-span
   click activation, 300 ms comment updates, small status text and green/amber/red
   feedback*. Its X action deletes comments and its close path does not await
@@ -413,6 +413,12 @@ source* in the same preview on desktop and phone layouts.
 :PROPERTIES:
 :CUSTOM_ID: test-definitions
 :END:
+
+Operator amendment, 15 September 2026: the *browser runner and its Makefile
+target are removed*. Browser interaction checks are *manual UTs*. Server and
+persistence outcomes remain Go/HTTP RTs; the agent must not take over the shared
+macOS interface. Earlier RT descriptions mixing these boundaries are superseded
+by this classification, without discarding their required outcomes.
 
 Use *Go writer, service and Pandoc regression tests* for observable data and
 HTTP boundaries. Use *native oxlint, biome, tidy, htmlq and htmltest* for static

@@ -564,6 +564,7 @@ export class
 
   async swapRegions(page, data) {
     if (!page.getElementById('hp-document') || !page.getElementById('hp-header')) throw new Error('The refreshed document is incomplete.');
+    const details = new Map([...detailIdentities()].filter(([, node]) => node).map(([key, node]) => [key, node.open]));
     const folds = new Map();
     for (const [key, id] of Object.entries(this.data.explicit_ids || {})) {
       const node = document.getElementById(id);
@@ -589,9 +590,12 @@ export class
       }
       document.title = page.title;
       document.body.classList.toggle('hp-has-nav', Boolean(page.getElementById('hp-toc')));
+      for (const [key, node] of detailIdentities()) {
+        if (node && details.has(key)) node.dataset.hpRestoredOpen = String(details.get(key));
+      }
       for (const [key, mode] of folds) {
         const node = document.getElementById(data.explicit_ids?.[key]);
-        if (node && ['all', 'children', 'folded'].includes(mode)) node.setAttribute('data-hp-visibility', mode);
+        if (node && ['all', 'children', 'folded'].includes(mode)) node.setAttribute('data-hp-restored-fold', mode);
       }
     });
     this.data = data; this.attachToggle(); this.renderComments(); this.prepareKeyboard(!this.panel.hidden);

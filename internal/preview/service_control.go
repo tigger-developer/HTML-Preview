@@ -41,13 +41,14 @@ type annotationRegistration struct {
 }
 
 type previewSettings struct {
-	TOC         *bool  `json:"toc,omitempty"`
-	TOCDepth    *int   `json:"toc_depth,omitempty"`
-	SourceBytes *int64 `json:"source_bytes,omitempty"`
-	TotalBytes  *int64 `json:"total_source_bytes,omitempty"`
-	OutputBytes *int64 `json:"output_bytes,omitempty"`
-	Deadline    string `json:"deadline,omitempty"`
-	Root        string `json:"root,omitempty"`
+	Folding     *foldingOverride `json:"folding,omitempty"`
+	TOC         *bool            `json:"toc,omitempty"`
+	TOCDepth    *int             `json:"toc_depth,omitempty"`
+	SourceBytes *int64           `json:"source_bytes,omitempty"`
+	TotalBytes  *int64           `json:"total_source_bytes,omitempty"`
+	OutputBytes *int64           `json:"output_bytes,omitempty"`
+	Deadline    string           `json:"deadline,omitempty"`
+	Root        string           `json:"root,omitempty"`
 }
 
 type registrationResult struct {
@@ -184,6 +185,12 @@ func uniqueJSON(decoder *json.Decoder, depth int) error {
 
 func (settings previewSettings) apply(base config) (config, error) {
 	c := base
+	if settings.Folding != nil {
+		if err := settings.Folding.validate(); err != nil {
+			return c, err
+		}
+		c.folding = *settings.Folding
+	}
 	c.sourceBytes = min(c.sourceBytes, 10*1024*1024)
 	c.outputBytes = min(c.outputBytes, 50*1024*1024)
 	c.deadline = min(c.deadline, time.Minute)
@@ -282,7 +289,7 @@ func (s *previewService) effectiveRoot(logical, canonical, narrow string) string
 
 func (s *previewService) capability(root, parent string, cfg config) (*readCapability, error) {
 	key := fmt.Sprintf("%s\x00%s\x00%s\x00%t/%d/%d/%d/%d/%d", root, parent, cfg.root, cfg.toc, cfg.tocDepth, cfg.sourceBytes, cfg.totalBytes, cfg.outputBytes, cfg.deadline)
-	key += fmt.Sprintf("\x00%t\x00%s", cfg.annotations, cfg.displayName)
+	key += fmt.Sprintf("\x00%t\x00%s\x00%v", cfg.annotations, cfg.displayName, cfg.folding)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if cap := s.contexts[key]; cap != nil {

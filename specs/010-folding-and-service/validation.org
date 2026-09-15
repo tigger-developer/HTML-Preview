@@ -1,0 +1,45 @@
+#+TITLE: W010 - Folding and service verification
+
+* Focused Go checks - PASS
+
+- Candidate :: 15 September 2026 working tree, recorded with the associated commit.
+- Command :: =go test ./internal/preview ./internal/buildtool -run 'TestConfiguredHomeRoots|TestFolding|TestLaunchAgentLifecycle' -count=1=
+- Result :: Preview 0.994s; build tool 0.009s. Config, rendering/inheritance and
+  LaunchAgent generation checks passed. =make build= also passed.
+- RED :: Folding YAML was rejected before implementation. Missing home-expansion
+  and LaunchAgent functions produced compilation failures before their implementation.
+- Scope :: *Focused tests only*. The full suite was not rerun.
+
+* OT010.1 - Current configuration startup - PASS
+
+- Requirement :: Start with the user's existing folding and home-relative roots.
+- Environment :: macOS, rebuilt checkout executable, 15 September 2026.
+- Procedure :: Start once with the existing user config and an OS-allocated
+  temporary runtime. GET =/v1/status= through its private Unix socket with curl.
+- Result :: *ready=true*. The instance received TERM and exited; its temporary
+  directory was cleaned up. No browser was opened and no LaunchAgent registered.
+
+* UT010.1 - LaunchAgent and folding interaction - PENDING
+
+- Reviewer :: Taḋg, using the shared desktop at a time of his choosing.
+- Procedure :: =make serve=; preview Org and Markdown; inspect header, drawer and
+  frontmatter defaults. Toggle bars and headings, Show all, visit a folded fragment,
+  edit a footnote to trigger refresh, and check print then return. Stop with
+  =make service-stop=.
+- Expected :: Service starts/stops; configured initial state appears; manual
+  controls remain functional and identified state survives annotation refresh.
+- Status :: No human result has been inferred from automated output.
+
+* Browser test removal and classification
+
+- Authority :: Operator's repeated instruction, reaffirmed on 15 September 2026.
+- Removed :: The automated browser runner, its JavaScript/HTML fixtures and
+  =make test-browser=. Historical evidence and harness-owned audit records remain.
+- RT boundary :: Config admission, output HTML, links, HTTP responses, writes,
+  conflicts and attribution are covered through Go and HTTP boundaries.
+- UT boundary :: Browser gestures, focus, pointer hit targets, visual layout,
+  keyboard behaviour, clipboard UI, live autosave feedback, folding and print.
+- Incident :: Prohibited browser runs occurred before this correction. The older
+  annotation assertions stopped at panel activation; the folding assertions
+  reached eight successes but the runner failed during teardown. Neither result
+  is accepted as current validation or as a substitute for UT.

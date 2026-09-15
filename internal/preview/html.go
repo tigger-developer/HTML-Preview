@@ -198,6 +198,7 @@ func (s *session) document(p *page) ([]byte, error) {
 		}
 	}
 	data := struct {
+		Folding                                                                 foldingOverride
 		SourceData                                                              *string
 		AnnotationData                                                          string
 		Policy, Name, Source, Directory, Startup, Title, Subtitle, Author, Date string
@@ -207,6 +208,7 @@ func (s *session) document(p *page) ([]byte, error) {
 		Script                                                                  template.JS
 		Body, TOC, FontNotices                                                  template.HTML
 	}{
+		Folding:    s.cfg.folding,
 		SourceData: p.sourceData,
 		Policy:     policy, Name: filepath.Base(p.source.logical), Source: p.source.logical, Directory: displayDirectory(p.source.logical), Startup: p.startup, Title: p.title, Subtitle: p.subtitle, Author: p.author, Date: p.date, Frontmatter: p.frontmatter,
 		Format:         p.format,

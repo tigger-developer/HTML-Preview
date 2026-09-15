@@ -11,7 +11,7 @@ import (
 )
 
 func renderSettingsIdentity(c config) string {
-	return fmt.Sprintf("%s\x00%t/%d/%d/%d/%d/%d", c.root, c.toc, c.tocDepth, c.sourceBytes, c.totalBytes, c.outputBytes, c.deadline)
+	return fmt.Sprintf("%s\x00%t/%d/%d/%d/%d/%d", c.root, c.toc, c.tocDepth, c.sourceBytes, c.totalBytes, c.outputBytes, c.deadline) + fmt.Sprintf("\x00%v", c.folding)
 }
 
 func (s *previewService) knownOrgID(ctx context.Context, cap *readCapability, current *page, id string) string {

@@ -26,11 +26,15 @@ func main() {
 }
 func task(args []string) error {
 	if len(args) != 1 {
-		return errors.New("expected build, install, release, lint, or sync")
+		return errors.New("expected build, install, release, lint, sync, service, or service-stop")
 	}
 	switch args[0] {
 	case "build":
 		return build("bin/htmlpreview", runtime.GOOS, runtime.GOARCH, version())
+	case "service":
+		return launchAgent(false)
+	case "service-stop":
+		return launchAgent(true)
 	case "install":
 		return install()
 	case "release":

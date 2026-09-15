@@ -35,7 +35,7 @@ serve:
 ```
 
 An empty roots list serves no files. Configuration accepts at most 32 existing
-absolute directory paths. Duplicate canonical paths collapse; the most specific
+directory paths, written as absolute paths or with a leading `~/` for your home.\nDuplicate canonical paths collapse; the most specific
 configured root applies where roots overlap. Files must remain on the root's
 filesystem. Symlink escapes, directories and special files cannot be previewed.
 
@@ -59,6 +59,31 @@ root snapshot remains authoritative until restart; a later CLI configuration
 cannot expand it. `HTMLPREVIEW_ROOT` restricts explicit CLI inputs first and can
 only narrow HTTP access. A file excluded by that client restriction is an error.
 A permitted CLI input outside the service's roots uses file fallback.
+
+## Initial folding
+
+The selected configuration may also set initial folding for file and service previews:
+
+```yaml
+folding:
+  override:
+    headers: open
+    drawers: closed
+    default: closed
+```
+
+Each field accepts `open` or `closed`. `headers` overrides initial Org heading
+visibility; `drawers` applies to Org drawers; `default` applies to other foldable
+content, including frontmatter. Omitted fields retain normal behaviour. These
+settings set the initial view; folding bars, headings, Show all, fragment links
+and print remain operational. Show all also opens frontmatter. Annotation
+refresh retains heading choices with stable explicit IDs and uniquely identified
+details. Ambiguous details use the initial settings again.
+
+A command with folding overrides supplies them to the service for its preview
+and linked pages. Otherwise the service's startup folding settings apply. The
+CLI reads configuration on each invocation; restart the service to change its
+own defaults. Neither case expands the running service's permitted roots.
 
 ## Start in the foreground
 
@@ -140,6 +165,31 @@ restarts after unsuccessful exits. The generated definition follows
 [Homebrew's service contract](https://docs.brew.sh/Formula-Cookbook#service-files).
 
 ## macOS with a source or prefix installation
+
+From this checkout, start the user LaunchAgent with:
+
+```sh
+make serve
+```
+
+`make service` is the equivalent target. It builds the executable, writes
+`~/Library/LaunchAgents/org.htmlpreview.agent.plist` with absolute executable,
+configuration and Pandoc PATH values, and invokes `launchctl load` on that file.
+It uses the configuration search order above, but requires an existing file;
+it never uses launchd's incidental working directory as a fallback root.
+The generated plist uses the checkout binary, so retain the checkout.
+
+To stop it:
+
+```sh
+make service-stop
+```
+
+This invokes `launchctl unload` and retains the plist. Stop before restarting
+with changed settings. These convenience targets are macOS-only; Linux and WSL
+use the foreground command or the user service instructions below. They do not
+open a browser. The following manual procedure remains an alternative for
+prefix installations or inspecting a plist before activation.
 
 Check for an existing `org.htmlpreview.agent` job before copying a plist:
 

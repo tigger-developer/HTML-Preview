@@ -199,7 +199,21 @@ async function enhanceCode(main, copyValue, controller, dispose) {
   }, events);
 }
 
+// Match details only when their section/summary identity is unambiguous on both pages.
+function foldableDetails() {
+  return [...document.querySelectorAll('#hp-document details, #hp-frontmatter')];
+}
+function detailIdentities() {
+  const unique = new Map();
+  for (const detail of foldableDetails()) {
+    const key = detail.id || JSON.stringify([detail.closest('section[id]')?.id || '', detail.querySelector('summary')?.textContent || '']);
+    unique.set(key, unique.has(key) ? null : detail);
+  }
+  return unique;
+}
+
 async function enhanceOutline(main, header, controller, dispose) {
+
   const events = { signal: controller.signal };
   // Endnotes belong to the document, outside the final foldable section.
   for (const notes of main.querySelectorAll('section.footnotes')) main.append(notes);
@@ -267,7 +281,7 @@ async function enhanceOutline(main, header, controller, dispose) {
   function globalMode(mode) {
     lastPreset = mode; main.dataset.hpPreset = mode;
     for (const record of records) record.mode = mode === 'overview' ? 'folded' : mode === 'content' ? 'children' : 'all';
-    if (mode === 'showall') main.querySelectorAll('details').forEach(detail => { detail.open = true; });
+    if (mode === 'showall') foldableDetails().forEach(detail => { detail.open = true; });
     refresh();
   }
   for (const [label, mode] of [['Overview', 'overview'], ['Contents', 'content'], ['Show all', 'showall']]) {
@@ -358,8 +372,22 @@ async function enhanceOutline(main, header, controller, dispose) {
     if (initial) record.mode = initial;
     record.initialCascade = initial ? (initial === 'all' ? 'all' : 'folded') : inherited;
   }
-  refresh();
   closeOwnedDrawers(main);
+  const headers = main.dataset.hpFoldHeaders;
+  for (const record of records) {
+    if (headers === 'open' || headers === 'closed') record.mode = headers === 'open' ? 'all' : 'folded';
+    const restored = record.node.dataset.hpRestoredFold;
+    if (['all', 'children', 'folded'].includes(restored)) record.mode = restored;
+    delete record.node.dataset.hpRestoredFold;
+  }
+  for (const detail of foldableDetails()) {
+    const choice = detail.hasAttribute('data-hp-org-drawer') ? main.dataset.hpFoldDrawers : main.dataset.hpFoldDefault;
+    if (choice === 'open' || choice === 'closed') detail.open = choice === 'open';
+    if (detail.hasAttribute('data-hp-restored-open')) detail.open = detail.dataset.hpRestoredOpen === 'true';
+    delete detail.dataset.hpRestoredOpen;
+  }
+  refresh();
+
 
   function revealFragment() {
     let id;
@@ -392,7 +420,7 @@ async function enhanceOutline(main, header, controller, dispose) {
   }
   window.addEventListener('beforeprint', () => {
     if (printState) return;
-    printState = { modes: records.map(record => record.mode), drawers: Array.from(main.querySelectorAll('details'), detail => [detail, detail.open]) };
+    printState = { modes: records.map(record => record.mode), drawers: foldableDetails().map(detail => [detail, detail.open]) };
     globalMode('showall');
   }, events);
   window.addEventListener('afterprint', restorePrint, events);

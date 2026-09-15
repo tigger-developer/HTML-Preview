@@ -183,7 +183,11 @@ func prepareHTTP(ctx context.Context, sources []sourceContext, cfg config, conne
 
 func wireSettings(cfg config) previewSettings {
 	source, output, total := cfg.sourceBytes, min(cfg.outputBytes, 50*1024*1024), cfg.totalBytes
-	return previewSettings{TOC: &cfg.toc, TOCDepth: &cfg.tocDepth, SourceBytes: &source, TotalBytes: &total, OutputBytes: &output, Deadline: min(cfg.deadline, time.Minute).String(), Root: cfg.root}
+	var folding *foldingOverride
+	if cfg.folding != (foldingOverride{}) {
+		folding = &cfg.folding
+	}
+	return previewSettings{Folding: folding, TOC: &cfg.toc, TOCDepth: &cfg.tocDepth, SourceBytes: &source, TotalBytes: &total, OutputBytes: &output, Deadline: min(cfg.deadline, time.Minute).String(), Root: cfg.root}
 }
 
 func preflightHTTP(ctx context.Context, sources []sourceContext, cfg config, status serviceStatus, response registrationResponse, prepared httpPreviews, log *console) (httpPreviews, []sourceContext, error) {

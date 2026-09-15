@@ -66,7 +66,8 @@ func TestRT006_2_ConfigurationDiscovery(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			roots, err := discoverServiceRoots(cwd, home)
+			selected, err := discoverServiceConfiguration(cwd, home)
+			roots := selected.roots
 			if invalid {
 				if err == nil {
 					t.Fatal("invalid selected config fell through")

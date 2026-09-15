@@ -249,6 +249,17 @@ classification; it is provenance, not current state.
 - Presentation :: *Pandoc endnotes remain the normal view*; the annotation toggle
   moves the same footnote section into the sidebar and restores it on exit.
 
+** ACTIVE W010 - Folding overrides and source-checkout service commands :feature:defect:
+:PROPERTIES:
+:CUSTOM_ID: w-010
+:CREATED: 2026-09-15
+:END:
+
+- Specification :: [[file:../specs/010-folding-and-service/spec.org][W010 - Emergency folding and service change]].
+- Evidence :: [[file:../specs/010-folding-and-service/validation.org][Focused checks and pending operator validation]].
+- Authority :: Taḋg authorized *BYPASS-GATE-7*, prioritized =make serve= and the
+  working config, and required *removal of browser automation*.
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

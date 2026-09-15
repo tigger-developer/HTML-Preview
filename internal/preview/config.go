@@ -12,6 +12,7 @@ import (
 )
 
 type config struct {
+	folding                              foldingOverride
 	displayName                          string
 	annotations                          bool
 	configPath, runtimePath              string

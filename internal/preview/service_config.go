@@ -18,6 +18,7 @@ import (
 
 type serviceConfig struct {
 	roots   []string
+	folding foldingOverride
 	runtime string
 }
 
@@ -25,7 +26,7 @@ func serviceSettings(cfg config) (serviceConfig, error) {
 	var result serviceConfig
 	var err error
 	if cfg.configPath != "" {
-		result.roots, err = readServiceRoots(cfg.configPath)
+		result, err = readServiceConfiguration(cfg.configPath)
 	} else {
 		cwd, cwdErr := os.Getwd()
 		if cwdErr != nil {
@@ -35,7 +36,7 @@ func serviceSettings(cfg config) (serviceConfig, error) {
 		if homeErr != nil {
 			return result, homeErr
 		}
-		result.roots, err = discoverServiceRoots(cwd, home)
+		result, err = discoverServiceConfiguration(cwd, home)
 	}
 	if err != nil {
 		return result, err
@@ -54,31 +55,31 @@ func serviceSettings(cfg config) (serviceConfig, error) {
 	return result, nil
 }
 
-func discoverServiceRoots(cwd, home string) ([]string, error) {
+func discoverServiceConfiguration(cwd, home string) (serviceConfig, error) {
 	for _, path := range []string{filepath.Join(cwd, "config.yaml"), filepath.Join(home, ".config/htmlpreview/config.yaml")} {
 		if _, err := os.Lstat(path); os.IsNotExist(err) {
 			continue
 		} else if err != nil {
-			return nil, err
+			return serviceConfig{}, err
 		}
-		return readServiceRoots(path)
+		return readServiceConfiguration(path)
 	}
 	root, err := filepath.EvalSymlinks(cwd)
 	if err != nil {
-		return nil, err
+		return serviceConfig{}, err
 	}
-	return []string{root}, nil
+	return serviceConfig{roots: []string{root}}, nil
 }
 
-func readServiceRoots(path string) ([]string, error) {
+func readServiceConfiguration(path string) (serviceConfig, error) {
 	if !filepath.IsAbs(path) {
-		return nil, errors.New("configuration path must be absolute")
+		return serviceConfig{}, errors.New("configuration path must be absolute")
 	}
 	data, err := readConfiguration(path)
 	if err != nil {
-		return nil, err
+		return serviceConfig{}, err
 	}
-	return decodeServiceRoots(data)
+	return decodeServiceConfiguration(data)
 }
 
 func readConfiguration(path string) (data []byte, err error) {
@@ -110,45 +111,51 @@ func ownedByUser(st os.FileInfo) bool {
 	return ok && int64(info.Uid) == int64(os.Geteuid())
 }
 
-func decodeServiceRoots(data []byte) ([]string, error) {
+func decodeServiceConfiguration(data []byte) (serviceConfig, error) {
 	decoder := yaml.NewDecoder(strings.NewReader(string(data)))
 	var doc yaml.Node
 	if err := decoder.Decode(&doc); err != nil {
-		return nil, fmt.Errorf("configuration YAML: %w", err)
+		return serviceConfig{}, fmt.Errorf("configuration YAML: %w", err)
 	}
 	var extra yaml.Node
 	if err := decoder.Decode(&extra); !errors.Is(err, io.EOF) {
-		return nil, errors.New("configuration requires exactly one YAML document")
+		return serviceConfig{}, errors.New("configuration requires exactly one YAML document")
 	}
 	if err := safeYAML(&doc, 0); err != nil {
-		return nil, err
+		return serviceConfig{}, err
 	}
 	if len(doc.Content) != 1 {
-		return nil, errors.New("configuration requires a mapping")
+		return serviceConfig{}, errors.New("configuration requires a mapping")
 	}
-	fields, err := yamlFields(doc.Content[0], "version", "serve")
+	fields, err := yamlFields(doc.Content[0], "version", "serve", "folding")
 	if err != nil {
-		return nil, err
+		return serviceConfig{}, err
 	}
 	version := fields["version"]
 	if version == nil || version.Kind != yaml.ScalarNode || version.Tag != "!!int" || version.Value != "1" {
-		return nil, errors.New("configuration version must be integer 1")
+		return serviceConfig{}, errors.New("configuration version must be integer 1")
 	}
+	folding, err := decodeFolding(fields["folding"])
+	if err != nil {
+		return serviceConfig{}, err
+	}
+	result := serviceConfig{folding: folding}
 	if fields["serve"] == nil {
-		return nil, nil
+		return result, nil
 	}
 	serve, err := yamlFields(fields["serve"], "roots")
 	if err != nil {
-		return nil, err
+		return serviceConfig{}, err
 	}
 	roots := serve["roots"]
 	if roots == nil {
-		return nil, nil
+		return result, nil
 	}
 	if roots.Kind != yaml.SequenceNode || len(roots.Content) > 32 {
-		return nil, errors.New("configuration roots must be a list of at most 32 directories")
+		return serviceConfig{}, errors.New("configuration roots must be a list of at most 32 directories")
 	}
-	return canonicalRoots(roots.Content)
+	result.roots, err = canonicalRoots(roots.Content)
+	return result, err
 }
 
 func safeYAML(node *yaml.Node, depth int) error {
@@ -188,10 +195,18 @@ func canonicalRoots(nodes []*yaml.Node) ([]string, error) {
 	var roots []string
 	seen := make(map[string]bool)
 	for _, n := range nodes {
-		if n.Kind != yaml.ScalarNode || n.Tag != "!!str" || len(n.Value) > 4096 || !utf8.ValidString(n.Value) || !filepath.IsAbs(n.Value) {
+		if n.Kind != yaml.ScalarNode || n.Tag != "!!str" || len(n.Value) > 4096 || !utf8.ValidString(n.Value) {
 			return nil, errors.New("configuration roots require absolute UTF-8 directory paths up to 4096 bytes")
 		}
-		root, err := filepath.EvalSymlinks(n.Value)
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+		path, err := configuredRootPath(n.Value, home)
+		if err != nil {
+			return nil, err
+		}
+		root, err := filepath.EvalSymlinks(path)
 		if err != nil {
 			return nil, fmt.Errorf("configuration root: %w", err)
 		}
@@ -206,4 +221,18 @@ func canonicalRoots(nodes []*yaml.Node) ([]string, error) {
 	}
 	sort.Slice(roots, func(i, j int) bool { return len(roots[i]) > len(roots[j]) })
 	return roots, nil
+}
+
+// Expand only this user's home notation; never shell variables or named users.
+func configuredRootPath(path, home string) (string, error) {
+	if path == "~" || strings.HasPrefix(path, "~/") {
+		if !filepath.IsAbs(home) {
+			return "", errors.New("configuration home must be absolute")
+		}
+		path = filepath.Join(home, strings.TrimPrefix(strings.TrimPrefix(path, "~"), "/"))
+	}
+	if !filepath.IsAbs(path) {
+		return "", errors.New("configuration roots require absolute paths or ~/ paths")
+	}
+	return path, nil
 }

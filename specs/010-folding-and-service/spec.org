@@ -1,0 +1,60 @@
+#+TITLE: W010 - Folding overrides and source-checkout service commands
+#+STARTUP: overview
+#+OPERATOR_SIGNOFF: Taḋg authorized emergency implementation with BYPASS-GATE-7; closure pending
+
+* Emergency record
+
+- Authority :: The operator's 14-15 September 2026 requests are the temporary
+  specification. This record is retrospective and does not claim advance review.
+- Outcome :: *Start the macOS service with make serve* and accept the configured
+  *independent initial folding choices*.
+- Baseline :: [[file:../../docs/ARCHITECTURE.md][Architecture]],
+  [[file:../../docs/VISION.md][Vision]], W006 service configuration and W009 reader controls.
+
+* Requirements
+
+- Folding :: Accept optional =folding.override.headers=, =drawers= and =default=,
+  each =open= or =closed=. Headers override authored startup/visibility; drawers
+  select Org drawers; default selects other foldables, including frontmatter.
+  Omitted fields preserve normal initial behaviour. Reject unknown/duplicate keys
+  and invalid values. Apply in file previews and inherit through HTTP links.
+- Interaction :: Initial settings *do not lock controls*. Headings and bars
+  remain clickable; Show all opens all details; fragments reveal targets;
+  print restores state. Annotation refresh preserves explicitly identified
+  headings and unambiguous detail identities.
+- Service :: =make serve= aliases =make service=. Build, generate the user's
+  LaunchAgent with absolute paths, then =launchctl load= it. =make service-stop=
+  invokes =launchctl unload= without deleting the plist. Neither opens a browser.
+- Configuration :: Preserve first-found explicit/current-directory/user selection.
+  Background activation requires a config file. Accept the user's =~/= roots,
+  expanding only the current user's home; retain canonical filesystem boundaries.
+- Testing instruction :: *Remove browser automation*. Browser gestures and visual
+  checks are manual UTs; server/configuration/persistence assertions are Go RTs.
+  Never take control of the operator's desktop to execute tests.
+
+* Solution and security
+
+- Reuse :: Extend the existing strict YAML parser, private registration settings,
+  render identity and owned page attributes. Initial folding runs in the existing
+  browser outline controller; explicit refresh state takes precedence.
+- Activation :: Reuse the plist renderer and Go build tool. Pass launchctl
+  arguments separately; XML-escape resolved paths. No shell expansion or new
+  dependency. LaunchAgent activation belongs to the operator invoking the target.
+- Access :: Loopback binding and configured-root containment remain mandatory.
+  Home notation expands only configured roots. No default whole-home grant,
+  remote listener, config rewriting or annotation-store change is introduced.
+
+* Verification and remaining work
+
+- RT :: =TestFoldingConfiguration= validates YAML; =TestConfiguredHomeRoots=
+  checks home notation; =TestFoldingFileAndServiceRendering= checks emitted
+  settings and linked-page inheritance; =TestLaunchAgentLifecycle= checks
+  generated plist values, literal manager arguments and error propagation.
+- OT :: Start the rebuilt executable once with the user's selected config and
+  an isolated temporary runtime; GET private service status; stop that instance.
+- UT :: Operator starts/stops the LaunchAgent and checks initial folds, manual
+  controls, fragment navigation, annotation refresh and print in their own browser.
+- Evidence :: [[file:validation.org][Validation and pending UTs]].
+- Remaining :: Reconcile the full template and inspect implementation as one
+  batch. Independent audits remain subject to the operator's existing instruction
+  to proceed with self-review instead. No audit verdict is claimed here.
