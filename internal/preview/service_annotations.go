@@ -363,7 +363,7 @@ func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.R
 			}
 			*target = annotation.Target{Type: "point", Position: resolved.End, Run: resolved.Exact, RunOffset: utf8.RuneCountInString(resolved.Exact)}
 		}
-		at, err := annotation.SourcePointCandidate(snap.RawSource, annotationFormat(src), target.Run, target.RunOffset)
+		at, err := annotation.SourcePointCandidate(snap.RawSource, annotationFormat(src), target.Run, target.RunOffset, target.AfterLink)
 		if err != nil {
 			return -1, err
 		}

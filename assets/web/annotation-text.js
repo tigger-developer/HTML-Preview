@@ -52,11 +52,20 @@ export function canonicalMap(root) {
   return {
     text,
     rangeAt(position) { return rangeAtPoint(root, position); },
-    point(range, bodyRevision, explicitIDs) {
+    point(range, bodyRevision, explicitIDs, clickedLink = null) {
+      const link = clickedLink || (range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement.closest('a') : null);
+      if (link) {
+        if (!root.contains(link) || link.matches('.footnote-ref,.footnote-back') || link.closest('.footnotes,.todo,.done,.tag,.priority')) return null;
+        const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT); let last;
+        while (walker.nextNode()) if (walker.currentNode.data.trim()) last = walker.currentNode;
+        if (!last) return null;
+        range = document.createRange(); range.setStart(last, last.data.length); range.collapse(true);
+      }
+
       const node = range.startContainer;
       if (!range.collapsed || node.nodeType !== Node.TEXT_NODE || !root.contains(node)) return null;
       const parent = node.parentElement;
-      if (!parent.closest('p, li, td, th') || parent.closest('a, code, pre, button, input, textarea, summary, h1, h2, h3, h4, h5, h6, .footnotes, [data-hp-org-drawer], .hp-frontmatter')) return null;
+      if (!parent.closest('p, li, td, th, h1, h2, h3, h4, h5, h6, [role=heading]') || parent.closest('pre, button, input, textarea, summary, .todo, .done, .tag, .priority, .cookie, .footnotes, [data-hp-org-drawer], .hp-frontmatter') || (!link && parent.closest('code'))) return null;
       // Place a sentinel in a detached clone to derive the canonical offset.
       // This preserves whitespace and Unicode boundaries without changing the
       // document, selection or live footnote nodes.
@@ -66,7 +75,8 @@ export function canonicalMap(root) {
       let copied = clone;
       for (const index of path) copied = copied.childNodes[index];
       const marker = 'HPPOINT' + crypto.randomUUID().replaceAll('-', '');
-      copied.data = copied.data.slice(0, range.startOffset) + marker + copied.data.slice(range.startOffset);
+      if (link) copied.parentElement.closest('a').after(document.createTextNode(marker));
+      else copied.data = copied.data.slice(0, range.startOffset) + marker + copied.data.slice(range.startOffset);
       const marked = authoredText(clone); const at = marked.indexOf(marker);
       if (at < 0 || marked.replace(marker, '') !== text) return null;
       const position = Array.from(marked.slice(0, at)).length;
@@ -74,7 +84,7 @@ export function canonicalMap(root) {
       if (!run || new TextEncoder().encode(run).length > 8192) return null;
       const markedRun = (node.data.slice(0, range.startOffset) + marker + node.data.slice(range.startOffset)).replace(annotationSpace, ' ').trim();
       if (markedRun.replace(marker, '') !== run) return null;
-      const target = { type: 'point', body_revision: bodyRevision, position, run, run_offset: Array.from(markedRun.slice(0, markedRun.indexOf(marker))).length,
+      const target = { type: 'point', after_link: !!link, body_revision: bodyRevision, position, run, run_offset: Array.from(markedRun.slice(0, markedRun.indexOf(marker))).length,
         prefix: scalars.slice(Math.max(0, position - 64), position).join(''), suffix: scalars.slice(position, position + 64).join('') };
       const section = parent.closest('section[id]');
       if (section) {

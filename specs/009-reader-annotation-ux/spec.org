@@ -1318,3 +1318,24 @@ prescription is superseded by the operator's paired testing instruction.
   and build check packaging. No source-text regression or automated browser
   runner is introduced for this listener removal.
 - History :: This supersedes the earlier heading-text folding requirement.
+
+* Paired amendment - heading and link annotation placement, 16 September 2026
+:PROPERTIES:
+:CUSTOM_ID: heading-link-annotations
+:END:
+
+- Authority :: Taḋg requested implementation of annotations in ordinary heading
+  text and after complete Org/Markdown links. TODO markers and tags are excluded.
+- Contract :: In annotation mode, document link clicks place a marker after the
+  complete source link, never inside its label or destination. Reading-mode
+  navigation, footnote references/backlinks and navigation controls retain their
+  actions. Heading text is eligible; bars/buttons retain folding.
+- Design :: Extend the existing bounded source-candidate and Pandoc marker proof,
+  passing an explicit after-link target flag. Preserve source link bytes and
+  reject ambiguous, literal, metadata and unsupported placements. Extend browser
+  eligibility, pencil cues and keyboard placement consistently. No new parser
+  dependency, browser runner or annotation persistence format is introduced.
+- Evidence plan :: Go source-placement cases and real HTTP saves verify heading
+  and link syntax preservation plus TODO/tag refusals. Browser click, keyboard,
+  cursor and navigation behaviour remain manual UT. Earlier exclusions of all
+  headings and links are superseded only as described here.

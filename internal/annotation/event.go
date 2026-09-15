@@ -39,6 +39,7 @@ type Target struct {
 	Position     int    `json:"position,omitempty"`
 	Run          string `json:"run,omitempty"`
 	RunOffset    int    `json:"run_offset,omitempty"`
+	AfterLink    bool   `json:"after_link,omitempty"`
 }
 
 type Event struct {

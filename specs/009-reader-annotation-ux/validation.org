@@ -387,3 +387,42 @@
 
 - Build evidence :: =make build= passed for the explicit section-folding change.
   The running service was not restarted; the human interaction check remains pending.
+
+* Heading and link annotation regression evidence - 16 September 2026
+
+- Requirement :: [[file:spec.org::#heading-link-annotations][Heading and link placement]].
+- RED :: Heading source-candidate test returned =point_unmappable=. Link tests
+  first failed to compile against the previous four-argument candidate API.
+  Added autolink cases then exposed missing angle-bracket URL support.
+- GREEN :: Focused race tests passed: annotation 1.024s; preview 3.948s.
+  =TestHTTPHeadingAndLinkAnnotations= confirms 201 saves for Org/Markdown
+  headings and links, including formatted link text and a link in a heading;
+  exact source expectations place references outside complete link markup.
+  TODO/tag attempts return 409 and preserve source bytes. Source tests cover
+  custom TODO states, reference links, nested destination parentheses,
+  angle-bracket/bare URLs, ambiguity and literal-code refusal.
+- Review :: Existing root, write-token, revision and Pandoc render proof remain
+  on every write. The after-link field is transient request data. No new runtime
+  dependency or browser runner is introduced. Scoped Go lint and JavaScript lint
+  passed before final packaging. Local self-review applies under the standing
+  operator instruction; no independent audit verdict is claimed.
+
+* User test - heading and link gestures - PENDING
+
+- Requirement :: [[file:spec.org::#heading-link-annotations][Heading and link placement]].
+- Procedure :: Restart the rebuilt service and reopen Org/Markdown previews.
+  In annotation mode click ordinary heading text and formatted link text; use
+  keyboard caret placement in headings and Enter on links. Save, inspect source
+  and reopen. Try TODO markers and tags; use folding bars and footnote backlinks.
+  Turn annotation mode off and follow an ordinary link.
+- Expected :: Heading annotations save at the selected text point. Link markers
+  follow the complete source link. TODO/tags do not open composers. Folding and
+  footnote navigation remain usable; reading-mode links navigate normally.
+- Boundary :: Browser interaction is manual UT, not inferred from HTTP results.
+  No automated browser runs were performed. Ambiguous/unsupported mapping remains
+  a visible refusal rather than a guessed source modification.
+
+- Final checks :: Rebuilt executable passed =make build=. Scoped Go lint and
+  JavaScript lint passed. After-link interior offsets are explicitly refused;
+  the focused offset/link checks passed in 0.005s. No live service restart or
+  browser interaction was performed by the agent.

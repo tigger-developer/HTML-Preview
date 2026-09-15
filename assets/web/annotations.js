@@ -134,12 +134,7 @@ export class
         const point = document.caretPositionFromPoint(event.clientX, event.clientY);
         if (point) { range = document.createRange(); range.setStart(point.offsetNode, point.offset); range.collapse(true); }
       } else if (document.caretRangeFromPoint) range = document.caretRangeFromPoint(event.clientX, event.clientY);
-      const target = range && canonicalMap(main).point(range, this.state.body_revision, this.data.explicit_ids || {});
-      if (target) this.transition(() => {
-        const result = resolveAnnotationTarget(target, canonicalMap(document.getElementById('hp-document')).text, this.state.body_revision, this.headingSpans());
-        if (result.status === 'resolved') this.openComposer(result.target);
-        else this.connection.textContent = 'This insertion point changed. Choose a point in the refreshed document.';
-      }).catch(error => this.showComposerFailure(error));
+      if (range) this.annotateRange(range);
     }, this.events);
     document.addEventListener('keydown', event => this.placeWithKeyboard(event), this.events);
     document.addEventListener('scroll', () => this.positionCaret(), { ...this.events, capture: true, passive: true });
@@ -175,8 +170,23 @@ export class
     }, this.events);
   }
 
+  annotateRange(range, link = null) {
+    const main = document.getElementById('hp-document');
+    const target = canonicalMap(main).point(range, this.state.body_revision, this.data.explicit_ids || {}, link);
+    if (target) this.transition(() => {
+      const result = resolveAnnotationTarget(target, canonicalMap(document.getElementById('hp-document')).text, this.state.body_revision, this.headingSpans());
+      if (result.status === 'resolved') this.openComposer(result.target);
+      else this.connection.textContent = 'This insertion point changed. Choose a point in the refreshed document.';
+    }).catch(error => this.showComposerFailure(error));
+  }
+
   guardNavigation(event) {
     const link = event.target instanceof Element && event.target.closest('a[href]');
+    if (link && !this.panel.hidden && document.getElementById('hp-document').contains(link) && !link.matches('.footnote-ref,.footnote-back') && !link.closest('.footnotes,nav') && event.button === 0) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      if (this.state?.writable && window.getSelection()?.isCollapsed !== false) { const range = document.createRange(); range.selectNodeContents(link); range.collapse(false); this.annotateRange(range, link); }
+      return;
+    }
     if (!link || !this.composer || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === '_blank' || link.hasAttribute('download')) return;
     const url = new URL(link.href);
     if (url.origin === location.origin && url.pathname === location.pathname && url.search === location.search) return;
@@ -470,7 +480,7 @@ export class
     }
     this.keyboardBlocks = new Map();
     if (!on) return;
-    for (const node of document.querySelectorAll('#hp-document :is(p,li,td,th)')) {
+    for (const node of document.querySelectorAll('#hp-document :is(p,li,td,th,h1,h2,h3,h4,h5,h6,[role=heading])')) {
       if (node.closest('pre,code,.footnotes,[data-hp-org-drawer]') || node.querySelector('p,li,td,th')) continue;
       this.keyboardBlocks.set(node, node.getAttribute('tabindex')); node.tabIndex = 0;
     }
@@ -514,7 +524,7 @@ export class
       const nodes = []; const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
       while (walker.nextNode()) {
         const node = walker.currentNode;
-        if (node.data.trim() && !node.parentElement.closest('a,code,pre,button')) nodes.push(node);
+        if (node.data.trim() && !node.parentElement.closest('code,pre,button,.todo,.done,.tag,.priority,.cookie')) nodes.push(node);
       }
       if (!nodes.length) return;
       this.keyboardCaret = { block, nodes, index: 0, offset: 0 };

@@ -51,8 +51,10 @@ fading, accompanied by a green border flash. Save failures remain visible.
 
 Keyboard placement uses Tab to reach a prose block, Enter to begin placing the
 caret, Left/Right or Home/End to move it, then Enter to open the composer.
-Escape cancels caret placement. Links, code-copy controls and folding controls
-retain their own actions.
+Escape cancels caret placement. Code-copy and folding controls retain their own
+actions. In annotation mode, clicking document link text places a footnote after
+the complete link; reading mode retains normal navigation. Footnote references
+and backlinks remain navigable in both modes.
 
 The **Annotations & Footnotes** sidebar gives each note a subtle background.
 Click a note's content area, or focus it and press Enter, to edit it. This applies
@@ -216,5 +218,7 @@ filesystem behaviour remains a platform user test. The service admits at most
 32 simultaneous event streams. Changes are coalesced over 100 milliseconds.
 
 Section heading text does not fold sections in either reading or annotation
-mode. Use the vertical bar/indicator or Show more button. Heading text and
-hyperlinks currently remain excluded from annotation insertion.
+mode. Use the vertical bar/indicator or Show more button. Ordinary heading text accepts annotations. TODO/DONE markers, tags and priority
+badges are excluded. Link annotations follow the complete link markup, preserving
+its label and destination. Ambiguous or unsupported source mappings are refused
+without changing the document.

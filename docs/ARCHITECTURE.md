@@ -857,3 +857,20 @@ outline actions and fragment reveal retain their roles. This supersedes the
 heading listener and clickable-heading styling described above. Removing the
 listener avoids mode-dependent heading behaviour. Heading and hyperlink
 annotation eligibility remains unchanged and is separate from folding.
+
+### Heading and link annotation placement, 16 September 2026
+
+The paired amendment enables ordinary heading text and complete-link annotation
+points. An after-link flag accompanies the existing transient point request;
+the browser derives its canonical position by placing a marker after the anchor
+in a detached clone. The source mapper recognizes balanced Org/Markdown links
+and the existing Pandoc marker proof verifies the rendered position before any
+write. Native source link bytes remain intact. The same heading mapper excludes
+Org task states, priority markers and trailing tags. Configured TODO states are
+read from the source directives. Ambiguous or unsupported candidates still fail
+without source mutation. No annotation persistence format changes.
+
+Document link clicks in annotation mode are intercepted before navigation;
+footnote references/backlinks and navigation controls keep their actions.
+Heading keyboard placement and pencil cues use the same eligibility rules.
+This supersedes the heading/link exclusion in the preceding folding amendment.

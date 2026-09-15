@@ -8,11 +8,16 @@ import (
 	"unicode/utf8"
 )
 
-func SourcePointCandidate(data []byte, format, run string, runOffset int) (int, error) {
+func SourcePointCandidate(data []byte, format, run string, runOffset int, afterLink ...bool) (int, error) {
 	if !utf8.ValidString(run) || len(run) > 8192 || runOffset < 0 || runOffset > utf8.RuneCountInString(run) || strings.ContainsRune(run, 0) {
 		return -1, fail("point_unmappable")
 	}
+	if len(afterLink) > 0 && afterLink[0] && runOffset != utf8.RuneCountInString(run) {
+		return -1, fail("point_unmappable")
+	}
 	masked := append([]byte(nil), data...)
+	states := orgTaskStates(data)
+	var links []int
 	literal := literalContext{}
 	definition, drawer := false, false
 	for _, line := range sourceLines(data) {
@@ -29,9 +34,10 @@ func SourcePointCandidate(data []byte, format, run string, runOffset int) (int, 
 			blocked = true
 			drawer = !strings.EqualFold(trim, ":END:")
 		}
-		blocked = blocked || definition || drawer || strings.HasPrefix(trim, "#") || strings.HasPrefix(trim, ">")
+		start, end, heading := headingProse(line.text, format, states)
+		blocked = blocked || definition || drawer || (!heading && strings.HasPrefix(trim, "#")) || strings.HasPrefix(trim, ">")
 		if format == "org" {
-			blocked = blocked || strings.HasPrefix(trim, "*")
+			blocked = blocked || (!heading && strings.HasPrefix(trim, "*"))
 		} else {
 			blocked = blocked || strings.HasPrefix(line.text, "    ") || strings.HasPrefix(line.text, "\t")
 		}
@@ -40,6 +46,18 @@ func SourcePointCandidate(data []byte, format, run string, runOffset int) (int, 
 				masked[i] = 0
 			}
 			continue
+		}
+		if len(afterLink) > 0 && afterLink[0] {
+			for _, at := range linkEnds(line.text, format, run) {
+				links = append(links, line.offset+at)
+			}
+		}
+		if heading {
+			for i := 0; i < len(line.text); i++ {
+				if i < start || i >= end {
+					masked[line.offset+i] = 0
+				}
+			}
 		}
 		// A candidate inside code, a link's brackets/destination or raw HTML
 		// must not become writable merely because its text occurs once.
@@ -63,6 +81,15 @@ func SourcePointCandidate(data []byte, format, run string, runOffset int) (int, 
 				angle = false
 			}
 		}
+	}
+	if len(afterLink) > 0 && afterLink[0] {
+		if len(links) == 0 && strings.Contains(run, "://") {
+			return SourcePointCandidate(data, format, run, runOffset)
+		}
+		if len(links) != 1 {
+			return -1, fail("point_unmappable")
+		}
+		return links[0], nil
 	}
 	normalized, boundaries := normalizedBytePositions(string(masked))
 	needle := Normalize(run)
