@@ -222,3 +222,8 @@ mode. Use the vertical bar/indicator or Show more button. Ordinary heading text 
 badges are excluded. Link annotations follow the complete link markup, preserving
 its label and destination. Ambiguous or unsupported source mappings are refused
 without changing the document.
+
+While an annotation is being edited, its saved sidebar card is hidden to avoid
+showing the same text twice. Other footnotes retain their original numbers.
+Closing the editor restores the saved card; printing includes all saved notes.
+Multiple paragraphs remain supported within one footnote.

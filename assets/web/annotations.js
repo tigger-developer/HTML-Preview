@@ -244,6 +244,7 @@ export class
         this.recovery.hidden = !state.error;
         const fieldError = ['invalid_label', 'label_conflict'].includes(state.error?.code);
         this.idInput.setAttribute('aria-invalid', String(fieldError)); this.idError.textContent = fieldError ? state.error.message : '';
+        this.syncFootnoteCards();
 
         if (this.composer?.sequence && this.displayedSequence !== this.composer.sequence) { this.displayedSequence = this.composer.sequence; this.refresh().catch(error => this.showFailure(error)); }
       },
@@ -272,6 +273,7 @@ export class
       navigator.clipboard.writeText(this.textarea.value).then(() => { this.status.textContent = 'Draft copied.'; }, () => { this.textarea.focus(); this.textarea.select(); this.status.textContent = 'Clipboard unavailable. Select and copy the draft.'; });
     }, this.events);
     if (note) this.markInsertionPoint(target);
+    this.syncFootnoteCards();
     this.textarea.focus();
   }
 
@@ -292,6 +294,7 @@ export class
       await this.composer.close();
       const restoreFocus = this.editor.contains(document.activeElement);
       this.composer.dispose(); this.composer = null; this.editor.replaceChildren(); this.clearInsertionPoint();
+      this.syncFootnoteCards();
       if (restoreFocus) this.toggle.focus();
       await this.refresh();
     } finally { this.closing = null; if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = this.composer.editing; } }
@@ -434,6 +437,7 @@ export class
     } else if (this.endnotesSlot && !this.endnotesSlot.isConnected) {
       this.endnotes?.remove(); this.endnotes = null; this.endnotesSlot = null;
     }
+    this.syncFootnoteCards();
     for (const item of this.endnotes?.querySelectorAll('li[data-hp-footnote-label]') || []) {
       if (!item.classList.contains('hp-editable-footnote')) {
         item.classList.add('hp-editable-footnote');
@@ -572,7 +576,19 @@ export class
     range.setStart(node, Array.from(node.data).slice(0, caret.offset).join('').length); range.collapse(true); return range;
   }
 
+  syncFootnoteCards(sidebar = !this.panel.hidden) {
+    const active = this.composer;
+    const label = active && (active.editing || active.sequence > 0) ? active.savedLabel : null;
+    const items = this.endnotes?.querySelectorAll(':scope > ol > li') || [];
+    Array.from(items).forEach((item, index) => {
+      // Hidden list items must not renumber the other footnotes.
+      item.value = index + 1;
+      item.hidden = Boolean(sidebar && label && item.dataset.hpFootnoteLabel === label);
+    });
+  }
+
   placeEndnotes(sidebar) {
+    this.syncFootnoteCards(sidebar);
     for (const item of this.endnotes?.querySelectorAll('.hp-editable-footnote') || []) item.tabIndex = sidebar && this.state?.writable ? 0 : -1;
     if (!this.endnotes || !this.endnotesSlot?.isConnected) return;
     if (sidebar) this.list.append(this.endnotes);

@@ -1339,3 +1339,16 @@ prescription is superseded by the operator's paired testing instruction.
   and link syntax preservation plus TODO/tag refusals. Browser click, keyboard,
   cursor and navigation behaviour remain manual UT. Earlier exclusions of all
   headings and links are superseded only as described here.
+
+* Paired refinement - one visible copy during editing, 16 September 2026
+
+- Authority :: Taḋg approved hiding the saved footnote card while its composer
+  is open, restoring it when editing closes. Multi-paragraph notes remain valid.
+- Behaviour :: Hide only the active annotation's saved card in the sidebar,
+  using its acknowledged label rather than an unsaved ID field. Keep other
+  footnotes visible with their original numbers. Reapply after autosave refresh;
+  restore on successful close, normal endnote presentation, print and teardown.
+  A failed close retains the editor and hides its duplicate saved card.
+- Verification :: Manual UT for editing, autosave refresh, ID changes/failures,
+  close, print and return. This is a DOM presentation change; no server behaviour
+  or source-writing format changes and no automated browser harness is required.

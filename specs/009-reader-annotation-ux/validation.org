@@ -426,3 +426,23 @@
   JavaScript lint passed. After-link interior offsets are explicitly refused;
   the focused offset/link checks passed in 0.005s. No live service restart or
   browser interaction was performed by the agent.
+
+* User test - one visible annotation while editing - PENDING
+
+- Authority :: Paired refinement approved on 16 September 2026.
+- Procedure :: Edit an existing multi-paragraph footnote, then create another
+  and wait for autosave. Confirm only the editor shows the active note, including
+  after source refresh. Close the editor; confirm the saved card returns. Change
+  a new note's ID, try a conflicting ID, and check unrelated cards retain their
+  numbers. Print and return while editing.
+- Expected :: Only the acknowledged active card is hidden, other notes remain
+  visible and numbered consistently, failed saves retain the editor, successful
+  close restores the card, and print includes all saved notes.
+- Checks :: JavaScript oxlint passed. Source review covers composer open/state,
+  successful close, refreshed endnotes, print placement and teardown. No browser
+  automation or server regression rerun: these cannot establish the DOM interaction
+  requested here. Human result remains PENDING.
+- Review :: Local self-review under the standing operator instruction; no new
+  independent audit verdict is claimed.
+
+- Build :: =make build= passed; the service was not restarted by the agent.
