@@ -446,3 +446,23 @@
   independent audit verdict is claimed.
 
 - Build :: =make build= passed; the service was not restarted by the agent.
+
+* User test - deferred document replacement - PENDING
+
+- Authority :: Operator BYPASS-GATE-7, 16 September 2026.
+- Procedure :: Type several autosaved revisions into an annotation in a long
+  document. Move between the textarea and ID field; then click outside or close
+  by keyboard. Repeat while another editor changes the document and while a
+  save fails. Focus the composer while a page refresh is in flight.
+- Expected :: Autosave continues without document replacement during typing.
+  Leaving applies the latest render after saving. External prose changes retain
+  the draft and require safe reattachment before saving; failures remain visible.
+- Review :: Displayed and saved revisions are separate; pending state fetches
+  finish before the final refresh; focus is rechecked after page fetch. Pending
+  changes are represented by the revision difference, not a queue of old pages.
+- Verification scope :: Manual browser UT; no browser automation, server suite
+  rerun, or source-introspection regression. Independent audits remain waived
+  under the operator's standing self-review instruction; no verdict is inferred.
+
+- Static/build evidence :: JavaScript oxlint and =make build= passed. No service
+  restart or browser automation was performed. Human interaction remains pending.

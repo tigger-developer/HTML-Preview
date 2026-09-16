@@ -874,3 +874,12 @@ Document link clicks in annotation mode are intercepted before navigation;
 footnote references/backlinks and navigation controls keep their actions.
 Heading keyboard placement and pencil cues use the same eligibility rules.
 This supersedes the heading/link exclusion in the preceding folding amendment.
+
+### Deferred rendering during annotation editing, 16 September 2026
+
+Annotation state refresh and rendered-document replacement have separate revision
+tracking. Autosave and SSE state checks continue while editor focus suppresses
+page replacement; successful close applies the latest render. The replacement
+path rechecks focus after fetching HTML. Point rebasing requires the displayed
+and saved body revisions to agree. External prose changes pause point saves;
+leaving the editor refreshes before safe reattachment, retaining drafts on failure.

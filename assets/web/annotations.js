@@ -291,11 +291,20 @@ export class
   async finishComposer() {
     this.textarea.readOnly = true; this.idInput.readOnly = true;
     try {
+      // External body changes need a current DOM before a paused target can rebase.
+      if (this.state.body_revision !== this.data.body_revision) {
+        const state = await this.replaceSource(this.state, true);
+        this.state = state;
+        const replacement = this.rebaseTarget(this.composer.target);
+        if (replacement) this.composer.rebase(replacement.target, replacement.revisions);
+      }
       await this.composer.close();
       const restoreFocus = this.editor.contains(document.activeElement);
       this.composer.dispose(); this.composer = null; this.editor.replaceChildren(); this.clearInsertionPoint();
       this.syncFootnoteCards();
       if (restoreFocus) this.toggle.focus();
+      // A state fetch started during the final save may have deferred rendering.
+      if (this.pendingRefresh) await this.pendingRefresh;
       await this.refresh();
     } finally { this.closing = null; if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = this.composer.editing; } }
   }
@@ -366,10 +375,11 @@ export class
     let state = validateAnnotationState(await this.request(this.data.endpoint));
     if (sequence !== this.composer?.sequence) state = validateAnnotationState(await this.request(this.data.endpoint));
     if (this.disposed) return;
-    if (state.revision !== this.data.revision) state = await this.replaceSource(state);
+    if (state.revision !== this.data.revision && !this.deferDocumentRefresh()) state = await this.replaceSource(state);
     if (this.disposed) return;
     const changed = !this.state || this.state.revision !== state.revision;
-    this.state = state; this.data.revision = state.revision;
+    // data describes the displayed document; state describes the latest saved file.
+    this.state = state;
     this.reconnect.hidden = true; this.notice?.remove();
     this.connection.textContent = state.writable ? (state.storage === 'sidecar' ? 'Read-only source; footnotes are saved in a sidecar.' : '') : 'Reading only: ' + state.reason.replaceAll('_', ' ');
     if (changed) this.renderComments(state.comments);
@@ -395,6 +405,10 @@ export class
       return { target, revisions: annotationRevisions(this.state) };
     }
 
+    if (this.data.body_revision !== this.state.body_revision) {
+      this.composer?.suspend('The document text changed. Leave the editor to refresh; your draft is retained.');
+      return null;
+    }
     const result = resolveAnnotationTarget(target, canonicalMap(document.getElementById('hp-document')).text, this.state.body_revision, this.headingSpans());
     if (result.status !== 'resolved') { this.composer?.suspend('The insertion point is ' + result.status + '. Your draft is retained.'); return null; }
     return { target: result.target, revisions: annotationRevisions(this.state) };
@@ -596,7 +610,11 @@ export class
     this.endnotes.hidden = false;
   }
 
-  async replaceSource(state) {
+  deferDocumentRefresh() {
+    return Boolean(this.composer && (this.closing || this.editor.contains(document.activeElement)));
+  }
+
+  async replaceSource(state, leavingEditor = false) {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const html = await this.request(this.data.page_url, { html: true });
       if (this.disposed) return state;
@@ -604,6 +622,8 @@ export class
       const metadata = page.getElementById('hp-annotation-data');
       const data = metadata && JSON.parse(metadata.content.textContent);
       if (data && ['revision', 'source_revision', 'body_revision'].every(key => data[key] === state[key])) {
+        // Focus may have entered the editor while the rendered page was fetched.
+        if (!leavingEditor && this.deferDocumentRefresh()) return state;
         await this.swapRegions(page, data); return state;
       }
       state = validateAnnotationState(await this.request(this.data.endpoint));

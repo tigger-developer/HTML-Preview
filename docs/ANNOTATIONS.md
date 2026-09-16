@@ -227,3 +227,10 @@ While an annotation is being edited, its saved sidebar card is hidden to avoid
 showing the same text twice. Other footnotes retain their original numbers.
 Closing the editor restores the saved card; printing includes all saved notes.
 Multiple paragraphs remain supported within one footnote.
+
+While the annotation editor has focus, autosave and conflict checks continue
+without replacing the rendered document. Leaving the editor saves pending text
+and refreshes the document. Moving between the comment and Footnote ID fields
+keeps the document stable. If the underlying prose changes on disk, point saves
+pause until the refreshed document can safely resolve the target; an unresolved
+conflict retains the draft.
