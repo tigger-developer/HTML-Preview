@@ -1,3 +1,9 @@
+---
+title: Architecture
+version: 1
+last-updated: 2026-09-17
+---
+
 # Architecture
 
 **Status:** Design adopted through
@@ -883,3 +889,19 @@ page replacement; successful close applies the latest render. The replacement
 path rechecks focus after fetching HTML. Point rebasing requires the displayed
 and saved body revisions to agree. External prose changes pause point saves;
 leaving the editor refreshes before safe reattachment, retaining drafts on failure.
+
+### Stable annotation feedback and recovery, 17 September 2026
+
+The annotation panel reserves connection and save-status space. SSE failures
+receive a two-second grace period, with a one-second native reconnect hint.
+Stream and state-fetch failures are tracked separately from confirmed save
+failures. A native modal owns Copy, Revert and Try again, keeps drafts selectable,
+and prevents background document replacement and automatic save-failure recovery
+until a decision. Revert abandons browser edits without rolling back disk content.
+This supersedes inline recovery controls above the composer. Source revision,
+operation identity and filesystem safeguards remain unchanged.
+
+Long sidebar footnotes have a short collapsed preview and explicit expansion
+control. The same full Pandoc endnotes remain available for editing, ordinary
+reading and print; truncation never modifies saved text. Interaction evidence is
+tracked in the reader-annotation specification's validation record.

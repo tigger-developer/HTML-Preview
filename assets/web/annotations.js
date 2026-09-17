@@ -89,12 +89,13 @@ export class
     this.panel = annotationElement('aside', '', 'hp-annotations'); this.panel.id = 'hp-annotations'; this.panel.hidden = true;
     this.panel.setAttribute('aria-label', 'Annotations & Footnotes');
     this.toggle = annotationButton('Annotations'); this.toggle.setAttribute('aria-controls', this.panel.id); this.toggle.setAttribute('aria-expanded', 'false'); this.toggle.setAttribute('aria-pressed', 'false');
-    this.connection = annotationElement('p', 'Loading annotations…', 'hp-annotation-status');
+    this.connection = annotationElement('p', 'Loading annotations…', 'hp-annotation-status hp-connection-status');
     this.connection.setAttribute('role', 'status'); this.connection.setAttribute('aria-live', 'polite');
-    this.reconnect = annotationButton('Reconnect'); this.reconnect.hidden = true;
     this.list = annotationElement('div'); this.editor = annotationElement('div');
-    this.panel.append(annotationElement('h2', 'Annotations & Footnotes'), this.connection, this.reconnect, this.editor, this.list);
+    this.connectionFaults = new Map();
+    this.panel.append(annotationElement('h2', 'Annotations & Footnotes'), this.connection, this.editor, this.list);
     document.body.append(this.panel); this.attachToggle();
+    this.createRecoveryDialog();
     this.listen();
     if (typeof ResizeObserver === 'function') {
       this.markerObserver = new ResizeObserver(() => this.positionCaret());
@@ -123,7 +124,6 @@ export class
       }).catch(error => this.showComposerFailure(error));
     }, this.events);
     this.toggle.addEventListener('click', () => this.setMode(!(this.modeRequest?.on ?? !this.panel.hidden)).catch(error => this.showComposerFailure(error)), this.events);
-    this.reconnect.addEventListener('click', () => { this.stopEvents(); this.refresh().catch(error => this.showFailure(error)); }, this.events);
     document.addEventListener('click', event => {
       if (this.panel.hidden || !this.state?.writable || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       if (window.getSelection()?.isCollapsed === false) return;
@@ -144,28 +144,28 @@ export class
     document.addEventListener('visibilitychange', () => {
       this.stopEvents();
       if (!document.hidden) this.refresh().catch(error => this.showFailure(error));
-      if (this.composer) this.composer.flush().catch(error => this.showComposerFailure(error));
+      if (this.composer && !this.dialog.open) this.composer.flush().catch(error => this.showComposerFailure(error));
     }, this.events);
     for (const event of ['focus', 'pageshow']) window.addEventListener(event, () => {
       if (!document.hidden) this.refresh().catch(error => this.showFailure(error));
-      if (this.composer) this.composer.flush().catch(error => this.showComposerFailure(error));
+      if (this.composer && !this.dialog.open) this.composer.flush().catch(error => this.showComposerFailure(error));
     }, this.events);
     window.addEventListener('beforeunload', event => {
       if (this.composer?.dirty) { event.preventDefault(); event.returnValue = ''; }
     }, this.events);
     document.addEventListener('keydown', event => {
-      if (event.key !== 'Escape' || !this.composer || this.composer.composing) return;
+      if (this.dialog.open || event.key !== 'Escape' || !this.composer || this.composer.composing) return;
       event.preventDefault(); this.closeComposer().catch(error => this.showComposerFailure(error));
     }, this.events);
     document.addEventListener('click', event => this.guardNavigation(event), { ...this.events, capture: true });
     document.addEventListener('click', event => {
-      if (event.defaultPrevented || event.button !== 0 || !this.composer || !(event.target instanceof Element) || this.editor.contains(event.target) || event.target.closest('#hp-header')) return;
+      if (this.dialog.open || event.defaultPrevented || event.button !== 0 || !this.composer || !(event.target instanceof Element) || this.editor.contains(event.target) || event.target.closest('#hp-header')) return;
       // Share the same pending close with a clicked insertion point or link.
       // Failure keeps the editor visible instead of discarding the draft.
       this.closeComposer().catch(error => this.showComposerFailure(error));
     }, { ...this.events, capture: true });
     this.editor.addEventListener('focusout', event => {
-      if (!event.relatedTarget || this.editor.contains(event.relatedTarget) || !this.composer) return;
+      if (this.dialog.open || !event.relatedTarget || this.editor.contains(event.relatedTarget) || !this.composer) return;
       this.closeComposer().catch(error => this.showComposerFailure(error));
     }, this.events);
   }
@@ -208,6 +208,10 @@ export class
   }
 
   applyMode(on) {
+    if (on && this.connectionPaused) {
+      this.connectionPaused = false;
+      this.refresh().catch(error => this.showFailure(error));
+    }
     this.panel.hidden = !on;
     this.toggle.setAttribute('aria-expanded', String(on));
     this.toggle.setAttribute('aria-pressed', String(on));
@@ -225,26 +229,25 @@ export class
     this.textarea.value = note?.text || '';
     const label = annotationElement('label', note ? 'Edit footnote' : 'Your comment'); label.htmlFor = this.textarea.id;
     this.status = annotationElement('p', 'Not saved', 'hp-annotation-status'); this.status.setAttribute('role', 'status'); this.status.setAttribute('aria-live', 'polite');
-    const retry = annotationButton('Retry'); const copy = annotationButton('Copy draft'); const restore = annotationButton(note ? 'Use current footnote' : 'Restore last autosave');
-    this.recovery = annotationElement('div', '', 'hp-annotation-actions'); this.recovery.hidden = true; this.recovery.append(retry, copy, restore);
     this.idInput = annotationElement('input'); this.idInput.id = 'hp-annotation-id'; this.idInput.type = 'text'; this.idInput.maxLength = 64;
     this.idInput.value = note?.label || defaultFootnoteID(this.data.display_name || '', this.state.footnote_labels);
     this.idInput.readOnly = Boolean(note);
     const idLabel = annotationElement('label', 'Footnote ID', 'hp-annotation-id-label'); idLabel.htmlFor = this.idInput.id;
     this.idError = annotationElement('small'); this.idError.id = 'hp-annotation-id-error'; this.idInput.setAttribute('aria-describedby', this.idError.id);
-    this.editor.append(label, this.textarea, this.status, idLabel, this.idInput, this.idError, this.recovery);
+    this.editor.append(label, this.textarea, this.status, idLabel, this.idInput, this.idError);
 
     this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, note, label: this.idInput.value,
       send: (request, secret) => this.request(this.data.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-HTMLPreview-Annotation-Token': this.state.write_token, 'X-HTMLPreview-Composer-Token': secret }, body: JSON.stringify(request) }),
       onState: state => {
         const saved = !state.error && !state.dirty && (state.status === 'Autosaved draft' || state.status === 'Saved');
-        this.status.textContent = (saved ? 'Auto saved' : state.status) + (state.error ? ': ' + state.error.message : '');
+        this.status.textContent = saved ? 'Auto saved' : state.status;
         this.status.classList.toggle('hp-autosaved', saved);
         this.editor.dataset.saveState = state.error ? 'error' : state.dirty ? 'pending' : saved ? 'saved' : 'empty';
-        this.recovery.hidden = !state.error;
         const fieldError = ['invalid_label', 'label_conflict'].includes(state.error?.code);
         this.idInput.setAttribute('aria-invalid', String(fieldError)); this.idError.textContent = fieldError ? state.error.message : '';
         this.syncFootnoteCards();
+        this.updateRecoveryButtons();
+        if (state.error && (this.composer?.failed || this.composer?.paused)) this.showComposerFailure(state.error);
 
         if (this.composer?.sequence && this.displayedSequence !== this.composer.sequence) { this.displayedSequence = this.composer.sequence; this.refresh().catch(error => this.showFailure(error)); }
       },
@@ -254,35 +257,26 @@ export class
     this.textarea.addEventListener('input', () => this.composer.input(this.textarea.value), this.events);
     this.textarea.addEventListener('compositionstart', () => this.composer.composition(true), this.events);
     this.textarea.addEventListener('compositionend', () => this.composer.composition(false), this.events);
-    retry.addEventListener('click', () => this.retryComposer(), this.events);
-    restore.addEventListener('click', async () => {
-      try {
-        if (this.composer.editing) {
-          await this.refresh();
-          const current = this.state.footnotes.find(item => item.label === this.composer.label && item.storage === this.composer.target.run);
-          if (!current) throw new Error('The footnote was removed. Copy your draft before leaving.');
-          this.composer.useCurrentFootnote(current, annotationRevisions(this.state));
-        } else this.composer.restoreSaved();
-        this.textarea.value = this.composer.text; this.idInput.value = this.composer.label; this.textarea.focus();
-      } catch (error) { this.showComposerFailure(error); }
-    }, this.events);
-
-    copy.addEventListener('click', () => {
-      this.status.classList.remove('hp-autosaved');
-      if (!navigator.clipboard) { this.textarea.focus(); this.textarea.select(); this.status.textContent = 'Select and copy the draft using your keyboard.'; return; }
-      navigator.clipboard.writeText(this.textarea.value).then(() => { this.status.textContent = 'Draft copied.'; }, () => { this.textarea.focus(); this.textarea.select(); this.status.textContent = 'Clipboard unavailable. Select and copy the draft.'; });
-    }, this.events);
     if (note) this.markInsertionPoint(target);
     this.syncFootnoteCards();
     this.textarea.focus();
   }
 
   async retryComposer() {
-    try { await this.refresh(); await this.composer.retry(); }
-    catch (error) { this.showComposerFailure(error); }
+    // Retry a lost acknowledgement with its original operation identity first.
+    if (this.composer.failed) await this.composer.retry();
+    await this.refresh();
+    if (this.state.body_revision !== this.data.body_revision) {
+      this.state = await this.replaceSource(this.state, true);
+      const replacement = this.rebaseTarget(this.composer.target);
+      if (replacement) this.composer.rebase(replacement.target, replacement.revisions);
+    }
+    if (this.composer.paused) throw this.composer.error;
+    await this.composer.retry();
   }
 
   closeComposer() {
+    if (this.dialog.open) return Promise.reject(new Error('Resolve the recovery dialog before leaving the editor.'));
     if (!this.composer || this.closing) return this.closing || Promise.resolve();
     this.closing = this.finishComposer();
     return this.closing;
@@ -313,34 +307,139 @@ export class
     if (this.disposed) return;
     if (!this.composer) { this.showFailure(error); return; }
     this.status.classList.remove('hp-autosaved'); this.editor.dataset.saveState = 'error';
-    this.status.textContent = 'Not saved: ' + error.message; this.recovery.hidden = false;
-    this.applyMode(true); this.textarea.focus();
+    this.status.textContent = 'Not saved';
+    this.composer.cancelTimer();
+    this.showRecovery(error, 'save');
   }
 
   showFailure(error) {
     if (this.disposed) return;
-    this.connection.textContent = 'Annotations unavailable: ' + error.message;
-    this.reconnect.hidden = false;
-    if (!this.composer && this.panel.hidden) {
-      this.notice ||= annotationElement('p', '', 'hp-annotation-status'); this.notice.setAttribute('role', 'status');
-      this.notice.textContent = this.connection.textContent; document.getElementById('hp-header').after(this.notice);
-    }
+    this.connectionFailed('refresh', error);
     if (this.composer && [403, 404].includes(error.status)) this.composer.suspend('The document is unavailable. Copy your draft before leaving.');
   }
 
-  stopEvents() { this.stream?.close(); this.stream = null; }
+  createRecoveryDialog() {
+    this.dialog = annotationElement('dialog', '', 'hp-annotation-recovery');
+    const title = annotationElement('h2', 'Annotation recovery'); title.id = 'hp-recovery-title';
+    this.dialog.setAttribute('aria-labelledby', title.id);
+    this.recoveryMessage = annotationElement('p'); this.recoveryMessage.id = 'hp-recovery-message';
+    this.dialog.setAttribute('aria-describedby', this.recoveryMessage.id);
+    this.recoveryDraft = annotationElement('textarea'); this.recoveryDraft.readOnly = true;
+    this.recoveryDraft.setAttribute('aria-label', 'Retained annotation draft'); this.recoveryDraft.rows = 6;
+    this.recoveryStatus = annotationElement('p', '', 'hp-annotation-status'); this.recoveryStatus.setAttribute('role', 'status');
+    this.copyDraft = annotationButton('Copy'); this.revertDraft = annotationButton('Revert'); this.retryDraft = annotationButton('Try again');
+    const actions = annotationElement('div', '', 'hp-annotation-actions'); actions.append(this.copyDraft, this.revertDraft, this.retryDraft);
+    const explanation = annotationElement('p', 'Copy keeps this dialog open. Revert discards unsaved browser edits; anything already saved stays in the file.', 'hp-annotation-status');
+    this.dialog.append(title, this.recoveryMessage, this.recoveryDraft, explanation, this.recoveryStatus, actions);
+    document.body.append(this.dialog);
+    this.dialog.addEventListener('cancel', event => event.preventDefault(), this.events);
+    this.copyDraft.addEventListener('click', async () => {
+      this.recoveryCopied = true;
+      try {
+        if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(this.recoveryDraft.value);
+        this.recoveryStatus.textContent = 'Copied.';
+      } catch {
+        this.recoveryDraft.focus(); this.recoveryDraft.select();
+        this.recoveryStatus.textContent = 'Select and copy the retained draft using your keyboard.';
+      }
+    }, this.events);
+    this.revertDraft.addEventListener('click', () => this.revertRecovery(), this.events);
+    this.retryDraft.addEventListener('click', () => this.retryRecovery(), this.events);
+  }
+
+  showRecovery(error, kind) {
+    if (this.disposed || (this.recoveryKind === 'save' && kind === 'connection')) return;
+    this.recoveryKind = kind;
+    this.recoveryMessage.textContent = error.message;
+    this.recoveryDraft.value = this.composer?.text || '';
+    this.recoveryDraft.hidden = !this.composer; this.copyDraft.disabled = !this.composer;
+    this.revertDraft.textContent = this.composer ? 'Revert' : 'Continue reading';
+    if (!this.dialog.open) {
+      this.recoveryCopied = false;
+      this.recoveryStatus.textContent = '';
+      this.dialog.showModal();
+    }
+    this.updateRecoveryButtons();
+  }
+
+  updateRecoveryButtons() {
+    const pending = Boolean(this.recoveryBusy || this.composer?.inFlight);
+    this.revertDraft.disabled = pending; this.retryDraft.disabled = pending;
+    const waiting = 'Waiting for the current save; Copy remains available.';
+    if (pending && !this.recoveryBusy) this.recoveryStatus.textContent = waiting;
+    else if (this.recoveryStatus.textContent === waiting) this.recoveryStatus.textContent = '';
+  }
+
+  closeRecovery() {
+    this.recoveryKind = null; this.dialog.close();
+    if (this.composer) this.textarea.focus({ preventScroll: true });
+  }
+
+  revertRecovery() {
+    if (this.composer?.inFlight || this.recoveryBusy) return;
+    this.composer?.dispose(); this.composer = null;
+    this.editor.replaceChildren(); this.clearInsertionPoint(); this.syncFootnoteCards();
+    // Explicitly choosing Revert must remain usable when the service is down.
+    this.connectionPaused = true; this.stopEvents();
+    this.clearConnectionFault('refresh'); this.closeRecovery();
+    this.applyMode(false); this.toggle.focus();
+    this.refresh().catch(error => { this.connection.textContent = error.message; });
+  }
+
+  async retryRecovery() {
+    if (this.composer?.inFlight || this.recoveryBusy) return;
+    this.recoveryBusy = true; this.updateRecoveryButtons(); this.recoveryStatus.textContent = 'Trying again…';
+    try {
+      this.connectionPaused = false; this.stopEvents();
+      if (this.composer) await this.retryComposer();
+      else {
+        await this.refresh();
+        if (this.state.revision !== this.data.revision) this.state = await this.replaceSource(this.state, true);
+      }
+      this.closeRecovery();
+    } catch (error) {
+      this.recoveryMessage.textContent = error.message; this.recoveryStatus.textContent = 'Still unavailable. Your draft is retained.';
+    } finally { this.recoveryBusy = false; this.updateRecoveryButtons(); }
+  }
+
+  connectionFailed(source, error) {
+    if (this.connectionPaused || this.disposed) return;
+    this.connection.textContent = 'Reconnecting…'; this.panel.dataset.connection = 'pending';
+    if (this.connectionFaults.has(source)) return;
+    const timer = this.clock.setTimeout(() => {
+      if (!this.connectionFaults.has(source) || this.disposed) return;
+      this.connection.textContent = 'Connection unavailable';
+      this.showRecovery(error, 'connection');
+    }, 2000);
+    this.connectionFaults.set(source, timer);
+  }
+
+  clearConnectionFault(source, recovered = true) {
+    const timer = this.connectionFaults.get(source);
+    if (timer !== undefined) this.clock.clearTimeout(timer);
+    this.connectionFaults.delete(source);
+    if (this.connectionFaults.size) return;
+    delete this.panel.dataset.connection;
+    this.connection.textContent = this.state?.writable ? (this.state.storage === 'sidecar' ? 'Read-only source; saving in a sidecar.' : '') : this.state ? 'Reading only: ' + this.state.reason.replaceAll('_', ' ') : 'Loading annotations…';
+    if (recovered && this.recoveryKind === 'connection' && !this.recoveryBusy && !this.recoveryCopied) this.closeRecovery();
+  }
+
+  stopEvents() { this.stream?.close(); this.stream = null; this.clearConnectionFault('stream', false); }
 
   connectEvents() {
-    if (this.stream || this.disposed || document.hidden) return;
+    if (this.stream || this.disposed || document.hidden || this.connectionPaused) return;
     if (typeof EventSource !== 'function') {
-      this.connection.textContent = 'Live updates are unavailable in this browser. Use Reconnect to refresh.';
-      this.reconnect.hidden = false;
+      this.connection.textContent = 'Live updates unavailable; reload to refresh.';
       return;
     }
     const endpoint = new URL(this.data.endpoint, location.href);
     endpoint.searchParams.set('events', '1');
     const stream = new EventSource(endpoint.href);
     this.stream = stream;
+    stream.onopen = () => {
+      if (this.stream === stream && !this.disposed) this.clearConnectionFault('stream');
+    };
     stream.addEventListener('change', () => {
       if (this.stream !== stream || this.disposed) return;
       if (this.pendingRefresh) { this.refreshAgain = true; return; }
@@ -348,8 +447,7 @@ export class
     });
     stream.onerror = () => {
       if (this.stream !== stream || this.disposed) return;
-      this.connection.textContent = 'Live updates disconnected. Reconnecting; your draft is retained.';
-      this.reconnect.hidden = false;
+      this.connectionFailed('stream', new Error('Live updates are disconnected. Your draft is retained.'));
     };
   }
 
@@ -380,10 +478,9 @@ export class
     const changed = !this.state || this.state.revision !== state.revision;
     // data describes the displayed document; state describes the latest saved file.
     this.state = state;
-    this.reconnect.hidden = true; this.notice?.remove();
-    this.connection.textContent = state.writable ? (state.storage === 'sidecar' ? 'Read-only source; footnotes are saved in a sidecar.' : '') : 'Reading only: ' + state.reason.replaceAll('_', ' ');
+    this.clearConnectionFault('refresh');
     if (changed) this.renderComments(state.comments);
-    if (this.composer) {
+    if (this.composer && !(this.dialog.open && this.recoveryKind === 'save' && !this.recoveryBusy)) {
       if (!state.writable) this.composer.suspend('Saving is unavailable: ' + state.reason.replaceAll('_', ' '));
       else if (!this.composer.inFlight) {
         const replacement = this.rebaseTarget(this.composer.target);
@@ -451,9 +548,13 @@ export class
     } else if (this.endnotesSlot && !this.endnotesSlot.isConnected) {
       this.endnotes?.remove(); this.endnotes = null; this.endnotesSlot = null;
     }
+    for (const [body] of this.footnoteMeasures || []) {
+      if (!body.isConnected) { this.footnoteObserver?.unobserve(body); this.footnoteMeasures.delete(body); }
+    }
     this.syncFootnoteCards();
     for (const item of this.endnotes?.querySelectorAll('li[data-hp-footnote-label]') || []) {
       if (!item.classList.contains('hp-editable-footnote')) {
+        this.makeFootnoteCollapsible(item);
         item.classList.add('hp-editable-footnote');
         item.title = 'Click or press Enter to edit this footnote.';
         item.addEventListener('click', event => {
@@ -469,7 +570,7 @@ export class
       item.tabIndex = !this.panel.hidden && this.state?.writable ? 0 : -1;
       const note = this.state?.footnotes.find(note => note.label === item.dataset.hpFootnoteLabel);
       if (!note?.author || !note.created_at) continue;
-      for (const paragraph of item.querySelectorAll(':scope > p')) {
+      for (const paragraph of item.querySelectorAll(':scope > p, :scope > .hp-footnote-body > p')) {
         const attribution = ['Created', 'Edited'].map(kind => 'Author: ' + note.author + '; ' + kind + ': ').find(prefix => paragraph.textContent.startsWith(prefix));
         if (!attribution) continue;
         const nativeDate = /^\[\d{4}-\d{2}-\d{2} [A-Za-z]{3}(?: \d{2}:\d{2})?\]$/.test(note.created_at);
@@ -489,6 +590,37 @@ export class
         paragraph.classList.add('hp-annotation-author');
       }
     }
+  }
+
+  makeFootnoteCollapsible(item) {
+    const body = annotationElement('div', '', 'hp-footnote-body');
+    body.append(...item.childNodes); item.append(body);
+    const expand = annotationButton('…'); expand.className = 'hp-footnote-expand';
+    expand.setAttribute('aria-label', 'Expand footnote'); expand.setAttribute('aria-expanded', 'false');
+    item.append(expand);
+    const measure = () => {
+      if (!body.isConnected || this.panel.hidden) return;
+      const long = body.scrollHeight > parseFloat(getComputedStyle(body).fontSize) * 7.5 + 1;
+      expand.hidden = !long;
+    };
+    const setExpanded = open => {
+      item.classList.toggle('hp-footnote-expanded', open);
+      expand.setAttribute('aria-expanded', String(open)); expand.setAttribute('aria-label', open ? 'Collapse footnote' : 'Expand footnote');
+      expand.textContent = open ? 'Show less' : '…';
+    };
+    expand.addEventListener('click', () => setExpanded(expand.getAttribute('aria-expanded') !== 'true'), this.events);
+    body.addEventListener('focusin', () => {
+      if (!expand.hidden) setExpanded(true);
+    }, this.events);
+    this.footnoteMeasures ||= new Map();
+    this.footnoteMeasures.set(body, measure);
+    if (typeof ResizeObserver === 'function') {
+      this.footnoteObserver ||= new ResizeObserver(entries => {
+        for (const entry of entries) this.footnoteMeasures.get(entry.target)?.();
+      });
+      this.footnoteObserver.observe(body);
+    }
+    measure();
   }
 
   prepareKeyboard(on) {
@@ -608,10 +740,11 @@ export class
     if (sidebar) this.list.append(this.endnotes);
     else this.endnotesSlot.after(this.endnotes);
     this.endnotes.hidden = false;
+    for (const measure of this.footnoteMeasures?.values() || []) measure();
   }
 
   deferDocumentRefresh() {
-    return Boolean(this.composer && (this.closing || this.editor.contains(document.activeElement)));
+    return this.dialog.open || Boolean(this.composer && (this.closing || this.editor.contains(document.activeElement)));
   }
 
   async replaceSource(state, leavingEditor = false) {
@@ -676,6 +809,9 @@ export class
 
   dispose() {
     this.disposed = true; this.stopEvents(); this.controller.abort(); this.composer?.dispose();
+    for (const timer of this.connectionFaults.values()) this.clock.clearTimeout(timer);
+    this.connectionFaults.clear(); this.dialog.remove();
+    this.footnoteObserver?.disconnect(); this.footnoteMeasures?.clear();
     this.markerObserver?.disconnect(); this.clearInsertionPoint();
     this.prepareKeyboard(false);
     this.placeEndnotes(false); this.endnotesSlot?.remove(); document.body.classList.remove('hp-annotating');

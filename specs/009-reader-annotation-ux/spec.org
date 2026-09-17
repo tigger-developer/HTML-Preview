@@ -1353,6 +1353,35 @@ prescription is superseded by the operator's paired testing instruction.
   close, print and return. This is a DOM presentation change; no server behaviour
   or source-writing format changes and no automated browser harness is required.
 
+* Paired refinement - stable feedback and recovery, 17 September 2026
+
+- Behaviour :: Reserve space for connection and autosave feedback. Fading saved
+  text, reconnect notices and failure controls must not move the editor. Brief
+  connection failures show amber feedback; allow two seconds to recover before
+  presenting a blocking recovery dialog. Native SSE retries after one second,
+  within that grace period, without polling document state.
+- Recovery :: Confirmed save failures present Copy, Revert and Try again in a
+  modal dialog. Copy retains the dialog and draft. Revert abandons unsaved browser
+  edits only; acknowledged on-disk saves remain. Try again retains operation
+  identity and existing revision checks. Escape and backdrop clicks cannot
+  dismiss the failure. Background refresh cannot replace the document while
+  recovery is open. Connection recovery cannot dismiss a save failure.
+- Long notes :: Saved sidebar notes longer than approximately five text lines
+  are collapsed behind an accessible ellipsis expansion button. Show less closes
+  them again. Editing always exposes the full text; ordinary document endnotes
+  and print retain the full note. Expansion does not open an editor.
+- Design :: Keep feedback in the existing annotation panel; use a native dialog
+  outside document regions. Separate event-stream health from save state and
+  HTTP refresh errors. Do not extend request deadlines without evidence that
+  they cause failures. Retain source confinement, write grants and atomic writes.
+- Verification :: Manual UT covers status layout in both themes and phone view,
+  short and sustained disconnection, successful reconnect, Copy including denied
+  clipboard access, repeated retry failure, successful retry and explicit revert.
+  Check keyboard focus trapping and draft retention. Native lint/build supplement
+  these presented-DOM checks; no browser automation or source-inspection tests.
+  Also exercise long multi-paragraph notes, expansion/collapse, short notes,
+  note editing, narrow viewports and full endnotes outside annotation mode.
+
 * Emergency refinement - stable document while composing, 16 September 2026
 
 - Authority :: Taḋg invoked BYPASS-GATE-7 after requesting that full document

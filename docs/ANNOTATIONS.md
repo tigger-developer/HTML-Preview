@@ -1,3 +1,9 @@
+---
+title: Document annotations
+version: 1
+last-updated: 2026-09-17
+---
+
 # Document annotations
 
 Service previews of genuine Org and Markdown files offer an **Annotations**
@@ -47,7 +53,9 @@ Annotation mode uses a ✎ pencil cursor over eligible prose, with a crosshair
 fallback. An outline marks the
 insertion point while editing; after close, the normal footnote number and link
 remain. **Auto saved** appears beneath the textarea for two seconds before
-fading, accompanied by a green border flash. Save failures remain visible.
+fading, accompanied by a green border flash. The feedback keeps its reserved
+space after fading. Sustained connection problems and confirmed save failures
+open a recovery dialog without adding controls above the editor.
 
 Keyboard placement uses Tab to reach a prose block, Enter to begin placing the
 caret, Left/Right or Home/End to move it, then Enter to open the composer.
@@ -57,6 +65,9 @@ the complete link; reading mode retains normal navigation. Footnote references
 and backlinks remain navigable in both modes.
 
 The **Annotations & Footnotes** sidebar gives each note a subtle background.
+Long notes initially show approximately five text lines. The **…** button
+expands the note; **Show less** collapses it. Editing always shows the full text.
+Normal endnotes and printed notes remain unabridged.
 Click a note's content area, or focus it and press Enter, to edit it. This applies
 to ordinary authored footnotes as well as comments created in HTML Preview. The editor loads the current content from the file.
 The existing ID is read-only and all references keep that ID. Ordinary notes
@@ -76,11 +87,10 @@ Autosave waits 300 milliseconds after typing pauses and submits within two
 seconds during continuous typing. Input-method composition suspends submission.
 Comments accept up to 4,000 Unicode characters and 16 KiB. Opening an empty
 composer writes nothing. Clearing an active saved draft removes its owned
-reference and definition. **Restore last autosave** restores the acknowledged
-text and ID. Editing an existing footnote requires non-empty text; clearing it
-does not delete it. After a conflict, **Use current footnote** explicitly replaces
-the editor contents with the current saved definition; **Copy draft** preserves
-the unsaved proposal first.
+reference and definition. Editing an existing footnote requires non-empty text;
+clearing it does not delete it. Recovery now uses **Copy**, **Revert** and
+**Try again** in a modal dialog, as described below. This replaces the earlier
+inline Restore last autosave, Use current footnote and Copy draft controls.
 
 Trailing line breaks are accepted while typing and omitted from the saved note
 text. Internal paragraph breaks, spaces and native markup remain intact. A change
@@ -115,9 +125,20 @@ point; sidecar points use unique before/after context. Missing or ambiguous
 locations remain explicitly unplaced in the endnotes. There is no fuzzy matching
 or automatic movement to a nearby paragraph.
 
-**Not saved** retains the draft and offers Retry and Copy draft. Temporary
+**Not saved** retains the draft. Temporary
 failures retry the same operation after one, two and four seconds, with a small
-jitter; persistent failures require an explicit retry. Closing, changing points,
+jitter; persistent failures require an explicit decision in the recovery dialog:
+
+- **Copy** copies the retained text and keeps the dialog open. If clipboard
+  access fails, the text remains selectable for manual copying.
+- **Try again** retries the save with its existing operation identity and
+  revision checks. A failed retry keeps the dialog and text available.
+- **Revert** abandons unsaved browser edits and returns to reading. Anything
+  already acknowledged on disk stays saved; this does not roll back the file.
+  Connection recovery pauses until annotation mode is activated again.
+
+Escape and backdrop clicks cannot dismiss this dialog. Retry and Revert wait
+while a save is still in flight. Closing, changing points,
 leaving annotation mode and application navigation wait for acknowledged saves.
 Browser navigation warnings are best effort: terminating the process can still
 lose text that was never acknowledged.
@@ -209,7 +230,11 @@ Hidden tabs close their event connection; returning to a tab refreshes state and
 reconnects. The stream sends a notification on every connection so an edit made
 while disconnected is not missed. A 30-second heartbeat keeps the stream alive
 without reading the document. Native EventSource reconnects after a connection
-failure; Reconnect also explicitly renews the connection. Browsers without
+failure, with a one-second retry interval. A brief interruption shows amber
+feedback in reserved space. If it lasts two seconds, a recovery dialog appears.
+Successful connection recovery clears a connection-only dialog; it never clears
+a confirmed save failure. This replaces the immediate inline Reconnect button.
+Browsers without
 EventSource require manual refresh. There is no polling fallback.
 
 Save-time source revision checks still prevent conflicting writes. Filesystems
@@ -234,3 +259,8 @@ and refreshes the document. Moving between the comment and Footnote ID fields
 keeps the document stable. If the underlying prose changes on disk, point saves
 pause until the refreshed document can safely resolve the target; an unresolved
 conflict retains the draft.
+
+## Document changes
+
+- 17 September 2026: Reserved feedback space, connection grace period, modal
+  recovery and expandable long sidebar notes.

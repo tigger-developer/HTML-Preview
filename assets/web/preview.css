@@ -121,6 +121,8 @@ body.hp-plaintext #hp-reader > :is(#hp-frontmatter,#hp-content-rule,#hp-toc,#hp-
 .hp-annotations { position:sticky; top:calc(var(--hp-bar-height,3rem) + .75rem); align-self:start; grid-column:2; grid-row:2 / 7; width:100%; min-width:0; max-height:calc(100dvh - var(--hp-bar-height,3rem) - 1.5rem); overflow:auto; overscroll-behavior:contain; padding:.75rem; border:1px solid var(--rule); border-radius:.3rem; background:var(--bg); font-size:.95rem; }
 .hp-annotations[hidden] { display:none; }
 .hp-annotations > h2 { margin:.2rem 0 .6rem; font-size:1.1rem; }
+.hp-annotation-author,.hp-annotation-status,.hp-annotation-id-label { color:var(--muted); font-size:.75rem; }
+.hp-annotation-recovery textarea { width:100%; color:var(--fg); background:var(--panel); font:inherit; border:1px solid var(--rule); padding:.5rem; resize:vertical; }
 .hp-annotations textarea { display:block; width:100%; margin:.4rem 0; padding:.5rem; font:inherit; color:var(--fg); background:var(--panel); border:1px solid var(--rule); border-radius:.25rem; resize:vertical; }
 :root { --hp-save-color:#327649; --hp-save-glow:#91cba4; }
 @media (prefers-color-scheme:dark) { :root { --hp-save-color:#93e3af; --hp-save-glow:#407653; } }
@@ -131,15 +133,23 @@ body.hp-plaintext #hp-reader > :is(#hp-frontmatter,#hp-content-rule,#hp-toc,#hp-
 }
 .hp-annotation-status.hp-autosaved { color:var(--hp-save-color); animation:hp-save-label 2.3s ease-out forwards; }
 @keyframes hp-save-label { 0%,87% { opacity:1; } 100% { opacity:0; } }
-.hp-annotation-status:empty { display:none; }
+.hp-annotation-status { min-height:1.5em; margin:.25rem 0; }
+.hp-annotations .hp-annotation-status { height:1.5em; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.hp-annotations .hp-connection-status { height:3em; white-space:normal; }
 .hp-annotations [data-save-state=pending] textarea { border-color:#a78c56; }
 .hp-annotations [data-save-state=error] textarea { border-color:#b86a70; }
-.hp-annotation-author,.hp-annotation-status,.hp-annotation-id-label { color:var(--muted); font-size:.75rem; }
+.hp-annotations[data-connection=pending] textarea { border-color:#b79a54; animation:none; }
 .hp-annotation-id-label { display:block; }
 #hp-annotation-id { width:100%; font:.8rem/1.5 var(--mono); color:var(--muted); background:var(--metadata-bg); border:1px solid var(--rule); border-radius:.2rem; padding:.2rem .35rem; }
-#hp-annotation-id-error { display:block; color:var(--syntax-error); }
+#hp-annotation-id-error { display:block; height:3em; overflow:auto; color:var(--syntax-error); }
 .hp-annotation-actions { margin:.5rem 0; }
 .hp-annotation-actions button { margin:.2rem; font-size:.8rem; }
+.hp-annotation-recovery { width:min(34rem,calc(100vw - 2rem)); max-height:calc(100dvh - 2rem); overflow:auto; padding:1rem; color:var(--fg); background:var(--bg); border:2px solid #b86a70; border-radius:.4rem; }
+.hp-annotation-recovery::backdrop { background:rgb(0 0 0 / .55); }
+.hp-annotation-recovery h2 { margin-top:0; font-size:1.2rem; }
+.hp-annotation-recovery textarea[hidden] { display:none; }
+.hp-annotation-recovery .hp-annotation-status { min-height:3em; }
+.hp-annotation-recovery button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 /* U+270E pencil; hotspot at its lower-right tip. White edging keeps it visible in both themes. */
 .hp-annotating #hp-document :is(p,li,td,th,h1,h2,h3,h4,h5,h6,[role=heading],a:not(.footnote-ref):not(.footnote-back)) { cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ctext%20x%3D%222%22%20y%3D%2227%22%20font-family%3D%22serif%22%20font-size%3D%2228%22%20fill%3D%22black%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%20paint-order%3D%22stroke%22%3E%E2%9C%8E%3C%2Ftext%3E%3C%2Fsvg%3E") 22 28,crosshair; }
 .hp-annotating #hp-document [data-hp-org-drawer] :is(p,li,td,th) { cursor:auto; }
@@ -201,5 +211,10 @@ body[data-hp-format=org] #hp-toc { display:none; }
 .hp-annotations .footnotes > ol > li { background: color-mix(in srgb, var(--muted) 9%, transparent); border-radius: .35rem; padding: .5rem .6rem; margin-block: .6rem; }
 .hp-annotations .hp-editable-footnote[tabindex="0"] { cursor: pointer; }
 .hp-annotations .hp-editable-footnote:is(:hover,:focus-visible) { background: color-mix(in srgb, var(--muted) 16%, transparent); }
+.hp-annotations .hp-footnote-body { font-size:inherit; line-height:1.5; max-height:7.5em; overflow:hidden; }
+.hp-annotations .hp-footnote-expanded .hp-footnote-body { max-height:none; }
+.hp-footnote-expand { display:none; }
+.hp-annotations .hp-footnote-expand { display:block; margin:.2rem 0 0; padding:0 .5rem; font-size:1rem; color:var(--accent); background:var(--metadata-bg); border:0; border-radius:.2rem; cursor:pointer; }
+.hp-annotations .hp-footnote-expand[hidden] { display:none; }
 .hp-annotations .hp-editable-footnote:focus-visible { outline: 2px solid var(--accent); outline-offset: .15rem; }
 .hp-editing-footnote { outline: 2px solid var(--accent); outline-offset: .2rem; border-radius: .2rem; }

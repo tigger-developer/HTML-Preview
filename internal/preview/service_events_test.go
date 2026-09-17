@@ -37,6 +37,9 @@ func TestDocumentEvents(t *testing.T) {
 		t.Fatalf("not SSE: %d %s", resp.StatusCode, resp.Header.Get("Content-Type"))
 	}
 	reader := bufio.NewReader(resp.Body)
+	if line, err := reader.ReadString('\n'); err != nil || line != "retry: 1000\n" {
+		t.Fatalf("reconnect must fit within the browser grace period: %q, %v", line, err)
+	}
 	event := func() {
 		t.Helper()
 		for {

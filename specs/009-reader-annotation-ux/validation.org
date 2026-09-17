@@ -466,3 +466,37 @@
 
 - Static/build evidence :: JavaScript oxlint and =make build= passed. No service
   restart or browser automation was performed. Human interaction remains pending.
+
+* User test - stable feedback, recovery and long notes - PENDING
+
+- Method :: User validation of the 17 September 2026 paired increment.
+- Procedure :: In a long Org/Markdown document, type through repeated saves in
+  light/dark and narrow layouts. Briefly interrupt the connection, then keep it
+  unavailable beyond two seconds. Exercise Copy with clipboard permission and
+  refusal, failed and successful Try again, and Revert. Check Escape, backdrop
+  clicks and keyboard focus. Revert must leave acknowledged disk content intact.
+  Expand/collapse a long multi-paragraph note, edit it, return to normal endnotes
+  and print. Short notes must not show an expansion control.
+- Expected :: Status changes do not move the editor. Brief disconnection stays
+  amber; sustained failure opens a modal with retained text. Copy keeps it open,
+  unsuccessful retry retains it, and Revert abandons only unsaved browser edits.
+  A connection-only recovery cannot dismiss a save failure. Long notes expand
+  without opening an editor and remain complete outside sidebar reading.
+- Regression evidence :: TestDocumentEvents initially failed because the HTTP
+  stream advertised a five-second retry interval. After changing the SSE hint to
+  one second, the focused TestDocumentEvents group passed (0.715s), including
+  ordinary/atomic file edits, sidecar invalidation, cancellation and refusals.
+- Boundary :: No automated browser run or full regression-suite rerun. Presented
+  DOM interaction and layout remain unvalidated pending the manual checks above.
+  Existing standing self-review authority applies; no independent verdict claimed.
+
+- Final checks :: JavaScript oxlint, CSS biome lint with warnings treated as
+  errors, Go formatting and git diff checks passed. The executable was rebuilt
+  with make build after the final asset change. No live service restart occurred.
+- Review :: Save-failure dialogs block automatic rebase/resubmission until a
+  decision. Retries preserve the failed operation identity; Revert waits for
+  in-flight work and never writes a rollback. Timers and note-size observers
+  have teardown paths. Expansion controls do not enter the note editing action.
+- Unresolved diagnostic :: Existing service logs contain repeated GET 503
+  render_unavailable entries. These establish render-state failures, not their
+  cause. This increment does not claim to resolve the underlying renderer error.

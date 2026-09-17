@@ -63,7 +63,7 @@ func (s *previewService) serveAnnotationEvents(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "text/event-stream")
 	// The first event also reconciles changes made while the stream was disconnected.
 	s.invalidateAnnotationState(src.canonical)
-	if !send("retry: 5000\nevent: change\ndata: {}\n\n") {
+	if !send("retry: 1000\nevent: change\ndata: {}\n\n") {
 		return
 	}
 	heartbeat := time.NewTicker(30 * time.Second)
