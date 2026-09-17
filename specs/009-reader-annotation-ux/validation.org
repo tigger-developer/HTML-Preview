@@ -500,3 +500,36 @@
 - Unresolved diagnostic :: Existing service logs contain repeated GET 503
   render_unavailable entries. These establish render-state failures, not their
   cause. This increment does not claim to resolve the underlying renderer error.
+
+* User test - independent saves and quiet-period refresh - PENDING
+
+- Method :: User validation; 17 September 2026 paired increment.
+- Procedure :: Enter 100 and 500 characters rapidly while observing requests.
+  A pause of 300 ms or two seconds of continuous typing starts a batched save;
+  delayed responses must not produce an unbounded queue of immediate follow-up
+  saves. Pause for 15 seconds with the editor focused. Resume typing while a
+  refresh response is pending. Move within the editor, use input-method
+  composition, then leave it. Repeat with external unrelated prose changes and
+  a conflicting edit to the same footnote.
+- Expected :: Autosave continues with one request in flight; routine receipts
+  and SSE notifications do not fetch/render the page while typing. The latest
+  pending document/sidebar update appears after the quiet period and pending
+  save, without closing the editor or losing draft, caret or scroll. A resumed
+  keystroke defers the response. Successful exit flushes and refreshes. Real
+  conflicts retain drafts and recovery; no blind merge or overwrite occurs.
+- Evidence boundary :: Browser-only timer, input and presented-DOM behaviour
+  uses manual UT under the established testing contract. No browser automation,
+  CLI JavaScript runtime, source-introspection test or server suite rerun.
+  Server persistence code is unchanged; prior server tests do not establish
+  this new browser behaviour. No independent audit verdict is claimed.
+
+- Static/build evidence :: JavaScript oxlint passed for annotations.js and
+  annotation-composer.js. make build passed with the final browser assets.
+  The reviewed baseline is 0f99d78 plus this quiet-period refresh increment.
+- Local review :: Receipts supply subsequent save revisions. Ordinary SSE,
+  acknowledgement and page-focus refreshes share the pending flag and idle
+  timer. Explicit conflict reconciliation bypasses only the fetch hold, not
+  source checks or display protection. New composer sequences reset their
+  acknowledgement tracking. Editor close releases pending refreshes. Timers
+  are cancelled on teardown. The full server suite was not rerun because no
+  server implementation changed; runtime browser behaviour remains PENDING.

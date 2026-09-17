@@ -1,6 +1,6 @@
 ---
 title: Architecture
-version: 1
+version: 2
 last-updated: 2026-09-17
 ---
 
@@ -905,3 +905,21 @@ Long sidebar footnotes have a short collapsed preview and explicit expansion
 control. The same full Pandoc endnotes remain available for editing, ordinary
 reading and print; truncation never modifies saved text. Interaction evidence is
 tracked in the reader-annotation specification's validation record.
+
+### Independent autosave and reader refresh, 17 September 2026
+
+Save receipts advance composer revisions independently of displayed revisions.
+SSE notifications and acknowledgements set one pending-refresh flag. The panel
+defers background state/render requests and annotation-list replacement until
+15 seconds without editor activity or successful editor exit, also waiting for
+pending writes and input-method composition. Responses recheck the hold before
+application. The existing editor node and its selection/scroll state survive
+refresh. This supersedes the preceding focus-only suppression rule.
+
+Automatic writes use the existing 300 ms/two-second debounce, with one request
+in flight. Follow-up text returns through scheduling after acknowledgement;
+explicit close still flushes through the latest text. Actual stale-write recovery
+can request state while presentation remains held. Existing server revision,
+native-definition and source-placement checks remain authoritative. No server
+write, source format or general merge contract changes. Browser interaction
+remains manual UT; the state-flow change has native lint and build checks.

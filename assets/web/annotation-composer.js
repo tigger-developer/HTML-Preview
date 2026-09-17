@@ -85,13 +85,13 @@ export class AnnotationComposer {
 
   schedule() {
     this.cancelTimer();
-    if (this.disposed || this.closed || this.composing || this.paused || this.failed || !this.dirty) return;
+    if (this.disposed || this.closed || this.composing || this.paused || this.failed || this.inFlight || !this.dirty) return;
     if (!this.valid()) { this.error ||= new Error('Enter a comment of up to 4,000 characters.'); return; }
     if (!this.text && !this.sequence && !this.inFlight) return;
     const wait = Math.max(0, Math.min(300, 2000 - (this.clock.now() - this.dirtySince)));
     this.timer = this.clock.setTimeout(() => {
       this.timer = null;
-      this.flush().catch(error => { this.error = error; this.emit(); });
+      this.flush(false).catch(error => { this.error = error; this.emit(); });
     }, wait);
   }
 
@@ -166,7 +166,7 @@ export class AnnotationComposer {
     }
   }
 
-  async flush() {
+  async flush(drain = true) {
     this.cancelTimer();
     while (this.inFlight) { await this.inFlight; await Promise.resolve(); }
     if (this.failed) throw this.error;
@@ -174,7 +174,10 @@ export class AnnotationComposer {
     if (!this.valid()) throw this.error || new Error('The draft is empty or exceeds its limit.');
     if (!this.text && !this.sequence) { this.savedVersion = this.version; this.savedLabel = this.label; this.emit(); return; }
     await this.perform(this.snapshot('upsert'));
-    if (this.version !== this.savedVersion) await this.flush();
+    if (this.version !== this.savedVersion) {
+      if (drain) await this.flush();
+      else this.schedule();
+    }
   }
 
   async retry() {

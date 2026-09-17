@@ -1,6 +1,6 @@
 ---
 title: Document annotations
-version: 1
+version: 2
 last-updated: 2026-09-17
 ---
 
@@ -84,7 +84,10 @@ digits, underscores or hyphens, beginning with a letter. A conflicting ID pauses
 saving and remains editable; it is never silently renamed.
 
 Autosave waits 300 milliseconds after typing pauses and submits within two
-seconds during continuous typing. Input-method composition suspends submission.
+seconds during continuous typing when no previous save is in flight. Only one
+save runs at a time. Text entered during a save is batched through the debounce
+after acknowledgement; it does not trigger immediate back-to-back submissions.
+Leaving the editor flushes the latest text. Input-method composition suspends submission.
 Comments accept up to 4,000 Unicode characters and 16 KiB. Opening an empty
 composer writes nothing. Clearing an active saved draft removes its owned
 reference and definition. Editing an existing footnote requires non-empty text;
@@ -118,8 +121,9 @@ wrappers, HTML and binary documents do not offer this view.
 
 Visible annotation-enabled pages keep one server-sent event connection open.
 The service watches the source directory for document and sidecar changes,
-including atomic replacements, and notifies the browser to refresh. This
-supersedes the previous one-second polling. Refresh
+including atomic replacements, and notifies the browser that a refresh is pending.
+Notifications and save acknowledgements coalesce into one pending update.
+This supersedes the previous one-second polling. Refresh
 preserves the active composer. A saved embedded reference identifies its source
 point; sidecar points use unique before/after context. Missing or ambiguous
 locations remain explicitly unplaced in the endnotes. There is no fuzzy matching
@@ -253,14 +257,26 @@ showing the same text twice. Other footnotes retain their original numbers.
 Closing the editor restores the saved card; printing includes all saved notes.
 Multiple paragraphs remain supported within one footnote.
 
-While the annotation editor has focus, autosave and conflict checks continue
-without replacing the rendered document. Leaving the editor saves pending text
-and refreshes the document. Moving between the comment and Footnote ID fields
-keeps the document stable. If the underlying prose changes on disk, point saves
-pause until the refreshed document can safely resolve the target; an unresolved
-conflict retains the draft.
+While typing, autosave continues independently of document and sidebar refresh.
+Save acknowledgements update the reserved save indicator and acknowledged
+revisions; they do not immediately request another rendered page. Each keystroke
+or input restarts a **15-second quiet period**. When it expires, the latest
+pending update is applied after any save or input-method composition finishes.
+The editor remains open, preserving the draft, caret and scroll positions.
+Leaving the editor saves pending text and refreshes immediately after closing.
+If typing resumes during a refresh request, applying it is deferred again.
+
+This supersedes the earlier rule that focus alone suppressed rendering
+indefinitely. The 15-second interval affects display updates only. Server checks
+remain active on every save. An actual stale-write response may fetch current
+state to reconcile an unchanged target without updating the display. Conflicting
+edits to the same note retain the draft; no automatic document merge or overwrite
+is introduced. Deferred preview errors do not interrupt typing with a modal;
+confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
 - 17 September 2026: Reserved feedback space, connection grace period, modal
   recovery and expandable long sidebar notes.
+- Version 2: Batched follow-up saves and independent refresh after 15 seconds
+  of inactivity or editor exit.

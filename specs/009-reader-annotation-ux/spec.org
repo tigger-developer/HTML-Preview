@@ -1401,3 +1401,35 @@ prescription is superseded by the operator's paired testing instruction.
   errors. No server or persistence change; no automated browser harness or
   source-text regression assertions are introduced. Local lint/build and review
   supplement, but do not replace, the pending interaction evidence.
+
+* Paired refinement - independent autosave and quiet-period refresh, 17 September 2026
+
+- Autosave :: Keep the 300 ms typing debounce and two-second continuous-typing
+  bound when no save is in flight. Submit one request at a time. Text entered
+  during a pending save returns through the debounce after acknowledgement,
+  rather than recursively draining new text into immediate requests. Explicit
+  close still flushes the latest text before closing.
+- Refresh :: Save receipts update acknowledged revisions and the reserved save
+  indicator without fetching rendered state. SSE notifications and receipts
+  coalesce into one pending refresh. Freeze the document and annotation list
+  while editing until 15 seconds without keystrokes/input, or successful editor
+  exit. Wait for pending saves and input-method composition to settle. The
+  15-second interval governs presentation, not persistence.
+- Stability :: Recheck the quiet period and save state when responses arrive.
+  Typing that resumes during a request defers applying it. Preserve the editor
+  node, draft, text selection, textarea scroll, sidebar scroll and reading
+  position when the latest refresh is eventually applied. A timeout does not
+  close the editor. No queued sequence of old renders is replayed.
+- Conflicts :: Every write retains the existing server revision, definition and
+  filesystem checks. A stale-write response may fetch current state to reconcile
+  an unchanged target without updating the display. Conflicting edits to the
+  same note retain the draft and recovery controls; no general merge mechanism
+  or last-write-wins behaviour is introduced. Deferred refresh errors must not
+  interrupt typing with a transient modal. Actual save failures retain recovery.
+- Verification :: Manual UT covers fast 100/500-character entry and request
+  batching, delayed responses, 15-second idle refresh with focus retained,
+  resumed typing during refresh, editor exit, long notes, composition and
+  external edits to unrelated content or the same note. Native lint/build and
+  local state-flow review supplement this browser-only logic; no browser harness
+  or source-introspection regression is introduced. Server persistence code and
+  its established regression coverage are unchanged.

@@ -35,6 +35,7 @@ function annotationFailureMessage(code, status) {
   if (code === 'invalid_label') return 'Use 1–64 letters, digits, underscores or hyphens, beginning with a letter.';
   if (code === 'label_conflict') return 'This footnote ID is already in use. Choose another ID.';
   if (code === 'point_unmappable') return 'This insertion point cannot be matched safely to the source. Your draft is retained.';
+  if (code === 'render_unavailable') return 'The document preview could not be rendered. Retry the preview update.';
   if (code === 'stale_source' || code === 'stale_body') return 'The source changed. Waiting for a refreshed preview.';
   if (code?.startsWith('target_')) return 'The insertion point is unavailable or no longer unique. Your draft is retained.';
   if (['source_replaced', 'source_changed', 'unsafe_source', 'unsafe_sidecar'].includes(code)) return 'The file identity changed or is unsafe to update. Copy the draft and reopen after checking the file.';
@@ -85,7 +86,8 @@ export class
     this.clock = options.clock || { now: () => performance.now(), setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: id => clearTimeout(id) };
     this.reinitialize = options.reinitialize || reinitializePreview;
     this.controller = new AbortController(); this.events = { signal: this.controller.signal };
-    this.disposed = false; this.composer = null; this.stream = null; this.refreshAgain = false; this.pendingRefresh = null; this.failures = 0;
+    this.disposed = false; this.composer = null; this.stream = null; this.pendingRefresh = null; this.failures = 0;
+    this.refreshRequested = false; this.refreshTimer = null; this.typingUntil = 0;
     this.panel = annotationElement('aside', '', 'hp-annotations'); this.panel.id = 'hp-annotations'; this.panel.hidden = true;
     this.panel.setAttribute('aria-label', 'Annotations & Footnotes');
     this.toggle = annotationButton('Annotations'); this.toggle.setAttribute('aria-controls', this.panel.id); this.toggle.setAttribute('aria-expanded', 'false'); this.toggle.setAttribute('aria-pressed', 'false');
@@ -143,12 +145,12 @@ export class
     window.addEventListener('afterprint', () => this.placeEndnotes(!this.panel.hidden), this.events);
     document.addEventListener('visibilitychange', () => {
       this.stopEvents();
-      if (!document.hidden) this.refresh().catch(error => this.showFailure(error));
-      if (this.composer && !this.dialog.open) this.composer.flush().catch(error => this.showComposerFailure(error));
+      if (!document.hidden) { this.connectEvents(); this.queueRefresh(); }
+      if (document.hidden && this.composer && !this.dialog.open) this.composer.flush().catch(error => this.showComposerFailure(error));
     }, this.events);
     for (const event of ['focus', 'pageshow']) window.addEventListener(event, () => {
-      if (!document.hidden) this.refresh().catch(error => this.showFailure(error));
-      if (this.composer && !this.dialog.open) this.composer.flush().catch(error => this.showComposerFailure(error));
+      if (!document.hidden) this.queueRefresh();
+      if (this.composer && !this.dialog.open) this.composer.schedule();
     }, this.events);
     window.addEventListener('beforeunload', event => {
       if (this.composer?.dirty) { event.preventDefault(); event.returnValue = ''; }
@@ -168,6 +170,7 @@ export class
       if (this.dialog.open || !event.relatedTarget || this.editor.contains(event.relatedTarget) || !this.composer) return;
       this.closeComposer().catch(error => this.showComposerFailure(error));
     }, this.events);
+    for (const name of ['keydown', 'input', 'focusin']) this.editor.addEventListener(name, () => this.holdReader(), this.events);
   }
 
   annotateRange(range, link = null) {
@@ -223,6 +226,7 @@ export class
   openComposer(target, note = null) {
     if (!this.state?.writable || this.composer || !['point', 'footnote'].includes(target?.type) || document.body.classList.contains('hp-plaintext')) return;
     this.clearCaret();
+    this.displayedSequence = 0;
     this.editor.replaceChildren();
     this.markInsertionPoint(target);
     this.textarea = annotationElement('textarea'); this.textarea.id = 'hp-annotation-text'; this.textarea.rows = 6;
@@ -245,18 +249,22 @@ export class
         this.editor.dataset.saveState = state.error ? 'error' : state.dirty ? 'pending' : saved ? 'saved' : 'empty';
         const fieldError = ['invalid_label', 'label_conflict'].includes(state.error?.code);
         this.idInput.setAttribute('aria-invalid', String(fieldError)); this.idError.textContent = fieldError ? state.error.message : '';
-        this.syncFootnoteCards();
         this.updateRecoveryButtons();
         if (state.error && (this.composer?.failed || this.composer?.paused)) this.showComposerFailure(state.error);
 
-        if (this.composer?.sequence && this.displayedSequence !== this.composer.sequence) { this.displayedSequence = this.composer.sequence; this.refresh().catch(error => this.showFailure(error)); }
+        if (this.composer?.sequence && this.displayedSequence !== this.composer.sequence) { this.displayedSequence = this.composer.sequence; this.queueRefresh(); }
+        else this.scheduleRefresh();
       },
-      onStale: async current => { await this.refresh(); return this.rebaseTarget(current); },
+      onStale: async current => {
+        await this.refresh({ reconcile: true });
+        if (this.closing && this.state.body_revision !== this.data.body_revision) this.state = await this.replaceSource(this.state, true);
+        return this.rebaseTarget(current);
+      },
     });
     this.idInput.addEventListener('input', () => this.composer.setLabel(this.idInput.value), this.events);
     this.textarea.addEventListener('input', () => this.composer.input(this.textarea.value), this.events);
     this.textarea.addEventListener('compositionstart', () => this.composer.composition(true), this.events);
-    this.textarea.addEventListener('compositionend', () => this.composer.composition(false), this.events);
+    this.textarea.addEventListener('compositionend', () => { this.holdReader(); this.composer.composition(false); }, this.events);
     if (note) this.markInsertionPoint(target);
     this.syncFootnoteCards();
     this.textarea.focus();
@@ -265,7 +273,7 @@ export class
   async retryComposer() {
     // Retry a lost acknowledgement with its original operation identity first.
     if (this.composer.failed) await this.composer.retry();
-    await this.refresh();
+    await this.refresh({ reconcile: true });
     if (this.state.body_revision !== this.data.body_revision) {
       this.state = await this.replaceSource(this.state, true);
       const replacement = this.rebaseTarget(this.composer.target);
@@ -300,7 +308,11 @@ export class
       // A state fetch started during the final save may have deferred rendering.
       if (this.pendingRefresh) await this.pendingRefresh;
       await this.refresh();
-    } finally { this.closing = null; if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = this.composer.editing; } }
+    } finally {
+      this.closing = null;
+      if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = this.composer.editing; }
+      this.scheduleRefresh();
+    }
   }
 
   showComposerFailure(error) {
@@ -314,6 +326,9 @@ export class
 
   showFailure(error) {
     if (this.disposed) return;
+    // A refresh started before typing resumed may fail while the editor is held.
+    // Keep the pending update; a failed write has its separate recovery path.
+    if (this.deferDocumentRefresh() && ![403, 404].includes(error.status)) { this.queueRefresh(); return; }
     this.connectionFailed('refresh', error);
     if (this.composer && [403, 404].includes(error.status)) this.composer.suspend('The document is unavailable. Copy your draft before leaving.');
   }
@@ -394,7 +409,7 @@ export class
       this.connectionPaused = false; this.stopEvents();
       if (this.composer) await this.retryComposer();
       else {
-        await this.refresh();
+        await this.refresh({ reconcile: true });
         if (this.state.revision !== this.data.revision) this.state = await this.replaceSource(this.state, true);
       }
       this.closeRecovery();
@@ -405,11 +420,11 @@ export class
 
   connectionFailed(source, error) {
     if (this.connectionPaused || this.disposed) return;
-    this.connection.textContent = 'Reconnecting…'; this.panel.dataset.connection = 'pending';
+    this.connection.textContent = source === 'stream' ? 'Reconnecting…' : 'Preview update pending'; this.panel.dataset.connection = 'pending';
     if (this.connectionFaults.has(source)) return;
     const timer = this.clock.setTimeout(() => {
       if (!this.connectionFaults.has(source) || this.disposed) return;
-      this.connection.textContent = 'Connection unavailable';
+      this.connection.textContent = source === 'stream' ? 'Connection unavailable' : 'Preview update unavailable';
       this.showRecovery(error, 'connection');
     }, 2000);
     this.connectionFaults.set(source, timer);
@@ -442,8 +457,7 @@ export class
     };
     stream.addEventListener('change', () => {
       if (this.stream !== stream || this.disposed) return;
-      if (this.pendingRefresh) { this.refreshAgain = true; return; }
-      this.refresh().catch(error => this.showFailure(error));
+      this.queueRefresh();
     });
     stream.onerror = () => {
       if (this.stream !== stream || this.disposed) return;
@@ -451,19 +465,45 @@ export class
     };
   }
 
-  async refresh() {
+  holdReader() {
+    if (!this.composer) return;
+    this.typingUntil = this.clock.now() + 15000;
+    this.clearConnectionFault('refresh', false);
+    this.scheduleRefresh();
+  }
+
+  queueRefresh() {
+    this.refreshRequested = true;
+    this.scheduleRefresh();
+  }
+
+  scheduleRefresh() {
+    if (this.refreshTimer !== null) this.clock.clearTimeout(this.refreshTimer);
+    this.refreshTimer = null;
+    if (!this.refreshRequested || this.disposed || document.hidden || this.pendingRefresh || this.dialog.open || this.closing || this.composer?.dirty || this.composer?.composing) return;
+    const wait = this.composer ? Math.max(0, this.typingUntil - this.clock.now()) : 0;
+    this.refreshTimer = this.clock.setTimeout(() => {
+      this.refreshTimer = null;
+      this.refresh().catch(error => this.showFailure(error));
+    }, wait);
+  }
+
+  async refresh({ reconcile = false } = {}) {
     if (this.disposed) return;
-    if (this.pendingRefresh) return this.pendingRefresh;
+    if (!reconcile && this.deferDocumentRefresh()) { this.queueRefresh(); return; }
+    if (this.pendingRefresh) {
+      await this.pendingRefresh;
+      if (reconcile) return this.refresh({ reconcile: true });
+      return;
+    }
+    this.refreshRequested = false;
     this.pendingRefresh = this.loadState();
     try { await this.pendingRefresh; this.failures = 0; this.lastError = null; }
     catch (error) { this.failures += 1; this.lastError = error; throw error; }
     finally {
       this.pendingRefresh = null;
       this.connectEvents();
-      if (this.refreshAgain) {
-        this.refreshAgain = false;
-        queueMicrotask(() => this.refresh().catch(error => this.showFailure(error)));
-      }
+      this.scheduleRefresh();
     }
 
   }
@@ -471,7 +511,7 @@ export class
   async loadState() {
     const sequence = this.composer?.sequence;
     let state = validateAnnotationState(await this.request(this.data.endpoint));
-    if (sequence !== this.composer?.sequence) state = validateAnnotationState(await this.request(this.data.endpoint));
+    if (sequence !== this.composer?.sequence) { this.queueRefresh(); return; }
     if (this.disposed) return;
     if (state.revision !== this.data.revision && !this.deferDocumentRefresh()) state = await this.replaceSource(state);
     if (this.disposed) return;
@@ -479,8 +519,12 @@ export class
     // data describes the displayed document; state describes the latest saved file.
     this.state = state;
     this.clearConnectionFault('refresh');
+    if (this.deferDocumentRefresh()) {
+      if (state.revision !== this.data.revision) this.queueRefresh();
+      return;
+    }
     if (changed) this.renderComments(state.comments);
-    if (this.composer && !(this.dialog.open && this.recoveryKind === 'save' && !this.recoveryBusy)) {
+    if (this.composer) {
       if (!state.writable) this.composer.suspend('Saving is unavailable: ' + state.reason.replaceAll('_', ' '));
       else if (!this.composer.inFlight) {
         const replacement = this.rebaseTarget(this.composer.target);
@@ -744,7 +788,7 @@ export class
   }
 
   deferDocumentRefresh() {
-    return this.dialog.open || Boolean(this.composer && (this.closing || this.editor.contains(document.activeElement)));
+    return this.dialog.open || Boolean(this.composer && (this.closing || this.composer.dirty || this.composer.composing || this.clock.now() < this.typingUntil));
   }
 
   async replaceSource(state, leavingEditor = false) {
@@ -773,6 +817,12 @@ export class
       if (node) folds.set(key, node.getAttribute('data-hp-fold-mode'));
     }
     const scroll = window.scrollY; const focus = document.activeElement;
+    const activity = this.typingUntil;
+    const panelScroll = this.panel.scrollTop;
+    const reader = document.getElementById('hp-reader'); const readerScroll = reader.scrollTop;
+    const editorScroll = this.textarea?.scrollTop;
+    const selection = this.editor.contains(focus) && typeof focus.selectionStart === 'number'
+      ? [focus.selectionStart, focus.selectionEnd, focus.selectionDirection] : null;
     let anchor;
     for (const [key, id] of Object.entries(this.data.explicit_ids || {})) {
       const node = document.getElementById(id); const top = node?.getBoundingClientRect().top;
@@ -801,7 +851,13 @@ export class
       }
     });
     this.data = data; this.attachToggle(); this.renderComments(); this.prepareKeyboard(!this.panel.hidden);
-    if (focus?.isConnected) focus.focus({ preventScroll: true });
+    if (activity !== this.typingUntil) return;
+    if (focus?.isConnected && (document.activeElement === focus || document.activeElement === document.body)) {
+      focus.focus({ preventScroll: true });
+      if (selection) focus.setSelectionRange(...selection);
+    }
+    this.panel.scrollTop = panelScroll; reader.scrollTop = readerScroll;
+    if (this.textarea?.isConnected && editorScroll !== undefined) this.textarea.scrollTop = editorScroll;
     const node = anchor && document.getElementById(data.explicit_ids?.[anchor.key]);
     const position = node ? window.scrollY + node.getBoundingClientRect().top - anchor.top : scroll;
     window.scrollTo(0, Math.max(0, Math.min(position, document.documentElement.scrollHeight - window.innerHeight)));
@@ -809,6 +865,7 @@ export class
 
   dispose() {
     this.disposed = true; this.stopEvents(); this.controller.abort(); this.composer?.dispose();
+    if (this.refreshTimer !== null) this.clock.clearTimeout(this.refreshTimer);
     for (const timer of this.connectionFaults.values()) this.clock.clearTimeout(timer);
     this.connectionFaults.clear(); this.dialog.remove();
     this.footnoteObserver?.disconnect(); this.footnoteMeasures?.clear();
