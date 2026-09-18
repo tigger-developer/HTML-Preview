@@ -999,3 +999,8 @@ note with no remaining nonliteral occurrences permits a harmless retry;
 a changed or ambiguous definition is refused. Deleted creation sessions become
 eligible for the existing bounded-slot eviction. No persistent deletion history
 or new endpoint is introduced.
+
+Desktop article grid rows above the body remain content-sized. The body row
+absorbs surplus height required by the spanning annotation or navigation pane,
+preventing composer growth from inserting blank space before the title. The
+phone annotation layout retains its explicit reader/pane split.

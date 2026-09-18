@@ -849,3 +849,23 @@
 - Candidate :: make build passed. The ignored disposable Org/Markdown fixture is
   ready for paired confirmation/cancel checks. Live service restart and browser
   interaction remain operator actions.
+
+* Paired deletion validation and editor layout report, 18 September 2026
+
+- Provisional UT PASS :: The operator explicitly confirmed deletion's user test
+  against the c0f0e65 confirmed-deletion candidate. The desktop dark-theme
+  screenshots show both ordinary-note references removed, the separate note
+  retained and the literal code example preserved.
+- Layout defect :: With the annotation pane already open, opening a new composer
+  moves the title and body down while the frontmatter remains in place. The
+  23:55:15 and 23:55:26 screenshots show this transition. CSS gives the spanning
+  sidebar an intrinsic height contribution across the article's shared rows.
+- Candidate :: Leading rows now use max-content sizing; the final body row is
+  flexible, so extra sidebar height need not enlarge the gap above the title.
+  The phone annotation layout retains its existing explicit row template.
+- Pending UT :: Reopen the same document, enter annotation mode, then open and
+  close a composer. The title and body should retain their vertical positions.
+  Also check a long document and the narrow split view. This CSS-only increment
+  does not repeat the unchanged Go writer regression suite.
+- Checks :: CSS lint, make build and Git whitespace checks passed. Layout remains
+  pending the paired browser check; no computed-style execution is claimed.

@@ -111,6 +111,8 @@ section[data-hp-level]:not(.hp-outline-section) section[data-hp-level]:not(.hp-o
 @media (max-width:35rem) { #hp-frontmatter dl { grid-template-columns:1fr; gap:.15rem; } #hp-frontmatter dd { margin:0 0 .45rem 1.2rem; } }
 /* The reader and its optional side columns share one persistent info bar. */
 body { display:grid; grid-template-columns:minmax(0,1fr); align-items:start; max-width:none; padding:0 1rem 3rem; column-gap:1.25rem; --hp-article-column:1; }
+/* A taller spanning sidebar must not enlarge rows above the document body. */
+body { grid-template-rows:repeat(5,max-content) minmax(0,1fr); }
 #hp-header { grid-column:1 / -1; grid-row:1; position:sticky; top:0; z-index:20; margin:0 -1rem 1rem; padding:.45rem 1rem; background:var(--bg); border-bottom:1px solid var(--rule); }
 #hp-header-row { flex-wrap:nowrap; align-items:center; gap:.5rem; }
 #hp-header-row > [data-hp-source] { flex:1 1 auto; min-width:0; text-align:left; font-size:clamp(.875rem,.6rem + .35vw,1rem); }

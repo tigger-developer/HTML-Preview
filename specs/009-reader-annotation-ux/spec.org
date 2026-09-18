@@ -1682,3 +1682,14 @@ prescription is superseded by the operator's paired testing instruction.
   definition rejection, failed writes and sidecar boundaries.
   Confirmation, cancel, autosave interaction and focus are browser
   UTs; no browser automation is introduced.
+
+* Stable article placement when opening the editor, 18 September 2026
+
+- Objective :: Opening an annotation composer must not push the document title
+  and body down below an artificial gap. Retain the current desktop sidebar
+  and phone split layout.
+- Design :: Keep the article's leading grid rows content-sized and allocate any
+  extra height required by a spanning sidebar to the final body row. The phone
+  annotation layout keeps its existing explicit row sizes.
+- Verification :: CSS lint and candidate build; paired browser comparison before
+  and after opening/closing the composer. No automated browser test is added.
