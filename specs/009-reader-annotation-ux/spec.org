@@ -1433,3 +1433,26 @@ prescription is superseded by the operator's paired testing instruction.
   local state-flow review supplement this browser-only logic; no browser harness
   or source-introspection regression is introduced. Server persistence code and
   its established regression coverage are unchanged.
+
+* Emergency correction - definition-list annotation placement, 18 September 2026
+
+- Authority :: BYPASS-GATE-7; correct body text refusing annotation while
+  headings remain annotatable. Existing annotation persistence and safety
+  constraints remain in force.
+- Cause :: The browser prose selectors omitted =dt= and =dd=. Pandoc emits
+  these elements for Org =- Term :: Definition= and Markdown definition lists,
+  often without a nested paragraph. Such entries had neither an annotation
+  cursor nor a permitted insertion point.
+- Behaviour :: Definition terms and descriptions accept mouse and keyboard
+  insertion and show the pencil cursor in annotation mode. Nested paragraphs
+  retain their own keyboard stop. Drawers, code, task markers, tags, metadata
+  and existing footnote references retain their exclusions.
+- Design :: Extend the existing point mapper, keyboard block selection and
+  cursor selectors. Reuse the existing server placement proof, revision checks
+  and native footnote writer; no new controller or persistence mechanism.
+- Verification :: Extend the real HTTP/Pandoc placement checks with synthetic
+  Org/Markdown terms and descriptions. These are initially GREEN preservation
+  checks for the already-working server boundary. Browser eligibility and
+  cursor behaviour require manual UT, including repeated saves, refreshed
+  content and toggling annotation mode. Do not substitute selector-text tests
+  or an automated browser harness for that interaction evidence.

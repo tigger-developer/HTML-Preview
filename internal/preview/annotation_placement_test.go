@@ -1,4 +1,4 @@
-// ABOUTME: Verifies heading and after-link footnote saves through real HTTP and Pandoc.
+// ABOUTME: Verifies heading, definition-list and after-link footnote saves through real HTTP and Pandoc.
 // ABOUTME: Protects source markup and rejects task-marker and tag insertion.
 package preview
 
@@ -18,6 +18,10 @@ func TestHTTPHeadingAndLinkAnnotations(t *testing.T) {
 	}{
 		{"heading", "md", "## Heading text\n", "Heading text", "## Heading[^reviewer-001] text", 7, 7, false, 201},
 		{"heading", "org", "* TODO Heading text :tag:\n", "Heading text", "* TODO Heading[fn:reviewer-001] text :tag:", 7, 12, false, 201},
+		{"definition-term", "org", "- Term :: Definition text.\n", "Term", "- Term[fn:reviewer-001] :: Definition text.", 4, 4, false, 201},
+		{"definition-body", "org", "- Term :: Definition text.\n", "Definition text.", ":: Definition[fn:reviewer-001] text.", 10, 15, false, 201},
+		{"definition-term", "md", "Term\n: Definition text.\n", "Term", "Term[^reviewer-001]\n: Definition text.", 4, 4, false, 201},
+		{"definition-body", "md", "Term\n: Definition text.\n", "Definition text.", ": Definition[^reviewer-001] text.", 10, 15, false, 201},
 		{"link", "md", "See [the guide](notes.md) next.\n", "the guide", "[the guide](notes.md)[^reviewer-001]", 9, 13, true, 201},
 		{"link", "org", "See [[file:notes.org][the guide]] next.\n", "the guide", "[[file:notes.org][the guide]][fn:reviewer-001]", 9, 13, true, 201},
 		{"formatted-link", "md", "See [the **guide**](notes.md) next.\n", "guide", "[the **guide**](notes.md)[^reviewer-001]", 5, 13, true, 201},

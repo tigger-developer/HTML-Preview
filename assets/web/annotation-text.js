@@ -65,7 +65,7 @@ export function canonicalMap(root) {
       const node = range.startContainer;
       if (!range.collapsed || node.nodeType !== Node.TEXT_NODE || !root.contains(node)) return null;
       const parent = node.parentElement;
-      if (!parent.closest('p, li, td, th, h1, h2, h3, h4, h5, h6, [role=heading]') || parent.closest('pre, button, input, textarea, summary, .todo, .done, .tag, .priority, .cookie, .footnotes, [data-hp-org-drawer], .hp-frontmatter') || (!link && parent.closest('code'))) return null;
+      if (!parent.closest('p, li, dt, dd, td, th, h1, h2, h3, h4, h5, h6, [role=heading]') || parent.closest('pre, button, input, textarea, summary, .todo, .done, .tag, .priority, .cookie, .footnotes, [data-hp-org-drawer], .hp-frontmatter') || (!link && parent.closest('code'))) return null;
       // Place a sentinel in a detached clone to derive the canonical offset.
       // This preserves whitespace and Unicode boundaries without changing the
       // document, selection or live footnote nodes.

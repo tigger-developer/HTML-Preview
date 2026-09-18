@@ -674,8 +674,8 @@ export class
     }
     this.keyboardBlocks = new Map();
     if (!on) return;
-    for (const node of document.querySelectorAll('#hp-document :is(p,li,td,th,h1,h2,h3,h4,h5,h6,[role=heading])')) {
-      if (node.closest('pre,code,.footnotes,[data-hp-org-drawer]') || node.querySelector('p,li,td,th')) continue;
+    for (const node of document.querySelectorAll('#hp-document :is(p,li,dt,dd,td,th,h1,h2,h3,h4,h5,h6,[role=heading])')) {
+      if (node.closest('pre,code,.footnotes,[data-hp-org-drawer]') || node.querySelector('p,li,dt,dd,td,th')) continue;
       this.keyboardBlocks.set(node, node.getAttribute('tabindex')); node.tabIndex = 0;
     }
   }

@@ -533,3 +533,32 @@
   acknowledgement tracking. Editor close releases pending refreshes. Timers
   are cancelled on teardown. The full server suite was not rerun because no
   server implementation changed; runtime browser behaviour remains PENDING.
+
+* User test - definition-list annotation placement - PENDING
+
+- Method :: User validation of the 18 September 2026 emergency correction,
+  against baseline d4c982f plus the definition-list selector change.
+- Diagnosis :: Pandoc emits definition terms/descriptions without nested
+  paragraphs. The browser's point, keyboard and cursor selectors omitted both
+  elements. The reported heading/body distinction is consistent with that
+  verified omission; no save-state or refresh reset is introduced.
+- Procedure :: In Org and Markdown definition lists, annotate a term and its
+  description with mouse and keyboard. Save several notes, allow refresh, then
+  toggle annotations off/on and add another note. Check ordinary paragraphs
+  and headings; verify drawers and code remain excluded.
+- Expected :: Eligible body text shows the pencil cursor and opens the
+  composer at the clicked point. Saves preserve definition-list syntax and
+  existing footnotes. Keyboard entry remains available after refresh.
+- Server evidence :: The focused TestHTTPHeadingAndLinkAnnotations group
+  passed before the browser change (1.570s), including four new term/description
+  cases across Org and Markdown. Each HTTP save returned 201 and placed its
+  native marker in the expected source position. These checks establish server
+  compatibility, not browser behaviour; no artificial RED result is claimed.
+- Boundary :: Manual browser interaction remains pending. No browser test
+  automation or live-document write was performed. Standing paired self-review
+  authority applies; no independent audit verdict is claimed.
+
+- Final checks :: The definition-list increment passed JavaScript oxlint, CSS
+  biome lint with warnings treated as errors, git diff checks and make build.
+  The rebuilt checkout executable includes the changed selectors. Live service
+  restart and browser validation remain pending.
