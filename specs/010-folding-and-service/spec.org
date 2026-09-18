@@ -94,3 +94,29 @@
   resolve the runtime environment value when loading config, not at installation.
 - Evidence :: Go HTTP tests for notification, replacement, refusal, disconnection
   and error logs; generated plist assertions; manual UT for editor behaviour.
+
+* Paired breaking header-folding amendment, 18 September 2026
+
+- Authority :: The operator requested nested semantic heading settings while
+  retaining configuration version 1. This supersedes the scalar headers field.
+- Schema :: =folding.override.headers= is an optional mapping with optional
+  =default=, =todo= and =done= values, each =open= or =closed=. Drawers and the
+  outer default retain their existing scalar meanings. Reject the old scalar
+  headers syntax with a migration message; reject unknown/duplicate nested keys,
+  nulls, incorrect types and unsupported values. Do not rewrite user config.
+- Semantics :: Use Pandoc's existing semantic task classes, including custom Org
+  TODO/SEQ_TODO/TYP_TODO sequences and their before/after separator categories.
+  Do not compare heading words with literal TODO or DONE. A category override
+  takes precedence over headers.default; when both are absent, preserve authored
+  or normal initial folding. Unclassified headings use headers.default.
+- Interaction :: Apply per heading after authored startup/visibility and before
+  restored reader state. Closed ancestors still hide their descendants. Initial
+  overrides do not restrict manual bars/buttons, fragment navigation or print.
+  The outer default remains for other foldables rather than a heading fallback.
+- Transport :: Carry the nested settings through CLI registration, capability
+  identity, linked previews and cached render identity in both file and service
+  modes. Reuse the existing outline controller and semantic classes.
+- Verification :: Amend YAML rejection/admission and file/HTTP inheritance RTs;
+  verify custom active/completed classes alongside emitted category settings.
+  Browser initial state and preserved manual controls remain manual UT. Update
+  the documented config and packaged example; retain the old schema as history.

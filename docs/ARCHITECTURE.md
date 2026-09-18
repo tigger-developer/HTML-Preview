@@ -957,3 +957,17 @@ must produce its expected table, quote, verse or named container before that
 boundary is exposed. Nested content selects the outer container rather than
 individual cells or internal paragraphs. Hidden comment/export blocks and
 unverified syntax remain inactive. No new annotation storage format is introduced.
+
+### Semantic initial heading folding, 18 September 2026
+
+Configuration version 1 now uses a headers mapping with default, todo and done
+choices under folding.override. This intentionally replaces the scalar headers
+field; the YAML parser reports migration guidance rather than accepting both
+shapes. Category choices travel through the existing private registration,
+capability/cache identity and application-owned page attributes. The outline
+controller reuses Pandoc's direct heading task classes, the same semantics used
+for active/completed heading styling. A category choice overrides headers.default;
+without either choice, authored startup/visibility remains. Restored reader state
+wins afterwards. The outer default continues to govern other foldables, including
+frontmatter; it does not supply a heading or drawer fallback. No source keywords,
+user config files or persisted annotations are rewritten.

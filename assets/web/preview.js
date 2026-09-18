@@ -370,9 +370,12 @@ async function enhanceOutline(main, header, controller, dispose) {
     record.initialCascade = initial ? (initial === 'all' ? 'all' : 'folded') : inherited;
   }
   closeOwnedDrawers(main);
-  const headers = main.dataset.hpFoldHeaders;
   for (const record of records) {
-    if (headers === 'open' || headers === 'closed') record.mode = headers === 'open' ? 'all' : 'folded';
+    // Reuse Pandoc task semantics, including custom Org keyword sequences.
+    const category = record.title.querySelector(':scope > .done') ? main.dataset.hpFoldHeadersDone
+      : record.title.querySelector(':scope > .todo') ? main.dataset.hpFoldHeadersTodo : '';
+    const choice = category || main.dataset.hpFoldHeadersDefault;
+    if (choice === 'open' || choice === 'closed') record.mode = choice === 'open' ? 'all' : 'folded';
     const restored = record.node.dataset.hpRestoredFold;
     if (['all', 'children', 'folded'].includes(restored)) record.mode = restored;
     delete record.node.dataset.hpRestoredFold;

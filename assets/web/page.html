@@ -20,7 +20,7 @@
 <hr id="hp-content-rule">
 {{if .TOC}}<nav id="hp-toc" aria-label="Document navigation"><span class="hp-nav-label">Navigate</span>{{.TOC}}</nav>{{end}}
 {{if or .Title .Subtitle .Author .Date}}<section id="hp-document-title">{{if .Title}}<h1>{{.Title}}</h1>{{end}}{{if .Subtitle}}<h2>{{.Subtitle}}</h2>{{end}}{{if .Author}}<p>{{.Author}}</p>{{end}}{{if .Date}}<p>{{.Date}}</p>{{end}}</section>{{end}}
-<main id="hp-document" data-hp-startup="{{.Startup}}" data-hp-fold-headers="{{.Folding.Headers}}" data-hp-fold-drawers="{{.Folding.Drawers}}" data-hp-fold-default="{{.Folding.Default}}">{{.Body}}</main>
+<main id="hp-document" data-hp-startup="{{.Startup}}" data-hp-fold-headers-default="{{.Folding.Headers.Default}}" data-hp-fold-headers-todo="{{.Folding.Headers.Todo}}" data-hp-fold-headers-done="{{.Folding.Headers.Done}}" data-hp-fold-drawers="{{.Folding.Drawers}}" data-hp-fold-default="{{.Folding.Default}}">{{.Body}}</main>
 {{if .SourceData}}<template id="hp-source-data">{{.SourceData}}</template><pre id="hp-source-text" hidden></pre>{{end}}
 </div>
 {{if .AnnotationData}}<template id="hp-annotation-data">{{.AnnotationData}}</template>{{end}}

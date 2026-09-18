@@ -88,3 +88,29 @@
 - Focused recheck :: After adjusting notifications for loss of a watched parent
   directory, =go test ./internal/preview -run ^TestDocumentEvents -count=1=
   passed in 0.796s. No broader suite or browser run was repeated.
+
+* Semantic heading configuration - 18 September 2026
+
+- Scope :: Paired breaking change from scalar headers to default/todo/done
+  mapping, retaining version 1. The preceding scalar-config evidence remains
+  historical and does not establish compatibility with this schema.
+- RED :: The updated config/preview tests rejected valid mappings and accepted
+  the now-invalid scalar open/closed form before implementation (0.022s).
+- GREEN :: Focused folding and existing outline metadata tests passed with the
+  race detector (14.681s). YAML cases include omitted fields, partial/empty
+  mappings, invalid values/types, unknown/duplicate keys and scalar migration
+  guidance. File rendering, distinct HTTP capabilities and linked previews carry
+  category settings. Real Pandoc conversions classify custom TODO/SEQ_TODO/
+  TYP_TODO sequences, including reversed DONE/TODO word meanings.
+- Boundary :: These Go tests prove parsing, transport and rendered semantic
+  markers. Initial browser folding, fallback precedence and restored manual
+  state remain manual UT; no browser automation was used. Full-suite execution
+  is not claimed. The JavaScript lint reports the existing unused
+  detailIdentities function; this increment does not introduce that warning.
+- Pending UT :: With headers default=open, todo=open, done=closed, open the
+  disposable semantic-folding fixture. Unmarked and active headings should be
+  open, completed headings closed, drawers closed. Check a completed parent,
+  manual bars, Show all, fragment navigation and annotation refresh. Configured
+  choices apply initially rather than locking the controls.
+- Final checks :: Focused Go lint and make build passed. Git whitespace checks
+  passed. The live service and external configuration were not changed.

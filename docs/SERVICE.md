@@ -70,15 +70,29 @@ The selected configuration may also set initial folding for file and service pre
 ```yaml
 folding:
   override:
-    headers: open
+    headers:
+      default: open
+      todo: open
+      done: closed
     drawers: closed
-    default: closed
+    default: open
 ```
 
-Each field accepts `open` or `closed`. `headers` overrides initial Org heading
-visibility; `drawers` applies to Org drawers; `default` applies to other foldable
-content, including frontmatter. Omitted fields retain normal behaviour. These
-settings set the initial view; folding bars, headings, Show all, fragment links
+Each leaf accepts `open` or `closed`. `headers.todo` and `headers.done` use
+semantic task categories from Pandoc, including custom Org keywords declared
+before and after `|` in `#+TODO`, `#+SEQ_TODO` or `#+TYP_TODO`. They do not match
+the literal words TODO or DONE. `headers.default` applies to unclassified headings
+and supplies the fallback for an omitted category. If both are omitted, the
+heading retains authored or normal initial folding. `drawers` applies to Org
+drawers; the outer `default` applies to other foldable content, including
+frontmatter. It is not a fallback for headings or drawers.
+
+**Breaking configuration change:** version remains `1`, but the former scalar
+`headers: open` or `headers: closed` is no longer accepted. Replace it with
+`headers: {default: open}` or `headers: {default: closed}` to preserve its effect,
+then add category overrides as needed. Configuration is never rewritten for you.
+
+These settings set the initial view; folding bars, explicit buttons, Show all, fragment links
 and print remain operational. Show all also opens frontmatter. Annotation
 refresh retains heading choices with stable explicit IDs and uniquely identified
 details. Ambiguous details use the initial settings again.

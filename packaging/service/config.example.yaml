@@ -2,3 +2,14 @@
 version: 1
 serve:
   roots: []
+
+# Optional initial folding; uncomment to override the document's own settings.
+# headers is a mapping, not the former scalar open/closed value.
+# folding:
+#   override:
+#     headers:
+#       default: open
+#       todo: open
+#       done: closed
+#     drawers: closed
+#     default: open
