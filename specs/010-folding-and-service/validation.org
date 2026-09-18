@@ -114,3 +114,9 @@
   choices apply initially rather than locking the controls.
 - Final checks :: Focused Go lint and make build passed. Git whitespace checks
   passed. The live service and external configuration were not changed.
+- Provisional user validation :: The operator reported "looks good" after saving
+  the nested configuration globally and reviewing the semantic-folding fixture
+  for candidate 45ff309 (semantic heading fold configuration). Record this as
+  acceptance of the displayed initial folding. Browser/version and individual
+  gesture results were not supplied; this does not establish the separate
+  fragment, print or annotation-refresh checks above.
