@@ -632,3 +632,17 @@
 - Boundary :: Visual validation remains pending; the live service has not
   been restarted by this increment. Standing paired self-review authority
   applies; no independent audit or browser automation is claimed.
+
+* User test - restored bold baseline and active-heading contrast - PENDING
+
+- Feedback :: The preceding normal-weight heading presentation was rejected
+  in visual review. That weight choice is superseded by this increment.
+- Expected :: All document headings regain the previous weight of 650.
+  Active semantic task headings use 700 and mix their normal heading colour
+  with 12 percent white. Completed subtrees retain 65 percent opacity without
+  nested compounding. Check light/dark themes, custom active/completed keywords
+  and unmarked headings at different levels.
+- Checks :: CSS lint passed with warnings treated as errors after adjusting
+  selector placement. make build passed with the final assets; service restart
+  remains pending. Manual visual comparison remains pending; no browser
+  automation or independent audit verdict is claimed.

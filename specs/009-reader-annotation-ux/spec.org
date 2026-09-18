@@ -1512,3 +1512,12 @@ prescription is superseded by the operator's paired testing instruction.
   Manual UT covers both themes, custom keywords, nested/sibling sections and
   refresh. A Pandoc probe verifies semantic classes; CSS lint and build are
   supporting checks, not substitutes for visual validation.
+
+* Paired refinement - restore bold heading baseline, 18 September 2026
+
+- Outcome :: Supersede the preceding normal-weight heading rule. Restore the
+  existing 650 weight for document headings; active semantic TODO headings use
+  700 and a subtly brighter version of their usual heading colour. Preserve
+  heading-level colour differences and completed-subtree opacity at 65 percent.
+- Evidence :: Manual comparison in both themes determines the visual result.
+  CSS lint and build check the implementation; no source or task-state changes.
