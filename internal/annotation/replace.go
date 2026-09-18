@@ -34,7 +34,7 @@ type currentSave struct {
 }
 
 func validateCurrentRequest(r Request) error {
-	if r.Action == "edit" {
+	if r.Action == "edit" || r.Action == "delete" {
 		return validateFootnoteEdit(r)
 	}
 	if len(r.Text) > 16384 || utf8.RuneCountInString(r.Text) > 4000 || len(r.Target.Run) > 8192 || utf8.RuneCountInString(r.Target.Prefix) > 64 || utf8.RuneCountInString(r.Target.Suffix) > 64 || len(r.Target.HeadingID) > 4096 {
@@ -75,7 +75,7 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	// Normalize after validation so whitespace-only or oversized requests cannot
 	// become valid clears, and use the same value for saves, retries and closes.
 	r.Text = strings.TrimRight(r.Text, "\r\n")
-	if r.Action == "edit" {
+	if r.Action == "edit" || r.Action == "delete" {
 		return w.editFootnote(ctx, loc, expected, author, r)
 	}
 	incoming := r
@@ -151,7 +151,11 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 		if err := w.syncReplacement(ctx, loc, snap, storage); err != nil {
 			return Replacement{}, err
 		}
-		return Replacement{Receipt: receipt(snap, *previous, r.BodyRevision, storage), PreviousInfo: snap.SourceInfo, SourceInfo: snap.SourceInfo, Retry: true}, nil
+		ack := receipt(snap, *previous, r.BodyRevision, storage)
+		if active && owner.current != nil {
+			ack.FootnoteRevision = owner.current.definitionRevision
+		}
+		return Replacement{Receipt: ack, PreviousInfo: snap.SourceInfo, SourceInfo: snap.SourceInfo, Retry: true}, nil
 	}
 	if previous != nil && (!active || previous.Kind == "close") {
 		return Replacement{}, fail("closed_comment")
@@ -305,7 +309,9 @@ func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo
 	}
 	w.composers[key] = item
 	w.mu.Unlock()
-	return Replacement{Receipt: receipt(updated, event, r.BodyRevision, storage), PreviousInfo: snap.SourceInfo, SourceInfo: updated.SourceInfo}, err
+	ack := receipt(updated, event, r.BodyRevision, storage)
+	ack.FootnoteRevision = item.current.definitionRevision
+	return Replacement{Receipt: ack, PreviousInfo: snap.SourceInfo, SourceInfo: updated.SourceInfo}, err
 }
 
 func (w *Writer) syncReplacement(ctx context.Context, loc Location, snap Snapshot, storage string) (err error) {

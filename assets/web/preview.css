@@ -155,6 +155,10 @@ body.hp-plaintext #hp-reader > :is(#hp-frontmatter,#hp-content-rule,#hp-toc,#hp-
 #hp-annotation-id { width:100%; font:.8rem/1.5 var(--mono); color:var(--muted); background:var(--metadata-bg); border:1px solid var(--rule); border-radius:.2rem; padding:.2rem .35rem; }
 #hp-annotation-id-error { display:block; height:3em; overflow:auto; color:var(--syntax-error); }
 .hp-annotation-actions { margin:.5rem 0; }
+.hp-annotation-editor-heading { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.hp-annotation-delete { min-width:2rem; min-height:2rem; padding:.15rem .4rem; color:var(--muted); cursor:pointer; }
+.hp-annotation-delete:hover { color:var(--syntax-error); }
+.hp-annotation-delete:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .hp-annotation-actions button { margin:.2rem; font-size:.8rem; }
 .hp-annotation-recovery { width:min(34rem,calc(100vw - 2rem)); max-height:calc(100dvh - 2rem); overflow:auto; padding:1rem; color:var(--fg); background:var(--bg); border:2px solid #b86a70; border-radius:.4rem; }
 .hp-annotation-recovery::backdrop { background:rgb(0 0 0 / .55); }

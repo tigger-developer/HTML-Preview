@@ -823,3 +823,29 @@
 - Final checks :: Focused annotation, footnote, block, passive-content and literal/
   code-fidelity checks passed with the race detector (81.419s). make build passed.
   Live service restart and visual validation remain operator actions.
+
+* Confirmed footnote deletion, 18 September 2026
+
+- RED :: The new Org/Markdown HTTP deletion cases returned 400 invalid_event
+  before implementation (1.769s); the existing protocol had no delete action.
+- GREEN :: The focused native-footnote group passed with the race detector:
+  annotation 1.719s, preview 13.014s. HTTP tests check repeated references,
+  literal examples, preserved sibling notes and repeated acknowledgements.
+  Writer tests cover changed definitions/documents, duplicate labels, read-only
+  originals, sidecar deletion, failed writes, published-but-unsynchronized
+  replacements and retries against a recreated label. Creation receipts include
+  the definition revision needed to delete a newly autosaved comment.
+- Remediation :: An initial sidecar case exposed the generated context line left
+  behind after deletion. Its removal now uses the existing sidecar context span;
+  the read-only source remains byte-for-byte and inode-identical.
+- Static checks :: Focused Go lint, annotation JavaScript lint and CSS lint passed.
+  These are not evidence that browser click or focus behaviour was exercised.
+- Pending UT :: In the disposable deletion fixture, open a footnote and choose X.
+  Cancel must retain it. Confirm must remove the note and all rendered references.
+  Repeat for Markdown, an ordinary unattributed note, a newly autosaved note and
+  a still-unsaved draft. Delete during an active save must not recreate the note.
+  Check keyboard focus, dark/light visibility and retained draft recovery on a
+  rejected delete. No automated browser or independent audit result is claimed.
+- Candidate :: make build passed. The ignored disposable Org/Markdown fixture is
+  ready for paired confirmation/cancel checks. Live service restart and browser
+  interaction remain operator actions.

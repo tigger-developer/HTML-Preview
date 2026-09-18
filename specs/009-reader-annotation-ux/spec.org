@@ -1656,3 +1656,29 @@ prescription is superseded by the operator's paired testing instruction.
   bullets, literal/standalone exclusions, comments between lists, and HTTP
   annotation saves at the item end with original checkbox syntax preserved.
   Visual marker alignment and click behaviour remain paired browser UTs.
+
+* Confirmed footnote deletion, 18 September 2026
+
+- Authority :: The operator requested an X delete control in the annotation edit
+  panel, modelled on Writeback, with mandatory modal/alert confirmation.
+- UX :: Provide a small X control with an explicit Delete annotation accessible
+  label and tooltip. Use native confirmation; cancellation leaves the composer
+  and saved note intact. Confirmed removal waits for any in-flight autosave,
+  prevents a later save from recreating the note, and refreshes after acknowledgement.
+  Unsaved drafts can be discarded without creating a source record.
+- Storage :: Ordinary editable footnotes and preview-created annotations share
+  deletion behaviour. Remove the selected native definition and its references
+  from the writable source or sidecar; preserve other definitions, literal code
+  and unrelated bytes. An otherwise empty Annotations reference line may be
+  removed, as can the selected sidecar note's generated context line. Read-only
+  original definitions cannot be deleted via a sidecar.
+- Concurrency :: Reuse author/write grants, exact definition and source revisions,
+  filesystem checks and atomic replacement. Reject stale/ambiguous definitions.
+  Repeated deletion acknowledgements are harmless once the definition and its
+  nonliteral references are absent; a recreated definition must not be deleted
+  with an old revision. Retain draft/recovery controls on failure.
+- Verification :: HTTP regressions cover Org/Markdown references, repeated uses
+  and retries. Writer regressions cover literal exclusions, stale source and
+  definition rejection, failed writes and sidecar boundaries.
+  Confirmation, cancel, autosave interaction and focus are browser
+  UTs; no browser automation is introduced.

@@ -134,7 +134,7 @@ func ordinaryNoteEnd(lines []sourceLine, start int, format string) int {
 }
 
 func validateFootnoteEdit(r Request) error {
-	if !ValidText(r.Text) {
+	if (r.Action == "delete" && r.Text != "") || (r.Action != "delete" && !ValidText(r.Text)) {
 		return fail("body_limit")
 	}
 	if r.Label == "" || len(r.Label) > 256 || !utf8.ValidString(r.Label) || strings.ContainsAny(r.Label, "[]\x00\r\n\t ") || !ValidID(r.OperationID) || !ValidID(r.AnnotationID) || !ValidID(r.ComposerID) || r.Sequence < 1 || r.Kind != "" {
@@ -242,10 +242,17 @@ func (w *Writer) editFootnote(ctx context.Context, loc Location, expected os.Fil
 		}
 	}
 	if note == nil {
+		if r.Action == "delete" && !footnoteLabelPresent(data, format, r.Label) {
+			if err := w.syncReplacement(ctx, loc, snap, storage); err != nil {
+				return Replacement{}, err
+			}
+			w.retireDeletedComposer(loc.Path, r.Label, storage)
+			return editReceipt(snap, snap, r, storage, format, true), nil
+		}
 		return Replacement{}, fail("footnote_conflict")
 	}
 	// Equality makes a lost acknowledgement retry harmless without an event log.
-	if note.Text == r.Text {
+	if r.Action != "delete" && note.Text == r.Text {
 		if err := w.syncReplacement(ctx, loc, snap, storage); err != nil {
 			return Replacement{}, err
 		}
@@ -257,7 +264,11 @@ func (w *Writer) editFootnote(ctx context.Context, loc Location, expected os.Fil
 	if snap.Revision != r.Revision || snap.SourceRevision != r.SourceRevision {
 		return Replacement{}, fail("stale_source")
 	}
-	data, err = patchEditableFootnote(data, format, *note, r.Text, r.OperationID, w.now().UTC().Format(time.RFC3339Nano), author)
+	if r.Action == "delete" {
+		data, err = patchDeletedFootnote(data, format, *note)
+	} else {
+		data, err = patchEditableFootnote(data, format, *note, r.Text, r.OperationID, w.now().UTC().Format(time.RFC3339Nano), author)
+	}
 	if err != nil {
 		return Replacement{}, err
 	}
@@ -279,6 +290,9 @@ func (w *Writer) editFootnote(ctx context.Context, loc Location, expected os.Fil
 		return Replacement{}, err
 	}
 	w.rememberReplacement(loc.Path, snap.SourceInfo, updated.SourceInfo)
+	if r.Action == "delete" {
+		w.retireDeletedComposer(loc.Path, r.Label, storage)
+	}
 	return editReceipt(snap, updated, r, storage, format, false), nil
 }
 

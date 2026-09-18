@@ -248,7 +248,18 @@ export class
     this.idInput.readOnly = Boolean(note);
     const idLabel = annotationElement('label', 'Footnote ID', 'hp-annotation-id-label'); idLabel.htmlFor = this.idInput.id;
     this.idError = annotationElement('small'); this.idError.id = 'hp-annotation-id-error'; this.idInput.setAttribute('aria-describedby', this.idError.id);
-    this.editor.append(label, this.textarea, this.status, idLabel, this.idInput, this.idError);
+    const editorHeading = annotationElement('div', '', 'hp-annotation-editor-heading');
+    this.deleteNote = annotationButton('✕');
+    this.deleteNote.className = 'hp-annotation-delete';
+    this.deleteNote.setAttribute('aria-label', 'Delete annotation'); this.deleteNote.title = 'Delete annotation';
+    this.deleteNote.addEventListener('click', () => {
+      if (this.closing || this.dialog.open || !this.composer || this.composer.composing) return;
+      if (!window.confirm('Delete this footnote and all its references?')) return;
+      this.closing = this.finishComposer(true);
+      this.closing.catch(error => this.showComposerFailure(error));
+    }, this.events);
+    editorHeading.append(label, this.deleteNote);
+    this.editor.append(editorHeading, this.textarea, this.status, idLabel, this.idInput, this.idError);
 
     this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, note, label: this.idInput.value,
       send: (request, secret) => this.request(this.data.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-HTMLPreview-Annotation-Token': this.state.write_token, 'X-HTMLPreview-Composer-Token': secret }, body: JSON.stringify(request) }),
@@ -283,6 +294,7 @@ export class
   async retryComposer() {
     // Retry a lost acknowledgement with its original operation identity first.
     if (this.composer.failed) await this.composer.retry();
+    if (this.composer.deleted) return;
     await this.refresh({ reconcile: true });
     if (this.state.body_revision !== this.data.body_revision) {
       this.state = await this.replaceSource(this.state, true);
@@ -300,11 +312,13 @@ export class
     return this.closing;
   }
 
-  async finishComposer() {
+  async finishComposer(deleting = false) {
     this.textarea.readOnly = true; this.idInput.readOnly = true;
+    this.deleteNote.disabled = true;
     try {
+      if (deleting) await this.composer.remove();
       // External body changes need a current DOM before a paused target can rebase.
-      if (this.state.body_revision !== this.data.body_revision) {
+      if (!this.composer.deleted && this.state.body_revision !== this.data.body_revision) {
         const state = await this.replaceSource(this.state, true);
         this.state = state;
     document.body.classList.toggle('hp-annotation-writable', !this.panel.hidden && Boolean(state.writable));
@@ -321,7 +335,7 @@ export class
       await this.refresh();
     } finally {
       this.closing = null;
-      if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = this.composer.editing; }
+      if (this.composer) { this.textarea.readOnly = false; this.idInput.readOnly = this.composer.editing; this.deleteNote.disabled = false; }
       this.scheduleRefresh();
     }
   }
@@ -424,6 +438,7 @@ export class
         if (this.state.revision !== this.data.revision) this.state = await this.replaceSource(this.state, true);
       }
       this.closeRecovery();
+      if (this.composer?.deleted) await this.closeComposer();
     } catch (error) {
       this.recoveryMessage.textContent = error.message; this.recoveryStatus.textContent = 'Still unavailable. Your draft is retained.';
     } finally { this.recoveryBusy = false; this.updateRecoveryButtons(); }

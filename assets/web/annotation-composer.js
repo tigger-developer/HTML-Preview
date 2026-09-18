@@ -96,7 +96,7 @@ export class AnnotationComposer {
   }
 
   snapshot(action) {
-    if (this.editing) action = 'edit';
+    if (this.editing && action !== 'delete') action = 'edit';
     return { version: this.version, request: {
       operation_id: crypto.randomUUID(), annotation_id: this.annotationID, composer_id: this.composerID,
       sequence: this.sequence + 1, ...this.revisions, action,
@@ -124,7 +124,7 @@ export class AnnotationComposer {
         }
         return response;
       } catch (error) {
-        if (error.code === 'stale_source' && this.onStale && rebases < 2) {
+        if (error.code === 'stale_source' && snapshot.request.action !== 'delete' && this.onStale && rebases < 2) {
           rebases += 1;
           const replacement = await this.onStale(snapshot.request.target);
           if (!replacement) throw error;
@@ -149,7 +149,7 @@ export class AnnotationComposer {
       this.sequence = receipt.sequence;
       this.savedText = snapshot.request.text; this.savedTarget = snapshot.request.target;
       this.savedLabel = snapshot.request.label;
-      if (this.editing) {
+      if (this.editing && snapshot.request.action !== 'delete') {
         if (!/^[a-f0-9]{64}$/.test(receipt.footnote_revision || '')) throw new Error('The service omitted the saved footnote revision.');
         this.target.exact = receipt.footnote_revision;
         this.savedTarget = structuredClone(this.target);
@@ -157,6 +157,7 @@ export class AnnotationComposer {
       this.savedVersion = snapshot.version; this.failed = null;
       for (const key of ['revision', 'source_revision', 'body_revision']) if (receipt[key]) this.revisions[key] = receipt[key];
       if (receipt.closed) this.closed = true;
+      if (snapshot.request.action === 'delete') { this.deleted = true; this.closed = true; }
     } catch (error) {
       this.failed = snapshot; this.error = error; throw error;
     } finally {
@@ -194,6 +195,25 @@ export class AnnotationComposer {
     if (this.composing) throw new Error('Finish composing text before closing.');
     if (this.editing) { this.closed = true; this.emit(); return; }
     await this.perform(this.snapshot('close'));
+  }
+
+  async remove() {
+    this.cancelTimer();
+    while (this.inFlight) { await this.inFlight; await Promise.resolve(); }
+    this.cancelTimer();
+    if (this.failed) throw this.error;
+    if (this.composing) throw new Error('Finish composing text before deleting.');
+    if (this.closed || this.disposed) return;
+    if (!this.editing && (!this.sequence || this.savedText === '')) {
+      this.deleted = true; this.closed = true; this.savedVersion = this.version; this.emit(); return;
+    }
+    const snapshot = this.snapshot('delete');
+    snapshot.request.text = '';
+    snapshot.request.label = this.savedLabel;
+    snapshot.request.target = this.editing ? structuredClone(this.savedTarget) : {
+      type: 'footnote', exact: this.savedReceipt.footnote_revision, run: this.savedReceipt.storage,
+    };
+    await this.perform(snapshot);
   }
 
   rebase(target, revisions) {

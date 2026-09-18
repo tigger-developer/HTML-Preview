@@ -89,6 +89,15 @@ and local date/time in Org format, labelled **Edited**. The first save uses
 **Created**; unchanged closes and retries retain the existing attribution.
 Closing and reopening the page does not affect editability. This supersedes the
 earlier closed-comment and HTMLPreview-only editing restrictions.
+
+The **✕** control in the editor is labelled **Delete annotation**. It opens a
+confirmation dialog. Cancel keeps the note and editor; confirmation removes the
+selected footnote definition and its references. It waits for any active save
+first. An unsaved draft is discarded without writing it. Ordinary authored
+footnotes use the same control. Read-only original notes remain protected;
+sidecar notes are deleted in their sidecar. Changed source or definition
+revisions reject deletion and retain the draft in the recovery dialog.
+
 The ID defaults to a normalized display name and the next unused counter:
 `Taḋg` produces `tadg-001`; `Tadhg O'Brien` produces `tadhg-o-brien-001`.
 Ordinary footnotes also reserve their labels. IDs accept 1--64 ASCII letters,
@@ -191,6 +200,12 @@ unresolvable definitions cannot be edited by guessing. Supported definitions use
 including their native continuation paragraphs. Inline anonymous definitions
 remain readable. Original definitions in read-only files cannot be changed;
 existing sidecar footnotes can be edited in their sidecar.
+
+Confirmed deletion uses those same checks and atomic replacement. It also removes
+the selected note's reference tokens, an otherwise empty generated `Annotations:`
+line, or its generated sidecar context line. Other definitions and literal code
+examples are preserved. A retry after a lost acknowledgement succeeds without
+another change when the definition and nonliteral references are already absent.
 
 ## Native footnote storage
 

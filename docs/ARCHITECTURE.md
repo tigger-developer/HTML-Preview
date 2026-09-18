@@ -982,3 +982,20 @@ cover lowercase checked and slash/dash partial extensions; standalone prose and
 literal code are excluded. The Org conversion prepass preserves native partial
 markers before Pandoc can reduce them to unchecked, without changing source bytes.
 This adds neither task-state writeback nor interactive form controls.
+
+### Confirmed native-footnote deletion
+
+The annotation editor's labelled X control uses native confirmation before
+submitting the existing authenticated write endpoint's `delete` action. The
+composer cancels its debounce, waits for an in-flight save and uses the last
+acknowledged definition revision. Confirmed unsaved drafts close locally.
+Deletion never automatically rebases across a stale source response.
+
+The native writer removes the selected definition and nonliteral reference
+spans through the existing atomic replacement path. Empty generated annotation
+reference lines and the selected sidecar context line are removed with them.
+Definition/source revisions and read-only boundaries remain enforced. An absent
+note with no remaining nonliteral occurrences permits a harmless retry;
+a changed or ambiguous definition is refused. Deleted creation sessions become
+eligible for the existing bounded-slot eviction. No persistent deletion history
+or new endpoint is introduced.
