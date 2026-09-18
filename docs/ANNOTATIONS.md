@@ -63,6 +63,12 @@ fading, accompanied by a green border flash. The feedback keeps its reserved
 space after fading. Sustained connection problems and confirmed save failures
 open a recovery dialog without adding controls above the editor.
 
+Checkbox list items are annotation targets too. Their unchecked `[ ]`, checked
+`[X]`/`[x]` and partial `[-]`/`[/]` states use equally sized passive indicators
+with spacing before the item text. Clicking an item in annotation mode attaches
+its footnote at the item end; it does not toggle the task state. Source checkbox
+spelling is preserved. Standalone bracket markers and code remain literal.
+
 Keyboard activation uses Tab to reach an eligible block and Enter or Space to
 open its composer. Folding controls retain their own actions. Code copying and
 its buttons are disabled in annotation mode; clicking inline code or a document

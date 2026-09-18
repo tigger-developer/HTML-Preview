@@ -971,3 +971,14 @@ without either choice, authored startup/visibility remains. Restored reader stat
 wins afterwards. The outer default continues to govern other foldables, including
 frontmatter; it does not supply a heading or drawer fallback. No source keywords,
 user config files or persisted annotations are rewritten.
+
+### Passive task checkboxes, 18 September 2026
+
+Pandoc checkbox inputs become owned, labelled span indicators with a common
+square style and an explicit text separator. Their label wrappers are unwrapped
+before annotation block verification, matching the final passive DOM rather than
+leaving native references inside a non-block label. First-position list markers
+cover lowercase checked and slash/dash partial extensions; standalone prose and
+literal code are excluded. The Org conversion prepass preserves native partial
+markers before Pandoc can reduce them to unchecked, without changing source bytes.
+This adds neither task-state writeback nor interactive form controls.

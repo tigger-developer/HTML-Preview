@@ -214,7 +214,7 @@ func preserveOrgCode(data []byte, token string, wrapperDisplay *string) (preserv
 			out.WriteString(marker("<pre class=\"org-metadata\">" + html.EscapeString(line) + "</pre>"))
 			continue
 		}
-		out.WriteString(line)
+		out.WriteString(preservePartialCheckbox(line))
 	}
 	// Pandoc's Org reader otherwise turns headings beyond its H limit into lists.
 	p.text = out.String() + "\n#+OPTIONS: H:100000\n"

@@ -26,6 +26,8 @@ img { max-width:100%; height:auto; } figure { margin:1.5rem 0; } figcaption,capt
 table { display:block; max-width:100%; overflow:auto; border-collapse:collapse; margin:1.3rem 0; font-variant-numeric:tabular-nums; }
 td,th { border:1px solid var(--rule); padding:.35rem .7rem; text-align:left; } th { background:var(--panel); }
 ul,ol { padding-left:1.6rem; } dt { font-weight:650; } dd { margin-left:1.4rem; }
+.hp-checkbox { display:inline-flex; align-items:center; justify-content:center; width:1em; height:1em; border:1.5px solid currentColor; border-radius:.12em; font-family:var(--mono); font-size:.9em; font-weight:650; line-height:1; vertical-align:-.08em; margin-right:.15em; color:var(--muted); }
+.hp-checkbox-checked,.hp-checkbox-partial { color:var(--accent); }
 .todo,.done,.cookie { display:inline-block; font-size:.72em; padding:.08em .35em; border:1px solid var(--rule); border-radius:.2rem; }
 .tag { display:inline-block; font-size:.72em; color:var(--tag); background:transparent; border:0; padding:0; }
 .todo,.priority { color:var(--accent); } .done { color:var(--muted); } .timestamp { color:var(--accent); font-size:.85em; }

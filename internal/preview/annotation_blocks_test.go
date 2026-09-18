@@ -14,6 +14,17 @@ import (
 func TestHTTPBlockAnnotations(t *testing.T) {
 	s := startTestService(t, NativeHost())
 	for _, tc := range []struct{ name, ext, text, target, want string }{
+		{"task-checked", "org", "* Tasks\n# Group\n- [X] Checked item.\n", "✓ Checked item.", "- [X] Checked item.[fn:reviewer-001]"},
+		{"task-unchecked", "org", "- [ ] Unchecked item.\n", "Unchecked item.", "- [ ] Unchecked item.[fn:reviewer-001]"},
+		{"task-lowercase", "org", "+ [x] Checked item.\n", "✓ Checked item.", "+ [x] Checked item.[fn:reviewer-001]"},
+		{"task-partial", "org", "- [/] Partial item.\n", "− Partial item.", "- [/] Partial item.[fn:reviewer-001]"},
+		{"task-partial-dash", "org", "- [-] Partial item.\n", "− Partial item.", "- [-] Partial item.[fn:reviewer-001]"},
+		{"task-checked", "md", "- [X] Checked item.\n", "✓ Checked item.", "- [X] Checked item.[^reviewer-001]"},
+		{"task-unchecked", "md", "+ [ ] Unchecked item.\n", "Unchecked item.", "+ [ ] Unchecked item.[^reviewer-001]"},
+		{"task-lowercase", "md", "* [x] Checked item.\n", "✓ Checked item.", "* [x] Checked item.[^reviewer-001]"},
+		{"task-partial", "md", "1. [/] Partial item.\n", "− Partial item.", "1. [/] Partial item.[^reviewer-001]"},
+		{"task-wrapped", "org", "- [X] Checked item\n  with a continuation.\n", "✓ Checked item with a continuation.", "with a continuation.[fn:reviewer-001]"},
+		{"task-wrapped", "md", "- [x] Checked item\n  with a continuation.\n", "✓ Checked item with a continuation.", "with a continuation.[^reviewer-001]"},
 		{"table", "org", "| Item | Value |\n|------+-------|\n| One | Two |\n", "Item Value One Two", "| One | Two |\n\nAnnotations: [fn:reviewer-001]"},
 		{"table", "md", "| Item | Value |\n|------|-------|\n| One | Two |\n", "Item Value One Two", "| One | Two |\n\nAnnotations: [^reviewer-001]"},
 		{"table-no-outer-pipes", "md", "Item | Value\n-----|------\nOne | Two\n", "Item Value One Two", "One | Two\n\nAnnotations: [^reviewer-001]"},
@@ -140,6 +151,8 @@ func TestHTTPRepeatedBlockNotesAndHeadingAnchor(t *testing.T) {
 		{"table", "md", "| A | B |\n|---|---|\n| 1 | 2 |\n", "table"},
 		{"table-org", "org", "| A | B |\n|---+---|\n| 1 | 2 |\n", "table"},
 		{"quote", "org", "#+BEGIN_QUOTE\nQuoted text.\n#+END_QUOTE\n", "blockquote"},
+		{"task-org", "org", "- [X] Checked item.\n", "li"},
+		{"task-md", "md", "- [X] Checked item.\n", "li"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			path := source(t, s.root, tc.name+"-repeated."+tc.ext, tc.source)
@@ -191,7 +204,11 @@ func TestHTTPRepeatedBlockNotesAndHeadingAnchor(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if strings.Count(string(data), "Annotations: ") != 1 {
+			paragraphs := 1
+			if tc.tag == "li" {
+				paragraphs = 0
+			}
+			if strings.Count(string(data), "Annotations: ") != paragraphs {
 				t.Fatalf("reference paragraph duplicated: %s", data)
 			}
 			want := "[^reviewer-001][^reviewer-002][^reviewer-003]"
@@ -200,6 +217,9 @@ func TestHTTPRepeatedBlockNotesAndHeadingAnchor(t *testing.T) {
 			}
 			if !strings.Contains(string(data), want) {
 				t.Fatalf("missing successive references: %s", data)
+			}
+			if tc.tag == "li" && !strings.Contains(string(data), "- [X] Checked item."+want) {
+				t.Fatalf("task syntax or item-end placement changed: %s", data)
 			}
 		})
 	}

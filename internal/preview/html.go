@@ -65,18 +65,27 @@ func (s *session) scrub(root *html.Node, p *page) {
 			s.log.notice("%q: unsupported %s content removed", p.source.logical, n.Data)
 			return
 		case "input":
-			label := "[Unsupported input]"
+			replacement := nodeText("[Unsupported input]")
 			if attribute(n, "type") == "checkbox" {
-				label = "[ ]"
+				state := "unchecked"
 				for _, a := range n.Attr {
 					if a.Key == "checked" {
-						label = "[x]"
+						state = "checked"
 					}
 				}
+				replacement = checkboxIndicator(state)
 			}
 			if n.Parent != nil {
-				n.Parent.InsertBefore(nodeText(label), n)
+				n.Parent.InsertBefore(replacement, n)
+				n.Parent.InsertBefore(nodeText(" "), n)
 				n.Parent.RemoveChild(n)
+			}
+			return
+		case "label":
+			// Inputs are now passive indicators. Remove their obsolete wrapper
+			// before verifying annotation blocks, not only in final sanitization.
+			if n.Parent != nil {
+				unwrap(n)
 			}
 			return
 		}
@@ -126,6 +135,8 @@ func sanitizeDocument(body *html.Node) (string, error) {
 	policy.AllowAttrs("data-hp-org-drawer").OnElements("details")
 	policy.AllowAttrs("data-hp-level", "data-hp-visibility").OnElements("section")
 	policy.AllowAttrs("role", "aria-level").OnElements("div")
+	policy.AllowAttrs("role").Matching(regexp.MustCompile(`^img$`)).OnElements("span")
+	policy.AllowAttrs("aria-label").OnElements("span")
 	policy.AllowAttrs("role").Matching(regexp.MustCompile(`^doc-(noteref|backlink)$`)).OnElements("a")
 	policy.AllowAttrs("role").Matching(regexp.MustCompile(`^doc-endnotes$`)).OnElements("section")
 	policy.AllowURLSchemes("file", "http", "https", "mailto", "data")

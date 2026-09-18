@@ -796,3 +796,30 @@
 - Final checks :: After case-insensitive Org container matching, all focused
   block HTTP tests passed with the race detector (12.867s). make build passed.
   Live service restart and user validation of the new containers remain pending.
+
+* Checkbox presentation and list-item annotations, 18 September 2026
+
+- Diagnosis :: A synthetic Pandoc conversion reproduces the label wrapper around
+  checkbox text and footnote references. The application previously replaced
+  inputs with unspaced bracket text, while the block verifier rejected the label
+  parent; final sanitization removed the label too late for target admission.
+  Source comments and headings are not required to trigger this defect.
+- RED :: Nine HTTP cases exposed no eligible checkbox item targets before the
+  repair (1.087s). Cases cover checked, unchecked, lowercase and partial markers
+  across Org and Markdown.
+- Focused GREEN :: Rendering and HTTP creation/repeated-save checks passed
+  (3.372s). Both formats retain their native checkbox spelling when adding
+  footnotes; wrapped items receive references after their continuation. Output
+  contains labelled passive state indicators and separating whitespace rather
+  than inputs or labels. Alternative bullets, standalone text and literal code
+  are covered. The private sample document was not modified.
+- Static checks :: Focused Go lint, CSS lint and Git whitespace checks passed.
+  Broader focused race-check results and candidate build are recorded below.
+- Pending UT :: Inspect the disposable Org and Markdown checkbox fixture in both
+  themes. Check equal square dimensions, spacing and state distinctions, then
+  annotate each state and add repeated notes to one item. Expected: whole-item
+  highlighting, item-end native references and no checkbox state toggling.
+  No browser automation or independent audit verdict is claimed.
+- Final checks :: Focused annotation, footnote, block, passive-content and literal/
+  code-fidelity checks passed with the race detector (81.419s). make build passed.
+  Live service restart and visual validation remain operator actions.

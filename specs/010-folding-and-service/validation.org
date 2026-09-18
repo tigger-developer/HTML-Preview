@@ -120,3 +120,8 @@
   acceptance of the displayed initial folding. Browser/version and individual
   gesture results were not supplied; this does not establish the separate
   fragment, print or annotation-refresh checks above.
+- Additional provisional user validation :: The operator explicitly confirmed
+  headings, folding and configuration changes as PASS. The subsequent defect
+  report concerns list checkboxes and annotation targets, not semantic heading
+  folding. This confirms those reviewed behaviours; it does not infer separate
+  print or platform checks that were not reported.

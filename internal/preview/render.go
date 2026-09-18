@@ -158,6 +158,7 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	if err := restore(p, preserved); err != nil {
 		return err
 	}
+	decorateCheckboxes(p.dom)
 	catalogue(p, s.log)
 	if err := restoreContents(p, headings); err != nil {
 		return err

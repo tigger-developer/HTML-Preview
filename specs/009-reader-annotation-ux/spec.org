@@ -1640,3 +1640,19 @@ prescription is superseded by the operator's paired testing instruction.
 - Next slice :: Trace application rendering/sanitization, cover bullet variants
   and three-state presentation, and prepare a disposable browser fixture. This
   item is recorded for the next paired increment; implementation is pending.
+
+* Checkbox presentation and annotation repair, 18 September 2026
+
+- Current defect :: Checkbox list items lose their visual state controls and
+  spacing, and cannot be selected as verified annotation blocks. The operator
+  confirmed this independently of heading/task-category folding, which passed.
+- Implementation slice :: Render passive, consistently sized unchecked, checked
+  and partial indicators, preserving separation from the item text. Normalize
+  supported task-marker variants in conversion only, never in the source file.
+  Remove Pandoc's obsolete label wrapper before block matching so a native
+  reference at the list-item boundary is recognized. Reuse the existing block
+  map, autosave and native footnote writer; do not add interactive task toggling.
+- Evidence :: Synthetic Org and Markdown tests cover marker states, alternative
+  bullets, literal/standalone exclusions, comments between lists, and HTTP
+  annotation saves at the item end with original checkbox syntax preserved.
+  Visual marker alignment and click behaviour remain paired browser UTs.
