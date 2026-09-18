@@ -222,6 +222,11 @@ body[data-hp-format=org] #hp-toc { display:none; }
 .hp-annotations .hp-editable-footnote:is(:hover,:focus-visible) { background: color-mix(in srgb, var(--muted) 16%, transparent); }
 .hp-annotations .hp-footnote-body { font-size:inherit; line-height:1.5; max-height:7.5em; overflow:hidden; }
 .hp-annotations .hp-footnote-expanded .hp-footnote-body { max-height:none; }
+.hp-footnote-controls { display:none; }
+.hp-annotations .hp-footnote-controls { display:flex; align-items:center; gap:.5rem; }
+.hp-annotations .hp-footnote-backlinks { display:flex; gap:.5rem; margin-left:auto; }
+.hp-annotations .hp-footnote-backlinks .footnote-back { display:inline-block; min-width:1.5rem; min-height:1.5rem; text-align:center; }
+.hp-annotations .hp-footnote-body a.footnote-back { display:none; }
 .hp-footnote-expand { display:none; }
 .hp-annotations .hp-footnote-expand { display:block; margin:.2rem 0 0; padding:0 .5rem; font-size:1rem; color:var(--accent); background:var(--metadata-bg); border:0; border-radius:.2rem; cursor:pointer; }
 .hp-annotations .hp-footnote-expand[hidden] { display:none; }

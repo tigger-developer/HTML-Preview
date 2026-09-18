@@ -597,3 +597,23 @@
   independent audit verdict or operator validation is claimed.
 - Build :: make build passed with the final assets. Live service restart and
   manual browser validation remain pending.
+
+* User test - sidebar footnote backlinks - PENDING
+
+- Method :: User validation of the sidebar backlink placement increment after
+  7d5beef. Confirm a long collapsed note shows a right-aligned backlink beside
+  the ellipsis, and a short note shows its backlink without an ellipsis.
+- Procedure :: Activate backlinks by mouse and keyboard, including a footnote
+  referenced more than once and an origin inside a folded section. Save an
+  annotation to refresh the page, toggle the sidebar off/on, and inspect print.
+- Expected :: Each link reaches its original reference without opening the
+  editor. Source sections reveal normally. The control row remains outside
+  truncated content; normal endnotes and print retain their native backlinks.
+- Local review :: The native anchors remain intact. Sidebar anchors copy only
+  the destination, visible text and accessible label, with no duplicate IDs.
+  Existing delegated navigation handles their fragments; no new listeners or
+  source-writing behaviour are introduced. Manual interaction remains pending;
+  no browser automation or independent audit verdict is claimed.
+- Checks :: JavaScript oxlint, CSS biome lint with warnings treated as errors,
+  and make build passed. The rebuilt executable contains the control-row change;
+  service restart and manual browser validation remain pending.

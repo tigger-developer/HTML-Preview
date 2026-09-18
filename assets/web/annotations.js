@@ -641,7 +641,15 @@ export class
     body.append(...item.childNodes); item.append(body);
     const expand = annotationButton('…'); expand.className = 'hp-footnote-expand';
     expand.setAttribute('aria-label', 'Expand footnote'); expand.setAttribute('aria-expanded', 'false');
-    item.append(expand);
+    const controls = annotationElement('div', '', 'hp-footnote-controls');
+    const backlinks = annotationElement('span', '', 'hp-footnote-backlinks');
+    for (const original of body.querySelectorAll('a.footnote-back')) {
+      const link = annotationElement('a', original.textContent);
+      link.setAttribute('href', original.getAttribute('href'));
+      link.setAttribute('aria-label', original.getAttribute('aria-label') || 'Back to footnote reference');
+      link.className = 'footnote-back'; backlinks.append(link);
+    }
+    controls.append(expand, backlinks); item.append(controls);
     const measure = () => {
       if (!body.isConnected || this.panel.hidden) return;
       const long = body.scrollHeight > parseFloat(getComputedStyle(body).fontSize) * 7.5 + 1;

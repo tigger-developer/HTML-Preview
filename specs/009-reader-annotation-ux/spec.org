@@ -1480,3 +1480,18 @@ prescription is superseded by the operator's paired testing instruction.
   UT; native JavaScript/CSS lint and the build supplement that evidence.
   Server HTML and link generation are unchanged; no new browser test harness
   or source-introspection regression tests are introduced.
+
+* Paired refinement - visible sidebar footnote backlinks, 18 September 2026
+
+- Outcome :: Each sidebar footnote retains visible links to its originating
+  references, right aligned beside the expansion control. Short notes retain
+  backlinks even when no expansion control is needed. Multiple references keep
+  their individual destinations.
+- Design :: Put sidebar-only backlink anchors outside the clipped note body,
+  in a shared control row with the ellipsis. Preserve the native backlinks in
+  normal endnotes and print; do not duplicate their IDs. Existing fragment
+  navigation reveals folded source sections and remains separate from editing.
+- Verification :: Manual UT covers long/short notes, multiple references,
+  keyboard activation, refresh and switching back to normal footnotes. Native
+  lint and build supplement the presentation checks; no server changes or
+  browser automation are required.
