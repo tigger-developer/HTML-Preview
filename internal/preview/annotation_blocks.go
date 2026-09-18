@@ -125,6 +125,11 @@ func eligibleBlock(n *html.Node) bool {
 }
 func blockTail(ref *html.Node) bool {
 	for n := ref.NextSibling; n != nil; n = n.NextSibling {
+		// contentText visits descendants, so a sibling text node must be
+		// checked directly to reject boundaries before a wrapped line.
+		if n.Type == html.TextNode && strings.TrimSpace(n.Data) != "" {
+			return false
+		}
 		if strings.TrimSpace(contentText(n)) != "" && n.Data != "ul" && n.Data != "ol" && !hasClass(n, "tag") && !hasClass(n, "footnote-ref") {
 			return false
 		}

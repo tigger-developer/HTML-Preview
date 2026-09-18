@@ -14,6 +14,8 @@ import (
 func TestHTTPBlockAnnotations(t *testing.T) {
 	s := startTestService(t, NativeHost())
 	for _, tc := range []struct{ name, ext, text, target, want string }{
+		{"wrapped", "org", "First sentence.\nSecond sentence continues\nto the paragraph end.\n", "First sentence. Second sentence continues to the paragraph end.", "to the paragraph end.[fn:reviewer-001]"},
+		{"wrapped", "md", "First sentence.\nSecond sentence continues\nto the paragraph end.\n", "First sentence. Second sentence continues to the paragraph end.", "to the paragraph end.[^reviewer-001]"},
 		{"duplicates", "org", strings.Repeat("Same paragraph.\n\n", 40) + "=P= means the numbered /paragraph/.\n", "P means the numbered paragraph.", "/paragraph/.[fn:reviewer-001]"},
 		{"typography", "org", "A range of 129--168 in /emphasis/.\n", "A range of 129–168 in emphasis.", "129--168 in /emphasis/.[fn:reviewer-001]"},
 		{"inline", "md", "A *word* and `code` and [link](missing.md).\n", "A word and code and link.", "[link](missing.md).[^reviewer-001]"},

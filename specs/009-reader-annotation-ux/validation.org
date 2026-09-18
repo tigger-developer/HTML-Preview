@@ -755,3 +755,21 @@
   independent audit verdict or operator acceptance is claimed.
 - Build :: make build passed with the candidate assets. Live service restart
   and operator browser validation remain pending.
+
+* Wrapped paragraph boundary correction, 18 September 2026
+
+- Provisional UT :: On the block-annotation candidate aa2fb48, the operator
+  confirmed that the table was inactive with the normal cursor. Screenshot
+  review showed paragraph references inside the highlighted paragraph. The
+  disposable source confirmed placement at internal source-line endings.
+- Cause :: The boundary check inspected descendant text but omitted the text
+  of a following sibling text node itself, admitting internal line endings.
+- RED :: New real HTTP cases for three-line Org and Markdown paragraphs both
+  saved the reference after the first line instead of the paragraph end.
+- GREEN :: After checking sibling text nodes directly, the focused block HTTP
+  group passed with the race detector (7.480s), including repeated annotations,
+  headings, code blocks and unsupported-zone refusal.
+- Scope :: New references attach at the verified paragraph end. Existing
+  references are preserved in place. No fixture annotations were moved or
+  deleted. Browser confirmation of new placement remains pending; the table
+  validation is unaffected by this text-node correction.
