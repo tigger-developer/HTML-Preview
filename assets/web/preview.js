@@ -422,6 +422,65 @@ async function enhanceOutline(main, header, controller, dispose) {
   window.addEventListener('afterprint', restorePrint, events);
 }
 
+// This state survives reader refreshes, but a new document load starts afresh.
+const navigationState = { depth: null, branches: new Map() };
+
+async function enhanceNavigation(controller, dispose) {
+  const nav = document.getElementById('hp-toc');
+  if (!nav) return;
+  const branches = [];
+  for (const item of nav.querySelectorAll('li')) {
+    const link = item.querySelector(':scope > a');
+    const children = item.querySelector(':scope > ul');
+    if (!link || !children) continue;
+    let level = 1;
+    for (let parent = item.parentElement; parent && parent !== nav; parent = parent.parentElement) {
+      if (parent.tagName === 'LI') level += 1;
+    }
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'hp-nav-toggle'; button.textContent = '▸';
+    const row = document.createElement('div'); row.className = 'hp-nav-row';
+    item.insertBefore(row, link); row.append(button, link);
+    const key = link.getAttribute('href');
+    const setOpen = open => {
+      children.hidden = !open;
+      button.setAttribute('aria-expanded', String(open));
+      button.setAttribute('aria-label', (open ? 'Collapse ' : 'Expand ') + link.textContent.trim());
+    };
+    button.addEventListener('click', () => {
+      const open = children.hidden;
+      // A reader can act before fonts settle; their choice takes precedence.
+      navigationState.depth ??= 3;
+      setOpen(open); navigationState.branches.set(key, open);
+    }, { signal: controller.signal });
+    branches.push({ key, level, children, setOpen });
+    dispose(() => { row.before(link); row.remove(); children.hidden = false; });
+  }
+
+  const applyDepth = depth => { for (const branch of branches) branch.setOpen(branch.level < depth); };
+  if (navigationState.depth === null) {
+    applyDepth(3);
+    // Embedded fonts affect wrapped labels and therefore the fitting decision.
+    if (document.fonts) await document.fonts.ready;
+    await nextFrame(controller.signal);
+    if (controller.signal.aborted) return;
+    if (navigationState.depth === null) {
+      navigationState.depth = 3;
+      if (nav.getClientRects().length && getComputedStyle(nav).position === 'sticky') {
+        while (navigationState.depth > 1 && nav.scrollHeight > nav.clientHeight + 1) {
+          navigationState.depth -= 1;
+          applyDepth(navigationState.depth);
+        }
+      }
+    }
+  } else {
+    for (const branch of branches) {
+      branch.setOpen(navigationState.branches.get(branch.key) ?? branch.level < navigationState.depth);
+    }
+  }
+  navigationState.branches = new Map(branches.map(branch => [branch.key, !branch.children.hidden]));
+}
+
 function enhancePreview() {
   const header = document.getElementById('hp-header');
   const main = document.getElementById('hp-document');
@@ -445,6 +504,7 @@ function enhancePreview() {
     await enhanceOutline(main, header, controller, dispose);
     if (!controller.signal.aborted) enhancePlaintext(header, controller, dispose);
     if (!controller.signal.aborted) await enhanceCode(main, copyValue, controller, dispose);
+    if (!controller.signal.aborted) await enhanceNavigation(controller, dispose);
   }
   const ready = enhance().catch(() => {
     if (controller.signal.aborted) return;

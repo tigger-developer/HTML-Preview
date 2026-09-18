@@ -74,6 +74,10 @@ through source heading level three in both formats. At widths of 72rem and
 above it stays in a left sidebar; narrower Org previews hide it and Markdown
 previews place it immediately below the header/frontmatter. An explicit
 `HTMLPREVIEW_TOC=0` disables it for every document, including linked pages.
+Navigation branches have separate disclosure buttons; their heading links still
+navigate. On initial load, the sidebar shows three navigation levels if they
+fit its viewport height, otherwise two, then one. It scrolls if one level is
+still too tall. Resizing and annotation refreshes preserve the chosen folds.
 This replaces the earlier default-off setting for Org. A thick accent margin
 bar opens a folded section; the thin bar closes it. Headings also toggle their
 sections, and folded sections show a large disclosure triangle and a labelled

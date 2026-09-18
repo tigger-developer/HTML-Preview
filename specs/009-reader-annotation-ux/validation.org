@@ -562,3 +562,38 @@
   biome lint with warnings treated as errors, git diff checks and make build.
   The rebuilt checkout executable includes the changed selectors. Live service
   restart and browser validation remain pending.
+
+* User test - foldable navigation and initial viewport fit - PENDING
+
+- Method :: User validation of the 18 September 2026 paired navigation increment,
+  against baseline 080f3c6 plus the foldable-navigation change.
+- Procedure :: Load short and long three-level documents at wide viewport
+  heights where three, two and only one navigation level fit. Include a TOC
+  whose top level alone overflows and a document with fewer levels. Expand and
+  collapse individual branches by mouse and keyboard; activate their heading
+  links. Save an annotation, allow refresh, resize, and toggle reading modes.
+  Check narrow Org/Markdown behaviour, print preview and JavaScript-disabled
+  reading. A deliberate early fold choice must survive font loading.
+- Expected :: The first sidebar render chooses the deepest fitting level from
+  three, two and one. Overflow remains scrollable at one level. Arrow controls
+  fold only navigation; heading links still navigate. Refresh and resize retain
+  surviving branch choices. Printing and static reading include all generated
+  links. Narrow Org stays hidden; narrow Markdown remains above the content.
+- Evidence boundary :: This change concerns presented DOM, keyboard events,
+  font metrics and viewport geometry. Manual UT is required; server-only tests
+  would not exercise it. No browser harness or source-text regression is added.
+  Existing server markup, heading destinations and depth configuration are
+  unchanged; the server suite was not rerun.
+- Local review :: Fold state belongs to the loaded page and survives reader
+  teardown. Buttons/list wrappers are removed and child lists restored during
+  teardown. Listeners share the reader's abort signal. Refresh retains states
+  only for current branch destinations, and automatic fitting runs once.
+- Static checks :: JavaScript lint passed for the combined reader script in
+  the same concatenation order as the renderer. Linting preview.js alone exposed
+  its pre-existing cross-file use of detailIdentities; the complete script has
+  no unused declaration warning. CSS lint passed with warnings treated as errors
+  after correcting selector order. Browser interaction remains PENDING.
+- Review authority :: Standing paired self-review authority applies. No new
+  independent audit verdict or operator validation is claimed.
+- Build :: make build passed with the final assets. Live service restart and
+  manual browser validation remain pending.

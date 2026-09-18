@@ -1456,3 +1456,27 @@ prescription is superseded by the operator's paired testing instruction.
   cursor behaviour require manual UT, including repeated saves, refreshed
   content and toggling annotation mode. Do not substitute selector-text tests
   or an automated browser harness for that interaction evidence.
+
+* Paired refinement - foldable navigation, 18 September 2026
+
+- Outcome :: Navigation branches have separate, keyboard-accessible disclosure
+  buttons. Heading links continue to navigate without toggling the branch or
+  changing document folding.
+- Initial layout :: After fonts and reader controls settle, try three visible
+  navigation levels. If the sidebar overflows its available viewport height,
+  try two, then one. Keep scrolling when even the top level does not fit.
+  Existing configured TOC depth still limits which headings are generated.
+- Subsequent interaction :: Automatic fitting occurs once per loaded document.
+  Resizing, annotation saves, source refresh and mode changes must not reset
+  branch choices. Preserve surviving branch states by link destination through
+  reader reinitialization. A full page load starts a new initial fit.
+- Responsive and static reading :: Retain narrow Org hiding and Markdown's
+  in-page navigation. A TOC hidden at initial load starts at three levels;
+  showing it later does not trigger another automatic fit. Printing and reading
+  without JavaScript show all generated navigation entries.
+- Design and evidence :: Enhance the existing nested navigation lists in the
+  reader lifecycle, with page-owned fold state and the existing CSS breakpoint.
+  Browser geometry, keyboard interaction and refresh retention require manual
+  UT; native JavaScript/CSS lint and the build supplement that evidence.
+  Server HTML and link generation are unchanged; no new browser test harness
+  or source-introspection regression tests are introduced.
