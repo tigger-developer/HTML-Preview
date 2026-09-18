@@ -1570,3 +1570,33 @@ prescription is superseded by the operator's paired testing instruction.
   does not authorize advertising an unverified block as writable.
 - Evidence :: The dated experiment in =validation.org= records the conversion
   findings, including unresolved Markdown automatic heading-anchor changes.
+
+* Block target implementation refinement, 18 September 2026
+
+- Proof :: Temporary native footnote references and definitions replace the
+  experiment's raw HTML spans. A single additional conversion checks all
+  proposed source line-end boundaries. Only references that parse at the end
+  of a supported semantic block, with matching rendered structure and canonical
+  text, produce interactive targets. No clicked-word lookup is used for new
+  browser-created annotations.
+- Mapping :: The served page and immutable render cache share block IDs and
+  verified original-source offsets. IDs are scoped to the exact source revision.
+  Source revision, body revision, origin, grant and filesystem checks remain
+  mandatory. Unknown or obsolete IDs cannot select an arbitrary file offset.
+- Heading fallback :: Markdown headings use the separate =Annotations:= paragraph
+  convention to avoid changing automatic heading anchors. Org headings retain
+  inline references before tags. Code blocks also use the separate paragraph;
+  later notes reuse it. No property drawer or block ID is added to the source.
+- Source support :: Paragraphs, supported list paragraphs, definition descriptions,
+  Org headings, Markdown headings and top-level fenced/source/example blocks are
+  candidates. Tables, drawers, metadata and unverified syntax are inactive.
+  Nested code blocks and unsupported reader extensions receive no guessed targets.
+- Existing interfaces :: Editing, autosave, recovery and native labels remain.
+  The older point request path remains for compatibility, with its existing
+  restrictions. Existing sidecar context matching remains; an unprovable virtual
+  reference is shown as unplaced rather than assigned to a guessed block.
+- Verification :: Real HTTP/Pandoc regressions cover duplicate prose, transformed
+  punctuation, inline markup, nested lists, code and heading references, repeated
+  saves, unchanged heading anchors, unknown IDs and unsupported content. Human
+  validation covers clicking, highlighting, keyboard operation, mode-specific
+  copying, refresh and save feedback on disposable Org/Markdown documents.

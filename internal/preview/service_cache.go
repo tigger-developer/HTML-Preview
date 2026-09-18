@@ -17,6 +17,7 @@ type assetRevision struct {
 	sum    [32]byte
 }
 type httpPage struct {
+	annotationBlocks                   map[string]annotationBlock
 	annotationLocations                map[string]bool
 	annotationSourceRevision, bodyText string
 	explicitIDs                        map[string]string
@@ -161,6 +162,9 @@ func (s *previewService) cachePage(key string, page *httpPage) {
 
 func (p *httpPage) byteCost() int64 {
 	total := int64(len(p.data) + len(p.source.logical) + len(p.source.canonical) + len(p.revision) + len(p.bodyText) + len(p.annotationSourceRevision))
+	for id := range p.annotationBlocks {
+		total += int64(len(id) + 64)
+	}
 	for id := range p.annotationLocations {
 		total += int64(len(id) + 32)
 	}

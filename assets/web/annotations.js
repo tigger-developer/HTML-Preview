@@ -130,13 +130,8 @@ export class
       if (this.panel.hidden || !this.state?.writable || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       if (window.getSelection()?.isCollapsed === false) return;
       const main = document.getElementById('hp-document');
-      if (!(event.target instanceof Element) || !main.contains(event.target) || event.target.closest('a, button, summary, code, pre')) return;
-      let range;
-      if (document.caretPositionFromPoint) {
-        const point = document.caretPositionFromPoint(event.clientX, event.clientY);
-        if (point) { range = document.createRange(); range.setStart(point.offsetNode, point.offset); range.collapse(true); }
-      } else if (document.caretRangeFromPoint) range = document.caretRangeFromPoint(event.clientX, event.clientY);
-      if (range) this.annotateRange(range);
+      if (!(event.target instanceof Element) || !main.contains(event.target) || event.target.closest('a,button,summary,.todo,.done,.tag,.priority,.cookie,.footnotes')) return;
+      this.annotateBlock(this.annotationBlockFor(event.target));
     }, this.events);
     document.addEventListener('keydown', event => this.placeWithKeyboard(event), this.events);
     document.addEventListener('scroll', () => this.positionCaret(), { ...this.events, capture: true, passive: true });
@@ -173,13 +168,24 @@ export class
     for (const name of ['keydown', 'input', 'focusin']) this.editor.addEventListener(name, () => this.holdReader(), this.events);
   }
 
-  annotateRange(range, link = null) {
-    const main = document.getElementById('hp-document');
-    const target = canonicalMap(main).point(range, this.state.body_revision, this.data.explicit_ids || {}, link);
-    if (target) this.transition(() => {
-      const result = resolveAnnotationTarget(target, canonicalMap(document.getElementById('hp-document')).text, this.state.body_revision, this.headingSpans());
-      if (result.status === 'resolved') this.openComposer(result.target);
-      else this.connection.textContent = 'This insertion point changed. Choose a point in the refreshed document.';
+  annotationBlockFor(element) {
+    const block = element.closest('p,li,dt,dd,td,th,pre,details,summary,h1,h2,h3,h4,h5,h6,[role=heading]');
+    return block?.hasAttribute('data-hp-annotation-block') ? block : null;
+  }
+
+  annotateBlock(block) {
+
+    if (!block || !this.state?.writable) return;
+    const selector = '#hp-document [data-hp-annotation-block]';
+    const index = [...document.querySelectorAll(selector)].indexOf(block);
+    const bodyRevision = this.data.body_revision;
+    const text = canonicalMap(block).text;
+    this.transition(() => {
+      const current = [...document.querySelectorAll(selector)][index];
+      if (bodyRevision !== this.data.body_revision || !current || canonicalMap(current).text !== text) {
+        this.connection.textContent = 'The document changed. Choose a block in the refreshed document.'; return;
+      }
+      this.openComposer({ type: 'point', block_id: current.dataset.hpAnnotationBlock, body_revision: this.data.body_revision });
     }).catch(error => this.showComposerFailure(error));
   }
 
@@ -187,7 +193,7 @@ export class
     const link = event.target instanceof Element && event.target.closest('a[href]');
     if (link && !this.panel.hidden && document.getElementById('hp-document').contains(link) && !link.matches('.footnote-ref,.footnote-back') && !link.closest('.footnotes,nav') && event.button === 0) {
       event.preventDefault(); event.stopImmediatePropagation();
-      if (this.state?.writable && window.getSelection()?.isCollapsed !== false) { const range = document.createRange(); range.selectNodeContents(link); range.collapse(false); this.annotateRange(range, link); }
+      if (this.state?.writable && window.getSelection()?.isCollapsed !== false) this.annotateBlock(this.annotationBlockFor(link));
       return;
     }
     if (!link || !this.composer || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === '_blank' || link.hasAttribute('download')) return;
@@ -219,6 +225,7 @@ export class
     this.toggle.setAttribute('aria-expanded', String(on));
     this.toggle.setAttribute('aria-pressed', String(on));
     document.body.classList.toggle('hp-annotating', on);
+    document.body.classList.toggle('hp-annotation-writable', on && Boolean(this.state?.writable));
     this.prepareKeyboard(on);
     this.placeEndnotes(on);
   }
@@ -297,6 +304,7 @@ export class
       if (this.state.body_revision !== this.data.body_revision) {
         const state = await this.replaceSource(this.state, true);
         this.state = state;
+    document.body.classList.toggle('hp-annotation-writable', !this.panel.hidden && Boolean(state.writable));
         const replacement = this.rebaseTarget(this.composer.target);
         if (replacement) this.composer.rebase(replacement.target, replacement.revisions);
       }
@@ -546,6 +554,16 @@ export class
       return { target, revisions: annotationRevisions(this.state) };
     }
 
+    if (target.block_id) {
+      // Once saved, the writer tracks the native reference, not the old block ID.
+      if (this.composer?.sequence > 0) return { target, revisions: annotationRevisions(this.state) };
+      const block = [...document.querySelectorAll('#hp-document [data-hp-annotation-block]')].find(node => node.dataset.hpAnnotationBlock === target.block_id);
+      if (this.data.body_revision !== this.state.body_revision || !block) {
+        this.composer?.suspend('This block changed. Your draft is retained.'); return null;
+      }
+      return { target, revisions: annotationRevisions(this.state) };
+    }
+
     if (this.data.body_revision !== this.state.body_revision) {
       this.composer?.suspend('The document text changed. Leave the editor to refresh; your draft is retained.');
       return null;
@@ -681,9 +699,8 @@ export class
       if (value === null) node.removeAttribute('tabindex'); else node.setAttribute('tabindex', value);
     }
     this.keyboardBlocks = new Map();
-    if (!on) return;
-    for (const node of document.querySelectorAll('#hp-document :is(p,li,dt,dd,td,th,h1,h2,h3,h4,h5,h6,[role=heading])')) {
-      if (node.closest('pre,code,.footnotes,[data-hp-org-drawer]') || node.querySelector('p,li,dt,dd,td,th')) continue;
+    if (!on || !this.state?.writable) return;
+    for (const node of document.querySelectorAll('#hp-document [data-hp-annotation-block]')) {
       this.keyboardBlocks.set(node, node.getAttribute('tabindex')); node.tabIndex = 0;
     }
   }
@@ -700,6 +717,23 @@ export class
       return;
     }
 
+    if (target.block_id) {
+      this.selectedBlock?.classList.remove('hp-annotation-selected');
+      this.selectedBlock = [...document.querySelectorAll('#hp-document [data-hp-annotation-block]')].find(node => node.dataset.hpAnnotationBlock === target.block_id);
+      if (!this.selectedBlock && this.composer?.sequence > 0) {
+        const note = [...(this.endnotes?.querySelectorAll('li[data-hp-footnote-label]') || [])].find(node => node.dataset.hpFootnoteLabel === this.composer.savedLabel);
+        const reference = note && [...document.querySelectorAll('#hp-document a.footnote-ref')].find(link => link.hash === '#' + note.id);
+        this.selectedBlock = reference && this.annotationBlockFor(reference);
+        if (!this.selectedBlock && reference?.closest('p')?.textContent.startsWith('Annotations:')) {
+          const previous = reference.closest('p').previousElementSibling;
+          this.selectedBlock = previous?.matches('[data-hp-annotation-block]') ? previous : previous?.querySelector('[data-hp-annotation-block]');
+        }
+      }
+      this.selectedBlock?.classList.add('hp-annotation-selected');
+
+      return;
+    }
+
     const map = canonicalMap(document.getElementById('hp-document'));
     const resolved = resolveAnnotationTarget(target, map.text, this.data.body_revision, this.headingSpans());
     this.insertionRange = resolved.status === 'resolved' ? map.rangeAt(resolved.target.position) : null;
@@ -711,47 +745,12 @@ export class
     this.positionCaret();
   }
 
-  clearInsertionPoint() { this.editingReference?.classList.remove('hp-editing-footnote'); this.editingReference = null; this.insertionMarker?.remove(); this.insertionMarker = null; this.insertionRange = null; }
+  clearInsertionPoint() { this.selectedBlock?.classList.remove('hp-annotation-selected'); this.selectedBlock = null; this.editingReference?.classList.remove('hp-editing-footnote'); this.editingReference = null; this.insertionMarker?.remove(); this.insertionMarker = null; this.insertionRange = null; }
 
   placeWithKeyboard(event) {
-    if (this.panel.hidden || this.composer || !this.state?.writable || event.isComposing) return;
-    if (event.key === 'Escape' && this.keyboardCaret) { event.preventDefault(); this.clearCaret(); return; }
-    if (!['Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    const block = event.target;
-    if (!this.keyboardBlocks?.has(block)) return;
-    if (!this.keyboardCaret && event.key !== 'Enter') return;
-    event.preventDefault();
-    if (this.keyboardCaret?.block !== block) {
-      this.clearCaret();
-      const nodes = []; const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
-      while (walker.nextNode()) {
-        const node = walker.currentNode;
-        if (node.data.trim() && !node.parentElement.closest('code,pre,button,.todo,.done,.tag,.priority,.cookie')) nodes.push(node);
-      }
-      if (!nodes.length) return;
-      this.keyboardCaret = { block, nodes, index: 0, offset: 0 };
-      this.caretMarker = annotationElement('span', '│', 'hp-point-marker'); this.caretMarker.setAttribute('aria-hidden', 'true'); document.body.append(this.caretMarker);
-      this.connection.textContent = 'Use Left/Right, Home or End to place the footnote; Enter adds it, Escape cancels.';
-    } else if (event.key === 'Enter') {
-      const target = canonicalMap(document.getElementById('hp-document')).point(this.keyboardRange(), this.state.body_revision, this.data.explicit_ids || {});
-      if (target) this.openComposer(target);
-      else this.connection.textContent = 'This point cannot be matched safely. Move the caret to ordinary text.';
-      return;
-    } else {
-      const caret = this.keyboardCaret;
-      const length = Array.from(caret.nodes[caret.index].data).length;
-      if (event.key === 'Home') { caret.index = 0; caret.offset = 0; }
-      if (event.key === 'End') { caret.index = caret.nodes.length - 1; caret.offset = Array.from(caret.nodes[caret.index].data).length; }
-      if (event.key === 'ArrowRight') {
-        if (caret.offset < length) caret.offset += 1;
-        else if (caret.index + 1 < caret.nodes.length) { caret.index += 1; caret.offset = 0; }
-      }
-      if (event.key === 'ArrowLeft') {
-        if (caret.offset > 0) caret.offset -= 1;
-        else if (caret.index > 0) { caret.index -= 1; caret.offset = Array.from(caret.nodes[caret.index].data).length; }
-      }
-    }
-    this.positionCaret();
+    if (this.panel.hidden || !this.state?.writable || event.isComposing || !['Enter', ' '].includes(event.key)) return;
+    if (!this.keyboardBlocks?.has(event.target)) return;
+    event.preventDefault(); this.annotateBlock(event.target);
   }
 
   positionCaret() {
@@ -879,7 +878,7 @@ export class
     this.footnoteObserver?.disconnect(); this.footnoteMeasures?.clear();
     this.markerObserver?.disconnect(); this.clearInsertionPoint();
     this.prepareKeyboard(false);
-    this.placeEndnotes(false); this.endnotesSlot?.remove(); document.body.classList.remove('hp-annotating');
+    this.placeEndnotes(false); this.endnotesSlot?.remove(); document.body.classList.remove('hp-annotating', 'hp-annotation-writable');
     this.toggle.remove(); this.panel.remove(); this.notice?.remove();
   }
 }

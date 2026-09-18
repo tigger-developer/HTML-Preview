@@ -28,6 +28,8 @@ type Header struct {
 }
 
 type Target struct {
+	BlockID      string `json:"block_id,omitempty"`
+	AfterBlock   bool   `json:"-"`
 	Type         string `json:"type"`
 	BodyRevision string `json:"body_revision,omitempty"`
 	Exact        string `json:"exact,omitempty"`

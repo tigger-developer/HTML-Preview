@@ -59,7 +59,7 @@ func validateCurrentRequest(r Request) error {
 			return fail("invalid_event")
 		}
 	}
-	if r.Target.Type != "point" || len(r.Target.Run) > 8192 || r.Target.Position < 0 || r.Target.RunOffset < 0 {
+	if r.Target.Type != "point" || len(r.Target.BlockID) > 100 || len(r.Target.Run) > 8192 || r.Target.Position < 0 || r.Target.RunOffset < 0 {
 		return fail("point_unmappable")
 	}
 	return nil

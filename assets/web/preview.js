@@ -143,7 +143,7 @@ async function enhanceCode(main, copyValue, controller, dispose) {
     button.setAttribute('aria-label', 'Copy ' + label.toLowerCase());
     button.title = 'Copy ' + label.toLowerCase();
     let surface = code;
-    button.addEventListener('click', () => { copyValue(value, label, button, surface); }, events);
+    button.addEventListener('click', () => { if (!document.body.classList.contains('hp-annotating')) copyValue(value, label, button, surface); }, events);
     buttons.push(button);
 
     const link = code.closest('a');
@@ -176,6 +176,7 @@ async function enhanceCode(main, copyValue, controller, dispose) {
   if (controller.signal.aborted) return;
 
   function targetFor(event) {
+    if (document.body.classList.contains('hp-annotating')) return undefined;
     if (!(event.target instanceof Element)) return undefined;
     if (event.target.closest('a,button,summary,textarea,input,select')) return undefined;
     const code = event.target.closest('code,pre');

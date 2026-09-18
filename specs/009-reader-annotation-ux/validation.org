@@ -723,3 +723,35 @@
   application's sanitizer/preprocessor integration, HTTP mutation or browser UX.
   These remain unimplemented for the block-target proposal. The live service
   still uses the preceding point-insertion implementation.
+
+* Verified block annotation implementation, 18 September 2026
+
+- Scope :: Supersedes the point-insertion UX and the experiment's unimplemented
+  status above. Creation uses server-verified paragraph, heading, list-item and
+  code-block targets. Temporary native footnotes establish source boundaries;
+  published HTML and source files contain no temporary marker records.
+- RED :: The initial eight real HTTP cases failed because eligible block
+  attributes were absent. The implemented mapping passed these cases.
+- GREEN :: Focused annotation, footnote, point and block HTTP regressions passed
+  in internal/annotation and internal/preview. The final race-enabled preview
+  run passed (21.652s), including smart typography, repeated paragraphs,
+  inline formatting/links, heading tags, nested lists, code blocks, three notes
+  on one block, stable Markdown heading anchors and forged-ID refusal.
+- Static checks :: Go vet and the focused Go lint checks passed. JavaScript
+  annotation lint and CSS lint passed. Combined JavaScript lint still reports
+  the pre-existing unused detailIdentities function in preview.js; this change
+  does not introduce that warning. Git whitespace checks passed.
+- Source preservation :: HTTP tests inspect the saved source and reject forged
+  block IDs without changing the file. Markdown headings use a separate native
+  reference paragraph to preserve their automatic HTML anchors. Source and body
+  revisions remain checked before mutation.
+- Pending UT :: Restart the service and open the disposable linked Org/Markdown
+  fixture. Check whole-block highlighting, paragraph/heading/list/code creation,
+  repeated notes on one block, inactive table/drawer zones, normal reading-mode
+  links/copying and stable autosave while typing. Browser interaction has not
+  been automated. Sidecar context reattachment remains unchanged and may leave
+  a note unplaced when its source context cannot be established.
+- Review boundary :: Standing paired self-review authority applies. No new
+  independent audit verdict or operator acceptance is claimed.
+- Build :: make build passed with the candidate assets. Live service restart
+  and operator browser validation remain pending.

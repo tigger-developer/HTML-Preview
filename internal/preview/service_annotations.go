@@ -353,6 +353,18 @@ func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.R
 		if base.revision != annotation.Digest(snap.RawSource) || annotation.Digest([]byte(base.bodyText)) != request.BodyRevision {
 			return -1, &annotation.Failure{Code: "stale_body"}
 		}
+		if target.BlockID != "" {
+			block, exists := base.annotationBlocks[target.BlockID]
+			if !exists {
+				return -1, &annotation.Failure{Code: "point_unmappable"}
+			}
+			body := []rune(base.bodyText)
+			*target = annotation.Target{Type: "point", BlockID: target.BlockID, AfterBlock: block.boundary.AfterBlock,
+				BodyRevision: request.BodyRevision, Position: block.position,
+				Prefix: string(body[max(0, block.position-64):block.position]),
+				Suffix: string(body[block.position:min(len(body), block.position+64)])}
+			return block.boundary.Offset, nil
+		}
 		if target.Type == "point" && target.HeadingID != "" && base.explicitIDs[target.HeadingID] == "" {
 			return -1, &annotation.Failure{Code: "invalid_selector"}
 		}

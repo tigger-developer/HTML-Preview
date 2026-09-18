@@ -189,7 +189,11 @@ func updateFootnote(data []byte, format string, header Header, event Event, labe
 			if position < 0 || position > len(data) {
 				return nil, fail("point_unmappable")
 			}
-			patches = append(patches, sourcePatch{byteRange{position, position}, []byte(footnoteReference(format, label))})
+			reference := footnoteReference(format, label)
+			if event.Target.AfterBlock {
+				reference = store.Ending + store.Ending + "Annotations: " + reference + store.Ending
+			}
+			patches = append(patches, sourcePatch{byteRange{position, position}, []byte(reference)})
 		}
 		patches = append(patches, sourcePatch{byteRange{len(data), len(data)}, append([]byte(store.Ending+store.Ending), encoded...)})
 	}

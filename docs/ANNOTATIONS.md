@@ -1,6 +1,6 @@
 ---
 title: Document annotations
-version: 2
+version: 3
 last-updated: 2026-09-18
 ---
 
@@ -43,26 +43,29 @@ characters and 512 UTF-8 bytes, without controls or line breaks. The initiating
 command captures the name; the service account does not substitute its own name.
 Existing tabs and links retain their captured attribution.
 
-1. Activate **Annotations**, then click an insertion point in ordinary prose.
+1. Activate **Annotations**, then click an eligible paragraph, heading, list-item paragraph or code block.
 2. Type in the focused comment box. **Auto saved** means the latest value was acknowledged.
 3. Optionally change the subdued **Footnote ID** below the comment box.
 4. Click outside the editor, move keyboard focus out, or press Escape to finish
    the comment. Saving must be acknowledged before the editor closes.
 
-Annotation mode uses a ✎ pencil cursor over eligible prose, with a crosshair
-fallback. An outline marks the
-insertion point while editing; after close, the normal footnote number and link
-remain. **Auto saved** appears beneath the textarea for two seconds before
+Annotation mode uses a ✎ pencil cursor over verified blocks, with a crosshair
+fallback. An outline highlights the selected block while editing. The reference
+is appended at the block boundary, outside inline formatting and links. Code
+blocks and Markdown headings use a following `Annotations:` paragraph; repeated
+annotations extend that paragraph. This preserves Markdown heading anchors.
+Unsupported locations do not open a composer. After close, the normal footnote
+number and link remain. **Auto saved** appears beneath the textarea for two seconds before
 fading, accompanied by a green border flash. The feedback keeps its reserved
 space after fading. Sustained connection problems and confirmed save failures
 open a recovery dialog without adding controls above the editor.
 
-Keyboard placement uses Tab to reach a prose block, Enter to begin placing the
-caret, Left/Right or Home/End to move it, then Enter to open the composer.
-Escape cancels caret placement. Code-copy and folding controls retain their own
-actions. In annotation mode, clicking document link text places a footnote after
-the complete link; reading mode retains normal navigation. Footnote references
-and backlinks remain navigable in both modes.
+Keyboard activation uses Tab to reach an eligible block and Enter or Space to
+open its composer. Folding controls retain their own actions. Code copying and
+its buttons are disabled in annotation mode; clicking inline code or a document
+link selects its eligible containing block. Reading mode restores code copying
+and normal navigation. Footnote references and backlinks remain navigable in
+both modes.
 
 The **Annotations & Footnotes** sidebar gives each note a subtle background.
 Long notes initially show approximately five text lines. The **…** button
@@ -129,12 +132,16 @@ point; sidecar points use unique before/after context. Missing or ambiguous
 locations remain explicitly unplaced in the endnotes. There is no fuzzy matching
 or automatic movement to a nearby paragraph.
 
-A new insertion may use text that also occurs elsewhere. The service considers
-up to eight eligible source matches and accepts one only when a rendering check
-proves the exact clicked position and preserves the surrounding document.
-Too many matches or an unprovable location still retain the draft and refuse
-the write. Rendered typography that differs from source notation remains a
-placement limitation; this matching change does not normalize those differences.
+New previews use source-bound block IDs and revision checks. Repeated words and
+rendered punctuation do not require source-text searches. The conversion checks
+that native references parse at proposed boundaries before making blocks
+interactive. Temporary markers and block IDs are never written into the source.
+
+The previous clicked-text path considered at most eight matching source
+fragments. That limit remains only for compatibility with older point requests;
+it does not govern block creation in newly opened previews. Reload an older
+preview to use block targets. Sidecar reattachment retains its context matching;
+unprovable sidecar locations remain explicitly unplaced.
 
 **Not saved** retains the draft. Temporary
 failures retry the same operation after one, two and four seconds, with a small
@@ -255,8 +262,8 @@ filesystem behaviour remains a platform user test. The service admits at most
 
 Section heading text does not fold sections in either reading or annotation
 mode. Use the vertical bar/indicator or Show more button. Ordinary heading text accepts annotations. TODO/DONE markers, tags and priority
-badges are excluded. Link annotations follow the complete link markup, preserving
-its label and destination. Ambiguous or unsupported source mappings are refused
+badges are excluded. Links select the containing block, preserving their label
+and destination. Ambiguous or unsupported source mappings are refused
 without changing the document.
 
 While an annotation is being edited, its saved sidebar card is hidden to avoid
@@ -287,3 +294,6 @@ confirmed save failures retain the recovery dialog.
   recovery and expandable long sidebar notes.
 - Version 2: Batched follow-up saves and independent refresh after 15 seconds
   of inactivity or editor exit.
+
+- Version 3: Verified block targets, block highlighting, annotation-mode copy
+  suppression and separate references after code blocks and Markdown headings.

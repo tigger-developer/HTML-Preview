@@ -1,7 +1,7 @@
 ---
 title: Architecture
-version: 2
-last-updated: 2026-09-17
+version: 3
+last-updated: 2026-09-18
 ---
 
 # Architecture
@@ -923,3 +923,30 @@ can request state while presentation remains held. Existing server revision,
 native-definition and source-placement checks remain authoritative. No server
 write, source format or general merge contract changes. Browser interaction
 remains manual UT; the state-flow change has native lint and build checks.
+
+### Verified annotation blocks, 18 September 2026
+
+New annotation creation uses source-bound semantic blocks instead of clicked-word
+searches. The annotation boundary proposes native insertion positions outside
+literal content and definitions. One additional bounded Pandoc conversion uses
+temporary native footnotes to verify that those references parse. The preview
+adapter associates supported block ends with the unchanged rendered structure
+and canonical text, then adds application-owned HTML attributes to the original
+render. Probe references, definitions and IDs never enter source files or the
+published document.
+
+The immutable page cache owns the source-revision-specific block map and charges
+its memory to the existing cache budget. Saves accept a mapped block ID only
+against the current source and body revisions; browser offsets confer no authority.
+The existing atomic writer inserts the reference and native definition. Code
+blocks and Markdown headings use a following reference paragraph, preserving
+literal syntax and automatic heading anchors. Existing reference paragraphs are
+extended. Org headings and prose use inline references at the verified boundary.
+
+Only verified blocks expose an annotation cursor and keyboard/click activation.
+The selected block is highlighted. Annotation mode suppresses code copying and
+routes inline code and document links to the containing eligible block. Native
+footnote controls retain their actions. Existing editing, autosave, refresh and
+recovery are reused. Legacy point requests and sidecar context reattachment retain
+their existing restrictions; this change does not invent a persisted block-ID
+format or approximate reattachment across source changes.

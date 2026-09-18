@@ -122,6 +122,7 @@ func sanitizeDocument(body *html.Node) (string, error) {
 	policy.AllowAttrs(strings.Fields(passiveAttrs)...).Globally()
 	policy.AllowAttrs("open").OnElements("details")
 	policy.AllowAttrs("data-hp-footnote-label").OnElements("li")
+	policy.AllowAttrs("data-hp-annotation-block").OnElements("p", "li", "dd", "pre", "h1", "h2", "h3", "h4", "h5", "h6", "div")
 	policy.AllowAttrs("data-hp-org-drawer").OnElements("details")
 	policy.AllowAttrs("data-hp-level", "data-hp-visibility").OnElements("section")
 	policy.AllowAttrs("role", "aria-level").OnElements("div")

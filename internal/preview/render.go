@@ -21,6 +21,7 @@ import (
 )
 
 type page struct {
+	annotationBlocks              map[string]annotationBlock
 	sourceData                    *string
 	annotationData                string
 	annotationSourceRevision      string
