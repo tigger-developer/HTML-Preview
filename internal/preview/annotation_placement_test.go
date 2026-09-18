@@ -17,6 +17,9 @@ func TestHTTPHeadingAndLinkAnnotations(t *testing.T) {
 		status                       int
 	}{
 		{"heading", "md", "## Heading text\n", "Heading text", "## Heading[^reviewer-001] text", 7, 7, false, 201},
+		{"prose-after-code", "org", "=P= means the numbered /paragraph/ in the export.\n", "means the numbered", "=P= means[fn:reviewer-001] the numbered", 5, 7, false, 201},
+		{"prose-emphasis", "org", "=P= means the numbered /paragraph/ in the export.\n", "paragraph", "/para[fn:reviewer-001]graph/", 4, 25, false, 201},
+		{"prose-after-emphasis", "org", "=P= means the numbered /paragraph/ in the export.\n", "in the export.", "in the[fn:reviewer-001] export.", 6, 37, false, 201},
 		{"repeated-fragment", "org", "* TODO Standardize =dad= capitalization\n\nA capitalization preference.\n", "capitalization", "=dad= capital[fn:reviewer-001]ization", 7, 28, false, 201},
 		{"later-fragment", "org", "* Heading\n\nA capitalization preference.\n\nAnother capitalization choice.\n", "capitalization", "Another capital[fn:reviewer-001]ization choice.", 7, 52, false, 201},
 		{"wrong-position", "org", "* Heading\n\nA capitalization preference.\n\nAnother capitalization choice.\n", "capitalization", "", 7, 1, false, 409},

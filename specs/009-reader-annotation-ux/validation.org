@@ -675,3 +675,16 @@
   and footnote-continuation matching remain outside this correction.
 - Build :: make build passed; Go formatting and git diff checks passed. The
   service has not been restarted by this increment; browser UT remains pending.
+
+* Diagnostic - opening paragraph insertion, 18 September 2026
+
+- Report :: Insertion in the paragraph explaining paragraph identifiers returns
+  point_unmappable after the repeated-fragment correction. The exact clicked
+  word is not yet identified.
+- Checks :: Three synthetic real HTTP cases, before, inside and after inline
+  emphasis following Org verbatim text, all passed (1.420s). Retained as
+  preservation coverage for these insertion positions; they do not reproduce
+  or resolve the reported failure. No production change was made for this report.
+- Next evidence :: Inspect the failed request's target fields and response to
+  reproduce the actual insertion, without recording access tokens or private
+  annotation content in project fixtures.
