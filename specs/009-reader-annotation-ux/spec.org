@@ -1538,3 +1538,35 @@ prescription is superseded by the operator's paired testing instruction.
   Org code, selecting the later occurrence, and refusal of mismatched positions.
   Focused annotation regressions protect existing exclusions. Browser UT repeats
   the reported heading insertion after a long annotation.
+
+* Paired experiment - source-bound annotation blocks, 18 September 2026
+
+- Objective :: Replace clicked-word lookup with source-bound paragraph, heading,
+  list-item paragraph and code-block targets. This supersedes the point-within-word
+  interaction and eight-match correction for the proposed new creation path.
+  Existing footnote editing and native labels remain unchanged.
+- Association :: Record an insertion boundary against the admitted source revision.
+  Carry a temporary, application-owned block ID through a conversion copy, remove
+  the transport marker on the server and retain an invisible HTML attribute.
+  Keep the ID-to-source association on the server. Never insert IDs or property
+  drawers into the original document; do not derive IDs from preceding plaintext.
+- Eligibility :: Only blocks with a verified association offer the annotation
+  cursor, keyboard activation or composer. Highlight the whole selected block.
+  Unsupported structures remain inactive. Revision conflicts after rendering
+  retain the existing draft-preservation behaviour.
+- Placement :: References follow block content, outside inline markup and before
+  structural heading suffixes. List paragraphs retain indentation and nesting.
+  Code blocks use a separate native paragraph after the closing delimiter:
+  =Annotations:= followed by native footnote references. Subsequent annotations
+  extend the same reference paragraph rather than creating another one.
+- Interaction :: In annotation mode, code surfaces and copy buttons do not copy.
+  Inline code and links select their eligible containing block. Code blocks
+  select their own verified after-block location. Reading mode retains copying
+  and ordinary navigation. Existing footnote controls remain separate.
+- Trial boundary :: First establish transport and native-reference fidelity with
+  synthetic Pandoc conversions. Automatic boundary detection, application
+  preprocessing/sanitization, revision-bound HTTP saving and browser interaction
+  require separate implementation and verification. Successful transport alone
+  does not authorize advertising an unverified block as writable.
+- Evidence :: The dated experiment in =validation.org= records the conversion
+  findings, including unresolved Markdown automatic heading-anchor changes.

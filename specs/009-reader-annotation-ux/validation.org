@@ -688,3 +688,38 @@
 - Next evidence :: Inspect the failed request's target fields and response to
   reproduce the actual insertion, without recording access tokens or private
   annotation content in project fixtures.
+
+* Source-bound block marker experiment, 18 September 2026
+
+- Scope :: One-off feasibility check against Pandoc 3.9.0.2, using synthetic Org
+  and Markdown source in an ignored local diagnostic program. No private source
+  documents were edited; no browser, live service or production renderer changed.
+- Baseline :: Application revision =bc4e78c= (inline-emphasis insertion coverage).
+- Method :: At a known source boundary, insert a temporary raw HTML span into a
+  conversion copy. Parse the emitted HTML, associate its parent block (or the
+  preceding code block for an after-block paragraph), remove the marker and
+  compare element structure, attributes and normalized text with the unmarked
+  conversion. Separately insert a native footnote reference and definition;
+  require a rendered reference and, for inline attachment, unchanged body
+  structure after removing the reference and endnotes.
+- Execution :: =go run ./.agents/block-marker-trial= with Go caches under the
+  operating-system temporary directory. The program is experimental runtime
+  state, not part of the persistent regression suite.
+- Initial result :: Thirteen cases passed; two failed. A raw marker immediately
+  after closing Org emphasis prevented emphasis recognition. A Markdown heading's
+  automatic anchor changed after adding a native footnote.
+- Revised result :: A separating space before the marker preserves Org emphasis.
+  Fifteen cases passed; one still failed. Covered repeated paragraphs (forty
+  preceding duplicates), inline markup/code/links, wrapped prose, Org heading
+  tags, list items, nested items, parents preceding nested lists, and code blocks.
+  A Markdown heading with an explicit ID also passed.
+- Remaining failure :: The Markdown heading =Heading text= changes its automatic
+  ID from =heading-text= to =heading-texttrial001= when the native footnote is
+  appended. The structure-preservation assertion remains failing; no assertion
+  was relaxed to hide this difference. Stable heading navigation needs resolution
+  before advertising this case as an eligible annotation target.
+- Limitations :: Fixture insertion boundaries were supplied explicitly. This
+  establishes marker transport feasibility, not automatic source parsing, the
+  application's sanitizer/preprocessor integration, HTTP mutation or browser UX.
+  These remain unimplemented for the block-target proposal. The live service
+  still uses the preceding point-insertion implementation.
