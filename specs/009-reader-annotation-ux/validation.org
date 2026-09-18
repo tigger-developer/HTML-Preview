@@ -773,3 +773,26 @@
   references are preserved in place. No fixture annotations were moved or
   deleted. Browser confirmation of new placement remains pending; the table
   validation is unaffected by this text-node correction.
+
+* Table and rendered Org block extension, 18 September 2026
+
+- Provisional UT :: The operator reported the preceding Markdown candidate
+  passing. The screenshot shows references at paragraph ends, a separate
+  heading reference paragraph and a reference paragraph below the code block.
+  Table support was not part of that reviewed Markdown fixture.
+- Changed scope :: Tables become eligible whole-block targets in both formats.
+  This intentionally supersedes the earlier inactive-table pass; drawers and
+  hidden comments remain inactive. No existing test-note files were changed.
+- RED :: Seven real HTTP cases initially exposed no eligible targets for tables,
+  quote, verse, centre, custom and nested Org blocks. A lowercase custom-block
+  case subsequently exposed case-sensitive HTML class matching.
+- GREEN :: The focused annotation/footnote/point/block group passed with the
+  race detector (annotation 1.207s, preview 27.331s) before the lowercase-class
+  correction. Repeated table and quote saves reused one reference paragraph.
+- Static checks :: Focused Go lint, annotation JavaScript lint, CSS lint and Git
+  whitespace checks passed. Final checks after the lowercase correction are
+  recorded below. Browser clicking/highlighting of these new containers remains
+  pending on the disposable linked table/block fixture.
+- Final checks :: After case-insensitive Org container matching, all focused
+  block HTTP tests passed with the race detector (12.867s). make build passed.
+  Live service restart and user validation of the new containers remain pending.

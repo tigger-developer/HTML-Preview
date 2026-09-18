@@ -1600,3 +1600,43 @@ prescription is superseded by the operator's paired testing instruction.
   saves, unchanged heading anchors, unknown IDs and unsupported content. Human
   validation covers clicking, highlighting, keyboard operation, mode-specific
   copying, refresh and save feedback on disposable Org/Markdown documents.
+
+* Table and Org block annotations, 18 September 2026
+
+- Scope :: Extend verified whole-block annotation to Org/Markdown pipe tables
+  and rendered Org BEGIN/END blocks, including quote, verse, centre and custom
+  blocks. This supersedes tables being deliberately inactive in the preceding
+  implementation. Drawers and hidden comments remain inactive.
+- Placement :: Use the existing separate =Annotations:= paragraph after the
+  complete table or closing block delimiter. Repeated notes reuse that paragraph.
+  A nested Org block is part of its outer block's annotation target; neither
+  table cells nor paragraphs inside that block receive competing targets.
+- Verification :: Pandoc must produce the expected visible container, with
+  unchanged structure and text in the unmarked render. Hidden, malformed or
+  unverified constructs receive no guessed target. Retain source revision and
+  native-footnote protections. Verify HTTP writes and source placement for both
+  table formats and representative Org containers; browser UT covers clicking,
+  whole-block highlighting and repeated annotations on a disposable fixture.
+
+* Pending paired follow-up - checkbox rendering, 18 September 2026
+
+- Report :: Checkbox list items are not rendered consistently. The supplied Org
+  sample contains unchecked, uppercase checked and slash-partial markers.
+- Required presentation :: Use matching visual dimensions and style for unchecked,
+  checked and partial states. Treat both =[X]= and =[x]= as checked. Support
+  =[/]= as the requested partial-state spelling, alongside native Org =[-]=.
+  Preserve source spelling and do not introduce checkbox writeback.
+- Syntax review :: Org documents =[ ]=, =[X]= and =[-]= in plain list items.
+  Pandoc Markdown supports task-list checkboxes; slash-partial is a requested
+  HTML Preview extension rather than a standard Pandoc task-list state. Bare
+  bracket markers without list bullets remain prose in both tested readers;
+  no conversion of standalone prose to list items has been authorized.
+- Evidence :: [[https://orgmode.org/manual/Checkboxes.html][Org checkboxes]],
+  [[https://orgmode.org/worg/org-syntax.html][Org syntax]],
+  [[https://pandoc.org/MANUAL.html#extension-task_lists][Pandoc task lists]].
+  Local Pandoc probes recognize uppercase checked in both formats, lowercase
+  checked in Markdown only, and emit an unchecked input for Org's partial dash.
+  These probes describe Pandoc output, not yet the application's defect cause.
+- Next slice :: Trace application rendering/sanitization, cover bullet variants
+  and three-state presentation, and prepare a disposable browser fixture. This
+  item is recorded for the next paired increment; implementation is pending.

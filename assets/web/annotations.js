@@ -169,6 +169,9 @@ export class
   }
 
   annotationBlockFor(element) {
+    if (element.closest('[data-hp-org-drawer],.footnotes')) return null;
+    const container = element.closest('table[data-hp-annotation-block],blockquote[data-hp-annotation-block],div[data-hp-annotation-block]');
+    if (container) return container;
     const block = element.closest('p,li,dt,dd,td,th,pre,details,summary,h1,h2,h3,h4,h5,h6,[role=heading]');
     return block?.hasAttribute('data-hp-annotation-block') ? block : null;
   }

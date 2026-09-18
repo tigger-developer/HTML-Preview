@@ -162,8 +162,8 @@ func (s *previewService) cachePage(key string, page *httpPage) {
 
 func (p *httpPage) byteCost() int64 {
 	total := int64(len(p.data) + len(p.source.logical) + len(p.source.canonical) + len(p.revision) + len(p.bodyText) + len(p.annotationSourceRevision))
-	for id := range p.annotationBlocks {
-		total += int64(len(id) + 64)
+	for id, block := range p.annotationBlocks {
+		total += int64(len(id) + len(block.boundary.Kind) + 80)
 	}
 	for id := range p.annotationLocations {
 		total += int64(len(id) + 32)

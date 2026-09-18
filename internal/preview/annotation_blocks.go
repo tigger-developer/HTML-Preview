@@ -66,7 +66,7 @@ func (s *session) markAnnotationBlocks(ctx context.Context, p *page, input []byt
 		boundary := boundaries[key]
 		target := parent
 		if boundary.Following {
-			target = previousAnnotationBlock(parent)
+			target = previousAnnotationBlock(parent, boundary.Kind)
 			if target == nil {
 				continue
 			}
@@ -136,7 +136,7 @@ func blockTail(ref *html.Node) bool {
 	}
 	return true
 }
-func previousAnnotationBlock(n *html.Node) *html.Node {
+func previousAnnotationBlock(n *html.Node, kind string) *html.Node {
 	n = n.PrevSibling
 	for n != nil && n.Type != html.ElementNode {
 		n = n.PrevSibling
@@ -144,10 +144,23 @@ func previousAnnotationBlock(n *html.Node) *html.Node {
 	if n == nil {
 		return nil
 	}
-	if n.Data == "pre" || isHeading(n) {
+	if kind == "heading" && isHeading(n) || kind == "table" && n.Data == "table" || kind == "org:QUOTE" && n.Data == "blockquote" || kind == "org:VERSE" && hasClass(n, "line-block") {
 		return n
 	}
-	return element(n, "pre")
+	if kind == "code" || kind == "org:SRC" || kind == "org:EXAMPLE" {
+		if n.Data == "pre" {
+			return n
+		}
+		return element(n, "pre")
+	}
+	if strings.HasPrefix(kind, "org:") && n.Data == "div" {
+		for _, class := range strings.Fields(attribute(n, "class")) {
+			if strings.EqualFold(class, strings.TrimPrefix(kind, "org:")) {
+				return n
+			}
+		}
+	}
+	return nil
 }
 func insideEndnotes(n *html.Node) bool {
 	for ; n != nil; n = n.Parent {

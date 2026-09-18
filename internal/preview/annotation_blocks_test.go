@@ -14,6 +14,15 @@ import (
 func TestHTTPBlockAnnotations(t *testing.T) {
 	s := startTestService(t, NativeHost())
 	for _, tc := range []struct{ name, ext, text, target, want string }{
+		{"table", "org", "| Item | Value |\n|------+-------|\n| One | Two |\n", "Item Value One Two", "| One | Two |\n\nAnnotations: [fn:reviewer-001]"},
+		{"table", "md", "| Item | Value |\n|------|-------|\n| One | Two |\n", "Item Value One Two", "| One | Two |\n\nAnnotations: [^reviewer-001]"},
+		{"table-no-outer-pipes", "md", "Item | Value\n-----|------\nOne | Two\n", "Item Value One Two", "One | Two\n\nAnnotations: [^reviewer-001]"},
+		{"quote", "org", "#+BEGIN_QUOTE\nQuoted text.\n#+END_QUOTE\n", "Quoted text.", "#+END_QUOTE\n\nAnnotations: [fn:reviewer-001]"},
+		{"verse", "org", "#+BEGIN_VERSE\nOne line\nTwo lines\n#+END_VERSE\n", "One line Two lines", "#+END_VERSE\n\nAnnotations: [fn:reviewer-001]"},
+		{"centre", "org", "#+BEGIN_CENTER\nCentred text.\n#+END_CENTER\n", "Centred text.", "#+END_CENTER\n\nAnnotations: [fn:reviewer-001]"},
+		{"custom", "org", "#+BEGIN_SPECIAL\nSpecial text.\n#+END_SPECIAL\n", "Special text.", "#+END_SPECIAL\n\nAnnotations: [fn:reviewer-001]"},
+		{"custom-lowercase", "org", "#+begin_special\nSpecial text.\n#+end_special\n", "Special text.", "#+end_special\n\nAnnotations: [fn:reviewer-001]"},
+		{"nested-block", "org", "#+BEGIN_QUOTE\nOutside.\n\n#+BEGIN_QUOTE\nInside.\n#+END_QUOTE\n#+END_QUOTE\n", "Outside. Inside.", "#+END_QUOTE\n#+END_QUOTE\n\nAnnotations: [fn:reviewer-001]"},
 		{"wrapped", "org", "First sentence.\nSecond sentence continues\nto the paragraph end.\n", "First sentence. Second sentence continues to the paragraph end.", "to the paragraph end.[fn:reviewer-001]"},
 		{"wrapped", "md", "First sentence.\nSecond sentence continues\nto the paragraph end.\n", "First sentence. Second sentence continues to the paragraph end.", "to the paragraph end.[^reviewer-001]"},
 		{"duplicates", "org", strings.Repeat("Same paragraph.\n\n", 40) + "=P= means the numbered /paragraph/.\n", "P means the numbered paragraph.", "/paragraph/.[fn:reviewer-001]"},
@@ -92,8 +101,8 @@ func TestHTTPBlockRejectsUnverifiedTargets(t *testing.T) {
 			t.Fatal("unsupported content offered as a target")
 		}
 	}
-	if count != 2 {
-		t.Fatalf("want heading and paragraph only, got %d", count)
+	if count != 3 {
+		t.Fatalf("want heading, table and paragraph only, got %d", count)
 	}
 	if strings.Contains(string(data), "HPBLOCK") {
 		t.Fatal("temporary markers leaked into output")
@@ -125,12 +134,15 @@ func TestHTTPBlockRejectsUnverifiedTargets(t *testing.T) {
 
 func TestHTTPRepeatedBlockNotesAndHeadingAnchor(t *testing.T) {
 	s := startTestService(t, NativeHost())
-	for _, tc := range []struct{ name, source, tag string }{
-		{"heading", "## Heading *text*\n", "h2"},
-		{"code", "```go\nfmt.Println(1)\n```\n", "pre"},
+	for _, tc := range []struct{ name, ext, source, tag string }{
+		{"heading", "md", "## Heading *text*\n", "h2"},
+		{"code", "md", "```go\nfmt.Println(1)\n```\n", "pre"},
+		{"table", "md", "| A | B |\n|---|---|\n| 1 | 2 |\n", "table"},
+		{"table-org", "org", "| A | B |\n|---+---|\n| 1 | 2 |\n", "table"},
+		{"quote", "org", "#+BEGIN_QUOTE\nQuoted text.\n#+END_QUOTE\n", "blockquote"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			path := source(t, s.root, tc.name+"-repeated.md", tc.source)
+			path := source(t, s.root, tc.name+"-repeated."+tc.ext, tc.source)
 			endpoint := annotationRegistrationURL(t, s, path, "Reviewer")
 			pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
 			anchor := ""
@@ -182,7 +194,11 @@ func TestHTTPRepeatedBlockNotesAndHeadingAnchor(t *testing.T) {
 			if strings.Count(string(data), "Annotations: ") != 1 {
 				t.Fatalf("reference paragraph duplicated: %s", data)
 			}
-			if !strings.Contains(string(data), "[^reviewer-001][^reviewer-002][^reviewer-003]") {
+			want := "[^reviewer-001][^reviewer-002][^reviewer-003]"
+			if tc.ext == "org" {
+				want = "[fn:reviewer-001][fn:reviewer-002][fn:reviewer-003]"
+			}
+			if !strings.Contains(string(data), want) {
 				t.Fatalf("missing successive references: %s", data)
 			}
 		})

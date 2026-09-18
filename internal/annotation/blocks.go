@@ -12,6 +12,7 @@ type BlockBoundary struct {
 	Offset     int
 	AfterBlock bool
 	Following  bool
+	Kind       string
 }
 
 // MarkBlocks proposes line-end boundaries. The renderer admits only markers at
@@ -28,13 +29,13 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 	var definitions strings.Builder
 	used := make(map[int]bool)
 	ending := Parse(data, format).Ending
-	add := func(offset int, after, code bool) {
+	add := func(offset int, after bool, kind string) {
 		if used[offset] {
 			return
 		}
 		used[offset] = true
 		key := fmt.Sprintf("%s%dQ", token, len(candidates))
-		candidates[key] = BlockBoundary{offset, after, code}
+		candidates[key] = BlockBoundary{Offset: offset, AfterBlock: after, Following: kind != "", Kind: kind}
 		marker := footnoteReference(format, key)
 		if after {
 			marker = ending + ending + marker + ending
@@ -48,6 +49,8 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 	}
 
 	literal := literalContext{}
+	var orgBlocks []string
+	tables := tableBoundaries(lines, format)
 	drawer, frontmatter := false, false
 	for i, line := range lines {
 		trim := strings.TrimSpace(line.text)
@@ -64,6 +67,28 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 			}
 			continue
 		}
+		if format == "org" {
+			upper := strings.ToUpper(trim)
+			if len(orgBlocks) > 0 {
+				top := orgBlocks[len(orgBlocks)-1]
+				if upper == "#+END_"+top {
+					orgBlocks = orgBlocks[:len(orgBlocks)-1]
+					if len(orgBlocks) == 0 && top != "COMMENT" && top != "EXPORT" && line.text == trim {
+						offset, after := afterBlockBoundary(lines, i, format)
+						add(offset, after, "org:"+top)
+					}
+				} else if top != "SRC" && top != "EXAMPLE" && top != "COMMENT" && top != "EXPORT" {
+					if name := orgBlockStart(upper); name != "" {
+						orgBlocks = append(orgBlocks, name)
+					}
+				}
+				continue
+			}
+			if name := orgBlockStart(upper); name != "" {
+				orgBlocks = append(orgBlocks, name)
+				continue
+			}
+		}
 		was := literal
 		literal.consume(line.text, format)
 		if was.active() {
@@ -72,7 +97,7 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 				continue
 			}
 			offset, after := afterBlockBoundary(lines, i, format)
-			add(offset, after, true)
+			add(offset, after, "code")
 			continue
 		}
 		if literal.active() {
@@ -80,6 +105,13 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 		}
 		if format == "org" && drawerNameForAnnotation(trim) {
 			drawer = !strings.EqualFold(trim, ":END:")
+			continue
+		}
+		if last, table := tables[i]; table && !drawer {
+			if last {
+				offset, after := afterBlockBoundary(lines, i, format)
+				add(offset, after, "table")
+			}
 			continue
 		}
 		if drawer || trim == "" || strings.HasPrefix(trim, "|") || strings.HasPrefix(trim, ">") || strings.HasPrefix(trim, "<") || strings.HasPrefix(trim, ":") {
@@ -94,7 +126,7 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 		}
 		if heading && format != "org" {
 			offset, after := afterBlockBoundary(lines, i, format)
-			add(offset, after, true)
+			add(offset, after, "heading")
 			continue
 		}
 		if !heading {
@@ -113,7 +145,7 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 			continue
 		}
 		offset := line.offset + end
-		add(offset, false, false)
+		add(offset, false, "")
 	}
 	patches = append(patches, sourcePatch{byteRange{len(data), len(data)}, []byte(definitions.String())})
 	marked, err := applySourcePatches(data, patches)
@@ -121,6 +153,43 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 		return nil, nil, err
 	}
 	return marked, candidates, nil
+}
+
+func orgBlockStart(upper string) string {
+	if !strings.HasPrefix(upper, "#+BEGIN_") {
+		return ""
+	}
+	fields := strings.Fields(strings.TrimPrefix(upper, "#+BEGIN_"))
+	if len(fields) == 0 {
+		return ""
+	}
+	return fields[0]
+}
+
+// Propose pipe-table boundaries; the renderer still has to prove a table exists.
+func tableBoundaries(lines []sourceLine, format string) map[int]bool {
+	rows := make(map[int]bool)
+	for i := 0; i < len(lines); {
+		start := i
+		for i < len(lines) && strings.Contains(lines[i].text, "|") && strings.TrimLeft(lines[i].text, " \t") == lines[i].text {
+			i++
+		}
+		if i == start {
+			i++
+			continue
+		}
+		valid := format == "org" && strings.HasPrefix(lines[start].text, "|")
+		if format != "org" && i-start >= 2 {
+			separator := lines[start+1].text
+			valid = strings.Contains(separator, "-") && strings.Trim(separator, "|:- \t") == ""
+		}
+		if valid {
+			for j := start; j < i; j++ {
+				rows[j] = j == i-1
+			}
+		}
+	}
+	return rows
 }
 
 func drawerNameForAnnotation(s string) bool {

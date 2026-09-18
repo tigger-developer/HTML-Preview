@@ -43,7 +43,7 @@ characters and 512 UTF-8 bytes, without controls or line breaks. The initiating
 command captures the name; the service account does not substitute its own name.
 Existing tabs and links retain their captured attribution.
 
-1. Activate **Annotations**, then click an eligible paragraph, heading, list-item paragraph or code block.
+1. Activate **Annotations**, then click an eligible paragraph, heading, list-item paragraph, code block, table or rendered Org block.
 2. Type in the focused comment box. **Auto saved** means the latest value was acknowledged.
 3. Optionally change the subdued **Footnote ID** below the comment box.
 4. Click outside the editor, move keyboard focus out, or press Escape to finish
@@ -52,8 +52,11 @@ Existing tabs and links retain their captured attribution.
 Annotation mode uses a ✎ pencil cursor over verified blocks, with a crosshair
 fallback. An outline highlights the selected block while editing. The reference
 is appended at the block boundary, outside inline formatting and links. Code
-blocks and Markdown headings use a following `Annotations:` paragraph; repeated
+blocks, tables, rendered Org blocks and Markdown headings use a following
+`Annotations:` paragraph; repeated
 annotations extend that paragraph. This preserves Markdown heading anchors.
+Table cells and nested Org blocks belong to the whole outer block; their notes
+go after its closing syntax. Hidden comments and drawers remain inactive.
 Unsupported locations do not open a composer. After close, the normal footnote
 number and link remain. **Auto saved** appears beneath the textarea for two seconds before
 fading, accompanied by a green border flash. The feedback keeps its reserved

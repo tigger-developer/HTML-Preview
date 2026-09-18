@@ -950,3 +950,10 @@ footnote controls retain their actions. Existing editing, autosave, refresh and
 recovery are reused. Legacy point requests and sidecar context reattachment retain
 their existing restrictions; this change does not invent a persisted block-ID
 format or approximate reattachment across source changes.
+
+The same after-block convention covers pipe tables and rendered Org block
+containers. Source scanning proposes the complete outer block's end; Pandoc
+must produce its expected table, quote, verse or named container before that
+boundary is exposed. Nested content selects the outer container rather than
+individual cells or internal paragraphs. Hidden comment/export blocks and
+unverified syntax remain inactive. No new annotation storage format is introduced.
