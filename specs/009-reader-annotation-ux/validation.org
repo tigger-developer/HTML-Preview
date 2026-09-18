@@ -617,3 +617,18 @@
 - Checks :: JavaScript oxlint, CSS biome lint with warnings treated as errors,
   and make build passed. The rebuilt executable contains the control-row change;
   service restart and manual browser validation remain pending.
+
+* User test - semantic task-heading emphasis - PENDING
+
+- Method :: User validation of the semantic task-heading CSS increment after
+  a9eb7b7. Check active, completed and unmarked headings in light and dark modes,
+  with custom keywords on both sides of the Org TODO declaration's separator.
+- Expected :: Active headings are bold, unmarked headings have normal weight,
+  and completed sections and their contents have 65 percent opacity. Nested
+  completed sections do not compound the opacity. Siblings remain unaffected.
+- Evidence :: A Pandoc Org-to-HTML probe classified TODO before the separator
+  as class todo, ACCEPTED after it as class done, and an unmarked heading with
+  neither class. CSS biome lint and make build passed. No server code changed.
+- Boundary :: Visual validation remains pending; the live service has not
+  been restarted by this increment. Standing paired self-review authority
+  applies; no independent audit or browser automation is claimed.

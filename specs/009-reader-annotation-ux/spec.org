@@ -1495,3 +1495,20 @@ prescription is superseded by the operator's paired testing instruction.
   keyboard activation, refresh and switching back to normal footnotes. Native
   lint and build supplement the presentation checks; no server changes or
   browser automation are required.
+
+* Paired refinement - semantic task-heading emphasis, 18 September 2026
+
+- Outcome :: Org headings with an active task marker are bold. Headings without
+  a task marker use normal weight. Semantically completed headings and their
+  complete section contents render at 65 percent opacity in either theme.
+- Semantics :: Use Pandoc's todo/done classification, including custom Org
+  keyword sequences. Do not match literal heading text. Completed headings use
+  normal weight; explicitly authored inline emphasis remains meaningful.
+- Nesting :: Apply opacity once to a completed subtree. A nested completed
+  section must not compound opacity; children of a completed section remain
+  within the parent's dimming. Sibling sections remain unaffected.
+- Design and verification :: CSS selects the existing task marker on each
+  section's own heading. No source, task-state, folding or annotation changes.
+  Manual UT covers both themes, custom keywords, nested/sibling sections and
+  refresh. A Pandoc probe verifies semantic classes; CSS lint and build are
+  supporting checks, not substitutes for visual validation.
