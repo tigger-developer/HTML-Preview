@@ -17,6 +17,12 @@ func TestHTTPHeadingAndLinkAnnotations(t *testing.T) {
 		status                       int
 	}{
 		{"heading", "md", "## Heading text\n", "Heading text", "## Heading[^reviewer-001] text", 7, 7, false, 201},
+		{"repeated-fragment", "org", "* TODO Standardize =dad= capitalization\n\nA capitalization preference.\n", "capitalization", "=dad= capital[fn:reviewer-001]ization", 7, 28, false, 201},
+		{"later-fragment", "org", "* Heading\n\nA capitalization preference.\n\nAnother capitalization choice.\n", "capitalization", "Another capital[fn:reviewer-001]ization choice.", 7, 52, false, 201},
+		{"wrong-position", "org", "* Heading\n\nA capitalization preference.\n\nAnother capitalization choice.\n", "capitalization", "", 7, 1, false, 409},
+		{"candidate-limit", "org", strings.Repeat("Word.\n\n", 8), "Word.", "W[fn:reviewer-001]ord.", 1, 43, false, 201},
+		{"candidate-overflow", "org", strings.Repeat("Word.\n\n", 9), "Word.", "", 1, 1, false, 409},
+		{"repeated-fragment", "md", "## Standardize `dad` capitalization\n\nA capitalization preference.\n", "capitalization", "`dad` capital[^reviewer-001]ization", 7, 23, false, 201},
 		{"heading", "org", "* TODO Heading text :tag:\n", "Heading text", "* TODO Heading[fn:reviewer-001] text :tag:", 7, 12, false, 201},
 		{"definition-term", "org", "- Term :: Definition text.\n", "Term", "- Term[fn:reviewer-001] :: Definition text.", 4, 4, false, 201},
 		{"definition-body", "org", "- Term :: Definition text.\n", "Definition text.", ":: Definition[fn:reviewer-001] text.", 10, 15, false, 201},

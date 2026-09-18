@@ -646,3 +646,32 @@
   selector placement. make build passed with the final assets; service restart
   remains pending. Manual visual comparison remains pending; no browser
   automation or independent audit verdict is claimed.
+
+* Regression and user test - repeated insertion fragments
+
+- Reproduction :: Synthetic Org heading with inline code followed by a repeated
+  word returned HTTP 409 point_unmappable before the change. A later-occurrence
+  case also returned 409; the focused HTTP group failed for those intended
+  assertions (1.822s). This reproduces the reported heading's source pattern
+  without changing or incorporating the private document.
+- GREEN :: After bounded candidate verification, the focused HTTP group passed
+  (2.200s). Expanded checks then passed across internal/annotation (0.147s) and
+  internal/preview (6.324s), selected by heading/link placement and annotation,
+  point, footnote and link-syntax test names. They include Org/Markdown repeated
+  fragments, a later occurrence, the eight-match boundary, nine-match refusal,
+  incorrect-position refusal, and existing annotation safety checks.
+- Local review :: Candidate selection remains untrusted until the marker is
+  unique, renders at the requested position and leaves the complete canonical
+  body unchanged when removed. The existing five-second request deadline and
+  revision/atomic-write checks remain. Unique-only callers retain their prior
+  ambiguity rejection. The renderer failure path does not fall through to writes.
+- Pending UT :: After restarting and reopening the preview, repeat annotation
+  inside the heading's capitalization text after leaving a long annotation.
+  Confirm its native reference appears at the clicked position and the next
+  composer remains usable. No connection-failure cause is claimed: the screenshot
+  and log showed an insertion-point rejection. No live source was modified.
+- Boundary :: Full-suite and browser automation were not run. Standing paired
+  self-review applies; no independent audit verdict is claimed. Smart typography
+  and footnote-continuation matching remain outside this correction.
+- Build :: make build passed; Go formatting and git diff checks passed. The
+  service has not been restarted by this increment; browser UT remains pending.

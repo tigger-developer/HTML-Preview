@@ -1,7 +1,7 @@
 ---
 title: Document annotations
 version: 2
-last-updated: 2026-09-17
+last-updated: 2026-09-18
 ---
 
 # Document annotations
@@ -128,6 +128,13 @@ preserves the active composer. A saved embedded reference identifies its source
 point; sidecar points use unique before/after context. Missing or ambiguous
 locations remain explicitly unplaced in the endnotes. There is no fuzzy matching
 or automatic movement to a nearby paragraph.
+
+A new insertion may use text that also occurs elsewhere. The service considers
+up to eight eligible source matches and accepts one only when a rendering check
+proves the exact clicked position and preserves the surrounding document.
+Too many matches or an unprovable location still retain the draft and refuse
+the write. Rendered typography that differs from source notation remains a
+placement limitation; this matching change does not normalize those differences.
 
 **Not saved** retains the draft. Temporary
 failures retry the same operation after one, two and four seconds, with a small

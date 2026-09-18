@@ -1521,3 +1521,20 @@ prescription is superseded by the operator's paired testing instruction.
   heading-level colour differences and completed-subtree opacity at 65 percent.
 - Evidence :: Manual comparison in both themes determines the visual result.
   CSS lint and build check the implementation; no source or task-state changes.
+
+* Paired correction - repeated insertion fragments, 18 September 2026
+
+- Defect :: Inline markup splits a heading into text fragments. A fragment
+  repeated elsewhere is rejected before the rendered insertion position is
+  checked, even when the clicked position is unambiguous.
+- Behaviour :: Consider at most eight eligible source matches for a new
+  insertion. Accept only a candidate whose marker renders at the exact requested
+  canonical position and whose removal leaves the entire canonical body unchanged.
+  Reject excessive candidates or no proven match without changing source bytes.
+- Boundaries :: Retain the request deadline, revision checks and excluded source
+  regions. Keep existing unique-only callers unchanged. Typography conversion
+  and sidecar reattachment are not changed by this correction.
+- Verification :: Real HTTP/Pandoc tests cover the repeated fragment after inline
+  Org code, selecting the later occurrence, and refusal of mismatched positions.
+  Focused annotation regressions protect existing exclusions. Browser UT repeats
+  the reported heading insertion after a long annotation.

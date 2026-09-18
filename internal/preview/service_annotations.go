@@ -363,24 +363,34 @@ func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.R
 			}
 			*target = annotation.Target{Type: "point", Position: resolved.End, Run: resolved.Exact, RunOffset: utf8.RuneCountInString(resolved.Exact)}
 		}
-		at, err := annotation.SourcePointCandidate(snap.RawSource, annotationFormat(src), target.Run, target.RunOffset, target.AfterLink)
+		candidates, err := annotation.SourcePointCandidates(snap.RawSource, annotationFormat(src), target.Run, target.RunOffset, target.AfterLink)
 		if err != nil {
 			return -1, err
 		}
-		id, err := annotation.NewID()
-		if err != nil {
-			return -1, err
+		at := -1
+		for _, candidate := range candidates {
+			if err := ctx.Err(); err != nil {
+				return -1, err
+			}
+			id, err := annotation.NewID()
+			if err != nil {
+				return -1, err
+			}
+			marker := "HPPOINT" + strings.ReplaceAll(id, "-", "")
+			input := append(append(append([]byte(nil), snap.RawSource[:candidate]...), []byte(marker)...), snap.RawSource[candidate:]...)
+			probeCap := *cap
+			probeCap.settings.annotations = false
+			probe, status := s.buildHTTP(ctx, &probeCap, src, input)
+			if status != 200 {
+				return -1, &annotation.Failure{Code: "point_unmappable"}
+			}
+			index := strings.Index(probe.bodyText, marker)
+			if index >= 0 && strings.Count(probe.bodyText, marker) == 1 && utf8.RuneCountInString(probe.bodyText[:index]) == target.Position && strings.Replace(probe.bodyText, marker, "", 1) == base.bodyText {
+				at = candidate
+				break
+			}
 		}
-		marker := "HPPOINT" + strings.ReplaceAll(id, "-", "")
-		input := append(append(append([]byte(nil), snap.RawSource[:at]...), []byte(marker)...), snap.RawSource[at:]...)
-		probeCap := *cap
-		probeCap.settings.annotations = false
-		probe, status := s.buildHTTP(ctx, &probeCap, src, input)
-		if status != 200 {
-			return -1, &annotation.Failure{Code: "point_unmappable"}
-		}
-		index := strings.Index(probe.bodyText, marker)
-		if index < 0 || strings.Count(probe.bodyText, marker) != 1 || utf8.RuneCountInString(probe.bodyText[:index]) != target.Position || strings.Replace(probe.bodyText, marker, "", 1) != base.bodyText {
+		if at < 0 {
 			return -1, &annotation.Failure{Code: "point_unmappable"}
 		}
 		body := []rune(base.bodyText)

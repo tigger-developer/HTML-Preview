@@ -9,11 +9,24 @@ import (
 )
 
 func SourcePointCandidate(data []byte, format, run string, runOffset int, afterLink ...bool) (int, error) {
-	if !utf8.ValidString(run) || len(run) > 8192 || runOffset < 0 || runOffset > utf8.RuneCountInString(run) || strings.ContainsRune(run, 0) {
+	candidates, err := SourcePointCandidates(data, format, run, runOffset, afterLink...)
+	if err != nil {
+		return -1, err
+	}
+	if len(candidates) != 1 {
 		return -1, fail("point_unmappable")
 	}
+	return candidates[0], nil
+}
+
+// SourcePointCandidates returns at most eight eligible locations. Callers must
+// prove the rendered position and unchanged body before accepting any candidate.
+func SourcePointCandidates(data []byte, format, run string, runOffset int, afterLink ...bool) ([]int, error) {
+	if !utf8.ValidString(run) || len(run) > 8192 || runOffset < 0 || runOffset > utf8.RuneCountInString(run) || strings.ContainsRune(run, 0) {
+		return nil, fail("point_unmappable")
+	}
 	if len(afterLink) > 0 && afterLink[0] && runOffset != utf8.RuneCountInString(run) {
-		return -1, fail("point_unmappable")
+		return nil, fail("point_unmappable")
 	}
 	masked := append([]byte(nil), data...)
 	states := orgTaskStates(data)
@@ -84,21 +97,17 @@ func SourcePointCandidate(data []byte, format, run string, runOffset int, afterL
 	}
 	if len(afterLink) > 0 && afterLink[0] {
 		if len(links) == 0 && strings.Contains(run, "://") {
-			return SourcePointCandidate(data, format, run, runOffset)
+			return SourcePointCandidates(data, format, run, runOffset)
 		}
-		if len(links) != 1 {
-			return -1, fail("point_unmappable")
+		if len(links) == 0 || len(links) > 8 {
+			return nil, fail("point_unmappable")
 		}
-		return links[0], nil
+		return links, nil
 	}
 	normalized, boundaries := normalizedBytePositions(string(masked))
 	needle := Normalize(run)
 	if needle == "" {
-		return -1, fail("point_unmappable")
-	}
-	at := strings.Index(normalized, needle)
-	if at < 0 || strings.Contains(normalized[at+1:], needle) {
-		return -1, fail("point_unmappable")
+		return nil, fail("point_unmappable")
 	}
 	prefix := string([]rune(run)[:runOffset])
 	inside := utf8.RuneCountInString(Normalize(prefix))
@@ -108,11 +117,25 @@ func SourcePointCandidate(data []byte, format, run string, runOffset int, afterL
 			inside++
 		}
 	}
-	scalar := utf8.RuneCountInString(normalized[:at]) + inside
-	if scalar < 0 || scalar >= len(boundaries) {
-		return -1, fail("point_unmappable")
+	var candidates []int
+	for cursor := 0; cursor <= len(normalized); {
+		rel := strings.Index(normalized[cursor:], needle)
+		if rel < 0 {
+			break
+		}
+		at := cursor + rel
+		scalar := utf8.RuneCountInString(normalized[:at]) + inside
+		if scalar < 0 || scalar >= len(boundaries) || len(candidates) == 8 {
+			return nil, fail("point_unmappable")
+		}
+		candidates = append(candidates, boundaries[scalar])
+		_, width := utf8.DecodeRuneInString(normalized[at:])
+		cursor = at + width
 	}
-	return boundaries[scalar], nil
+	if len(candidates) == 0 {
+		return nil, fail("point_unmappable")
+	}
+	return candidates, nil
 }
 
 func normalizedBytePositions(text string) (string, []int) {
