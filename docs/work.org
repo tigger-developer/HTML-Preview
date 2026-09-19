@@ -260,16 +260,21 @@ classification; it is provenance, not current state.
 - Authority :: Taḋg authorized *BYPASS-GATE-7*, prioritized =make serve= and the
   working config, and required *removal of browser automation*.
 
-** TODO W011 - Conversion performance and native reader assessment :feature:
+** TODO W011 - Fast Org previews with go-org :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-011
 :CREATED: 2026-09-19
 :END:
 
-- Skeleton :: [[file:../specs/011-conversion-performance/spec.org][W011 - Conversion performance and native reader assessment]].
-- Scope :: Assess repeated conversions and a possible Go implementation of
-  Pandoc's Org/Markdown conversion. No rewrite is authorized; optimization uses
-  a separate branch from the working master build.
+- Specification :: [[file:../specs/011-conversion-performance/spec.org][W011 - Fast Org previews with go-org]].
+- Scope :: Replace Org conversion with go-org while retaining the existing
+  intermediary annotation workflow. Markdown and other readers retain Pandoc.
+- Evidence :: [[file:../specs/011-conversion-performance/assessment.org][Converter comparison and effort assessment]].
+- Boundary :: Definition only until sign-off and delivery authority; subsequent
+  implementation uses a separate branch from the working master build.
+- Lineage :: The initial repeated-pass/native-reader assessment is superseded
+  by the converter-only design; its earlier recommendation remains in the
+  assessment history.
 
 * Migration record
 :PROPERTIES:

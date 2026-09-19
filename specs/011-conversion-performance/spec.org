@@ -1,48 +1,790 @@
-#+TITLE: W011 - Conversion performance and native reader assessment
+#+TITLE: W011 - Fast Org previews with go-org
+#+SCHEMA: 8
+#+SUBTITLE: Native conversion within the existing annotation workflow
 #+STARTUP: overview
-#+OPTIONS: num:nil
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: PENDING
 
-* Objective
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
 
-Reduce *cold preview and annotation refresh latency* on long Org and Markdown
-documents while preserving native footnotes, safe source mapping and formatting.
-This is a *skeleton for assessment*, not approval for a converter rewrite.
+** Outcome
 
-* Baseline and evidence
+- *Org previews and annotation refreshes* render substantially faster while
+  retaining their *formatting, native footnotes and safe block placement*.
 
-- Authorities :: [[file:../../docs/VISION.md][Vision]],
-  [[file:../../docs/ARCHITECTURE.md][Architecture]], and
-  [[file:../009-reader-annotation-ux/spec.org][W009 - Reader and annotation UX]].
-- Diagnosis :: A temporary copy of a long Org document took approximately eight
-  seconds to render. Three Pandoc passes performed ordinary rendering, footnote
-  identification and annotation block verification. The former five-second
-  annotation request deadline rejected that cold render.
-- Immediate mitigation :: W009 extends the request budget to 15 seconds on
-  master. Performance work must remain on a *separate branch* so the usable
-  master build remains available.
+** Before
 
-* Assessment scope
+- The existing annotation workflow can perform *three Pandoc conversions*.
+- A measured 532 kB Org document required *8.13 seconds* for an uncached page.
 
-- Measure the three passes, source preparation, sanitization and caching on
-  representative long Org and Markdown fixtures.
-- Assess combining ordinary rendering with footnote identification, reusing
-  unchanged results and avoiding redundant conversions after annotation writes.
-  Preserve the source-mapping checks; identify embedded and sidecar differences.
-- Give *serious consideration* to Pandoc's *Haskell Org and Markdown readers
-  and HTML writer*: examine their implementation and assess whether a native
-  *Go conversion implementation* is worthwhile.
-- Compare measured performance, semantic fidelity, maintenance burden,
-  implementation cost and licence compatibility with the project's Apache 2.0
-  licence. Distinguish independent reimplementation from translated/copied code.
-- Retain support for other Pandoc input formats. Establish any proposed subset
-  and fallback explicitly; do not silently replace Pandoc or reduce fidelity.
+** After
 
-* Constraints and next step
+- *go-org replaces Org conversion* within the same intermediary workflow.
+- The release benchmark requires *at least fivefold faster* uncached rendering
+  of the large corpus, with *unchanged annotation safeguards*.
+- The experiment achieved *0.74 seconds*, but production compatibility and
+  browser validation remain delivery work.
 
-- No optimization or converter rewrite is authorized by this skeleton.
-- Source documents, native IDs, author attribution and unrelated bytes remain
-  unchanged by previewing. Annotation writes retain concurrency and safety checks.
-- No browser automation or new dependency is introduced for this assessment.
-- Next step :: Produce a measured recommendation and bounded solution design
-  before implementation. Define performance targets and regression coverage
-  from the evidence, rather than assuming Go conversion will be faster.
+** Changes
+
+- A *same-executable converter worker* supplies normalized HTML and the existing
+  private transport records; it adds *no separately installed runtime*.
+- The adapter preserves *footnotes, headings, navigation, task semantics,
+  checkboxes, metadata and highlighted code*.
+- A bounded go-org correction admits *long lines within existing byte limits*.
+- Native Go memory accounting replaces the *Pandoc-specific heap control* for
+  Org only, with the explicit bounds described in the design.
+
+** Unchanged
+
+- *Markdown and other readers retain Pandoc*; native HTML retains its passive
+  authored presentation. Pandoc remains a required installed dependency.
+- *Block-level annotation*, native source edits, source identity checks, autosave,
+  SSE refresh, cache ownership and the *15-second annotation deadline* remain.
+- *No file-mode writes*, network exposure, new public settings or data migration.
+
+** Edge cases
+:PROPERTIES:
+:CUSTOM_ID: synopsis-edge-cases
+:END:
+
+- *Repeated text, short definitions and nested blocks* retain verified endpoints;
+  an unverified target remains unavailable and cannot be written.
+- *Private markers never appear* in published pages or source files.
+- *Conversion failure or timeout* returns an error, without a partial page,
+  silent fallback or weakened write checks.
+
+** Decisions
+
+- Select *go-org*: the pipeline experiment passed *23 selected checks*; org-rust
+  passed 20 and its smaller additional speed gain did not outweigh the gaps.
+- Keep *all existing passes*. Source-offset extensions, Markdown replacement,
+  pass reduction and a new source mapper are *outside this change*.
+
+** Next step
+
+- Definition review, then operator sign-off through [[#delivery-handoff][Delivery Handoff]].
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem and outcome
+
+Long Org documents make annotation refresh wait for repeated conversion. The
+existing 15-second request grace keeps slow requests usable; it does not remove
+the delay. The change *replaces the Org converter*, preserving the established
+reading and editing contract rather than redesigning annotation mapping.
+
+[[file:assessment.org][The conversion assessment]] records isolated parser comparisons and the
+more relevant complete-pipeline experiment. The latter retained preservation,
+intermediary markers, structural checks, source writing and final presentation.
+Its timings are *feasibility evidence*, not release-test results.
+
+** Scope
+
+*** In scope
+
+- *Every conversion selected as Org*, including internal literal Org wrappers,
+  explicit reader selection, file previews and service-linked documents.
+- An application-owned go-org adapter and *equivalent published HTML semantics*.
+- Compatibility corrections exposed by the corpus; *no unsupported block becomes
+  editable* merely because a different parser emits an element for it.
+- Reproducible dependency packaging, notices, resource handling and performance
+  evidence through the existing application entry points.
+
+*** Out of scope
+
+- Fewer passes, a new cache, native source offsets, sentence splitting, cursor
+  matching, source reserialization or changes to annotation storage.
+- Goldmark, org-rust, Orgize, Haskell translation, complete Emacs Org emulation,
+  additional document formats or removal of Pandoc.
+- Browser automation, new services, user configuration migration or live deployment
+  during definition.
+
+*** Unchanged
+
+- W009's current *native editable footnotes*, including multiple paragraphs,
+  attribution, deletion confirmation, sidecars and block-end placement.
+- Source snapshots, authorization, link rewriting, approved roots, loopback-only
+  HTTP, passive content policy and original-filename information bar.
+- Existing UI, fonts, themes, folding precedence, annotation deadlines and draft
+  recovery. Only converter-specific HTML normalization changes.
+
+** Authority and starting point
+
+- Project profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product :: [[file:../../docs/VISION.md][Vision]], including the later native-footnote and
+  block-level amendments over the retained historical proposals.
+- Architecture :: [[file:../../docs/ARCHITECTURE.md][Architecture]], especially the current block-level,
+  after-block, checkbox and semantic-folding amendments.
+- Baseline requirements :: [[file:../001-local-document-preview/spec.org][W001 - Local document preview]],
+  [[file:../002-code-and-outline/spec.org][W002 - Code and document navigation]],
+  [[file:../006-local-preview-service/spec.org][W006 - Local preview service]],
+  [[file:../008-input-formats/spec.org][W008 - Input formats]],
+  [[file:../009-reader-annotation-ux/spec.org][W009 - Reader and annotation UX]] and
+  [[file:../010-folding-and-service/spec.org][W010 - Folding and service commands]].
+- Implementation :: [[file:../../internal/preview/render.go][Renderer]],
+  [[file:../../internal/preview/org.go][Org preservation]],
+  [[file:../../internal/preview/transport.go][Private transport]],
+  [[file:../../internal/preview/service_render.go][HTTP assembly]],
+  [[file:../../internal/preview/service_footnotes.go][Footnote identification]],
+  [[file:../../internal/preview/annotation_blocks.go][Block verification]] and
+  [[file:../../internal/annotation/blocks.go][Source block boundaries]].
+- Maintained evidence :: [[file:../../internal/preview/annotation_blocks_test.go][Block-placement regression pack]],
+  the renderer/service/annotation tests beside those components, and
+  [[file:../../assets/pandoc/fidelity.lua][the Lua fidelity contract]].
+- Baseline relationship :: This change *supersedes Pandoc ownership of Org HTML*
+  and its Org-specific heap implementation. It *preserves application behaviour*
+  and all other format paths. Older architecture statements remain history until
+  their affected current descriptions are reconciled during delivery.
+
+** Constraints and dependencies
+:PROPERTIES:
+:CUSTOM_ID: constraints-and-dependencies
+:END:
+
+- Delivery starts from the *current working native-footnote implementation*,
+  including the W009 timeout mitigation. W006/W008/W009/W010 are existing code
+  prerequisites, not work to reimplement or close under this ticket.
+- Delivery uses the *separate W011 feature branch*; definition stays on the
+  current branch. The usable master/service is not replaced during development.
+- *No private source text* is committed as a fixture or uploaded. Synthetic
+  fixtures provide repeatability; authorized real documents are copied to OS
+  temporary storage for bounded local comparison only.
+- Platform support remains *macOS, Linux and WSL*. Outstanding historical native
+  platform tests are not converted into passes by cross-compilation.
+
+** Decisions and lineage
+
+- The initial skeleton considered *pass reduction and native readers*. The first
+  assessment preferred fewer Pandoc passes and considered go-org plus Goldmark.
+- The subsequent existing-workflow experiment establishes *go-org without native
+  source offsets* as the selected scope. That choice supersedes the first
+  recommendation; [[file:assessment.org][assessment history]] retains its evidence and estimates.
+- The new adapter must resolve demonstrated compatibility gaps, not require
+  byte-identical HTML or blindly reproduce a Pandoc parsing defect.
+- *No automatic Pandoc fallback for Org* and no engine selector. Errors remain
+  visible; rollback uses the previous application build without changing documents.
+
+** Unresolved blockers
+
+- None. Remaining work is implementation and verification of the contracts below.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC011.1 - Org conversion is native across entry points :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-1
+:END:
+
+- Criterion :: Org inputs and internal Org wrappers use the *packaged native
+  converter* in file and service mode, including explicitly selected readers and
+  followed links. Markdown, other Pandoc readers and passive native HTML retain
+  their current behaviour; Pandoc remains required for the application.
+- Proven by :: [[#rt-011-1][RT011.1 - Format routing]] and [[#ut-011-1][UT011.1 - Reader review]].
+
+** AC011.2 - Org reading semantics survive the converter change :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-2
+:END:
+
+- Criterion :: Published Org pages retain the *content, structure, metadata,
+  navigation and task semantics* in [[#html-contract][the compatibility contract]], without
+  duplicate content, missing text or leaked conversion markers.
+- Proven by :: [[#rt-011-2][RT011.2 - Semantic HTML]], [[#ut-011-1][UT011.1 - Reader review]].
+
+** AC011.3 - Highlighting preserves literal source :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-3
+:END:
+
+- Criterion :: Source blocks retain *syntax highlighting and exact copy text*;
+  inline code, verbatim text and unknown-language blocks retain their literal
+  content. No code is executed, and unknown languages remain readable plaintext.
+- Proven by :: [[#rt-011-3][RT011.3 - Literal code]], [[#ut-011-1][UT011.1 - Reader review]].
+
+** AC011.4 - Offered annotation targets remain whole verified blocks :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-4
+:END:
+
+- Criterion :: Eligible paragraphs, headings, list items and definition
+  descriptions attach notes at their *complete source-block end*. Tables, code
+  and supported Org containers use the existing *following reference paragraph*.
+  Unsupported or unverified targets are not offered and submitted invalid targets
+  cannot modify source. Conversion does not weaken the existing proof.
+- Proven by :: [[#rt-011-4][RT011.4 - Block placement]], [[#ut-011-2][UT011.2 - Annotation review]].
+
+** AC011.5 - Native footnotes remain readable and editable :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-5
+:END:
+
+- Criterion :: Ordinary and application-authored footnotes retain *reference,
+  definition and backlink associations*, including repeated references and
+  multi-paragraph notes. Add, edit and delete retain source preservation,
+  attribution and concurrency rules in embedded and sidecar modes. Reading
+  never modifies source.
+- Proven by :: [[#rt-011-5][RT011.5 - Footnote lifecycle]], [[#ut-011-2][UT011.2 - Annotation review]].
+
+** AC011.6 - Conversion cannot widen document access :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-6
+:END:
+
+- Criterion :: Source-controlled includes, setup files, links, export blocks and
+  code cannot cause *converter file reads, resource fetching or execution*.
+  Published source content still passes the existing passive policy and rooted
+  resolver; malformed private records fail closed.
+- Proven by :: [[#rt-011-6][RT011.6 - Trust boundaries]].
+
+** AC011.7 - Conversion failure remains bounded and recoverable :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-7
+:END:
+
+- Criterion :: Native conversion enforces [[#worker-contract][the worker bounds]], admits
+  long lines within the existing byte allowance, and *fails explicitly* on
+  invalid input, exceeded limits, cancellation or converter failure. No partial
+  page is published and no unsafe annotation write follows a failed proof.
+  Subsequent valid requests remain serviceable.
+- Proven by :: [[#rt-011-7][RT011.7 - Limits and failure recovery]].
+
+** AC011.8 - Full-pipeline latency improves materially :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-8
+:END:
+
+- Criterion :: Under [[#performance-method][the same-machine comparison]], the large Org corpus
+  has an *uncached median at most 20% of baseline*; the medium and small corpus
+  medians do not regress. The ordinary conversion, conditional footnote pass
+  and block verification remain enabled. Timing alone cannot waive fidelity.
+- Proven by :: [[#ot-011-1][OT011.1 - Full-pipeline benchmark]].
+
+** AC011.9 - Packaging remains a single application :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-011-9
+:END:
+
+- Criterion :: Native conversion works from the installed executable, including
+  symlink invocation outside the checkout, with *no Go toolchain, Rust helper or
+  additional runtime installation*. Dependency revisions and licences are
+  reproducible and included in the existing distribution notices.
+- Proven by :: [[#rt-011-1][RT011.1 - Format routing]], [[#ot-011-2][OT011.2 - Packaging and dependencies]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT011.1 - Format routing :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-011-1
+:END:
+
+- Covers :: [[#ac-011-1][AC011.1 - Native entry points]], [[#ac-011-9][AC011.9 - Single application]].
+- Boundary :: Built CLI/file output and local HTTP requests using existing Go
+  helpers, real converters and disposable inputs.
+- Cases :: =.org=, =--from=org= on another extension, text/code wrappers, a linked
+  Org page, Markdown with native footnotes, DOCX and native HTML.
+- Action :: Render each case; repeat native cases through a symlink from a
+  different working directory. A controlled Pandoc boundary allows discovery
+  but rejects Org conversion while real non-Org cases continue through Pandoc.
+- Expected :: Native cases publish readable pages without an Org Pandoc call;
+  other cases retain their content, policy and link behaviour. Wrapper previews
+  remain non-editable. Missing Pandoc still gives the established dependency error.
+- Retention :: Persistent under =make test=. Native routing is new RED;
+  unchanged format expectations may be initially GREEN preservation checks.
+
+** RT011.2 - Semantic HTML :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-011-2
+:END:
+
+- Covers :: [[#ac-011-2][AC011.2 - Reading semantics]].
+- Boundary :: Final CLI and served HTML parsed with the existing HTML parser.
+- Setup :: Synthetic Org covers all rows of [[#html-contract][the compatibility contract]],
+  plus empty input and Unicode text; no personal fixture dependencies.
+- Action :: Render with TOC enabled/disabled and depths 1/3/6; follow local
+  explicit IDs, heading searches and linked documents through the service.
+- Expected :: One metadata/title presentation; preserved text and order; correct
+  task partition classes, checkbox labels and spacing; intact table cells,
+  inline formatting, nested blocks and drawer contents; working unambiguous
+  destinations and unique IDs. TOC points to final headings and excludes source
+  filename and footnote definitions. No private token or phantom reference appears.
+- Retention :: Persistent under =make test=. Use semantic assertions rather than
+  complete serialized-HTML equality or source-code searches.
+
+** RT011.3 - Literal code :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-011-3
+:END:
+
+- Covers :: [[#ac-011-3][AC011.3 - Highlighted literal content]].
+- Boundary :: Published code nodes and owned copy payloads.
+- Setup :: Org =SRC=, =EXAMPLE=, =~code~= and ==verbatim== examples;
+  Go, Bash/sh/shell, JavaScript, Python, Java and unknown language blocks.
+  Include tabs, Unicode, =</script>=, ampersands and delimiter-looking text.
+- Action :: Render each input and inspect the final code spans and decoded
+  literal-copy payload through the existing HTML parser.
+- Expected :: Known languages have semantic token spans. Concatenated displayed
+  code and decoded copy payload equal original literal text; aliases agree.
+  Unknown language is escaped plain code, never an execution or external load.
+  Delimiter-looking source remains literal and no transport record survives.
+- Retention :: Persistent under =make test=; preserve existing literal-data tests.
+
+** RT011.4 - Block placement :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-011-4
+:END:
+
+- Covers :: [[#ac-011-4][AC011.4 - Whole verified blocks]].
+- Boundary :: Served block attributes, annotation POST, native source bytes and
+  subsequent rendered page, using the real native converter.
+- Shared setup :: Extend the existing block-placement, unverified-target and
+  repeated-note tests; do not replace their assertions with a new mapper double.
+
+| Case | Action | Observable expectation |
+|------+--------+------------------------|
+| Wrapped/repeated prose; smart punctuation; Unicode | Add at each offered paragraph | Marker after complete paragraph, correct occurrence, unrelated bytes identical |
+| List items, nested lists and all checkbox variants | Add three successive notes | Whole intended item, not child fragment; preserved checkbox and list structure |
+| Short description =- Source part :: I.=; longer/wrapped descriptions | Annotate each description | One eligible complete description, no term-only target; correct endpoint |
+| Deep headings with TODO, priority and tags | Annotate heading text | Correct heading end, metadata excluded from the target; no hierarchy loss |
+| Code, table, quote, verse, centre, named and nested containers | Add three notes | One following =Annotations:= paragraph, references outside outer closing syntax |
+| Drawer, table cell, endnote body, forged or stale block ID | Attempt annotation | No offered target where excluded; rejected POST leaves bytes unchanged |
+| Authored marker-like text and standalone generated markers | Render and add | No marker collision, leakage, phantom definition or missing after-block reference |
+
+- Retention :: Persistent under =make test=. Preserve the existing 23-case
+  experimental selection and extend it with the concrete corpus discrepancies.
+  Each new fixture has a source-endpoint oracle; raw target-count equality is
+  not the correctness criterion.
+
+** RT011.5 - Footnote lifecycle :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-011-5
+:END:
+
+- Covers :: [[#ac-011-5][AC011.5 - Native editable footnotes]].
+- Boundary :: Real service GET/POST, source/sidecar bytes and final HTML.
+- Cases :: Existing ordinary named and anonymous notes, repeated references,
+  inline notes, two-paragraph accented annotations, near-limit UTF-8 text,
+  embedded writable Org and read-only Org with adjacent sidecar.
+- Action :: Add, reload, edit and delete editable notes using existing endpoints;
+  retry an operation; change the source between read and write; repeat with
+  annotation mode unavailable. Reuse current W009 tests for exact payload rules.
+- Expected :: One endnotes section and correct backlinks; editable named labels
+  remain associated after refresh; native anonymous-note eligibility retains its
+  existing rule. No autosave history or JSON is added to source. Only intended
+  native reference/definition and attribution bytes change; repeated operations
+  do not duplicate writes. Stale writes are rejected and originals preserved.
+  File previews and ordinary GETs perform no source writes.
+- Retention :: Persistent under =make test=; unchanged write rules are preservation
+  coverage, not a redesign of annotation persistence.
+
+** RT011.6 - Trust boundaries :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-011-6
+:END:
+
+- Covers :: [[#ac-011-6][AC011.6 - No widened access]].
+- Boundary :: Converter worker and final HTTP/file publication.
+- Setup :: Temporary canary files and a local counting HTTP listener, plus
+  synthetic INCLUDE/SETUPFILE, raw HTML, external images, script/form content,
+  dangerous URLs, code and forged owned transport records.
+- Action :: Convert through the native path and follow admitted document links.
+- Expected :: No canary bytes or automatic HTTP request; includes are displayed
+  or diagnosed under existing preservation rules, never expanded. Source
+  scripts/forms remain inert and denied URLs do not become grants. Invalid
+  private records return an error; author-controlled HTML is not promoted to
+  trusted application markup. Logs contain no source bodies or capability tokens.
+- Retention :: Persistent under =make test=, using existing rooted-file and
+  passive-policy assertions, not a new browser/security harness.
+
+** RT011.7 - Limits and failure recovery :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-011-7
+:END:
+
+- Covers :: [[#ac-011-7][AC011.7 - Bounded recoverable conversion]].
+- Boundary :: CLI/HTTP plus the private converter process boundary.
+- Cases :: Empty input; valid line longer than 64 KiB; maximum and excess
+  admitted source/intermediary bytes; invalid UTF-8; malformed worker record;
+  exact/over output allowance; cancelled/hung worker; controlled low memory
+  threshold; simultaneous conversions and a later valid request.
+- Expected :: Valid long lines survive in full. Invalid input and exhausted
+  bounds produce errors without a partial page or source change. The parent
+  kills and reaps failed/cancelled workers; service slots and temporary state
+  are released. Existing 422/503/504 response classification and annotation
+  error envelopes remain meaningful, never a success response hiding failure.
+- Method :: Use the existing controllable Host boundary for forced process
+  failures and real worker subprocesses for limits and recovery. Private test
+  settings may lower a bound, never raise production ceilings. Do not allocate
+  hundreds of MiB merely to exercise a threshold branch.
+- Retention :: Persistent under =make test=, including race checking through the
+  established target. No production-only test endpoint or persistent worker pool.
+
+** OT011.1 - Full-pipeline benchmark :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-011-1
+:END:
+
+- Covers :: [[#ac-011-8][AC011.8 - Material latency improvement]].
+- Boundary :: Uncached local HTTP pages, native annotation POST/refresh and CLI
+  conversion with browser launch replaced by the established capture helper.
+- Procedure :: Execute [[#performance-method][the bounded same-machine method]], retain aggregate
+  timings, versions, input hashes and semantic/source-preservation outcomes.
+- Expected :: Large-corpus candidate median is at most 20% of baseline; neither
+  smaller corpus regresses. All passes and correctness checks remain enabled.
+  Record POST and CLI timings separately without conflating them with page GET.
+- Bounds :: Two builds, three corpus documents, one warm-up and five measured
+  runs per build/document/operation, at most 108 operations. Local disposable
+  files only, normal request deadlines, no remote service or browser automation.
+- Record :: Dated revision and results in =validation.org=; raw personal data
+  stays in private temporary storage. This is not a timing assertion in CI.
+
+** OT011.2 - Packaging and dependencies :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-011-2
+:END:
+
+- Covers :: [[#ac-011-9][AC011.9 - Single application packaging]].
+- Procedure :: Build release targets for macOS/Linux amd64/arm64 through the
+  existing build tool. Inspect bundled licences, pinned modules, local go-org
+  patch and binary-size delta; run =make vulncheck=. In an OS temporary staged
+  install on the available native platform, invoke via symlink outside the
+  checkout with Go/Rust tools absent from PATH and Pandoc present.
+- Expected :: Org renders and worker resolution succeeds without another
+  installed helper; notices contain upstream MIT text and the highlighter's
+  licence. Vulnerability gate succeeds without unapproved exemptions.
+- Bounds :: One candidate build/package set and one staged native trial; no live
+  installation, service replacement or global package changes. Cross-builds
+  are not native Linux/WSL runtime evidence; unavailable trials remain explicit.
+- Record :: =validation.org=, including actual native platform coverage.
+
+** UT011.1 - Reader review :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-011-1
+:END:
+
+- Covers :: [[#ac-011-1][AC011.1 - Native entry points]], [[#ac-011-2][AC011.2 - Reading semantics]],
+  [[#ac-011-3][AC011.3 - Highlighted code]].
+- Validation method :: User validation in the system-default browser.
+- Procedure :: Open the synthetic mixed-format index and a disposable long Org
+  sample. Compare light/dark appearance, headings, metadata, drawers, TODO/DONE,
+  checkbox lists, inline markup, highlighted code/copy, TOC and linked formats.
+  Check wide and narrow layouts, keyboard navigation and fold controls.
+- Expected :: Existing presentation and navigation remain usable without
+  missing content, duplicate controls, changed toggle behaviour or broken copy.
+- Record :: Date, candidate revision, browser/viewport and observations in
+  =validation.org=. No automated browser substitutes for this review.
+
+** UT011.2 - Annotation review :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-011-2
+:END:
+
+- Covers :: [[#ac-011-4][AC011.4 - Whole blocks]], [[#ac-011-5][AC011.5 - Editable footnotes]].
+- Validation method :: User validation in the system-default browser.
+- Procedure :: On disposable Org, add/edit/delete ordinary and new notes on
+  paragraphs, headings, task/definition items, table and code/quote containers.
+  Repeat three notes on one block; type a long accented two-paragraph note;
+  inspect plaintext; switch annotation mode off/on and follow backlinks.
+- Expected :: Highlight covers the intended whole block; reference appears at
+  its end or after its outer syntax. Sidebar, autosave indication, retained
+  composer and ordinary footnotes behave as before, without unexpected movement,
+  recovery dialogs, lost text or lost editing association.
+- Record :: Dated candidate and observed outcomes in =validation.org=; do not
+  infer a browser result from successful HTTP tests.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+- Parser differences :: Additional go-org targets are acceptable only when
+  they correspond to already-supported *whole semantic blocks* and satisfy the
+  unchanged source proof. Missing short definitions and fragment targets are
+  compatibility defects, not reasons to relax that proof. Covered by
+  [[#rt-011-4][RT011.4 - Block placement]].
+- Export settings :: Native defaults must not suppress deep headings, TODO
+  labels, footnotes or tags that the current preview preserves. Preservation
+  owns metadata and authored exclusions; go-org must not add its own second
+  filtering policy. Covered by [[#rt-011-2][RT011.2 - Semantic HTML]].
+- Existing pages across upgrade :: Restart invalidates current capabilities
+  under the existing service contract. Reload uses the new converter; no old/new
+  engine state is persisted. Original native source remains usable by either
+  application build. Covered by [[#rt-011-5][RT011.5 - Footnote lifecycle]].
+- Unsupported syntax :: Preserve existing literal/error behaviour; do not invent
+  support or silently discard source because the replacement lacks a feature.
+  A material unsupported compatibility case blocks delivery pending remediation
+  or explicit scope amendment. Covered by [[#rt-011-2][RT011.2 - Semantic HTML]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context and flow
+
+1. Existing input resolution and snapshot validation select a reader.
+2. Existing Org preservation emits its *temporary intermediary*, including
+   protected literal content and application-owned metadata markers.
+3. When the effective reader is Org, invoke the *same executable's native
+   converter worker*. Other readers keep the existing Pandoc command.
+4. The worker parses with go-org and produces the HTML/owned-record contract
+   expected by =restoreTransport=; it does not read or write source files.
+5. Existing restoration, sanitizer, catalogue, reference resolver and final
+   template publish the page. Footnote identification and block verification
+   call the same converter path for their intermediaries, as they do today.
+6. The existing annotation boundary alone validates revisions and writes native
+   references/definitions. The converter never reserializes source.
+
+- Ownership :: A narrow internal Org conversion package owns parser configuration,
+  writer adaptation and native highlighting. =internal/preview= retains application
+  state, volatile Host execution, preservation, security and publication.
+- Shared operation :: One render dispatch and the current restoration pipeline;
+  no separate implementations for plain rendering, label probing and block probing.
+- Structural verification :: Delivery-code review checks that existing proof,
+  source writer and pass selection remain intact, with no hidden fallback or
+  alternate cache. Behaviour is exercised by the traced regression package.
+
+** Private worker and resource contract
+:PROPERTIES:
+:CUSTOM_ID: worker-contract
+:END:
+
+- Invocation :: A private =--internal-org-convert= mode of the *current binary*,
+  resolved through =os.Executable=, before normal CLI/config/service startup.
+  Use direct argv and stdin through the existing Host executor. No shell,
+  executable lookup in a document directory, persistent pool or second service.
+- Input :: One size-bounded JSON request containing protocol version =1=,
+  intermediary text, owned transport token, TOC enable/depth and remaining input/
+  output byte budgets, plus an optional list of current block-probe labels.
+  Thread that list from the existing candidate map through render dispatch;
+  do not change candidate generation or matching. Bound its serialized size
+  with the request. Reject unknown/duplicate fields, trailing values, malformed
+  tokens and ceilings above existing application maxima. Tokens stay on stdin,
+  never argv or diagnostic output. The worker accepts no document/resource path.
+- Output :: One HTML document on stdout with a body and existing owned transport
+  elements. Success exits zero; failure exits nonzero, with bounded content-free
+  diagnostics. Parent retains existing combined stdout/stderr accounting and
+  does not publish partial output.
+- Lifetime :: One process per conversion. Parent cancellation or deadline kills
+  and reaps it through =runProcess=. Keep the existing two service work slots,
+  coalescing, 60-second render ceiling and 15-second annotation-request budget.
+- Byte bounds :: Preserve current 10 MiB source, service output and session
+  budgets. Count intermediary/protocol overhead and generated output against
+  remaining allowances; never truncate to fit.
+- Memory :: Set a *512 MiB Go runtime memory target* in the worker and abort on
+  observed Go runtime accounted memory above 512 MiB. A worker-owned 10 ms
+  monitor uses runtime accounting, stops on exit and emits only a limit error.
+  This is *not a hard RSS ceiling*: transient overshoot and non-Go process memory
+  are outside that measurement. It deliberately replaces W006's Pandoc-specific
+  maximum-heap mechanism only for native Org; parent process isolation, byte
+  ceilings and killable deadlines remain. Do not label a soft target as a hard cap.
+- Rationale :: go-org has no cancellation API. Process isolation preserves a
+  terminable conversion boundary and confines parser/highlighter failures to the
+  request. It is the same packaged program, not a new deployment dependency.
+- Verification :: [[#rt-011-7][RT011.7 - Limits and failure recovery]], with lower injected
+  private bounds for deterministic threshold tests; packaging uses
+  [[#ot-011-2][OT011.2 - Packaging and dependencies]].
+
+** Parser dependency and narrow patch
+
+- Baseline :: =github.com/niklasfasching/go-org= at revision
+  =2f088a12697ba4dad46c2c2084db3ae1707830fb=, MIT. The
+  [[https://github.com/niklasfasching/go-org/tree/2f088a12697ba4dad46c2c2084db3ae1707830fb][inspected upstream revision]]
+  is the comparison baseline, not an assertion that upstream never changes.
+- Local correction :: Keep the required upstream =org= package as a minimal
+  local module under =third_party/go-org= with its licence and provenance.
+  Use a module replacement and document the patch against that exact revision.
+  Parameterize the scanner's maximum token size from the bounded intermediary
+  length, allowing long lines without altering line breaks or source semantics.
+  Do not copy the upstream CLI, website or unrelated tooling.
+- Patch boundary :: No native source-offset instrumentation or parser rewrite.
+  Prefer writer hooks and existing preservation for compatibility; additional
+  necessary parser fixes require a focused reproducer and documented diff,
+  staying within this specification's existing semantic contract.
+- Configuration :: Fresh parser/writer per conversion; deny =ReadFile= for every
+  path, disable automatic external resolution, and suppress unsafe expansion.
+  Route library diagnostics through bounded content-free classifications.
+  No ambient log output containing document text.
+- Native defaults :: Disable go-org's duplicate title/TOC output and extra
+  export exclusions; the existing preservation and page settings own them.
+  Preserve declared TODO partitions and deep hierarchy instead of relying on
+  go-org's default export depth or default TODO configuration.
+- Maintenance :: Pin linked dependencies in =go.mod=/=go.sum=, retain MIT notices
+  and record the local delta. Security review checks the actual linked graph;
+  upstream's declared test/CLI dependencies need not enter the release binary.
+
+** Published HTML compatibility contract
+:PROPERTIES:
+:CUSTOM_ID: html-contract
+:END:
+
+The adapter owns *structural compatibility*, not byte-for-byte Pandoc HTML.
+Normalize with =golang.org/x/net/html= or writer hooks, never regular-expression
+rewriting of HTML. Keep browser controllers unchanged where the existing
+semantic contract suffices.
+
+| Concern | Required adapter output and retained owner |
+|---------+--------------------------------------------|
+| Metadata/title | Existing preserved fields, source order, title/subtitle/author/date; final application template owns their sole display |
+| Headings | Ordered nested sections, direct heading node, actual source level and owned heading records; current catalogue restores IDs/aliases and resolves duplicate IDs |
+| Task states/tags | Direct todo/done classes from the declared before/after-bar partition, including custom states and fast-key suffixes; priority, progress-cookie, timestamp and tag semantics retained |
+| Navigation | Owned TOC transport bound to the same heading records, respecting enable/depth; final catalogue/restoreContents owns final destination IDs |
+| Drawers/planning | Existing preserved fragments restored once in their intended section, without source delimiter duplication |
+| Lists | ul/ol/li and dl/dt/dd with correct whole-item grouping, ordering and nesting; distinguish terms from descriptions |
+| Checkboxes | Existing owned square indicators and separator, checked X/x, unchecked space, partial slash/dash; no interactive source controls |
+| Inline content | Text, emphasis, underline, strikeout, sub/superscript, entities, links, images and literal code retain meaning; smart dashes remain outside literal spans only |
+| Containers | Table cells/header rows, outer nested quote/verse/centre/named blocks and whitespace survive; no duplicate inner target for an outer annotation block |
+| Footnotes | Direct reference anchors with footnote-ref/doc-noteref semantics; one section.footnotes with ordered definitions and footnote-back/doc-backlink links, including repeated reference destinations |
+| Source IDs/links | Existing explicit IDs, CUSTOM_ID/ID, unambiguous heading searches and relative links retain destinations through the current resolver; do not pretty-rewrite source filenames |
+| Raw source HTML | Passes the same sanitizer and grant rules; no trusted classes/attributes are granted merely because source resembles worker output |
+
+- Heading IDs :: Preserve explicit identifiers and the established automatic-ID
+  semantics used by local fragment links; normalize generated IDs before
+  catalogue allocation. Native writer slugs are not permission to break existing
+  links. Heading-based Org searches continue through the current title catalogue.
+- Owned transport :: Mirror validated code/heading/TOC records currently supplied
+  by =fidelity.lua= and =page.html5=. Reuse Go validators/restoration; no broadening
+  of trusted source HTML or generic data-attribute allowlists.
+- Inline fidelity :: Port the small Lua presentation responsibilities needed for
+  Org into the adapter. Keep Lua for remaining Pandoc readers; do not run a new
+  standalone Lua interpreter or send individual Org blocks back to Pandoc.
+
+** Intermediary annotation compatibility
+
+- Preserve *MarkBlocks and current structural matching*. The adapter consumes
+  their intermediary document, not positions inferred from newly rendered prose.
+- Standalone generated footnote references need an invisible inline predecessor
+  so go-org does not parse them as definitions. At the converter-input boundary,
+  prefix *only the current generated marker references* with a nonce-owned empty
+  inline HTML comment. Restrict this to the marker set supplied by the existing
+  probe construction; do not match arbitrary author text by a public prefix alone.
+- Strip that generated predecessor before publication. Ordinary authored
+  definitions and references are unchanged. A missing or duplicate probe marker
+  still fails the current verification rather than being guessed into place.
+- Normalize native footnote containers/references before the existing label and
+  block-association routines. After-block references remain outside source
+  delimiters and repeat saves extend the one existing reference paragraph.
+- Resolve short-definition and additional-target discrepancies by comparing each
+  synthetic source endpoint with its whole rendered block. If normalization
+  cannot make the current proof hold, withhold the target; do not relax the proof.
+  A required supported block remaining unavailable is a delivery defect.
+- Verification :: [[#rt-011-4][RT011.4 - Block placement]] and
+  [[#rt-011-5][RT011.5 - Footnote lifecycle]]. No persisted block-ID migration.
+
+** Highlighting and literal transport
+
+- Use the native [[https://github.com/alecthomas/chroma][Chroma Go highlighter]] for Org code via the
+  writer callback/owned literal-record path. It avoids one Pandoc subprocess per
+  code block. Pin a compatible reviewed release and its required dependencies
+  during delivery; retain its MIT notice and run the vulnerability gate.
+- Convert tokens to the existing semantic highlight classes/palette, or add a
+  narrowly mapped set of owned classes. Use class-based CSS, not inline styles
+  or remote themes. Preserve current light/dark colours and fixed-width font.
+- Preserve the literal-value record as the authority for copying; verify that
+  token concatenation equals it. If a lexer cannot handle a language, render
+  escaped plaintext with the current bounded diagnostic. No source-selected
+  external syntax definitions or code execution.
+- Chroma version selection and exact token-to-class table are routine dependency/
+  adapter details; replacing the highlighting architecture is not.
+- Verification :: [[#rt-011-3][RT011.3 - Literal code]] and [[#ut-011-1][UT011.1 - Reader review]].
+
+** Performance comparison method
+:PROPERTIES:
+:CUSTOM_ID: performance-method
+:END:
+
+- Baseline :: Build =96a8a2c=, the recorded fifteen-second-grace version, in a
+  temporary archive; candidate is the release-ready W011 branch. Record complete
+  revisions and toolchain versions. Do not modify the live service.
+- Corpus :: Freeze three local copies: the authorized approximately 532 kB long
+  Org document, =docs/work.org=, and =specs/009-reader-annotation-ux/spec.org=.
+  Record sizes/hashes and use the exact same bytes for both builds. If the private
+  corpus is unavailable, record the benchmark unavailable; do not claim a
+  substitute proves its numeric target.
+- Operations :: Uncached page GET, add-and-refresh two-paragraph UTF-8 annotation,
+  and CLI file conversion with browser opening captured. Reset disposable source
+  copies and use fresh capability/filename contexts between runs. Include every
+  pipeline pass, highlighting and final page generation; exclude build/startup
+  and browser launch time. Missing local link targets are not traversal timings.
+- Sampling :: One warm-up then five measured sequential runs per operation/build/
+  document; alternate build order, same machine, no parallel benchmarks. Record
+  median/range and conversion-stage counts as diagnostic evidence.
+- Correctness :: Confirm published content and source-preserving annotation
+  outcome for each run. Semantic regressions invalidate a speed claim.
+- Target :: Large-corpus uncached GET median at most one fifth of baseline;
+  smaller GET medians no worse. The research's 0.74-second result motivates
+  this margin but is not a universal time guarantee or replacement for the
+  [[#ot-011-1][release benchmark]]. POST/CLI measurements explain user-visible effects.
+
+** Failure behaviour and security impact
+
+- Trust boundary :: The worker receives only *already-authorized bounded bytes*.
+  It has no API for fetching resources, reading includes or writing annotations.
+  Process separation is a lifetime/failure boundary, not an OS sandbox claim.
+- Access :: Disable go-org file callbacks and native expansion; leave all link
+  authorization, source root checks, script removal and media policy in the
+  existing owning components. No new HTTP route or remote listener.
+- Data :: Intermediaries and outputs stay in existing private session storage or
+  pipes. No source content, footnote text or capabilities in logs. No migration,
+  persistent parser cache or annotation history is introduced.
+- Failure :: Preserve the original cause internally but report a bounded safe
+  operation/category. CLI errors identify Org conversion; HTTP keeps existing
+  status/envelope mapping. Parent never accepts output from a failed worker.
+- Recovery :: Existing source is unchanged by a failed render/proof. Existing
+  autosave recovery owns browser drafts. Do not change the timing or modal UX
+  to disguise converter failures.
+- Tradeoff :: The explicit native-memory accounting in [[#worker-contract][the worker contract]]
+  differs from Pandoc's runtime heap mechanism. Verify its failure path and
+  measure peak memory; do not introduce privileged OS controls or misrepresent
+  it as a portable hard resident-memory limit.
+
+** Routine details left to implementation
+
+- Cohesive function/file names, writer-hook versus DOM-normalization placement,
+  synthetic fixture organization and compatible Chroma version selection.
+- No change to converter choice, pass count, source writer, proof strength,
+  public settings, data format or the stated worker lifetime/resource contract.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: This specification, project profile and the exact
+  authorities/components in [[#context][Context]], plus [[file:assessment.org][the assessment]].
+  Temporary research adapters are evidence only, not production-ready code or
+  a required dependency for handoff.
+- Entry conditions :: Explicit definition sign-off and delivery authority;
+  establish [[#constraints-and-dependencies][the existing native-footnote baseline]] and read
+  definition evidence from [[file:audits.yaml][audits.yaml]]. Preserve unrelated worktree changes.
+- First implementation step :: Write the complete traced RT package against the
+  current entry points. Observe meaningful native-routing/compatibility RED and
+  record justified initially GREEN preservation tests before the test-code gate.
+- Delivery sequence :: Implement the narrow worker/adapter and all compatibility
+  corrections as one coherent change; run required tests and bounded benchmarks,
+  then the implementation audit. Keep runtime migration and operator testing
+  separate from automatic installation or service replacement.
+- Validation evidence :: Create =validation.org= by delivery admission, with one
+  tagged result heading per RT/OT/UT and no invented execution evidence.
+- Documentation impact :: Reconcile =docs/ARCHITECTURE.md= and =docs/VISION.md=
+  converter ownership without erasing historical decisions; update =README.md=,
+  =docs/ANNOTATIONS.md=, =docs/SERVICE.md= and CLI help only where converter,
+  diagnostics or dependencies make them inaccurate. Update
+  =THIRD_PARTY_NOTICES.md=, packaged licences and local-patch provenance.
+  Keep =docs/work.org= descriptive; audit state belongs only in =audits.yaml=.
+- Closure boundary :: Native platform/browser evidence remains explicit. No
+  claim that a cross-build or HTTP test establishes Linux/WSL desktop behaviour.

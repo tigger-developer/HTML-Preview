@@ -1,0 +1,283 @@
+#+TITLE: W011 - Conversion options and effort assessment
+#+DATE: 2026-09-20
+#+STARTUP: overview
+#+OPTIONS: num:nil toc:2
+
+* Current conclusion
+
+*Select go-org for Org conversion within the existing intermediary workflow.*
+Markdown and other formats retain Pandoc. The block-level annotation compromise
+already supplies source boundaries; *native parser offsets are not needed* for
+this change. [[file:spec.org][W011 - Fast Org previews with go-org]] owns the full proposed contract.
+
+The early recommendation to reduce Pandoc passes first, and its combined
+Org/Markdown replacement estimate, are *superseded*. They remain below as
+assessment history, not current design instructions.
+
+* Existing-workflow experiment
+
+- Date :: 19 September 2026.
+- Baseline :: Application revision =96a8a2c=, fifteen-second annotation grace.
+- Environment :: Apple M3, 24 GiB RAM, arm64; Go 1.26.8, Rust 1.98.0,
+  Pandoc 3.9.0.2. This was a bounded local experiment, not an isolated laboratory.
+- Corpus :: A private long Org outline, 531,757 bytes; project work ledger,
+  14,235 bytes; reader/annotation specification, 108,554 bytes. Source snapshots
+  were identical across converters and unchanged after the experiment.
+- Method :: A temporary archive of the application with a converter-only test
+  adapter. Existing preservation, intermediary marking, structural matching,
+  source writing, sanitization and final template were unchanged.
+- Samples :: Three fresh uncached HTTP page contexts per engine/document,
+  medians below. Compilation and service startup excluded; no browser automation
+  or live-service replacement. Missing linked files were not traversal evidence.
+
+| Corpus | Pandoc pipeline | go-org pipeline | org-rust pipeline |
+|--------+-----------------+-----------------+-------------------|
+| Long Org outline | 8128.51 ms | 739.61 ms | 594.86 ms |
+| Work ledger | 557.88 ms | 32.59 ms | 27.62 ms |
+| Annotation specification | 1415.51 ms | 139.30 ms | 116.04 ms |
+
+The outline ranges were 7907.87–8133.23 ms for Pandoc, 738.37–741.62 ms
+for go-org and 593.46–602.88 ms for org-rust. *go-org was about eleven times
+faster* while retaining every existing conversion pass.
+
+Both candidates saved and reloaded a new *two-paragraph accented footnote* on a
+disposable copy of each document. Removing the new reference/definition restored
+the original bytes apart from final-newline normalization. This tested one
+eligible paragraph per document, not every possible target or browser action.
+
+** Existing regression selection
+
+| Group | Pandoc | go-org | org-rust |
+|-------+--------+--------+----------|
+| Block placement, including nested/literal/task blocks | 19/19 | 19/19 | 17/19 |
+| Unverified-target rejection and marker non-leakage | 1/1 | 1/1 | 1/1 |
+| Three repeated notes on table, quote and checkbox item | 3/3 | 3/3 | 2/3 |
+| Total | 23/23 | 23/23 | 20/23 |
+
+org-rust differed on nested quote parsing, smart-dash rendering and the whole
+list-item target expected by the repeated-checkbox test. Its approximately
+145 ms advantage on the outline did not outweigh those compatibility costs and
+an additional implementation language.
+
+** Source endpoint correspondence
+
+| Corpus | Pandoc targets | go-org shared / missing / additional | org-rust shared / missing / additional |
+|--------+----------------+--------------------------------------+----------------------------------------|
+| Long outline | 945 | 943 / 2 / 393 | 936 / 9 / 1 |
+| Work ledger | 103 | 103 / 0 / 0 | 103 / 0 / 0 |
+| Annotation specification | 494 | 494 / 0 / 0 | 494 / 0 / 0 |
+
+- The two missing go-org positions were short definition descriptions equivalent
+  to =- Source part :: I.=. They need focused synthetic compatibility tests.
+- Additional go-org positions comprised 260 definition descriptions, 132 headings
+  and one paragraph. They passed the existing matcher but are *not automatically
+  evidence of better correctness*. Delivery must verify whole-block endpoints.
+- Counts compare source insertion positions, not anonymous HTML IDs. Exact raw
+  counts are not the product requirement; correct eligible semantic blocks are.
+
+** Adapter discovery and remaining work
+
+Both parsers interpreted standalone generated footnote references as definitions.
+An invisible inline predecessor on *only generated probe references* preserved
+the current after-block workflow. No native offsets or new source mapper were
+added. The production adapter must bind this adjustment to the current owned
+marker set and remove it before publication.
+
+The probe normalized endnotes/backlinks, heading wrappers, task/tag and checkbox
+classes, block classes and existing literal-code records. Existing preservation
+already handles drawers, metadata and custom IDs. *The probe did not supply full
+syntax highlighting, TOC transport or all Lua-backed presentation behaviour*.
+Those remain explicit delivery requirements, alongside bounds, packaging,
+security and human browser review.
+
+* Candidate provenance and initial raw comparison
+
+- [[https://github.com/niklasfasching/go-org/tree/2f088a12697ba4dad46c2c2084db3ae1707830fb][go-org]] :: MIT,
+  revision =2f088a12697ba4dad46c2c2084db3ae1707830fb=.
+- [[https://github.com/hydrobeam/org-rust][org-rust]] :: Parser 0.1.8/exporter 0.1.9,
+  MIT, revision =4b219e1867558537a62922a9ea91dbbcab5efb29=.
+- [[https://github.com/PoiScript/orgize][Orgize]] :: 0.10.0-alpha.10, MIT,
+  revision =5f26c94dcec2a33b37b1c880ace053b29b5d021e=; stable 0.9.0 also inspected.
+
+The earlier raw-export benchmark used one warm-up and five measured runs per
+engine/document. Large-outline medians were 1642.56 ms Pandoc, 45.00 ms go-org,
+9.93 ms Orgize and 15.42 ms org-rust. *Raw exports were not equivalent work*:
+Orgize omitted relevant semantics, so its timing was not an adoption criterion.
+go-org was the closest raw match; the existing preservation layer then removed
+several apparent gaps in the more useful full-pipeline experiment above.
+
+* Updated effort estimate
+
+- Range :: *5–10 engineer-days*, excluding review queues and unavailable native
+  user testing, for an engineer familiar with the current pipeline.
+- Work :: Native conversion/worker and narrow scanner correction; output,
+  highlighting and marker compatibility; extended regressions, benchmark,
+  dependency/notices review and product documentation.
+- Uncertainty :: Whole-block discrepancies and uncommon inline syntax could
+  increase the range. The production adapter has not been implemented or audited.
+- Excluded :: Source-offset instrumentation, pass reduction, Markdown replacement,
+  a Rust helper, parser rewrite and a new annotation persistence system.
+
+* Earlier assessment, superseded by the existing-workflow experiment
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+
+The following assessment preceded the full-pipeline experiment. Its observations
+remain historical evidence; its recommendation and combined native-route estimate
+are superseded by the narrower scope above.
+
+** Recommendation
+
+*Reduce repeated Pandoc conversions first.* The lower-risk change combines
+ordinary rendering with native-footnote identification while retaining the
+independent source-boundary verification pass. It adds no parser dependency and
+preserves the existing rendering contract.
+
+*go-org is a credible native alternative*, with substantial measured speed
+potential. Adoption requires a source-position strategy and explicit output
+compatibility work; it is not a drop-in annotation engine. The proposed native
+route would combine go-org for Org with Goldmark for Markdown and retain Pandoc
+for other formats. No dependency adoption or implementation is authorized by
+this assessment.
+
+** Observed baseline
+
+- Application revision :: =96a8a2c=, fifteen-second annotation grace.
+- Existing service :: [[file:../../internal/preview/service_render.go][HTTP rendering]]
+  renders normally, then [[file:../../internal/preview/service_footnotes.go][identifies footnotes]],
+  then [[file:../../internal/preview/annotation_blocks.go][verifies annotation blocks]].
+  The second pass is conditional on ordinary or virtual notes; the block proof
+  is conditional on candidate boundaries. This is not three passes for every input.
+- Previous diagnostic :: [[file:../009-reader-annotation-ux/validation.org][W009 timeout evidence]]
+  records a 7.94-second cold annotation GET. Its initial, footnote and block
+  Pandoc calls took approximately 2.27, 2.10 and 3.13 seconds respectively.
+  Removing one ordinary-sized pass suggests about a quarter less total latency,
+  not instant rendering. This is a projection, not candidate verification.
+- Cache :: [[file:../../internal/preview/service_cache.go][The current cache]] already
+  shares in-flight work and keys pages by source/store revision, format and
+  capability. It revalidates dependencies. Avoid adding a second cache merely
+  to repeat that behaviour. Annotation edits change the source revision.
+
+** Native-library probe
+
+On 19 September, a bounded temporary Go program read the supplied long Org
+document once into memory. It disabled go-org file includes, discarded private
+diagnostics, and ran each converter three times. No source file was written and
+no browser was opened. The input at this inspection was *536,415 bytes*, a
+different snapshot from the earlier service diagnostic.
+
+| Conversion | Three elapsed times | Median |
+|------------+---------------------+--------|
+| go-org parse and default HTML writer | 37.83, 37.19, 36.84 ms | 37.19 ms |
+| Pandoc 3.9.0.2, sandboxed org to html5 | 1972.38, 1724.81, 1714.12 ms | 1724.81 ms |
+
+The go-org parse phase alone took 24.4–25.4 ms. Its output contained 704,613
+bytes versus Pandoc's 646,670. *These are different renderings*: neither timing
+includes the application's full source-mapping, sanitization, highlighting,
+reference resolution, fonts or presentation pipeline. The approximately 46-fold
+conversion timing difference establishes potential, not equivalent application
+speed or semantic correctness. No Markdown timing was measured.
+
+A synthetic case confirmed named, two-paragraph footnotes and a configured NEXT
+task marker. It also exposed concrete compatibility work: =[X]= became a checked
+list item, but =[x]= and =[/]= remained literal text. Footnotes use div-based
+HTML rather than the application's Pandoc endnotes/backlink structure.
+
+** Existing Go options
+
+*** go-org: strongest inspected candidate
+
+- Source :: [[https://github.com/niklasfasching/go-org/tree/2f088a12697ba4dad46c2c2084db3ae1707830fb][go-org inspected revision]].
+  The fetched head commit is dated 19 July 2025. This date is a maintenance
+  observation, not proof of abandonment.
+- Scope :: The README explicitly targets a *subset of Org*. The library has
+  separate parser and writer interfaces, including footnotes, headlines, lists,
+  drawers and tables. [[https://github.com/gohugoio/hugo/blob/master/markup/org/convert.go][Hugo's Org adapter]]
+  uses this library; that is adoption evidence, not HTMLPreview compatibility.
+- Source mapping :: =org/document.go= exposes nodes without source ranges;
+  =Paragraph= and =ListItem= do not retain original byte spans. The lexer stores
+  line content and the parser joins lines. Safe edits cannot use pretty-printed
+  Org as a substitute for original offsets. Instrumenting a maintained fork or
+  retaining the existing independent Pandoc boundary proof needs deliberate design.
+- Safety :: The default =ReadFile= performs real file reads for INCLUDE and
+  SETUPFILE. An adapter must deny those reads. Existing source-HTML sanitization,
+  rooted link handling and no-code-execution policy must remain in force.
+- Limits :: Tokenization uses an unconfigured =bufio.Scanner=; long lines need
+  explicit treatment before claiming the current source-size contract.
+- Licence :: [[https://github.com/niklasfasching/go-org/blob/2f088a12697ba4dad46c2c2084db3ae1707830fb/LICENSE][MIT]],
+  with retained notices. The inspected module declares Chroma v2, x/net and
+  test-related dependencies; adoption must assess the actually linked graph,
+  vulnerabilities and binary growth, not assume every declared module is runtime code.
+
+*** Other Org candidates
+
+- [[https://github.com/chaseadamsio/goorgeous][goorgeous]] :: Its inspected README explicitly
+  deprecates it in favour of go-org. Head =7637c398= is dated 25 June 2019.
+  No reason to select this predecessor for a new integration was found.
+- [[https://github.com/ihdavids/go-org][ihdavids/go-org]] :: The inspected fork head
+  =6fe04d7a= is dated 21 May 2022. Its exposed paragraph/node types still lack
+  byte ranges, and its dependency baseline is older. It does not resolve the
+  source-mapping gap identified above.
+
+*** Markdown companion
+
+[[https://github.com/yuin/goldmark][Goldmark]] offers a Go AST with source positions,
+CommonMark parsing and a footnote extension under the MIT licence. It is a
+plausible companion, not a replacement for Org parsing. HTMLPreview currently
+selects the much wider [[file:../../assets/pandoc/markdown.txt][Pandoc Markdown dialect]],
+including grid/multiline tables, inline notes, citations, spans, attributes and
+fenced divs. A native route needs a feature-by-feature preservation/fallback
+contract rather than silently changing Markdown dialect. No Goldmark dependency
+or runtime integration was tested in this assessment.
+
+** Pandoc Haskell assessment
+
+The inspected source matches the installed *3.9.0.2* tag, commit
+=f1e061478dbefcb27043d0be50182ffde6288d4a=.
+
+- [[https://github.com/jgm/pandoc/blob/3.9.0.2/src/Text/Pandoc/Readers/Org.hs][Org reader]]
+  coordinates block parsing and metadata into the common Pandoc AST.
+  Its nine supporting Org modules total 3,649 lines, before the entry module
+  and shared dependencies.
+- [[https://github.com/jgm/pandoc/blob/3.9.0.2/src/Text/Pandoc/Readers/Org/Parsing.hs][Org parsing utilities]]
+  use ParsecT, parser state and reader context. Blocks, inlines, document-tree
+  processing, metadata and export settings have separate responsibilities.
+- [[https://github.com/jgm/pandoc/blob/3.9.0.2/src/Text/Pandoc/Readers/Markdown.hs][Markdown reader]]
+  adds 2,362 lines and imports shared parsing, metadata, HTML and LaTeX handling.
+- [[https://github.com/jgm/pandoc/blob/3.9.0.2/src/Text/Pandoc/Writers/HTML.hs][Shared HTML writer]]
+  adds 1,824 lines, using Blaze, highlighting and other Pandoc infrastructure.
+  Counting these files understates a port: the shared dependencies and project
+  fidelity rules are part of the work. Entry points, imports and relevant note
+  handling were inspected, not every line or every grammar branch.
+- Org reference handling resolves named notes into AST Note contents. The name
+  is not retained as the native editable label in ordinary note HTML, explaining
+  the application's temporary-label association step. Replacing the CLI with
+  an AST serialization alone does not supply all required source positions.
+- [[https://github.com/jgm/pandoc/blob/3.9.0.2/pandoc.cabal][Pandoc declares GPL-2.0-or-later]].
+  A direct Haskell-to-Go translation is not an Apache-licensed shortcut:
+  [[https://www.gnu.org/licenses/gpl-faq.en.html#TranslateCode][GNU's translation guidance]]
+  treats translation as modification. Keep the current executable boundary or
+  use appropriately licensed libraries/independently authored code; a licensing
+  change is outside this project requirement.
+
+** Effort ranges
+
+These are *engineering estimates*, not elapsed agent timings or commitments.
+They assume one engineer familiar with this repository, the existing Go test
+suite, unchanged product behaviour and timely user validation. Waiting for
+review and unavailable platform testing are excluded. Uncertainty is highest
+for compatibility and safe source positions.
+
+| Option | Estimated effort | Main work and risk |
+|--------+------------------+--------------------|
+| Combine ordinary render and footnote labelling; retain boundary proof | 3–7 engineer-days | 1–2 days pipeline change; 1–3 days regressions and performance evidence; 1–2 days review/docs/user-test support |
+| One-pass Pandoc redesign | 2–4 engineer-weeks | Replace independent before/after proof with equivalent safety; probe-induced structure and heading/footnote identities complicate it |
+| go-org plus Goldmark, production compatibility | 4–8 engineer-weeks | Source ranges, two rendering adapters, syntax/highlighting/anchor compatibility, limits, security and fixture validation; longer if the full dialect needs extensions |
+| Independently implement Org and Markdown readers plus HTML output | 12–24+ engineer-weeks | Grammar/state, syntax coverage, source positions, HTML semantics and long-term parser maintenance; not full Pandoc format parity |
+
+Native-library integration is the strongest *longer-term* candidate. Reducing
+the existing passes is the smaller first delivery. Neither estimate includes
+removing Pandoc's other-format support. Revisit native conversion if measured
+two-pass latency remains unacceptable; do not approve a large rewrite solely
+from the isolated speed comparison.
