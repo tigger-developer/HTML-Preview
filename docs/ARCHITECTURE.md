@@ -1,7 +1,7 @@
 ---
 title: Architecture
 version: 3
-last-updated: 2026-09-18
+last-updated: 2026-09-19
 ---
 
 # Architecture
@@ -893,7 +893,10 @@ leaving the editor refreshes before safe reattachment, retaining drafts on failu
 ### Stable annotation feedback and recovery, 17 September 2026
 
 The annotation panel reserves connection and save-status space. SSE failures
-receive a two-second grace period, with a one-second native reconnect hint.
+receive a 15-second grace period, with a one-second native reconnect hint.
+Browser annotation requests and server annotation work have a 15-second deadline.
+Slow requests show amber feedback after two seconds without blocking interaction;
+the browser reports an explicit timeout when its deadline expires.
 Stream and state-fetch failures are tracked separately from confirmed save
 failures. A native modal owns Copy, Revert and Try again, keeps drafts selectable,
 and prevents background document replacement and automatic save-failure recovery

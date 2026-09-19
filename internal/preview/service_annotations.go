@@ -151,7 +151,7 @@ func (s *previewService) serveAnnotations(w http.ResponseWriter, r *http.Request
 		s.serveAnnotationEvents(w, r, src)
 		return
 	}
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 
 	defer cancel()
 	r = r.WithContext(ctx)

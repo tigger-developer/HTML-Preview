@@ -1,7 +1,7 @@
 ---
 title: Document annotations
 version: 3
-last-updated: 2026-09-18
+last-updated: 2026-09-19
 ---
 
 # Document annotations
@@ -273,7 +273,13 @@ reconnects. The stream sends a notification on every connection so an edit made
 while disconnected is not missed. A 30-second heartbeat keeps the stream alive
 without reading the document. Native EventSource reconnects after a connection
 failure, with a one-second retry interval. A brief interruption shows amber
-feedback in reserved space. If it lasts two seconds, a recovery dialog appears.
+feedback in reserved space. If it lasts 15 seconds, a recovery dialog appears.
+Annotation requests have a **15-second deadline** in the browser and server.
+After two seconds awaiting a response, amber feedback and “Waiting for service…”
+appear in reserved space without blocking typing. A request timeout retains the
+draft and reports the elapsed limit instead of a generic abort message. Actual
+save rejections still use the recovery controls.
+
 Successful connection recovery clears a connection-only dialog; it never clears
 a confirmed save failure. This replaces the immediate inline Reconnect button.
 Browsers without
@@ -314,6 +320,8 @@ confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
+- 19 September 2026: Fifteen-second request deadlines and connection recovery
+  grace supersede the earlier five-second deadlines and two-second grace.
 - 17 September 2026: Reserved feedback space, connection grace period, modal
   recovery and expandable long sidebar notes.
 - Version 2: Batched follow-up saves and independent refresh after 15 seconds

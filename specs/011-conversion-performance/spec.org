@@ -1,0 +1,48 @@
+#+TITLE: W011 - Conversion performance and native reader assessment
+#+STARTUP: overview
+#+OPTIONS: num:nil
+
+* Objective
+
+Reduce *cold preview and annotation refresh latency* on long Org and Markdown
+documents while preserving native footnotes, safe source mapping and formatting.
+This is a *skeleton for assessment*, not approval for a converter rewrite.
+
+* Baseline and evidence
+
+- Authorities :: [[file:../../docs/VISION.md][Vision]],
+  [[file:../../docs/ARCHITECTURE.md][Architecture]], and
+  [[file:../009-reader-annotation-ux/spec.org][W009 - Reader and annotation UX]].
+- Diagnosis :: A temporary copy of a long Org document took approximately eight
+  seconds to render. Three Pandoc passes performed ordinary rendering, footnote
+  identification and annotation block verification. The former five-second
+  annotation request deadline rejected that cold render.
+- Immediate mitigation :: W009 extends the request budget to 15 seconds on
+  master. Performance work must remain on a *separate branch* so the usable
+  master build remains available.
+
+* Assessment scope
+
+- Measure the three passes, source preparation, sanitization and caching on
+  representative long Org and Markdown fixtures.
+- Assess combining ordinary rendering with footnote identification, reusing
+  unchanged results and avoiding redundant conversions after annotation writes.
+  Preserve the source-mapping checks; identify embedded and sidecar differences.
+- Give *serious consideration* to Pandoc's *Haskell Org and Markdown readers
+  and HTML writer*: examine their implementation and assess whether a native
+  *Go conversion implementation* is worthwhile.
+- Compare measured performance, semantic fidelity, maintenance burden,
+  implementation cost and licence compatibility with the project's Apache 2.0
+  licence. Distinguish independent reimplementation from translated/copied code.
+- Retain support for other Pandoc input formats. Establish any proposed subset
+  and fallback explicitly; do not silently replace Pandoc or reduce fidelity.
+
+* Constraints and next step
+
+- No optimization or converter rewrite is authorized by this skeleton.
+- Source documents, native IDs, author attribution and unrelated bytes remain
+  unchanged by previewing. Annotation writes retain concurrency and safety checks.
+- No browser automation or new dependency is introduced for this assessment.
+- Next step :: Produce a measured recommendation and bounded solution design
+  before implementation. Define performance targets and regression coverage
+  from the evidence, rather than assuming Go conversion will be faster.

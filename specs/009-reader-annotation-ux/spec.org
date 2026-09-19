@@ -1683,6 +1683,21 @@ prescription is superseded by the operator's paired testing instruction.
   Confirmation, cancel, autosave interaction and focus are browser
   UTs; no browser automation is introduced.
 
+* Slow annotation requests, 19 September 2026
+
+- Authority :: Paired instruction: allow *15 seconds* for browser requests and
+  server annotation work. Supersede the five-second request deadlines and
+  two-second connection recovery grace. Conversion optimization is separate work.
+- Behaviour :: After two seconds awaiting a response, show *amber feedback*
+  without changing layout, disabling typing or opening recovery. A request that
+  exceeds 15 seconds reports an explicit timeout and retains the draft.
+  Live-update disconnections receive 15 seconds of nonblocking grace.
+  Actual save rejections retain existing recovery behaviour.
+- Verification :: A cold annotation HTTP request whose converter takes six
+  seconds must succeed. A bounded diagnostic against a temporary copy of the
+  affected long document checks the real conversion path. Amber appearance,
+  continued typing and recovery timing remain browser user tests.
+
 * Stable article placement when opening the editor, 18 September 2026
 
 - Objective :: Opening an annotation composer must not push the document title

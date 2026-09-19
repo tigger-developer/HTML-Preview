@@ -152,7 +152,9 @@ body.hp-plaintext #hp-reader > :is(#hp-frontmatter,#hp-content-rule,#hp-toc,#hp-
 .hp-annotations .hp-connection-status { height:3em; white-space:normal; }
 .hp-annotations [data-save-state=pending] textarea { border-color:#a78c56; }
 .hp-annotations [data-save-state=error] textarea { border-color:#b86a70; }
-.hp-annotations[data-connection=pending] textarea { border-color:#b79a54; animation:none; }
+.hp-annotations[data-connection=pending] textarea,
+.hp-annotations[data-request-slow] textarea { border-color:#b79a54; animation:none; }
+.hp-annotations[data-request-slow] .hp-connection-status { color:#b79a54; }
 .hp-annotation-id-label { display:block; }
 #hp-annotation-id { width:100%; font:.8rem/1.5 var(--mono); color:var(--muted); background:var(--metadata-bg); border:1px solid var(--rule); border-radius:.2rem; padding:.2rem .35rem; }
 #hp-annotation-id-error { display:block; height:3em; overflow:auto; color:var(--syntax-error); }

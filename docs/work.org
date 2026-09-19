@@ -260,6 +260,17 @@ classification; it is provenance, not current state.
 - Authority :: Taḋg authorized *BYPASS-GATE-7*, prioritized =make serve= and the
   working config, and required *removal of browser automation*.
 
+** TODO W011 - Conversion performance and native reader assessment :feature:
+:PROPERTIES:
+:CUSTOM_ID: w-011
+:CREATED: 2026-09-19
+:END:
+
+- Skeleton :: [[file:../specs/011-conversion-performance/spec.org][W011 - Conversion performance and native reader assessment]].
+- Scope :: Assess repeated conversions and a possible Go implementation of
+  Pandoc's Org/Markdown conversion. No rewrite is authorized; optimization uses
+  a separate branch from the working master build.
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

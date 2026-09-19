@@ -2,7 +2,7 @@
 // ABOUTME: Keeps the active composer outside refreshed content and guards navigation.
 async function annotationRequest(url, options = {}) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5000);
+  const timer = setTimeout(() => controller.abort(), 15000);
   try {
     const response = await fetch(url, { ...options, signal: controller.signal, credentials: 'omit', cache: 'no-store' });
     const limit = options.html ? 50 * 1024 * 1024 : 11 * 1024 * 1024;
@@ -26,6 +26,10 @@ async function annotationRequest(url, options = {}) {
     if (options.html && type.startsWith('text/html')) return text;
     if (!options.html && data) return data;
     throw new Error('The service returned an unexpected response type.');
+  } catch (cause) {
+    if (!controller.signal.aborted) throw cause;
+    const error = new Error('The service did not respond within 15 seconds. Your draft is retained; retry when the service is ready.', { cause });
+    error.status = 504; error.code = 'request_timeout'; throw error;
   } finally { clearTimeout(timer); }
 }
 
@@ -82,7 +86,8 @@ function validateAnnotationState(state) {
 export class
  AnnotationPanel {
   constructor(data, options = {}) {
-    this.data = data; this.request = options.request || annotationRequest;
+    this.data = data; this.transport = options.request || annotationRequest;
+    this.slowRequests = new Set();
     this.clock = options.clock || { now: () => performance.now(), setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: id => clearTimeout(id) };
     this.reinitialize = options.reinitialize || reinitializePreview;
     this.controller = new AbortController(); this.events = { signal: this.controller.signal };
@@ -107,6 +112,23 @@ export class
   }
 
   attachToggle() { (document.querySelector('#hp-header .hp-toolbar') || document.getElementById('hp-header-row')).append(this.toggle); }
+
+  async request(url, options) {
+    const request = {};
+    const timer = this.clock.setTimeout(() => {
+      if (this.disposed) return;
+      this.slowRequests.add(request); this.panel.dataset.requestSlow = 'true';
+      if (!this.connectionFaults.size) this.connection.textContent = 'Waiting for service…';
+    }, 2000);
+    try { return await this.transport(url, options); }
+    finally {
+      this.clock.clearTimeout(timer); this.slowRequests.delete(request);
+      if (!this.slowRequests.size) {
+        delete this.panel.dataset.requestSlow;
+        if (!this.disposed && !this.connectionFaults.size) this.updateConnectionStatus();
+      }
+    }
+  }
 
   listen() {
     document.addEventListener('hp-before-outline', event => {
@@ -452,7 +474,7 @@ export class
       if (!this.connectionFaults.has(source) || this.disposed) return;
       this.connection.textContent = source === 'stream' ? 'Connection unavailable' : 'Preview update unavailable';
       this.showRecovery(error, 'connection');
-    }, 2000);
+    }, error.code === 'request_timeout' ? 0 : 15000);
     this.connectionFaults.set(source, timer);
   }
 
@@ -462,8 +484,12 @@ export class
     this.connectionFaults.delete(source);
     if (this.connectionFaults.size) return;
     delete this.panel.dataset.connection;
-    this.connection.textContent = this.state?.writable ? (this.state.storage === 'sidecar' ? 'Read-only source; saving in a sidecar.' : '') : this.state ? 'Reading only: ' + this.state.reason.replaceAll('_', ' ') : 'Loading annotations…';
+    this.updateConnectionStatus();
     if (recovered && this.recoveryKind === 'connection' && !this.recoveryBusy && !this.recoveryCopied) this.closeRecovery();
+  }
+
+  updateConnectionStatus() {
+    this.connection.textContent = this.slowRequests.size ? 'Waiting for service…' : this.state?.writable ? (this.state.storage === 'sidecar' ? 'Read-only source; saving in a sidecar.' : '') : this.state ? 'Reading only: ' + this.state.reason.replaceAll('_', ' ') : 'Loading annotations…';
   }
 
   stopEvents() { this.stream?.close(); this.stream = null; this.clearConnectionFault('stream', false); }
