@@ -14,6 +14,7 @@ service: build
 	go run ./internal/buildtool service
 service-stop:
 	go run ./internal/buildtool service-stop
+service-restart: service-stop service
 release:
 	go run ./internal/buildtool release
 sync:
