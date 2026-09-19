@@ -34,6 +34,8 @@
   private transport records; it adds *no separately installed runtime*.
 - The adapter preserves *footnotes, headings, navigation, task semantics,
   checkboxes, metadata and highlighted code*.
+- *Chroma supplies native highlighting*, with pinned dependencies, licence
+  notices and vulnerability checks; it adds *no installed runtime*.
 - A bounded go-org correction admits *long lines within existing byte limits*.
 - Native Go memory accounting replaces the *Pandoc-specific heap control* for
   Org only, with the explicit bounds described in the design.
@@ -465,7 +467,9 @@ Its timings are *feasibility evidence*, not release-test results.
   checkout with Go/Rust tools absent from PATH and Pandoc present.
 - Expected :: Org renders and worker resolution succeeds without another
   installed helper; notices contain upstream MIT text and the highlighter's
-  licence. Vulnerability gate succeeds without unapproved exemptions.
+  licence. Vulnerability gate succeeds without unapproved exemptions. Evidence
+  identifies both the actual application scan and the pinned upstream go-org
+  advisory scan, so the local replacement cannot hide upstream findings.
 - Bounds :: One candidate build/package set and one staged native trial; no live
   installation, service replacement or global package changes. Cross-builds
   are not native Linux/WSL runtime evidence; unavailable trials remain explicit.
@@ -567,6 +571,13 @@ Its timings are *feasibility evidence*, not release-test results.
   resolved through =os.Executable=, before normal CLI/config/service startup.
   Use direct argv and stdin through the existing Host executor. No shell,
   executable lookup in a document directory, persistent pool or second service.
+- Test execution :: Extend the existing =internal/preview/preview_test.go=
+  =TestMain= dispatcher to recognize that private mode before running tests or
+  its ordinary CLI-child path, and call the same native worker entry function.
+  Thus =os.Executable= still names a worker-capable binary in package tests.
+  Built-CLI tests exercise the production dispatcher separately. No production
+  environment variable, configurable executable path or test-only endpoint is
+  added; the existing test subprocess pattern is reused.
 - Input :: One size-bounded JSON request containing protocol version =1=,
   intermediary text, owned transport token, TOC enable/depth and remaining input/
   output byte budgets, plus an optional list of current block-probe labels.
@@ -582,8 +593,10 @@ Its timings are *feasibility evidence*, not release-test results.
 - Lifetime :: One process per conversion. Parent cancellation or deadline kills
   and reaps it through =runProcess=. Keep the existing two service work slots,
   coalescing, 60-second render ceiling and 15-second annotation-request budget.
-- Byte bounds :: Preserve current 10 MiB source, service output and session
-  budgets. Count intermediary/protocol overhead and generated output against
+- Byte bounds :: Preserve 10 MiB per source, 50 MiB per service conversion
+  output and 100 MiB aggregate owned service scratch output, alongside existing
+  stricter remaining session allowances. Count intermediary/protocol overhead
+  and generated output against
   remaining allowances; never truncate to fit.
 - Memory :: Set a *512 MiB Go runtime memory target* in the worker and abort on
   observed Go runtime accounted memory above 512 MiB. A worker-owned 10 ms
@@ -592,6 +605,8 @@ Its timings are *feasibility evidence*, not release-test results.
   are outside that measurement. It deliberately replaces W006's Pandoc-specific
   maximum-heap mechanism only for native Org; parent process isolation, byte
   ceilings and killable deadlines remain. Do not label a soft target as a hard cap.
+  Revisit the target/abort margin only if measured valid inputs trigger limit
+  failures or excessive GC latency; any ceiling change requires a scope decision.
 - Rationale :: go-org has no cancellation API. Process isolation preserves a
   terminable conversion boundary and confines parser/highlighter failures to the
   request. It is the same packaged program, not a new deployment dependency.
@@ -626,6 +641,18 @@ Its timings are *feasibility evidence*, not release-test results.
 - Maintenance :: Pin linked dependencies in =go.mod=/=go.sum=, retain MIT notices
   and record the local delta. Security review checks the actual linked graph;
   upstream's declared test/CLI dependencies need not enter the release binary.
+- Upstream advisories :: Retain the upstream module path, exact revision and
+  corresponding Go module version in the patch provenance. In addition to the
+  actual application scan, =make vulncheck= runs =govulncheck -scan=module ./...=
+  on an OS-temporary minimal module importing the *unreplaced upstream org
+  package at that pinned version*, with the same locked transitive versions.
+  Prepare and commit its manifest/checksums during dependency adoption; the gate
+  copies those inputs and never resolves new versions or edits tracked files.
+  Missing/stale provenance, unavailable advisory data or a non-exempt finding
+  fails the gate. Keep text-mode scanner exit semantics; no JSON-output success
+  masking. This supplements the actual-code scan and local-patch review; it does
+  not claim upstream scanning verifies the patch. Repeat on dependency updates
+  and releases through the same gate, without a second scanner or service.
 
 ** Published HTML compatibility contract
 :PROPERTIES:
