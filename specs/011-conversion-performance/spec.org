@@ -383,6 +383,7 @@ footnote-structure cases.
 | Code, table, quote, verse, centre, named and nested containers | Add three notes | One following =Annotations:= paragraph, references outside outer closing syntax |
 | Drawer, table cell, endnote body, forged or stale block ID | Attempt annotation | No offered target where excluded; rejected POST leaves bytes unchanged |
 | Authored marker-like text and standalone generated markers | Render and add | No marker collision, leakage, phantom definition or missing after-block reference |
+| Rendered text and inline descendants, including empty Org definition entries followed by nested lists | Select through the browser's block rules on initial and refreshed HTTP pages | The selectable element carries the verified target; neighbouring headings and prose remain eligible; creation through that target succeeds |
 
 - Retention :: Persistent under =make test=. Preserve the existing 23-case
   experimental selection and extend it with the concrete corpus discrepancies.

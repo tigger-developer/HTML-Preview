@@ -57,9 +57,9 @@
 ** GREEN RT011.4 - Block placement :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-4-result
-:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
-:COMMAND: make test; affected code/footnote race command recorded below
-:EVIDENCE: Whole-block HTTP placement, short definition, nested/list/task/container cases, repeated notes and rejection of unverified targets pass without weakening source proof.
+:REVISION: 342fa00 plus the empty-description probe correction and served-target contract fixtures; earlier full and affected race evidence retained below
+:COMMAND: make test; affected race and served-target commands recorded below
+:EVIDENCE: Whole-block HTTP placement, short definition, nested/list/task/container cases, repeated notes, rejected unverified targets and browser-selectable served targets pass without weakening source proof.
 :END:
 
 *** Earlier test-admission execution
@@ -189,8 +189,62 @@
 ** AMBER UT011.2 - Annotation review :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ut-011-2-result
-:REASON: Human annotation interaction review follows implementation; HTTP results do not establish presented UX.
+:REASON: Browser review found unavailable creation targets while existing notes remained editable; the correction requires renewed user validation.
 :END:
+
+- Method :: User validation, 20 September 2026, feature candidate =342fa00=.
+- Observation :: The displayed document contained 953 marked blocks with annotation
+  mode and writable state active. Some blocks accepted creation while others did
+  not. Editing existing notes was available. The service had not been rebuilt
+  during this observation.
+
+* Annotation target contract correction, 20 September 2026
+
+- Scope :: [[file:spec.org::#rt-011-4][RT011.4 - Block placement]]. Synthetic Org and
+  Markdown files live in =testdata/annotation-targets/=; no private document
+  contents are retained in the repository.
+- RED :: The served-HTML selector test reproduced missing targets on the heading,
+  both surrounding descriptions, nested list items and following paragraph when
+  an Org description ended with an empty =::= delimiter. The temporary proof
+  marker changed that delimiter into ordinary list text, changing the section's
+  structure and preventing correspondence with the original render.
+- Correction :: Empty Org description delimiters receive no probe marker.
+  Following description lines and nested items retain independent candidates;
+  the structural proof and write-time checks remain unchanged.
+- Focused execution :: =go test ./internal/preview -run '^TestHTTPAnnotationTargetContract$' -count=1 -timeout=2m=
+  passed after the correction. Checks cover writable bootstrap metadata, nearest
+  browser-selectable blocks, initial and advertised refresh URLs, HTTP creation
+  and the resulting refreshed footnote.
+- Local verification :: A disposable copy of the authorized private corpus
+  offered 2,890 blocks instead of 953. HTTP annotation creation succeeded on a
+  previously unavailable heading, description and nested literal item. Source
+  bytes of the original were checked unchanged. The temporary test and document
+  are outside the repository and are not part of the retained test pack.
+- Existing boundary :: Colon-prefixed Markdown descriptions remain excluded by
+  the source scanner, including on =master=. The Markdown fixture records that
+  reading case without treating it as supported annotation creation.
+- Additional checks :: The annotation package passed under the race detector
+  in 5.179 seconds. The affected HTTP placement, repeated-note, rejection and
+  lifecycle checks passed in the 111.816-second race run; that run separately
+  rejected an exploratory heading with an empty =::= tag suffix. The fixture now
+  uses an ordinary heading, retaining the plain-prose =::= case. The final
+  served-target contract passed under the race detector in 9.288 seconds.
+- Remaining unoffered structures :: Local inspection found indented quote
+  containers and one list item with multiline verbatim markup still unverified.
+  These are retained source-mapper boundaries, not targets admitted by this
+  correction. Empty descriptions containing only child lists delegate targets
+  to those children.
+- Limit :: HTTP and parsed-HTML checks do not establish browser click handling
+  or presented layout. The original browser failure remains pending user retest.
+- Static checks :: =make lint= passed after adding a narrow fixed-fixture-path
+  justification for the security linter. =sanitize oed= left the changed
+  documentation unchanged; delivery readiness validation reports a valid schema.
+
+#+BEGIN_SRC sh
+go test -race ./internal/annotation -count=1 -timeout=2m
+go test -race ./internal/preview -run '^(TestHTTPAnnotationTargetContract|TestHTTPBlockAnnotations|TestHTTPBlockRejectsUnverifiedTargets|TestHTTPRepeatedBlockNotesAndHeadingAnchor|TestRT011_5_RepeatedMultiParagraphFootnoteLifecycle)$' -count=1 -timeout=3m
+go test -race ./internal/preview -run '^TestHTTPAnnotationTargetContract$' -count=1 -timeout=1m
+#+END_SRC
 
 * Packaging execution, 20 September 2026
 

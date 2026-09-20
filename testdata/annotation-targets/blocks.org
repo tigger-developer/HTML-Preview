@@ -1,0 +1,71 @@
+#+TITLE: Annotation target contract
+#+TODO: TODO | DONE
+
+* TODO Heading /emphasis/ :sample:
+:PROPERTIES:
+:CUSTOM_ID: target-heading
+:END:
+
+Ordinary paragraph with *strong text*, /emphasized text/, =literal text=,
+~inline code~ and [[#target-heading][a local link]].
+The second source line belongs to the same paragraph.[fn:existing]
+
+- Tight item with *item emphasis*.
+- Parent item
+  - Nested child with /child emphasis/.
+- [X] Checked item.
+- [ ] Unchecked item.
+- [/] Partial item.
+
+- Term :: Definition body with *definition emphasis*.
+
+* Blocks
+
+#+BEGIN_SRC go
+fmt.Println("source block")
+#+END_SRC
+
+| Column | Value |
+|--------+-------|
+| Cell   | Text  |
+
+#+BEGIN_QUOTE
+Quoted paragraph with /quote emphasis/.
+#+END_QUOTE
+
+#+BEGIN_VERSE
+First verse line
+Second verse line
+#+END_VERSE
+
+* Nested definitions
+
+** Description group
+
+- Summary :: A description before the nested items.
+- Details ::
+  - =Nested literal item.=
+  - Nested ordinary item.
+- Explanation :: A description after the nested items.
+
+Paragraph after the description list.
+
+** Continued descriptions
+
++ Continuation ::
+  Description starting on the following line.
++ Empty ::
++ Next :: Description following an empty entry.
+
+- Container
+  * Inner ::
+    - Star-nested child.
+
+1. Numbered ::
+   - Numbered-nested child.
+
+Ordinary prose ending with ::
+
+* Footnotes
+
+[fn:existing] Existing footnote body.

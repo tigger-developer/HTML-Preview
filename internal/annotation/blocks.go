@@ -4,8 +4,11 @@ package annotation
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
+
+var emptyOrgDescription = regexp.MustCompile(`^[ \t]*(?:[-+*]|[0-9]+[.)])[ \t]+.*[ \t]::[ \t]*$`)
 
 // BlockBoundary belongs to one exact source revision, not to client-provided offsets.
 type BlockBoundary struct {
@@ -118,6 +121,12 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 			continue
 		}
 		start, end, heading := headingProse(line.text, format, states)
+		// A marker immediately after a definition's empty :: delimiter turns
+		// it into ordinary list text. Leave this structural boundary alone;
+		// subsequent description lines and nested items have their own probes.
+		if format == "org" && !heading && emptyOrgDescription.MatchString(line.text) {
+			continue
+		}
 		if strings.HasPrefix(trim, "#") && !heading {
 			continue
 		}
