@@ -53,9 +53,12 @@ func TestRT001_17_WSLExplicitBatch(t *testing.T) {
 func TestRT001_9_AllSettingBoundaries(t *testing.T) {
 	root := t.TempDir()
 	p := source(t, root, "doc.md", "text")
+	// An optional reader stops at dependency discovery after validating settings.
+	// Native Markdown no longer requires Pandoc and would enter the retention wait.
+	optional := source(t, root, "doc.commonmark", "text")
 	valid := []string{"HTMLPREVIEW_LINKS=0", "HTMLPREVIEW_LINKS=1", "HTMLPREVIEW_MODE=quick", "HTMLPREVIEW_MODE=read", "HTMLPREVIEW_GRACE=100ms", "HTMLPREVIEW_GRACE=1h", "HTMLPREVIEW_DEADLINE=100ms", "HTMLPREVIEW_DEADLINE=10m", "HTMLPREVIEW_MAX_FILES=1", "HTMLPREVIEW_MAX_FILES=500", "HTMLPREVIEW_MAX_DEPTH=0", "HTMLPREVIEW_MAX_DEPTH=10", "HTMLPREVIEW_MAX_SOURCE_BYTES=1", "HTMLPREVIEW_MAX_SOURCE_BYTES=10485760", "HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES=1", "HTMLPREVIEW_MAX_TOTAL_SOURCE_BYTES=52428800", "HTMLPREVIEW_MAX_OUTPUT_BYTES=1", "HTMLPREVIEW_MAX_OUTPUT_BYTES=104857600", "HTMLPREVIEW_ROOT=" + root}
 	for _, setting := range valid {
-		r := run(t, root, []string{setting, "PATH="}, p)
+		r := run(t, root, []string{setting, "PATH="}, optional)
 		if r.code != 1 || !strings.Contains(r.stderr, "Pandoc") {
 			t.Errorf("valid boundary %s rejected as %d: %s", setting, r.code, r.stderr)
 		}

@@ -41,7 +41,7 @@ The language is unknown; this text stays plain.
 The script-looking line above is code text. It must never execute.
 
     Indented Markdown code is also a copy target.
-    Its indentation follows Pandoc's parsed code value.
+    Its indentation follows the native Markdown parser's code value.
 
 An empty code block has no enabled copy action:
 
@@ -63,17 +63,21 @@ Second occurrence. It receives a distinct final destination.
 
 ## A long line
 
-Raw semantic <code>inline HTML code</code> follows the same copying rule.
+The following retained HTML examples demonstrate omission in Markdown. Inline
+tags disappear, leaving their text without a code-copy control; complete HTML
+blocks below disappear. The preview and CLI show one omission warning.
+
+Raw semantic <code>inline HTML code</code> becomes ordinary text.
 
 <pre><code>Raw HTML block &lt;text&gt; &amp; spaces
 </code></pre>
 
-Two semantic code values can share one preformatted block. Each copy button
-copies its own value:
+This older HTML copy example contains two code values. Native HTML previews
+retain that behaviour; Markdown omits the whole block:
 
 <pre><code>first value</code> / <code>second value</code></pre>
 
-The block below contains only whitespace and remains copyable:
+This older whitespace-only HTML example is also omitted from Markdown:
 
 <pre><code> 	 
 </code></pre>
@@ -86,3 +90,8 @@ Selecting text by dragging does not copy it. The first click of a double-click
 may copy before the browser selects the word. Clipboard refusal offers a
 readonly manual-copy field. No-JavaScript reading keeps all content open;
 printing includes all content and hides the controls.
+
+## Document changes
+
+- 20 September 2026: native Markdown code parsing and intentional HTML omission
+  replace the former Pandoc and raw-HTML copying expectations.

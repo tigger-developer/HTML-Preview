@@ -61,7 +61,7 @@ func TestRT001_14_ReleaseArchives(t *testing.T) {
 		if err := gz.Close(); err != nil {
 			t.Fatal(err)
 		}
-		for _, file := range []string{"htmlpreview", "LICENSE", "THIRD_PARTY_NOTICES.md", "asap-OFL.txt", "iosevka-custom-OFL.md", "golang-x-net-LICENSE", "bluemonday-LICENSE.md", "douceur-LICENSE", "gorilla-css-LICENSE", "tdewolff-parse-LICENSE.md", "go-yaml-LICENSE", "share/htmlpreview/config.example.yaml", "share/htmlpreview/SERVICE.md"} {
+		for _, file := range []string{"htmlpreview", "LICENSE", "THIRD_PARTY_NOTICES.md", "asap-OFL.txt", "iosevka-custom-OFL.md", "golang-x-net-LICENSE", "bluemonday-LICENSE.md", "douceur-LICENSE", "gorilla-css-LICENSE", "tdewolff-parse-LICENSE.md", "go-yaml-LICENSE", "goldmark-LICENSE", "share/htmlpreview/config.example.yaml", "share/htmlpreview/SERVICE.md"} {
 			if len(seen[file]) == 0 {
 				t.Errorf("%s lacks %s", name, file)
 			}
@@ -104,7 +104,10 @@ func TestRT001_14_ReleaseArchives(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, part := range []string{"class Htmlpreview < Formula", "depends_on \"pandoc\"", "depends_on :macos", "Hardware::CPU.arm?", "darwin-arm64.tar.gz", "darwin-amd64.tar.gz", "file://", "bin.install \"htmlpreview\""} {
+	if strings.Contains(string(formula), "depends_on \"pandoc\"") {
+		t.Fatal("native installation still requires Pandoc")
+	}
+	for _, part := range []string{"class Htmlpreview < Formula", "goldmark-LICENSE", "depends_on :macos", "Hardware::CPU.arm?", "darwin-arm64.tar.gz", "darwin-amd64.tar.gz", "file://", "bin.install \"htmlpreview\""} {
 		if !strings.Contains(string(formula), part) {
 			t.Errorf("formula lacks %s", part)
 		}

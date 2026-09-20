@@ -172,7 +172,7 @@ func prepareHTTP(ctx context.Context, sources []sourceContext, cfg config, conne
 			Error string `json:"error"`
 		}
 		if decodeControl(data, &failure) == nil && failure.Error == "invalid_reader" {
-			return prepared, nil, &readerError{errors.New("invalid or unavailable --from reader; use --list-input-formats")}
+			return prepared, nil, &readerError{errors.New("invalid or unavailable --from reader; use --list-input-formats; optional readers require compatible Pandoc on the service PATH")}
 		}
 	}
 	if code != 200 || decodeControl(data, &response) != nil || response.Protocol != 1 || len(response.Results) != len(sources) {
@@ -205,7 +205,11 @@ func preflightHTTP(ctx context.Context, sources []sourceContext, cfg config, sta
 			continue
 		}
 		if result.Error != "" {
-			log.warn("source %q: service refused input", src.logical)
+			if result.Error == "optional_reader_unavailable" {
+				log.warn("source %q: optional reader unavailable; install compatible Pandoc on the service PATH", src.logical)
+			} else {
+				log.warn("source %q: service refused input", src.logical)
+			}
 			prepared.invalid = true
 			continue
 		}

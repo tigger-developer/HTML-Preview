@@ -31,6 +31,17 @@ func TestRT014_6_NativeServiceWithoutPandoc(t *testing.T) {
 		if status != 200 || !strings.Contains(string(body), "Native ") {
 			t.Fatal("native preview unavailable without Pandoc", status)
 		}
+		// A failed optional request must leave this running native service usable.
+		source(t, s.root, "optional.docx", "unreadable office fixture")
+		optionalURL := url[:strings.LastIndex(url, "/")+1] + "optional.docx"
+		status, _, body = responseAsset(t, s, "GET", optionalURL)
+		if status != 415 || !strings.Contains(string(body), "Pandoc") {
+			t.Fatal("missing optional dependency has no actionable diagnostic", status)
+		}
+		status, _, body = responseAsset(t, s, "GET", url)
+		if status != 200 || !strings.Contains(string(body), "Native ") {
+			t.Fatal("failed optional request poisoned native service", status)
+		}
 	}
 }
 
