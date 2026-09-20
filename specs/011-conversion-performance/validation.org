@@ -128,10 +128,11 @@
 :REASON: Candidate implementation pending; execute the specified bounded two-build local comparison after regression success.
 :END:
 
-** AMBER OT011.2 - Packaging and dependencies :testdef:
+** GREEN OT011.2 - Packaging and dependencies :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ot-011-2-result
-:REASON: Candidate dependency adoption, release builds, vulnerability scans and staged native trial pending.
+:REVISION: 216bee6 native converter checkpoint; package build used the identical implementation before commit
+:EVIDENCE: Four release targets built; licence bytes matched; isolated Darwin arm64 service rendered through a symlink without Go/Rust on PATH. Actual-code and unreplaced-upstream vulnerability scans both reported no vulnerabilities.
 :END:
 
 * User tests
@@ -147,3 +148,48 @@
 :CUSTOM_ID: ut-011-2-result
 :REASON: Human annotation interaction review follows implementation; HTTP results do not establish presented UX.
 :END:
+
+* Packaging execution, 20 September 2026
+
+- Candidate :: =216bee67bd61455f7ed859a635feb041b7b7ea26=, native converter
+  checkpoint. Archives were built immediately before that checkpoint with the
+  same production files; their embedded revision label names the preceding
+  checkpoint. No live installation or manager restart occurred.
+- Environment :: Darwin arm64, Go =1.26.8=, Pandoc =3.9.0.2=.
+- Build command :: =VERSION=0.1.0 make release= produced the four supported
+  archives. This version is a local packaging-test value, not a release tag.
+- Native trial :: Unpacked Darwin arm64 archive; executable symlink outside the
+  checkout; isolated config, document root and runtime socket; PATH containing
+  Pandoc and system utilities but no Go, Cargo or Rust compiler. The real
+  service returned HTTP 200 with Org content, task text, highlighted Go and
+  six embedded font faces, then shut down successfully.
+- Notices :: Parser, Chroma, regexp2, project and both font licences in every
+  archive matched tracked bytes. All 16 copied upstream Org files were compared
+  with the pinned module: only =document.go= differs, for the documented scanner
+  allowance. Upstream module metadata confirms the recorded commit hash.
+- Vulnerabilities :: =make vulncheck= reported =No vulnerabilities found.= for
+  both linked application code and the locked unreplaced-upstream module scan.
+  The initial module-only command rejected package patterns; the corrected
+  documented invocation passed. No scanner finding was suppressed.
+- Static checks :: =make lint= passed with the documented StyLua =2.5.2=
+  executable provisioned only in OS temporary storage. Its archive SHA-256
+  matched the upstream release digest. Initial missing-tool execution was
+  inconclusive, not a lint success. No browser code or styles changed.
+- Coverage :: Existing targeted worker/HTTP tests instrumented through
+  =go test -coverpkg=./internal/orgconvert= and combined =set= profiles cover
+  87.7% of the new package statements. Source-preservation and legacy-note
+  cases supplement the focused native pack. This measurement does not replace
+  the full race suite or human interaction review.
+
+| Package target | Executable bytes |
+|----------------+------------------|
+| macOS amd64 | 22,936,880 |
+| macOS arm64 | 21,735,490 |
+| Linux amd64 | 22,509,073 |
+| Linux arm64 | 21,147,262 |
+
+The preserved macOS arm64 Pandoc baseline at =96a8a2c= is 16,985,122 bytes.
+The candidate adds 4,750,368 bytes (28.0%), including the parser, highlighter and
+adapter; this is not an isolated library-size measurement. Linux/WSL runtime
+and desktop behaviour remain untested here; cross-compilation does not qualify
+those platforms.
