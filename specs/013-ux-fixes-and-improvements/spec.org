@@ -62,6 +62,39 @@ annotations:
   section_title: "Footnotes & Annotations"
 #+END_SRC
 
+* Backlog: annotation input guards
+** Prevent input beyond the annotation limit
+- Status :: *Important pre-existing UX defect*, reported 2026-09-20; implementation
+  pending. Separate from the native Markdown migration.
+- Observation :: The editor accepts further typing beyond its save limit. An amber
+  warning appears, but the blocking alert occurs only when leaving the editor.
+- Required outcome :: *Prevent input beyond the supported limit while editing*,
+  with immediate, accessible feedback. Preserve accepted text and allow deletion
+  or replacement at the limit; handle typing, paste and input-method composition
+  without silently discarding existing text.
+- Current limit :: *4,000 Unicode code points and 16,384 UTF-8 bytes*, hardcoded in
+  =assets/web/annotation-composer.js= and =internal/annotation/{event,replace}.go=.
+  These are not YAML configuration keys. Retain server-side enforcement.
+- Verification to define :: Boundary input, paste, selection replacement, accented
+  and supplementary characters, composition, editing existing notes and recovery.
+  Input rejection must occur before the leave-editor workflow.
+
+** Preserve Org footnote paragraph boundaries
+- Status :: *Confirmed syntax constraint; editor guard pending definition*.
+- Authority :: [[https://orgmode.org/manual/Creating-Footnotes.html][Org manual: Creating Footnotes]]
+  ends a definition at the next definition, heading or *two consecutive empty lines*.
+- Distinction :: =first\n\nsecond= contains *one blank line* and permits another
+  paragraph. =first\n\n\nsecond= contains *two blank lines* and ends the footnote.
+- Intended guard :: Preserve normal multi-paragraph notes; prevent an extra blank
+  line from terminating an Org definition while composing ordinary prose. Include
+  pasted text and whitespace-only lines; do not apply the Org rule indiscriminately
+  to Markdown or literal blocks. Exact input handling remains to be defined.
+- Existing protection :: =ordinaryNoteEnd= recognizes this boundary; native creation
+  and editing reparse the generated definition and reject a boundary-breaking save.
+  This protects persistence but does not establish adequate editor feedback.
+- Verification to define :: Single blank-line paragraph separation, two blank lines,
+  whitespace-only lines, LF/CRLF, creation and editing; preserve unrelated source.
+
 * Verification to retain
 ** RT013.2 - Wrapped descriptions and indented containers :testdef:
 :PROPERTIES:

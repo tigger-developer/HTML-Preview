@@ -127,21 +127,30 @@
 
 * User tests
 
-** AMBER UT014.1 - Reading interface :testdef:
+** GREEN UT014.1 - Reading interface :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ut014-1-result
-:REASON: Pending user validation after implementation.
+:REVISION: 645aaa8 - isolated native Markdown review executable
+:EVIDENCE: User validation PASS reported 2026-09-20 for the complete reading-interface checklist.
 :END:
 
 - Definition :: [[file:spec.org::#ut-014-1][UT014.1 - Reading interface]].
+- Method :: User validation against the isolated review service. Browser and
+  viewport details were not supplied; no automated visual result is implied.
+- Prior state :: AMBER, pending user validation after implementation.
 
-** AMBER UT014.2 - Annotation workflow :testdef:
+** GREEN UT014.2 - Annotation workflow :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ut014-2-result
-:REASON: Pending user validation after implementation.
+:REVISION: 645aaa8 - isolated native Markdown review executable
+:EVIDENCE: User validation PASS reported 2026-09-20 for the complete annotation-workflow checklist.
 :END:
 
 - Definition :: [[file:spec.org::#ut-014-2][UT014.2 - Annotation workflow]].
+- Method :: User validation against the isolated review service. Browser and
+  viewport details were not supplied. Pre-existing input-limit feedback is
+  tracked separately in [[file:../013-ux-fixes-and-improvements/spec.org][W013 - UX fixes and improvements]].
+- Prior state :: AMBER, pending user validation after implementation.
 
 * One-off tests
 
