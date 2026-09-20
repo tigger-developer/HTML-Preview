@@ -125,7 +125,7 @@ func preserveOrgCode(data []byte, token string, wrapperDisplay *string) (preserv
 				}{
 					ID: fmt.Sprintf("htmlpreview-code-%s-%d", token, codeCount), Text: literal.String(), Language: language,
 				})
-				out.WriteString("\n#+begin_export htmlpreview-code-" + token + "\n" + string(record) + "\n#+end_export\n")
+				out.WriteString("#+begin_export htmlpreview-code-" + token + "\n" + string(record) + "\n#+end_export\n")
 			} else {
 				out.WriteString(marker("<pre><code>" + html.EscapeString(literal.String()) + "</code></pre>"))
 			}

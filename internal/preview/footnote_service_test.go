@@ -360,6 +360,7 @@ func TestRT009_8_EditableNotesPreserveRenderedMarkup(t *testing.T) {
 	s := startTestService(t, NativeHost())
 	for _, tc := range []struct{ format, body string }{
 		{"org", "Text[fn:a].\n\n[fn:a] - First item\n  - Second item\n\n#+BEGIN_EXAMPLE\n[fn:fake] literal\n#+END_EXAMPLE\n"},
+		{"org", "Text[fn:a].\n\n[fn:a] - First item\n  - Second item\n\n#+BEGIN_SRC go\n// literal [fn:fake]\n#+END_SRC\n"},
 		{"md", "Text[^a].\n\n[^a]: - First item\n      - Second item\n\n    ```\n    [^fake]: literal\n    ```\n"},
 	} {
 		t.Run(tc.format, func(t *testing.T) {
