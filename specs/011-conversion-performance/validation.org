@@ -9,7 +9,7 @@
 ** GREEN RT011.1 - Format routing :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-1-result
-:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
 :COMMAND: make test; affected code/footnote race command recorded below
 :EVIDENCE: Native Org, explicit reader, linked Org, text/code wrappers and packaged symlink cases pass; Markdown and other reader preservation tests pass.
 :END:
@@ -25,7 +25,7 @@
 ** GREEN RT011.2 - Semantic HTML :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-2-result
-:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
 :COMMAND: make test; affected code/footnote race command recorded below
 :EVIDENCE: Semantic output checks pass for metadata, outline/navigation, declared task categories, checkbox variants and explicit footnote structure/roles/relationships.
 :END:
@@ -41,7 +41,7 @@
 ** GREEN RT011.3 - Literal code :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-3-result
-:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
 :COMMAND: make test; affected code/footnote race command recorded below
 :EVIDENCE: Known-language highlighting and exact literal/copy payloads pass; source and example blocks remain inside multi-paragraph footnotes.
 :END:
@@ -57,7 +57,7 @@
 ** GREEN RT011.4 - Block placement :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-4-result
-:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
 :COMMAND: make test; affected code/footnote race command recorded below
 :EVIDENCE: Whole-block HTTP placement, short definition, nested/list/task/container cases, repeated notes and rejection of unverified targets pass without weakening source proof.
 :END:
@@ -73,7 +73,7 @@
 ** GREEN RT011.5 - Footnote lifecycle :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-5-result
-:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
 :COMMAND: make test; affected code/footnote race command recorded below
 :EVIDENCE: Ordinary and repeated multi-paragraph footnotes pass identification, edit, reload and deletion; BOM, legacy reading, source preservation and sidecar cases pass.
 :END:
@@ -89,7 +89,7 @@
 ** GREEN RT011.6 - Trust boundaries :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-6-result
-:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
 :COMMAND: make test; affected code/footnote race command recorded below
 :EVIDENCE: No-fetch/no-execution publication checks and valid/malformed/duplicate private-record controls pass under the native converter.
 :END:
@@ -105,7 +105,7 @@
 ** GREEN RT011.7 - Limits and failure recovery :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-7-result
-:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
 :COMMAND: make test; affected code/footnote race command recorded below
 :EVIDENCE: Native protocol, long lines, exact/excess input/output bounds, runtime memory abort, started-child cancellation/output flood, reaping, cleanup and recovery all pass.
 :END:
@@ -173,7 +173,7 @@
 ** GREEN OT011.2 - Packaging and dependencies :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ot-011-2-result
-:REVISION: de0cb56 native footnote compatibility checkpoint
+:REVISION: e171898 corpus compatibility checkpoint; prior package trials retained below
 :EVIDENCE: Four release targets built; licence bytes matched; isolated Darwin arm64 service rendered through a symlink without Go/Rust on PATH. Actual-code and unreplaced-upstream vulnerability scans both reported no vulnerabilities.
 :END:
 
@@ -277,3 +277,79 @@ those platforms.
   list corrections and synthetic reproducer are documented in the local-module
   README; the earlier scanner-only comparison above records its earlier build.
 - Static checks :: =make lint= passed after these corrections.
+- Heading search follow-up :: Source markup and rendered-text spellings both
+  resolve to the final custom ID. Missing and duplicate headings stay inactive.
+  The affected heading/native lifecycle race checks passed in 34.693 seconds.
+- Source placement follow-up :: Three added HTTP cases save notes after wrapped
+  =p. 32= prose, a definition, and its neighbouring ordinary list item. The
+  focused race execution passed in 8.676 seconds.
+- Final package refresh :: After =e171898=, all four release targets rebuilt.
+  The isolated Darwin arm64 symlink/service trial passed, with licence bytes
+  matching tracked files and no Go/Rust executable on the runtime PATH.
+  Final executable sizes are 22,937,104 bytes (Darwin amd64), 21,735,698 (Darwin
+  arm64), 22,509,534 (Linux amd64) and 21,147,331 (Linux arm64). Only
+  =document.go= and =list.go= differ from the pinned upstream Org package;
+  the upstream licence remains byte-identical. =make lint= passed again.
+  The final =make vulncheck= also passed both application and unreplaced-upstream
+  scans with no vulnerabilities reported.
+- Coverage refresh :: Current native, block-placement, checkbox, preserved Org
+  and legacy-import executions pass with converter instrumentation. Combined
+  =set= profiles cover 87.4% of current =internal/orgconvert= statements.
+  The focused placement additions passed under the race detector separately;
+  the full historical suite is not being repeated for a coverage counter.
+
+* Benchmark checkpoint, 20 September 2026
+
+- Revisions :: Baseline =96a8a2ce165333045a377c38da044bb501461e4f=;
+  corrected candidate =e171898=. Go =1.26.8=, Pandoc =3.9.0.2=,
+  Darwin arm64. The live installation was not changed.
+- Progress :: 75 retained final-build operations, plus 33 preliminary or
+  interrupted operations, reached the approved cap of 108. The script stopped
+  there. Approval for up to 36 additional operations was requested; no increased
+  cap is assumed. The spec-document samples remain incomplete, so OT011.1
+  remains AMBER.
+- Method :: Fresh disposable source copies and service contexts; one warm-up
+  and five measured samples per completed row. GET and POST retain every
+  normal conversion/proof pass. CLI timing ends at captured browser handoff;
+  it includes the child CLI startup and capture overhead, excludes the browser
+  and subsequent cleanup grace. No browser was opened.
+- Source preservation :: Every retained execution checked unchanged source on
+  GET/CLI or an exact original prefix with only the added native reference and
+  appended definition on POST. Prior note text and counts were checked, and
+  both saved UTF-8 paragraphs were present in the refreshed HTML.
+- Semantic comparison :: The corrected large source has the same 347 headings
+  and two references. It offers 953 verified blocks versus the baseline's 945;
+  counts are descriptive, not a substitute for endpoint proof. Remaining main
+  text differences are native recognition of valid verbatim markup and explicit
+  diagnostics for two source heading links without an exact destination.
+  The work ledger differs only by preserving literal underscores in one branch
+  name. The specification's normalized main text matches the baseline.
+- Conversion counts :: Large GET and POST/refresh use three converter calls.
+  The work ledger GET uses two, POST/refresh three. The initial specification
+  GET uses two. The CLI subprocess capture does not instrument converter calls;
+  its raw counter value zero is not a claim of zero conversion work.
+- Qualification :: The completed large GET row is 8.4% of baseline, satisfying
+  that numerical threshold. The work-ledger row improves. The third document's
+  required sampling is outstanding; these results do not qualify the whole OT.
+
+| Document | Operation | Pandoc median seconds (range) | Native median seconds (range) |
+|----------+-----------+-------------------------------+-------------------------------|
+| Large Org | GET | 7.951 (7.891–7.968) | 0.665 (0.663–0.679) |
+| Large Org | POST and refresh | 8.046 (8.041–8.106) | 0.793 (0.768–0.797) |
+| Large Org | CLI handoff | 2.425 (2.398–2.457) | 0.311 (0.307–0.314) |
+| Work ledger | GET | 0.558 (0.556–0.566) | 0.047 (0.047–0.050) |
+| Work ledger | POST and refresh | 0.858 (0.849–0.872) | 0.074 (0.073–0.078) |
+| Work ledger | CLI handoff | 0.454 (0.447–0.456) | 0.206 (0.205–0.211) |
+
+Frozen input SHA-256 identities and byte sizes:
+
+| Corpus | Bytes | SHA-256 |
+|--------+-------+---------|
+| Authorized large Org | 531757 | 5a8cdaed11ed712c7a75d9e3281df0102eb4ee9864f797edfc400ef1a050adfb |
+| Work ledger | 15063 | fce97c20afac69c1005e748ed467b7b3a3b828aa29f5d8c113f7d57ac3163ed1 |
+| Reader/annotation specification | 108554 | 0b48eea39ce4fb4a4d5223f56e892ef1a6812fdc2cdcdff50a9545358fe59de7 |
+
+Private raw corpus, normalized output and per-sample logs remain in the
+OS-allocated temporary benchmark directory. Aggregate results contain no
+document text. Process-level peak resident measurements are recorded separately;
+they do not measure only the parser or establish a hard worker memory ceiling.

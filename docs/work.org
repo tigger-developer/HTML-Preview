@@ -275,6 +275,10 @@ classification; it is provenance, not current state.
 - Lineage :: The initial repeated-pass/native-reader assessment is superseded
   by the converter-only design; its earlier recommendation remains in the
   assessment history.
+- Delivery :: Native worker, HTML adapter and compatibility regressions are on
+  =011-conversion-performance=. The working master installation is unchanged.
+  [[file:../specs/011-conversion-performance/validation.org][Validation evidence]] records regression,
+  packaging and partial benchmark results; human reader/annotation tests remain.
 
 ** ACTIVE W012 - Replace stale installation links and launchd services :defect:
 :PROPERTIES:
