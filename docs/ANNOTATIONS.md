@@ -1,6 +1,6 @@
 ---
 title: Document annotations
-version: 4
+version: 5
 last-updated: 2026-09-20
 ---
 
@@ -116,8 +116,14 @@ seconds during continuous typing when no previous save is in flight. Only one
 save runs at a time. Text entered during a save is batched through the debounce
 after acknowledgement; it does not trigger immediate back-to-back submissions.
 Leaving the editor flushes the latest text. Input-method composition suspends submission.
-Comments accept up to 4,000 Unicode characters and 16 KiB. Opening an empty
-composer writes nothing. Clearing an active saved draft removes its owned
+Comments accept up to **4,000 Unicode code points** and **16 KiB of UTF-8 text**.
+These fixed browser/server limits have no YAML setting. A code point is not
+necessarily a whole visible character: combining accents and multi-part emoji
+can use several. The current textbox permits excess input, but that value cannot
+be saved; leaving the editor can open recovery. Shorten the draft to resume
+saving. Preventing excess typing and paste is tracked in
+[W013 - UX fixes and improvements](../specs/013-ux-fixes-and-improvements/spec.org).
+Opening an empty composer writes nothing. Clearing an active saved draft removes its owned
 reference and definition. Editing an existing footnote requires non-empty text;
 clearing it does not delete it. Recovery now uses **Copy**, **Revert** and
 **Try again** in a modal dialog, as described below. This replaces the earlier
@@ -126,6 +132,14 @@ inline Restore last autosave, Use current footnote and Copy draft controls.
 Trailing line breaks are accepted while typing and omitted from the saved note
 text. Internal paragraph breaks, spaces and native markup remain intact. A change
 consisting only of trailing line breaks does not refresh the attribution.
+
+For ordinary Org footnote prose, use **one blank line between paragraphs**.
+Two consecutive blank lines end the definition, as do a new heading or footnote
+definition. Thus `first\n\nsecond` separates paragraphs, while
+`first\n\n\nsecond` ends the note before `second`.
+The writer rejects text that would escape its footnote boundary; preventing
+that input in the editor remains in the W013 backlog. Markdown uses its own continuation
+indentation rules. See the [Org footnote syntax](https://orgmode.org/manual/Creating-Footnotes.html).
 
 ## Reading and source inspection
 
@@ -327,6 +341,8 @@ confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
+- Version 5: clarify fixed code-point/byte limits, the current excess-input
+  limitation and Org paragraph boundaries, with pending editor guards linked.
 - Version 4: distinguish the current native-footnote and block-target interface
   from its superseded event-history design.
 - 19 September 2026: Fifteen-second request deadlines and connection recovery

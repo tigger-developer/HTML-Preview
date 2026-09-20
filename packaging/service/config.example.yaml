@@ -1,4 +1,5 @@
-# No directories are served until the user supplies explicit absolute roots.
+# This selected config serves nothing until roots are supplied.
+# Roots accept absolute paths, ~/ paths and $TMPDIR with an optional child path.
 version: 1
 serve:
   roots: []

@@ -1,6 +1,6 @@
 ---
 title: Architecture
-version: 6
+version: 7
 last-updated: 2026-09-20
 ---
 
@@ -20,7 +20,10 @@ The [annotation guide](ANNOTATIONS.md) defines the current interaction and limit
 
 **Status:** The native Org migration is implemented and remains in paired user
 testing on master. See [migration validation](../specs/011-conversion-performance/validation.org).
-Linux/WSL and browser evidence remain separate from Go/HTTP verification.
+The native Markdown migration was accepted and merged on 20 September 2026;
+its [validation record](../specs/014-native-markdown/validation.org) includes
+the reading and annotation user tests. Native Linux/WSL execution remains
+separate from Go/HTTP and cross-build verification.
 
 **Historical sections:** The dated service, annotation and input-format proposals
 retain earlier design decisions. Explicitly superseded graph, append-history,
@@ -57,8 +60,9 @@ annotation and packaging evidence is retained in
 ## Native Org conversion - 20 September 2026
 
 [W011 - Fast Org previews](../specs/011-conversion-performance/spec.org) replaces
-Pandoc only for Org and the internal Org wrappers for code/plaintext. Markdown
-and other readers retain Pandoc. The existing preservation, annotation projection,
+Pandoc for Org and the internal Org wrappers for code/plaintext. That migration
+left Markdown on Pandoc; W014 subsequently replaced it with Goldmark. Other
+readers retain optional Pandoc. The existing preservation, annotation projection,
 block-proof passes, passive-content policy and publication pipeline remain.
 Earlier descriptions below of Pandoc owning Org output describe the superseded
 converter; their source, browser and security contracts continue to apply.
@@ -569,7 +573,7 @@ remote assets, so it is not the default mechanism for packaging only the theme.
 [W002 - Code and document navigation](../specs/002-code-and-outline/spec.org)
 extends the approved renderer. The Pandoc route runs with standalone output and
 the owned `page.html5` template. This intermediate wrapper includes only the
-generated body and optional contents; native Org supplies the same contract.
+generated body and optional contents; native Org and Markdown supply the same contract.
 The final Go template adds the original
 source header, fonts, policy and browser script once.
 
@@ -684,7 +688,8 @@ signs, and literal filename delimiters. Use Go's
 | An external URL | The original external URL |
 
 Discover links and rewrite output with an HTML parser. This includes ordinary
-links emitted by either converter and literal HTML anchors preserved in source documents.
+links emitted by the converters and anchors retained by the passive native-HTML
+route. Authored raw HTML in Markdown is omitted before this stage.
 The dependency is `golang.org/x/net/html`, the Go project's HTML5
 parser. It handles HTML structure; the standard library's escaping helpers and
 XML parser are insufficient substitutes. Its maintained release series is a
@@ -1010,7 +1015,7 @@ This supersedes inline recovery controls above the composer. Source revision,
 operation identity and filesystem safeguards remain unchanged.
 
 Long sidebar footnotes have a short collapsed preview and explicit expansion
-control. The same full Pandoc endnotes remain available for editing, ordinary
+control. The same full converter-generated endnotes remain available for editing, ordinary
 reading and print; truncation never modifies saved text. Interaction evidence is
 tracked in the reader-annotation specification's validation record.
 
@@ -1131,6 +1136,8 @@ including a submodule, without changing rendering or source authorization.
 
 ## Document changes
 
+- Version 7: reconcile accepted native Markdown routing, shared endnote handling
+  and the raw-HTML boundary; retain superseded converter decisions as history.
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
   with HTML omission notices and unchanged shared annotation boundaries.
 

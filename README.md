@@ -1,6 +1,6 @@
 ---
 title: htmlpreview
-version: 3
+version: 4
 last-updated: 2026-09-20
 ---
 
@@ -15,8 +15,13 @@ reader selection and resource limits.
 Org and Markdown are first-class native Go formats. Code/plaintext wrappers
 and passive HTML also work without Pandoc. Install optional Pandoc only for other
 readers, such as DOCX, ODT, EPUB and specialist Markdown dialects. The
-[W011 validation record](specs/011-conversion-performance/validation.org) tracks
-compatibility checks, performance measurements and human review separately.
+[native Org validation record](specs/011-conversion-performance/validation.org) tracks
+its compatibility checks, performance measurements and continuing human review.
+The [native Markdown migration](specs/014-native-markdown/spec.org) was accepted
+and merged into master on 20 September 2026; its
+[validation record](specs/014-native-markdown/validation.org) includes passing
+automated, performance and user checks. Native Linux/WSL execution remains
+separate from cross-build and macOS evidence.
 
 The [input-format support](specs/008-input-formats/spec.org) extends the
 earlier Org/Markdown-only scope. Its [validation record](specs/008-input-formats/validation.org)
@@ -239,7 +244,8 @@ Pandoc it lists `html`, `markdown` and `org`. Native Markdown supports `+smart`,
 `-smart` and `-raw_html`; other Markdown qualifiers are errors. Embedded Markdown
 HTML is omitted, with one CLI notice per document and a visible page warning.
 Ordinary `.json` defaults to pretty-printed code; `--from=json` selects Pandoc's
-JSON document AST. Unknown extensions need explicit selection. Native HTML
+JSON document AST. A suffix matching an installed reader also selects that reader;
+otherwise an unmapped extension needs explicit selection. Native HTML
 uses its separate passive policy and receives no application reading controls.
 
 | Setting | Default | Accepted values |
@@ -346,6 +352,8 @@ are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Document changes
 
+- Version 4: record Markdown migration acceptance and clarify installed-reader
+  suffix selection.
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
   with HTML omission notices and unchanged shared annotation boundaries.
 

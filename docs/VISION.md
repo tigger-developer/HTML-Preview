@@ -1,6 +1,6 @@
 ---
 title: Vision
-version: 3
+version: 4
 last-updated: 2026-09-20
 ---
 
@@ -30,6 +30,9 @@ service and a consistent, self-contained reading presentation.
   setting. Navigation branches fold and initially fit the available sidebar height.
 - The native Org migration remains in user testing. Linux/WSL user validation
   remains pending; implementation and automated checks do not establish those results.
+- The native Markdown migration was accepted and merged on 20 September 2026,
+  with reading and annotation user validation recorded in
+  [W014 validation](../specs/014-native-markdown/validation.org).
 
 See [usage](../README.md), [formats](FORMATS.md), [service configuration](SERVICE.md)
 and [annotations](ANNOTATIONS.md) for the current interfaces.
@@ -378,6 +381,8 @@ or capability URLs. These decisions are recorded in W010's paired amendments.
 
 ## Document changes
 
+- Version 4: record acceptance of the native Markdown migration separately from
+  continuing Org and platform validation.
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
   with HTML omission notices and unchanged shared annotation boundaries.
 

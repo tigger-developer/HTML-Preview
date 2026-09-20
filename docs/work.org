@@ -313,6 +313,9 @@ classification; it is provenance, not current state.
   evidence as work proceeds. No design audit at this stage.
 - Working branch :: Continue paired development on =master= following the
   authorized feature-branch integration on 20 September 2026.
+- Input-guard backlog :: Prevent typing/pasting beyond the fixed annotation limit
+  and guard against Org footnote-ending blank lines while retaining paragraph
+  separation. Both are recorded in the specification; implementation is pending.
 
 ** DONE W014 - Native Markdown previews with Goldmark :feature:
 :PROPERTIES:
@@ -328,9 +331,9 @@ classification; it is provenance, not current state.
 - Definition boundary :: *The native subset is selected*; fenced divs and other
   Pandoc-only extensions are not emulated. Server-side adaptation preserves the
   shared browser annotation contract, with rendered-HTML and HTTP creation tests.
-  Definition stays on =master=; implementation and installation are not part of this phase.
-- Approval :: Approved 2026-09-20. Delivery uses a separate feature branch;
-  the daily-driver installation remains unchanged.
+  Definition remained on =master=; implementation followed on =014-native-markdown=.
+- Approval :: Approved 2026-09-20. Delivery used a separate feature branch;
+  no daily-driver installation change was included.
 - Acceptance :: Delivery accepted 2026-09-20 after user validation; integration
   into =master= authorized. No live installation or service restart is included.
 - Validation :: [[file:../specs/014-native-markdown/validation.org][W014 - Native Markdown validation evidence]].

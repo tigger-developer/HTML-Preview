@@ -17,11 +17,13 @@ Absent/unreachable service or service-root exclusion selects a single-file
 preview. Invalid settings, protocol and conversion errors remain errors.
 
 Filename mappings cover document aliases, common code languages and .txt.
-Unknown suffixes require --from. Ordinary .json is pretty-printed source code;
+Suffixes matching installed reader names also select those readers; otherwise
+unmapped suffixes require --from. Ordinary .json is pretty-printed source code;
 --from=json selects the structured document AST reader instead. Reader extensions such
 as markdown+smart are validated. Native Markdown accepts only +smart, -smart
-and -raw_html. Other qualifiers, custom readers, filters and extra arguments
-are not accepted. Org, Markdown, code/text and HTML use bundled converters.
+and -raw_html; other native Markdown qualifiers are rejected. Optional readers
+accept their installed extension qualifiers. Custom readers, filters and extra
+arguments are not accepted. Org, Markdown, code/text and HTML use bundled converters.
 Other document readers require the optional converter described in README.md.
 Embedded HTML in Markdown is omitted with a CLI notice and preview banner. --from=html uses passive native HTML and accepts no extensions.
 
