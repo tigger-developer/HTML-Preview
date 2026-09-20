@@ -297,7 +297,8 @@ classification; it is provenance, not current state.
 :END:
 
 - Specification :: [[file:../specs/013-ux-fixes-and-improvements/spec.org][W013 - Open paired UX record]].
-- First increment :: Configurable top-level Org section for the first footnote.
+- First increment :: Configurable top-level Org or Markdown section for the first
+  footnote; shared title text with the format's native heading marker.
 - Current correction :: Wrapped description text, description labels and indented
   quotes receive verified annotation targets. [[file:../specs/013-ux-fixes-and-improvements/validation.org][Correction evidence]]
   separates automated checks from pending browser validation; section configuration

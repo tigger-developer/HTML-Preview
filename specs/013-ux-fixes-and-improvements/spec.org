@@ -10,7 +10,7 @@
 :CUSTOM_ID: summary
 :END:
 - Outcome :: Track *explicitly agreed UX changes* during paired development.
-- Pending increment :: Give new Org footnotes their *own configurable section*,
+- Pending increment :: Give new Org and Markdown footnotes their *own configurable section*,
   separate from the document's final content section when folding in Emacs.
 - Current increment :: Restore *annotation targets in wrapped descriptions and
   indented quotes*, including the corresponding description labels.
@@ -34,23 +34,25 @@
 - Separate correction :: The duplicate unplaced-footnote correction remains
   recorded under [[file:../011-conversion-performance/validation.org][W011 - Native Org preview validation]].
 
-* Backlog: agreed Org footnote section
+* Backlog: agreed Org and Markdown footnote section
 ** First footnote gets a configurable section
 :PROPERTIES:
 :CUSTOM_ID: ac-013-1
 :END:
 - Reserved requirement :: AC013.1 - Configurable section. *Pending implementation*;
   retained outside the active correction's acceptance/test inventory.
-- Default :: When creating the *first footnote in an Org document*, append a
-  top-level =* Footnotes & Annotations= heading and a *blank line* before the
-  first definition.
+- Default :: When creating the *first footnote in an Org or Markdown document*,
+  append a top-level heading and a *blank line* before the first definition.
+  Use =* Footnotes & Annotations= in Org and =# Footnotes & Annotations= in Markdown.
 - Configuration :: =annotations.section_title= defaults to
   =Footnotes & Annotations=. A custom string changes the title; an *empty string
   disables* automatic heading creation.
+- Title syntax :: The configured value contains *title text only*, without
+  =* = or =# =. The writer supplies the heading marker for the destination format.
 - Repetition :: Later footnotes reuse the section without duplicating its heading.
 - Existing documents :: Preserve existing footnote organization and headings.
-- Boundary :: This increment concerns *Org source organization*. Markdown
-  behaviour and the block-end insertion policy remain unchanged.
+- Boundary :: This increment concerns *Org and Markdown source organization*.
+  The block-end insertion policy remains unchanged.
 
 #+BEGIN_SRC yaml
 annotations:
@@ -75,18 +77,20 @@ annotations:
 - Covers :: [[#ac-013-1][AC013.1 - Configurable section]].
 - Reserved test :: RT013.1 - Section creation and source preservation. Not yet
   implemented or executed; activate with the configurable-section increment.
-- Check :: Default, custom and disabled configuration; first and subsequent
+- Check :: In both Org and Markdown, default, custom and disabled configuration;
+  native top-level heading syntax, a blank line before the definition, first and subsequent
   saves; existing native footnotes and section headings; unrelated source bytes.
 - Boundary :: Configuration and authenticated annotation writes with synthetic
   documents in temporary storage. No browser automation or personal fixtures.
-** Planned native Org folding and annotation workflow
+** Planned native folding and annotation workflow
 :PROPERTIES:
 :CUSTOM_ID: ut-013-1
 :END:
 - Covers :: [[#ac-013-1][AC013.1 - Configurable section]].
-- Reserved test :: UT013.1 - Native Org folding and annotation workflow.
+- Reserved test :: UT013.1 - Native folding and annotation workflow.
   Pending the configurable-section increment.
-- Check :: Review the generated source in Emacs and the refreshed preview;
+- Check :: Review generated Org and Markdown source and refreshed previews;
+  inspect Org folding in Emacs and
   verify the section folds independently and annotations remain usable.
 
 ** UT013.2 - Description and quote interaction :testdef:
@@ -104,6 +108,9 @@ annotations:
   paired instructions. Design review and ticket closure are deferred.
 - 2026-09-20 :: Prioritize *missing annotation targets* in wrapped descriptions
   and indented quotes before the pending configurable section increment.
+- 2026-09-20 :: Extend the pending section heading to *Markdown as well as Org*,
+  superseding the initial Org-only boundary. The shared configuration stores
+  title text; writers supply the native top-level heading marker.
 
 * Agreed correction: reachable annotation blocks
 ** AC013.2 - Reachable block annotation targets :ac:
