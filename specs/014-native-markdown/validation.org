@@ -152,3 +152,25 @@
   loopback ports. The separate exploratory timing executable is disabled after
   its PATH-only opener stub proved ineffective on macOS. No timing result from
   that interrupted run establishes the end-to-end comparison.
+
+** Run 2026-09-20 - Baseline HTTP and CLI timing
+
+- Revision :: =720e635= - pre-migration master; temporary build with the existing
+  =htmlpreview_test_desktop= tag. The tag intercepts desktop handoff and captures
+  the HTML through HTTP; no browser is launched.
+- Method :: Seven measurements after one warm-up per corpus. Each GET uses a
+  fresh registered source; each POST creates a native Markdown footnote in a
+  fresh disposable file. CLI timing includes the capture adapter's HTTP GET.
+- README :: 18,120 bytes; 8 headings, 64 writable targets, 0 prior note references.
+  Median CLI 220.863 ms; uncached GET 208.553 ms; annotation POST 13.475 ms.
+- Long synthetic document :: 183,780 bytes; 1,200 headings, 4,800 writable targets,
+  0 prior note references. Median CLI 2,307.520 ms; uncached GET 2,285.629 ms;
+  annotation POST 31.189 ms.
+- Footnote corpus :: 17,320 bytes; 120 headings, 240 writable targets and 240
+  prior note references. Median CLI 425.322 ms; uncached GET 412.462 ms;
+  annotation POST 18.561 ms.
+- Isolation :: Private temporary runtime, control socket and served directory;
+  ephemeral loopback port. Service exited successfully and removed its temporary
+  directory. The installed service remained running on its different port.
+- Status :: Baseline evidence only. The candidate comparison remains pending;
+  these measurements do not establish a performance improvement.
