@@ -12,8 +12,10 @@
 - Outcome :: Track *explicitly agreed UX changes* during paired development.
 - Pending increment :: Give new Org and Markdown footnotes their *own configurable section*,
   separate from the document's final content section when folding in Emacs.
-- Current increment :: Restore *annotation targets in wrapped descriptions and
+- Earlier increment :: Restore *annotation targets in wrapped descriptions and
   indented quotes*, including the corresponding description labels.
+- Current increment :: Guard annotation input at the existing length limit and
+  preserve Org footnote paragraph boundaries while typing and pasting.
 - State :: *Keep this ticket open*. Append subsequent authorized increments and
   their evidence here; no design audit is requested at this stage.
 
@@ -62,10 +64,13 @@ annotations:
   section_title: "Footnotes & Annotations"
 #+END_SRC
 
-* Backlog: annotation input guards
-** Prevent input beyond the annotation limit
-- Status :: *Important pre-existing UX defect*, reported 2026-09-20; implementation
-  pending. Separate from the native Markdown migration.
+* Agreed increment: annotation input guards
+** AC013.3 - Prevent input beyond the annotation limit :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-013-3
+:END:
+- Status :: *Important pre-existing UX defect*, reported 2026-09-20; paired
+  implementation authorized. Separate from the native Markdown migration.
 - Observation :: The editor accepts further typing beyond its save limit. An amber
   warning appears, but the blocking alert occurs only when leaving the editor.
 - Required outcome :: *Prevent input beyond the supported limit while editing*,
@@ -75,12 +80,15 @@ annotations:
 - Current limit :: *4,000 Unicode code points and 16,384 UTF-8 bytes*, hardcoded in
   =assets/web/annotation-composer.js= and =internal/annotation/{event,replace}.go=.
   These are not YAML configuration keys. Retain server-side enforcement.
-- Verification to define :: Boundary input, paste, selection replacement, accented
+- Verification :: Boundary input, paste, selection replacement, accented
   and supplementary characters, composition, editing existing notes and recovery.
   Input rejection must occur before the leave-editor workflow.
 
-** Preserve Org footnote paragraph boundaries
-- Status :: *Confirmed syntax constraint; editor guard pending definition*.
+** AC013.4 - Preserve Org footnote paragraph boundaries :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-013-4
+:END:
+- Status :: *Confirmed syntax constraint; paired editor guard authorized*.
 - Authority :: [[https://orgmode.org/manual/Creating-Footnotes.html][Org manual: Creating Footnotes]]
   ends a definition at the next definition, heading or *two consecutive empty lines*.
 - Distinction :: =first\n\nsecond= contains *one blank line* and permits another
@@ -88,12 +96,70 @@ annotations:
 - Intended guard :: Preserve normal multi-paragraph notes; prevent an extra blank
   line from terminating an Org definition while composing ordinary prose. Include
   pasted text and whitespace-only lines; do not apply the Org rule indiscriminately
-  to Markdown or literal blocks. Exact input handling remains to be defined.
+  to Markdown or literal blocks. Org sidecars follow their destination's Org rule,
+  including sidecars belonging to Markdown source documents.
 - Existing protection :: =ordinaryNoteEnd= recognizes this boundary; native creation
   and editing reparse the generated definition and reject a boundary-breaking save.
   This protects persistence but does not establish adequate editor feedback.
-- Verification to define :: Single blank-line paragraph separation, two blank lines,
+- Verification :: Single blank-line paragraph separation, two blank lines,
   whitespace-only lines, LF/CRLF, creation and editing; preserve unrelated source.
+
+** Input-guard solution and evidence boundary
+- Rejection :: Reject the whole invalid insertion or paste, retaining prior text
+  and selection. Do not truncate clipboard contents. Deletion and valid replacement
+  remain available; a pre-existing oversized note may be shortened progressively.
+- Composition :: Let the input method finish its composition before validating;
+  reject an invalid committed composition as a whole. Do not autosave interim text.
+- Browser events :: Cancel invalid =beforeinput= operations when their replacement
+  text is available; validate =input= as a fallback for non-cancelable events,
+  undo/redo and composition commits. Rejected text never enters the autosave queue.
+- Feedback :: Use the editor's existing reserved status space for an accessible
+  explanation and amber outline. No modal or extra layout row for input rejection.
+- Org scope :: Match the writer's case-insensitive =#+BEGIN_...=/=#+END_...=
+  block recognition; count whitespace-only lines outside those blocks. Normalize
+  CRLF for boundary detection. This is an editor guard, not an Org parser or a
+  replacement for the server's source-preserving reparse checks.
+- Evidence :: Browser typing, selection, clipboard and composition require the
+  operator's real browser. Browser automation and CLI JavaScript are excluded;
+  there is no approved JavaScript test runner. Do not substitute source-string
+  assertions or a mock DOM. Reuse the existing HTTP/writer preservation tests,
+  plus focused lint/build checks, and record browser evidence as user tests.
+
+** UT013.3 - Annotation length input guard :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-013-3
+:END:
+- Covers :: [[#ac-013-3][AC013.3 - Prevent input beyond the annotation limit]].
+- Check :: In new and existing Org/Markdown notes, accept exactly 4,000 code points;
+  reject the next typed character and an oversized paste without changing prior
+  text or selection. Accept selection replacement and deletion at the boundary.
+  Exercise accented characters, supplementary characters, combining marks,
+  undo/redo and input-method composition. A rejected change gives immediate
+  readable feedback, does not move the editor, trigger a recovery modal or save
+  rejected text. Accepted edits still autosave and survive reopening. A legacy
+  oversized note can be reduced without truncation on open.
+
+** UT013.4 - Org paragraph input guard :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-013-4
+:END:
+- Covers :: [[#ac-013-4][AC013.4 - Preserve Org footnote paragraph boundaries]].
+- Check :: In new and existing Org notes, allow a single blank line; reject a
+  second blank line entered or pasted, including whitespace-only lines and CRLF
+  clipboard text. Leave blank lines inside Org blocks intact. Embedded Markdown
+  notes allow multiple blank lines; Markdown's read-only Org sidecar uses the Org
+  guard. Valid edits remain saveable; rejected input retains text and selection.
+
+** OT013.1 - Input-guard build and persistence compatibility :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-013-1
+:END:
+- Covers :: [[#ac-013-3][AC013.3 - Prevent input beyond the annotation limit]] and
+  [[#ac-013-4][AC013.4 - Preserve Org footnote paragraph boundaries]].
+- Check :: Lint changed JavaScript, build the executable, and rerun existing
+  authenticated HTTP limit and native footnote writer tests. Verify the isolated
+  service serves the built assets for Org and Markdown. These checks protect
+  persistence and packaging; they do not establish browser input-event behaviour.
 
 * Verification to retain
 ** RT013.2 - Wrapped descriptions and indented containers :testdef:
