@@ -992,8 +992,8 @@ verification or maintaining divergent server/browser interpretations.
 
 *** Verification allowance clarification
 
-- The operator clarified that agent-authored verification estimates may be
-  amended during hands-off delivery. The original 108-operation estimate counts
+- Agent-authored verification estimates may be amended during hands-off
+  delivery. The original 108-operation estimate counts
   one complete comparison; it does not prohibit justified replacement samples
   after remediation. Preserve measured evidence, avoid unrelated reruns and
   continue through verification without requesting a routine budget extension.

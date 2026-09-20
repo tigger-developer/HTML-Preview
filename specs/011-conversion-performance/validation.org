@@ -298,6 +298,11 @@ those platforms.
   =set= profiles cover 87.4% of current =internal/orgconvert= statements.
   The focused placement additions passed under the race detector separately;
   the full historical suite is not being repeated for a coverage counter.
+- Repeated-reference cross-check :: A direct Pandoc =org= to =html5= conversion
+  of two references to one named, two-paragraph note emits two numbered
+  definitions with separate reference/backlink pairs. The native adapter's
+  corresponding output therefore retains that reader behaviour. The persistent
+  HTML-contract and repeated-note lifecycle cases cover these relationships.
 
 * Benchmark checkpoint, 20 September 2026
 
@@ -306,8 +311,8 @@ those platforms.
   Darwin arm64. The live installation was not changed.
 - Progress :: 75 retained final-build operations, plus 33 preliminary or
   interrupted operations, initially reached the agent-authored cap of 108.
-  The script stopped there and OT011.1 was AMBER. The operator clarified that
-  routine verification estimates may be amended during hands-off delivery.
+  The script stopped there and OT011.1 was AMBER. The verification estimate was
+  amended to allow necessary replacement measurements after remediation.
   The remaining 33 measurements then ran, giving 108 retained final operations
   and 33 preliminary/interrupted operations overall.
 - Method :: Fresh disposable source copies and service contexts; one warm-up
