@@ -795,3 +795,27 @@ Observed footnote rendering delta:
 - Closure boundary :: Automated render/HTTP checks do not establish browser acceptance
   or Linux/WSL operation. Record those observations separately; do not close other
   open tickets as a side effect of this migration.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+
+** 2026-09-20T13:38:06Z :hands-off:review:
+
+*** Delivery boundary
+
+- *Implementation uses =014-native-markdown=*. Master retains the approved
+  specification checkpoint; no daily-driver installation or service is changed.
+- *Native goal continuation remains inactive* under the existing session preference.
+- *One-off verification is local*: temporary files and CPU only; no metered live
+  operations are required. Configured implementation reviews retain their own bounds.
+
+*** Regression reuse
+
+- *Existing lifecycle and Org preservation tests are retained*. New HTTP checks
+  select blocks from visible text using the shared browser contract, then create
+  notes and inspect their actual source boundaries.
+- *Definition bodies and multi-paragraph quotes require correction*: baseline HTTP
+  checks expose missing targets. Both block types are already required by
+  [[#rt-014-4][RT014.4 - Clickable block creation]]; no browser contract change is implied.

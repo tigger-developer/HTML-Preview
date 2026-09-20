@@ -1,0 +1,125 @@
+#+TITLE: W014 - Native Markdown validation evidence
+#+SCHEMA: 2
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+#+TODO: AMBER RED | GREEN
+
+* Automated regression
+
+** RED RT014.1 - Public native routing :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt014-1-result
+:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
+:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
+:EVIDENCE: Native CLI previews reject absent Pandoc with exit 1; served Markdown invokes Pandoc twice. Expected native output without these calls.
+:END:
+
+- Definition :: [[file:spec.org::#rt014-1][RT014.1 - Public native routing]].
+
+** RED RT014.2 - Semantic render compatibility :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt014-2-result
+:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
+:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
+:EVIDENCE: Fenced divs still become containers; unsupported native qualifiers return CLI 0 and HTTP 200/415 instead of 2/400. Invalid metadata can publish a page. Semantic heading and footnote adaptation preservation checks passed.
+:END:
+
+- Definition :: [[file:spec.org::#rt014-2][RT014.2 - Semantic render compatibility]].
+
+** RED RT014.3 - HTML omission and warning delivery :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt014-3-result
+:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
+:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
+:EVIDENCE: Inline/block raw HTML is retained and CLI/page omission notices are absent, including optional Markdown readers, service registration and refreshed pages.
+:END:
+
+- Definition :: [[file:spec.org::#rt014-3][RT014.3 - HTML omission and warning delivery]].
+
+** RED RT014.4 - Clickable block creation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt014-4-result
+:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
+:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
+:EVIDENCE: Definition-list bodies and multi-paragraph quotations have no browser-selectable verified target; creation returns HTTP 409. Other isolated/mixed block creation and post-save second insertions pass; forged/stale targets are rejected without changing bytes.
+:END:
+
+- Definition :: [[file:spec.org::#rt014-4][RT014.4 - Clickable block creation]].
+
+** GREEN RT014.5 - Footnote lifecycle :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt014-5-result
+:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
+:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
+:EVIDENCE: Repeated references including a quote map to one stored note. Multi-paragraph edit, idempotent retry, stale conflict and deletion preserve unrelated source. Existing Org/Markdown ordinary-note, rendered-markup and read-only-sidecar regressions passed. This is preservation coverage: no artificial failure is introduced.
+:END:
+
+- Definition :: [[file:spec.org::#rt014-5][RT014.5 - Footnote lifecycle]].
+
+** RED RT014.6 - Conditional dependency behaviour :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt014-6-result
+:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
+:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
+:EVIDENCE: Native formats and input listing reject absent Pandoc; native service cannot start. Removing Go from the optional highlight catalogue incorrectly disables bundled Go highlighting. Failed catalogue reporting remains a passing preservation check.
+:END:
+
+- Definition :: [[file:spec.org::#rt014-6][RT014.6 - Conditional dependency behaviour]].
+
+** RED RT014.7 - Failure and trust boundaries :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt014-7-result
+:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
+:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
+:EVIDENCE: Markdown requests bypass the native-worker fault boundary and return HTTP 200 instead of conversion failure; cancellation/output-flood cases likewise return 200. Raw HTML remains in the passive-content fixture. Existing Org worker cancellation/reaping and annotation authority checks passed.
+:END:
+
+- Definition :: [[file:spec.org::#rt014-7][RT014.7 - Failure and trust boundaries]].
+
+* User tests
+
+** AMBER UT014.1 - Reading interface :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut014-1-result
+:REASON: Pending user validation after implementation.
+:END:
+
+- Definition :: [[file:spec.org::#ut014-1][UT014.1 - Reading interface]].
+
+** AMBER UT014.2 - Annotation workflow :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut014-2-result
+:REASON: Pending user validation after implementation.
+:END:
+
+- Definition :: [[file:spec.org::#ut014-2][UT014.2 - Annotation workflow]].
+
+* One-off tests
+
+** AMBER OT014.1 - End-to-end comparison :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot014-1-result
+:REASON: Pending candidate implementation.
+:END:
+
+- Definition :: [[file:spec.org::#ot014-1][OT014.1 - End-to-end comparison]].
+
+** AMBER OT014.2 - Packaging and documentation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot014-2-result
+:REASON: Pending candidate implementation.
+:END:
+
+- Definition :: [[file:spec.org::#ot014-2][OT014.2 - Packaging and documentation]].
+
+* Execution context
+
+- Date :: 2026-09-20.
+- Environment :: macOS arm64; Go 1.26.8; isolated temporary Go build/module caches.
+- Method :: Regression groups executed in focused invocations before production edits.
+  The COMMAND properties give the equivalent combined selector; the actual runs
+  split the native package, preservation cases and final test additions.
+- Preservation :: Existing Org/Markdown browser-target, checkbox, contents-default,
+  read-only sidecar, ordinary-footnote and authorization regressions passed.
+- Limits :: No visual tests, live installation, service restart or performance
+  claims are represented by these regression results.

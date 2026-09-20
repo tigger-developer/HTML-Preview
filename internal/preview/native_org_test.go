@@ -92,7 +92,8 @@ func TestRT011_1_ServedOrgAndMarkdown(t *testing.T) {
 	md := source(t, s.root, "notes.md", "# Markdown\n\nText[^a].\n\n[^a]: Note.\n")
 	endpoint = annotationRegistrationURL(t, s, md, "Reviewer")
 	status, _, data = responseAsset(t, s, "GET", strings.Replace(endpoint, "/_annotations/v2/", "/", 1))
-	if status != 200 || !strings.Contains(string(data), "Note.") || native.Load() == 0 || pandoc.Load() == 0 {
+	// W014 - Native Markdown supersedes only the previous Pandoc-call expectation.
+	if status != 200 || !strings.Contains(string(data), "Note.") || native.Load() == 0 || pandoc.Load() != 0 {
 		t.Fatalf("mixed routing status=%d native=%d pandoc=%d", status, native.Load(), pandoc.Load())
 	}
 }
@@ -235,6 +236,16 @@ func writeWorkerPID() {
 }
 
 func TestRT011_7_StartedNativeWorkerBounds(t *testing.T) {
+	testStartedNativeWorkerBounds(t, "org")
+}
+
+func testStartedNativeWorkerBounds(t *testing.T, format string) {
+	worker := "--internal-org-convert"
+	body := "* Worker\n\nUnchanged source.\n"
+	if format == "md" {
+		worker = "--internal-markdown-convert"
+		body = "# Worker\n\nUnchanged source.\n"
+	}
 	for _, tc := range []struct {
 		mode   string
 		status int
@@ -255,7 +266,7 @@ func TestRT011_7_StartedNativeWorkerBounds(t *testing.T) {
 				return path, err
 			}
 			host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
-				if len(cmd.Args) > 0 && cmd.Args[0] == "--internal-org-convert" && fail.Load() {
+				if len(cmd.Args) > 0 && cmd.Args[0] == worker && fail.Load() {
 					bounded, cancel := context.WithTimeout(ctx, 2*time.Second)
 					defer cancel()
 					cmd.Args, cmd.Input, cmd.Limit = []string{"--process-" + tc.mode, pidFile}, nil, 4096
@@ -264,7 +275,7 @@ func TestRT011_7_StartedNativeWorkerBounds(t *testing.T) {
 				return actual(ctx, cmd)
 			}
 			s := startTestService(t, host)
-			path := source(t, s.root, "bounded.org", "* Worker\n\nUnchanged source.\n")
+			path := source(t, s.root, "bounded."+format, body)
 			endpoint := annotationRegistrationURL(t, s, path, "Reviewer")
 			pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
 			status, _, data := responseAsset(t, s, "GET", pageURL)
