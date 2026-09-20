@@ -213,6 +213,8 @@ annotations:
 - 2026-09-20 :: Extend the pending section heading to *Markdown as well as Org*,
   superseding the initial Org-only boundary. The shared configuration stores
   title text; writers supply the native top-level heading marker.
+- 2026-09-20 :: Paired implementation of annotation length and Org paragraph
+  input guards authorized. The section-heading increment remains backlog.
 
 * Agreed correction: reachable annotation blocks
 ** AC013.2 - Reachable block annotation targets :ac:

@@ -28,6 +28,7 @@ export class AnnotationComposer {
     this.revisions = { ...options.revisions };
     this.target = structuredClone(options.target);
     this.editing = Boolean(options.note);
+    this.org = Boolean(options.org);
     this.label = options.label || defaultFootnoteID(options.author || '', options.labels || []);
     this.savedLabel = this.label;
     this.annotationID = crypto.randomUUID();
@@ -72,7 +73,7 @@ export class AnnotationComposer {
     if (!this.editing && !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(this.label)) {
       this.error = new Error('Use 1–64 letters, digits, underscores or hyphens, beginning with a letter.'); this.error.code = 'invalid_label'; return false;
     }
-    return ((!this.editing && this.text === '') || this.text.trim() !== '') && !this.text.includes('\0') && Array.from(this.text).length <= 4000 && new TextEncoder().encode(this.text).length <= 16384;
+    return ((!this.editing && this.text === '') || this.text.trim() !== '') && !this.text.includes('\0') && annotationTextFits(this.text) && !(this.org && annotationOrgBoundary(this.text));
   }
 
   composition(active) {

@@ -187,7 +187,7 @@ func (s *session) document(p *page) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, name := range []string{"annotation-composer.js", "annotation-text.js", "annotations.js"} {
+	for _, name := range []string{"annotation-input.js", "annotation-composer.js", "annotation-text.js", "annotations.js"} {
 		module, err := bundle.Assets.ReadFile("assets/web/" + name)
 		if err != nil {
 			return nil, err

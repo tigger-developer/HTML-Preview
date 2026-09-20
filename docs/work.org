@@ -313,9 +313,10 @@ classification; it is provenance, not current state.
   evidence as work proceeds. No design audit at this stage.
 - Working branch :: Continue paired development on =master= following the
   authorized feature-branch integration on 20 September 2026.
-- Input-guard backlog :: Prevent typing/pasting beyond the fixed annotation limit
+- Current input guards :: Prevent typing/pasting beyond the fixed annotation limit
   and guard against Org footnote-ending blank lines while retaining paragraph
-  separation. Both are recorded in the specification; implementation is pending.
+  separation. Paired implementation is in progress; browser validation remains
+  separate from the HTTP/writer preservation checks.
 
 ** DONE W014 - Native Markdown previews with Goldmark :feature:
 :PROPERTIES:

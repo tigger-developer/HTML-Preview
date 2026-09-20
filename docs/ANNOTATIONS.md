@@ -1,6 +1,6 @@
 ---
 title: Document annotations
-version: 5
+version: 6
 last-updated: 2026-09-20
 ---
 
@@ -119,17 +119,20 @@ Leaving the editor flushes the latest text. Input-method composition suspends su
 Comments accept up to **4,000 Unicode code points** and **16 KiB of UTF-8 text**.
 These fixed browser/server limits have no YAML setting. A code point is not
 necessarily a whole visible character: combining accents and multi-part emoji
-can use several. The current textbox permits excess input, but that value cannot
-be saved; leaving the editor can open recovery. Shorten the draft to resume
-saving. Preventing excess typing and paste is tracked in
-[W013 - UX fixes and improvements](../specs/013-ux-fixes-and-improvements/spec.org).
+can use several. The editor rejects typing or paste that would exceed the limit,
+retaining the preceding text and selection. It does not truncate a paste to fit.
+An amber outline and explanation appear in the existing status space; input
+rejection does not open recovery. Deletion and selection replacement remain
+available. Input-method composition finishes before validation, and rejected
+text never enters autosave. An existing oversized authored note is retained on
+open and can be shortened progressively; saving resumes once it fits.
 Opening an empty composer writes nothing. Clearing an active saved draft removes its owned
 reference and definition. Editing an existing footnote requires non-empty text;
 clearing it does not delete it. Recovery now uses **Copy**, **Revert** and
 **Try again** in a modal dialog, as described below. This replaces the earlier
 inline Restore last autosave, Use current footnote and Copy draft controls.
 
-Trailing line breaks are accepted while typing and omitted from the saved note
+Trailing line breaks within the Org paragraph guard are accepted while typing and omitted from the saved note
 text. Internal paragraph breaks, spaces and native markup remain intact. A change
 consisting only of trailing line breaks does not refresh the attribution.
 
@@ -137,9 +140,13 @@ For ordinary Org footnote prose, use **one blank line between paragraphs**.
 Two consecutive blank lines end the definition, as do a new heading or footnote
 definition. Thus `first\n\nsecond` separates paragraphs, while
 `first\n\n\nsecond` ends the note before `second`.
-The writer rejects text that would escape its footnote boundary; preventing
-that input in the editor remains in the W013 backlog. Markdown uses its own continuation
-indentation rules. See the [Org footnote syntax](https://orgmode.org/manual/Creating-Footnotes.html).
+The editor prevents a second consecutive blank line outside Org blocks, including
+whitespace-only lines in pasted text. One blank line between paragraphs remains
+available. Markdown notes use their own continuation indentation rules; Markdown
+sources saved to an Org sidecar follow the Org guard. Blank lines within Org
+blocks remain intact. The writer still rejects text that would escape its
+footnote boundary. See the [Org footnote syntax](https://orgmode.org/manual/Creating-Footnotes.html)
+and [W013 - UX fixes and improvements](../specs/013-ux-fixes-and-improvements/spec.org).
 
 ## Reading and source inspection
 
@@ -341,7 +348,9 @@ confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
-- Version 5: clarify fixed code-point/byte limits, the current excess-input
+- Version 6: describe immediate length and Org paragraph input guards, selection
+  preservation and composition handling. Browser validation remains in W013.
+- Version 5: clarify fixed code-point/byte limits, the then-current excess-input
   limitation and Org paragraph boundaries, with pending editor guards linked.
 - Version 4: distinguish the current native-footnote and block-target interface
   from its superseded event-history design.

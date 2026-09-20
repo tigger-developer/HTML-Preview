@@ -263,8 +263,10 @@ export class
     this.markInsertionPoint(target);
     this.textarea = annotationElement('textarea'); this.textarea.id = 'hp-annotation-text'; this.textarea.rows = 6;
     this.textarea.value = note?.text || '';
+    this.inputNotice = '';
     const label = annotationElement('label', note ? 'Edit footnote' : 'Your comment'); label.htmlFor = this.textarea.id;
     this.status = annotationElement('p', 'Not saved', 'hp-annotation-status'); this.status.setAttribute('role', 'status'); this.status.setAttribute('aria-live', 'polite');
+    this.status.id = 'hp-annotation-input-status'; this.textarea.setAttribute('aria-describedby', this.status.id);
     this.idInput = annotationElement('input'); this.idInput.id = 'hp-annotation-id'; this.idInput.type = 'text'; this.idInput.maxLength = 64;
     this.idInput.value = note?.label || defaultFootnoteID(this.data.display_name || '', this.state.footnote_labels);
     this.idInput.readOnly = Boolean(note);
@@ -283,13 +285,15 @@ export class
     editorHeading.append(label, this.deleteNote);
     this.editor.append(editorHeading, this.textarea, this.status, idLabel, this.idInput, this.idError);
 
-    this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, note, label: this.idInput.value,
+    const org = (note?.storage || this.state.storage) === 'sidecar' || document.body.dataset.hpFormat === 'org';
+    this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, note, org, label: this.idInput.value,
       send: (request, secret) => this.request(this.data.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-HTMLPreview-Annotation-Token': this.state.write_token, 'X-HTMLPreview-Composer-Token': secret }, body: JSON.stringify(request) }),
       onState: state => {
-        const saved = !state.error && !state.dirty && (state.status === 'Autosaved draft' || state.status === 'Saved');
-        this.status.textContent = saved ? 'Auto saved' : state.status;
+        const saved = !this.inputNotice && !state.error && !state.dirty && (state.status === 'Autosaved draft' || state.status === 'Saved');
+        this.status.textContent = this.inputNotice || (saved ? 'Auto saved' : state.status);
+        this.status.title = this.inputNotice;
         this.status.classList.toggle('hp-autosaved', saved);
-        this.editor.dataset.saveState = state.error ? 'error' : state.dirty ? 'pending' : saved ? 'saved' : 'empty';
+        this.editor.dataset.saveState = state.error ? 'error' : this.inputNotice || state.dirty ? 'pending' : saved ? 'saved' : 'empty';
         const fieldError = ['invalid_label', 'label_conflict'].includes(state.error?.code);
         this.idInput.setAttribute('aria-invalid', String(fieldError)); this.idError.textContent = fieldError ? state.error.message : '';
         this.updateRecoveryButtons();
@@ -305,9 +309,11 @@ export class
       },
     });
     this.idInput.addEventListener('input', () => this.composer.setLabel(this.idInput.value), this.events);
-    this.textarea.addEventListener('input', () => this.composer.input(this.textarea.value), this.events);
-    this.textarea.addEventListener('compositionstart', () => this.composer.composition(true), this.events);
-    this.textarea.addEventListener('compositionend', () => { this.holdReader(); this.composer.composition(false); }, this.events);
+    guardAnnotationInput(this.textarea, { org, events: this.events,
+      onInput: text => this.composer.input(text),
+      onComposition: active => { this.holdReader(); this.composer.composition(active); },
+      onNotice: message => { this.inputNotice = message; this.composer.emit(); },
+    });
     if (note) this.markInsertionPoint(target);
     this.syncFootnoteCards();
     this.textarea.focus();

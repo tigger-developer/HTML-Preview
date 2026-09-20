@@ -49,6 +49,57 @@
 - Next check :: Rebuild and restart the service, reopen the document, and test
   those three locations. Keep the ticket open for subsequent paired increments.
 
+* Current increment: annotation input guards
+** GREEN OT013.1 - Input-guard build and persistence compatibility :testdef:
+:PROPERTIES:
+:REVISION: 2d60e9f plus annotation-input.js, composer/panel integration and embedded bundle update
+:EVIDENCE: JavaScript lint, production build, Go vet, existing HTTP limits test and full annotation writer race package passed on macOS arm64; served Org and Markdown pages returned 200 and their bundled module passed lint.
+:END:
+
+*** Run 2026-09-20
+- Environment :: Go 1.26.8, oxlint 1.82.0 and Biome 2.5.12 on macOS arm64.
+  Build caches, executable, service runtime and synthetic review documents are
+  in OS-allocated temporary directories. No private document or installed service
+  was changed; no browser automation was used.
+- Persistence :: =go test -race ./internal/annotation -count=1 -timeout=2m=
+  passed in 5.466 seconds. It includes native creation/editing, sidecars,
+  attribution, trailing newlines, literal markup and rejected boundary breakouts.
+- HTTP :: =go test -race ./internal/annotation ./internal/preview -run 'TestRT007_7_10_EventSchemaAndLimits|TestNative|TestEditable|TestEdit|TestFootnote' -count=1 -timeout=3m=
+  passed the preview package in 6.740 seconds. The annotation package matched no
+  tests in that initial selection, so the complete writer package was then run
+  separately as recorded above. HTTP rejection checks retain original source bytes.
+- Packaging :: =go build -o TEMP/htmlpreview ./cmd/htmlpreview= and
+  =go vet ./internal/preview= passed. The isolated executable served Org and
+  Markdown review pages with annotation targets. The emitted module was extracted
+  with =htmlq= and passed =oxlint --deny-warnings=.
+- JavaScript :: =oxlint --deny-warnings= on the three changed JS modules passed;
+  =biome lint --only=correctness/noUnreachable= passed. Initial lint identified an
+  unexported cross-module function; exporting it resolved the warning.
+- Limits :: These are compatibility and packaging checks, not executed browser
+  interaction coverage. No server limit, request contract, persistence format or
+  dependency changed. The earlier block-target regression evidence remains
+  applicable: this increment changes the editor, not target generation or writes.
+
+** AMBER UT013.3 - Annotation length input guard :testdef:
+:PROPERTIES:
+:REASON: Awaiting user validation in the real browser; automated browser and CLI JavaScript execution are excluded by the project instructions.
+:END:
+- Prepared review :: Disposable Org and Markdown documents each contain an
+  existing 3,999-code-point footnote. Test the next two typed characters,
+  selection replacement, deletion, oversized paste, undo/redo and composition.
+- Remaining evidence :: New-note and existing-note input handling, supplementary
+  and combining characters, progressive reduction of legacy oversized notes,
+  feedback accessibility, stable layout, autosave and reopening.
+
+** AMBER UT013.4 - Org paragraph input guard :testdef:
+:PROPERTIES:
+:REASON: Awaiting user validation of textarea events, clipboard handling and feedback in Org, embedded Markdown and a read-only Markdown source with an Org sidecar.
+:END:
+- Prepared review :: The Org page includes copyable one-blank-line and
+  two-blank-line samples, and links to Markdown and sidecar review documents.
+- Remaining evidence :: Typing and paste rejection, whitespace-only lines and
+  CRLF, preserved block content, selection, and successful save after rejection.
+
 * Pending section-heading increment
 - The reserved configurable-section requirement and its planned tests remain
   unimplemented. They are retained in [[file:spec.org][the skeleton backlog]],
