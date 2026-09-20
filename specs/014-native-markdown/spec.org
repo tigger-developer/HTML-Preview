@@ -852,3 +852,8 @@ Observed footnote rendering delta:
 - *Race checks retain race detection*. The invocation disables only the Go
   race runtime's post-exit sleep, using =GORACE=atexit_sleep_ms=0=; converter
   process bounds and application deadlines remain unchanged.
+- *Link admission defers optional reader discovery until the request*. An
+  unfamiliar local suffix can name an installed reader. Its authorized URL uses
+  the existing request-time catalogue check; unsupported inputs return an error
+  rather than raw bytes. This preserves the zero-Pandoc native reading contract,
+  including native documents with unvisited optional-reader links.

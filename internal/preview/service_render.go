@@ -219,9 +219,12 @@ func (service *previewService) resolveHTTP(ctx context.Context, s *session, p *p
 					setAttribute(n, "href", value)
 					continue
 				}
+				s.inactive(p, n, "href", "Unsupported linked format")
+				continue
 			}
-			s.inactive(p, n, "href", "Unsupported linked format")
-			continue
+			// Other suffixes may name an installed optional reader. Authorize the
+			// local destination now; serveDocument resolves its reader only when
+			// followed. Native reading must not invoke Pandoc for an unvisited link.
 		}
 		target, err := service.capability(root, filepath.Dir(r.path), cap.settings)
 		if err != nil {

@@ -277,6 +277,9 @@ The [W006 local service](SERVICE.md) renders supported targets on demand,
 including links from native HTML. A target selects its own format; an explicit
 `htmlpreview-format` query value can select a specialist reader. Ordinary JSON
 needs no selector; `?htmlpreview-format=json` selects a Pandoc document AST.
+An unfamiliar local suffix may name an installed optional reader. Its availability
+is checked when the link is followed; an unsupported target returns an error,
+never its raw bytes. Unvisited links do not trigger optional converter discovery.
 
 File fallback converts explicit inputs only and retains original-file link
 destinations. The earlier W008 graph admitted every supported kind under depth,

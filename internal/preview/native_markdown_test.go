@@ -67,16 +67,13 @@ func TestRT014_1_ServedMarkdownNeverInvokesPandoc(t *testing.T) {
 	var calls atomic.Int32
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
 		if filepath.Base(cmd.Path) == "pandoc" {
-			for _, arg := range cmd.Args {
-				if strings.HasPrefix(arg, "--from=markdown") {
-					calls.Add(1)
-				}
-			}
+			calls.Add(1)
 		}
 		return execute(ctx, cmd)
 	}
 	s := startTestService(t, host)
-	source(t, s.root, "next.md", "# Linked Markdown\n\nA paragraph to annotate.\n")
+	source(t, s.root, "next.md", "# Linked Markdown\n\nA paragraph to annotate.\n\n[Optional reader](later.markdown_strict)\n")
+	source(t, s.root, "later.markdown_strict", "# Later optional document\n")
 	p := source(t, s.root, "index.org", "* Index\n[[file:next.md][Next]]\n")
 	endpoint := annotationRegistrationURL(t, s, p, "Reviewer")
 	status, _, body := responseAsset(t, s, "GET", strings.Replace(endpoint, "/_annotations/v2/", "/", 1))
