@@ -27,7 +27,9 @@
 - *Uncached Markdown previews and annotation saves have lower median latency*
   than the pre-migration master baseline on the same machine and corpus.
 - *Recognized embedded HTML is omitted*, with a CLI notice and preview banner.
-- *Native inputs work without Pandoc*; other readers require it only when selected.
+- *Markdown and Org are first-class native formats* and require *no Pandoc installation*.
+- *Pandoc becomes an optional dependency* for additional formats such as DOCX,
+  ODT and EPUB; it is required only when those readers are selected.
 - *Annotation creation, editing and deletion* retain native footnotes and guarded writes.
 
 ** Changes
@@ -728,7 +730,9 @@ Observed footnote rendering delta:
   diagnostic and existing error status. *No automatic Markdown fallback to Pandoc* on
   conversion failure or unrecognized syntax.
 - Installation :: Remove unconditional Pandoc prerequisites from installation and service
-  generation. Retain documented optional installation for office/specialist readers.
+  generation. Present *Markdown and Org as first-class native formats* in dependency
+  guidance, with *Pandoc optional for additional formats such as DOCX, ODT and EPUB*.
+  Retain documented optional installation for office/specialist readers.
   Do not remove or alter another installed converter, package or service.
 - Verification :: [[#rt-014-6][RT014.6 - Conditional dependency behaviour]] and
   [[#ot-014-2][OT014.2 - Packaging and documentation]].
@@ -785,6 +789,9 @@ Observed footnote rendering delta:
   =docs/ANNOTATIONS.md=, =docs/htmlpreview-help.txt=, =examples/code.md=, fixture guidance and third-party
   notices for the changed dialect, dependency and warning contracts. Preserve earlier
   decisions as superseded history rather than silently erasing them.
+- Publication timing :: Publish the native-versus-optional dependency statement with
+  delivery. Until then, current usage documentation must not claim that the existing
+  application already starts without Pandoc.
 - Closure boundary :: Automated render/HTTP checks do not establish browser acceptance
   or Linux/WSL operation. Record those observations separately; do not close other
   open tickets as a side effect of this migration.
