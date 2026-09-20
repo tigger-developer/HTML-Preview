@@ -73,9 +73,9 @@
 ** GREEN RT011.5 - Footnote lifecycle :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-5-result
-:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint, current converter coverage pack
-:COMMAND: make test; affected code/footnote race command recorded below
-:EVIDENCE: Ordinary and repeated multi-paragraph footnotes pass identification, edit, reload and deletion; BOM, legacy reading, source preservation and sidecar cases pass.
+:REVISION: e171898; full race suite at 216bee6, affected race checks at de0cb56 and the corpus checkpoint; quoted-reference correction against 453e7e4
+:COMMAND: make test; affected code/footnote race commands recorded below
+:EVIDENCE: Ordinary and repeated multi-paragraph footnotes pass identification, edit, reload and deletion; BOM, legacy reading, source preservation and sidecar cases pass. Quoted references produce no unplaced duplicates; deletion preserves the remaining note.
 :END:
 
 *** Earlier test-admission execution
@@ -197,6 +197,39 @@
   mode and writable state active. Some blocks accepted creation while others did
   not. Editing existing notes was available. The service had not been rebuilt
   during this observation.
+
+- Later observation :: Two native footnotes referenced inside indented quote blocks
+  each appeared twice, including an unplaced duplicate. Deleting one duplicate
+  deleted its real reference and definition. The source was restored before the
+  quoted-reference correction; browser confirmation of that correction is pending.
+
+* Quoted footnote reference correction, 20 September 2026
+
+- Scope :: [[file:spec.org::#rt-011-5][RT011.5 - Footnote lifecycle]]. Existing
+  footnotes inside rendered Org containers remain readable and editable. New
+  annotation placement still follows the existing block-end policy.
+- RED :: =TestHTTPQuotedFootnotes= reproduced four rendered entries from two
+  definitions and two references. The unplaced copies lacked backlinks; deleting
+  one note left a duplicate of the other. Parser cases also reproduced overlooked
+  references in quotes, indented quotes, verse and centre blocks.
+- Cause :: The preview's reference inventory used literal-block tracking for all
+  Org containers, including rendered prose. It generated virtual unplaced entries
+  for definitions that already had rendered references.
+- Correction :: Reference counting recognizes rendered containers while retaining
+  literal exclusions for source, example, comment and export blocks, including a
+  source block nested in a quote. No write authorization or placement checks change.
+- GREEN :: Focused race checks passed in 8.289 seconds for the served-page package.
+  The affected lifecycle pack passed in 55.280 seconds; its annotation-package
+  checks passed in 1.023 seconds. The synthetic fixture checks exact source
+  preservation after deletion, one remaining note and reference/backlink pairs.
+- Private-document check :: A disposable copy of the authorized large Org source
+  rendered two notes and two backlinks, with zero unplaced entries. The original
+  source remained byte-identical. No private document content was added to the
+  repository or the review evidence.
+
+#+BEGIN_SRC sh
+go test -race ./internal/annotation ./internal/preview -run 'TestPreviewFootnotesOrgContainers|TestHTTPQuotedFootnotes|TestHTTPDeleteFootnote|TestRT009_8_|TestRT009_7_EditOrdinary|TestRT011_5_' -count=1 -timeout=2m
+#+END_SRC
 
 * Annotation target contract correction, 20 September 2026
 

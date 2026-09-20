@@ -170,11 +170,14 @@ func nativeReferences(data []byte, format string) map[string]int {
 		if inRanges(line.offset, spans) {
 			continue
 		}
-		if literal.active() {
-			literal.consume(line.text, format)
-			continue
+		wasLiteral := literal.active()
+		literal.consume(line.text, format)
+		// Rendered Org containers (including quotes and verse) contain real
+		// references. Only literal blocks hide them, as in deletionReferences.
+		if format == "org" && literal.org != "SRC" && literal.org != "EXAMPLE" && literal.org != "COMMENT" && literal.org != "EXPORT" {
+			literal.org = ""
 		}
-		if literal.consume(line.text, format); literal.active() {
+		if wasLiteral || literal.active() {
 			continue
 		}
 		if format != "org" && (strings.HasPrefix(line.text, "    ") || strings.HasPrefix(line.text, "\t")) {

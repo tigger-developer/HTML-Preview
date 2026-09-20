@@ -21,6 +21,10 @@ The test also creates a footnote through HTTP and checks the refreshed document.
 - `blocks.md` covers the corresponding supported Markdown targets. Its definition
   list remains a reading sample: the existing source-boundary scanner excludes
   colon-prefixed Markdown description lines from annotation creation.
+- `quoted-footnotes.org` contains two synthetic notes referenced inside indented
+  quotes. `TestHTTPQuotedFootnotes` checks one rendered entry and backlink per
+  reference, then deletes one note through HTTP and verifies the other survives
+  without an unplaced duplicate or unrelated source changes.
 
 Browser event handling, focus and layout still require user validation. These
 tests check the served HTML contract and HTTP writes; they do not execute a browser.
