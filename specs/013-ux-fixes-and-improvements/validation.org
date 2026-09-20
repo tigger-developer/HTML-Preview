@@ -1,0 +1,55 @@
+#+TITLE: W013 - UX fixes and improvements: validation
+#+SCHEMA: 1
+#+TODO: AMBER RED | GREEN
+#+STARTUP: overview
+#+OPTIONS: num:nil toc:2
+
+* Current increment: annotation targets
+** GREEN RT013.2 - Wrapped descriptions and indented containers :testdef:
+:PROPERTIES:
+:REVISION: 2a08374 plus the recorded wrapped-description and indented-block correction
+:COMMAND: go test -race ./internal/annotation ./internal/orgconvert ./internal/preview -run 'TestHTTPWrappedDescriptions|TestHTTPAnnotationTargetContract|TestHTTPBlockAnnotations|TestHTTPBlockRejectsUnverifiedTargets|TestHTTPRepeatedBlockNotesAndHeadingAnchor|TestHTTPQuotedFootnotes|TestPreviewFootnotesOrgContainers' -count=1 -timeout=3m
+:EVIDENCE: Affected served-page race pack passed in 141.288 seconds, including five new target/save cases, repeated block notes and rejection of unverified targets. Initial four-case reproduction was RED at 2a08374.
+:END:
+
+*** Observations and correction, 20 September 2026
+- Reproduction :: Synthetic fixture =testdata/annotation-targets/wrapped-descriptions.org=.
+  The initial served-HTML check failed for multiline verbatim, multiline code,
+  description-label selection and the indented quote. Neighbouring ordinary
+  list items and descriptions were retained as preservation assertions.
+- Cause :: Line-end proof references inside multiline literal spans stayed as
+  text in the probe DOM and invalidated its comparison. Indented Org blocks had
+  no candidate boundary. Supporting them also required preserving indentation
+  before the native converter's invisible probe prefix and avoiding an extra
+  blank line that split the enclosing description list.
+- Label handling :: A description term now reaches its content block's verified
+  boundary through a distinct interactive ID. Selecting paragraph content does
+  not highlight its label instead.
+- Focused evidence :: The corrected served-page test passed before adding the
+  separate quote-label case to the final affected pack. Saves append two notes
+  to the correct boundary; removing only those additions recovers the original
+  fixture bytes. No generated proof token appears in the served document.
+- Private check :: A disposable copy of the authorized source passed selection
+  checks for the reported label, wrapped paragraph and quote. An HTTP save to
+  that copy returned 201 and placed its reference after the indented closing
+  delimiter. The original file stayed byte-identical during the check; private
+  source and scratch tests are outside the repository and audit evidence.
+- Other checks :: Complete annotation and native converter race packages passed
+  in 5.101 and 18.852 seconds respectively. =make lint= and a fresh production
+  build passed. No browser automation or live-service restart was performed.
+
+** AMBER UT013.2 - Description and quote interaction :testdef:
+:PROPERTIES:
+:REASON: Awaiting browser review of the corrected build; HTTP and DOM checks do not establish live pointer, focus or highlight behaviour.
+:END:
+- Report :: The original build allowed annotation through the last ordinary
+  bullet, then did not offer the description label, wrapped paragraph or draft
+  quote as targets. The screenshot and source inspection corroborated the
+  affected structures.
+- Next check :: Rebuild and restart the service, reopen the document, and test
+  those three locations. Keep the ticket open for subsequent paired increments.
+
+* Pending section-heading increment
+- The reserved configurable-section requirement and its planned tests remain
+  unimplemented. They are retained in [[file:spec.org][the skeleton backlog]],
+  outside this correction's execution inventory. No success is claimed for them.

@@ -5,6 +5,7 @@ package preview
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/tigger-developer/HTML-Preview/internal/annotation"
@@ -79,6 +80,15 @@ func (s *session) markAnnotationBlocks(ctx context.Context, p *page, input []byt
 	for _, ref := range refs {
 		ref.Parent.RemoveChild(ref)
 	}
+	// A line-end probe inside wrapped verbatim/code is literal text, not a
+	// footnote. Remove only our exact unparsed tokens before comparing shape;
+	// such tokens never become hits or writable boundaries themselves.
+	markerPattern := regexp.MustCompile(`\[(?:fn:|\^)` + regexp.QuoteMeta(prefix) + `[0-9]+Q\]`)
+	for n := range probe.dom.Descendants() {
+		if n.Type == html.TextNode && strings.Contains(n.Data, prefix) {
+			n.Data = markerPattern.ReplaceAllString(n.Data, "")
+		}
+	}
 	for _, h := range hits {
 		if boundaries[h.key].AfterBlock && h.paragraph.Parent != nil {
 			h.paragraph.Parent.RemoveChild(h.paragraph)
@@ -89,6 +99,7 @@ func (s *session) markAnnotationBlocks(ctx context.Context, p *page, input []byt
 	pairs := make(map[*html.Node]*html.Node)
 	pairBlockElements(probe.dom, p.dom, pairs)
 	positions := make(map[string]string)
+	aliases := make(map[string]string)
 	var positionMarkers []*html.Node
 	for _, h := range hits {
 		actual := pairs[h.node]
@@ -100,6 +111,22 @@ func (s *session) markAnnotationBlocks(ctx context.Context, p *page, input []byt
 		}
 		key := fmt.Sprintf("b%s-%d", revision, boundaries[h.key].Offset)
 		setAttribute(actual, "data-hp-annotation-block", key)
+		// A description label selects its first verified content block, using
+		// the same server-owned boundary rather than inserting into the term.
+		dd := actual
+		if dd.Data != "dd" {
+			dd = dd.Parent
+		}
+		if dd != nil && dd.Data == "dd" {
+			term := dd.PrevSibling
+			for term != nil && term.Type != html.ElementNode {
+				term = term.PrevSibling
+			}
+			if term != nil && term.Data == "dt" && attribute(term, "data-hp-annotation-block") == "" {
+				setAttribute(term, "data-hp-annotation-block", key+"-term")
+				aliases[key+"-term"] = key
+			}
+		}
 		marker := &html.Node{Type: html.ElementNode, Data: "span", Attr: []html.Attribute{{Key: "id", Val: prefix + key}}}
 		var before *html.Node
 		for n := actual.FirstChild; n != nil; n = n.NextSibling {
@@ -120,6 +147,9 @@ func (s *session) markAnnotationBlocks(ctx context.Context, p *page, input []byt
 	for key, block := range p.annotationBlocks {
 		block.position = spans[key].End
 		p.annotationBlocks[key] = block
+	}
+	for alias, key := range aliases {
+		p.annotationBlocks[alias] = p.annotationBlocks[key]
 	}
 	return nil
 }

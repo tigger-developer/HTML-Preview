@@ -298,6 +298,10 @@ classification; it is provenance, not current state.
 
 - Specification :: [[file:../specs/013-ux-fixes-and-improvements/spec.org][W013 - Open paired UX record]].
 - First increment :: Configurable top-level Org section for the first footnote.
+- Current correction :: Wrapped description text, description labels and indented
+  quotes receive verified annotation targets. [[file:../specs/013-ux-fixes-and-improvements/validation.org][Correction evidence]]
+  separates automated checks from pending browser validation; section configuration
+  remains in the backlog.
 - Boundary :: Keep open for explicitly agreed paired increments; track their
   evidence as work proceeds. No design audit at this stage.
 

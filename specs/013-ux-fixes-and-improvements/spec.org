@@ -10,8 +10,10 @@
 :CUSTOM_ID: summary
 :END:
 - Outcome :: Track *explicitly agreed UX changes* during paired development.
-- First increment :: Give new Org footnotes their *own configurable section*,
+- Pending increment :: Give new Org footnotes their *own configurable section*,
   separate from the document's final content section when folding in Emacs.
+- Current increment :: Restore *annotation targets in wrapped descriptions and
+  indented quotes*, including the corresponding description labels.
 - State :: *Keep this ticket open*. Append subsequent authorized increments and
   their evidence here; no design audit is requested at this stage.
 
@@ -32,11 +34,13 @@
 - Separate correction :: The duplicate unplaced-footnote correction remains
   recorded under [[file:../011-conversion-performance/validation.org][W011 - Native Org preview validation]].
 
-* Agreed increment: Org footnote section
-** AC013.1 - First footnote gets a configurable section :ac:
+* Backlog: agreed Org footnote section
+** First footnote gets a configurable section
 :PROPERTIES:
 :CUSTOM_ID: ac-013-1
 :END:
+- Reserved requirement :: AC013.1 - Configurable section. *Pending implementation*;
+  retained outside the active correction's acceptance/test inventory.
 - Default :: When creating the *first footnote in an Org document*, append a
   top-level =* Footnotes & Annotations= heading and a *blank line* before the
   first definition.
@@ -64,22 +68,35 @@ annotations:
   save through HTTP, verify placement and unchanged source syntax, then repeat.
   Test the authorized personal document only through a disposable external copy.
 
-** RT013.1 - Section creation and source preservation :testdef:
+** Planned section creation and source preservation
 :PROPERTIES:
 :CUSTOM_ID: rt-013-1
 :END:
 - Covers :: [[#ac-013-1][AC013.1 - Configurable section]].
+- Reserved test :: RT013.1 - Section creation and source preservation. Not yet
+  implemented or executed; activate with the configurable-section increment.
 - Check :: Default, custom and disabled configuration; first and subsequent
   saves; existing native footnotes and section headings; unrelated source bytes.
 - Boundary :: Configuration and authenticated annotation writes with synthetic
   documents in temporary storage. No browser automation or personal fixtures.
-** UT013.1 - Native Org folding and annotation workflow :testdef:
+** Planned native Org folding and annotation workflow
 :PROPERTIES:
 :CUSTOM_ID: ut-013-1
 :END:
 - Covers :: [[#ac-013-1][AC013.1 - Configurable section]].
+- Reserved test :: UT013.1 - Native Org folding and annotation workflow.
+  Pending the configurable-section increment.
 - Check :: Review the generated source in Emacs and the refreshed preview;
   verify the section folds independently and annotations remain usable.
+
+** UT013.2 - Description and quote interaction :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-013-2
+:END:
+- Covers :: [[#ac-013-2][AC013.2 - Reachable block annotation targets]].
+- Check :: In annotation mode click the description label, wrapped paragraph
+  and indented quote. Verify pencil cursor, selected-block outline, successful
+  save and a reference after the block. No automated desktop interaction.
 
 * Increment ledger
 - 2026-09-20 :: *Skeleton created*. Footnote-section behaviour recorded;
@@ -103,3 +120,21 @@ annotations:
   unverified targets. No private source content enters tracked fixtures.
 - Baseline :: Restores the existing whole-block interaction described in
   [[file:../011-conversion-performance/spec.org][W011 - Native Org preview compatibility]].
+
+* Current correction: implementation notes
+- Inline probes :: A temporary line-end marker inside multiline verbatim/code
+  is rendered literally. Remove only generated unparsed markers from the probe
+  DOM before comparing it with the original. Such markers never authorize a
+  write; only parsed reference hits at verified block ends can do so.
+- Indented blocks :: Preserve closing-line indentation in the temporary probe
+  and saved reference paragraph. Preserve the original following line endings
+  so a new blank line does not split the enclosing list. The native converter's
+  invisible probe prefix follows that indentation too.
+- Labels :: A description term gets a distinct interactive ID referring to its
+  first verified content boundary. Paragraph and label selection remain distinct;
+  neither inserts a footnote into the description delimiter.
+- Security :: Existing revision checks, shape/text correspondence, request
+  authentication and source-preserving write checks remain active. Literal or
+  otherwise unverified probe markers do not become client-writeable offsets.
+- Evidence :: [[file:validation.org][Increment validation]]. Configurable-section
+  work and retrospective design review remain pending; the ticket stays open.

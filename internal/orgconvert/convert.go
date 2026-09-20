@@ -81,7 +81,8 @@ func protectProbeReferences(r Request) string {
 	lines := strings.SplitAfter(r.Text, "\n")
 	for i, line := range lines {
 		if labels[strings.TrimSpace(line)] {
-			lines[i] = "@@html:<!--htmlpreview-probe-" + r.Token + "-->@@" + line
+			content := strings.TrimLeft(line, " \t")
+			lines[i] = line[:len(line)-len(content)] + "@@html:<!--htmlpreview-probe-" + r.Token + "-->@@" + content
 		}
 	}
 	return strings.Join(lines, "")

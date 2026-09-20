@@ -25,6 +25,10 @@ The test also creates a footnote through HTTP and checks the refreshed document.
   quotes. `TestHTTPQuotedFootnotes` checks one rendered entry and backlink per
   reference, then deletes one note through HTTP and verifies the other survives
   without an unplaced duplicate or unrelated source changes.
+- `wrapped-descriptions.org` covers descriptions with multiline inline code and
+  verbatim text, their labels, and an indented quote between list items.
+  `TestHTTPWrappedDescriptions` checks browser-selectable targets and repeated
+  HTTP saves at the correct boundary while preserving unrelated source bytes.
 
 Browser event handling, focus and layout still require user validation. These
 tests check the served HTML contract and HTTP writes; they do not execute a browser.

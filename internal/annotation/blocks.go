@@ -3,6 +3,7 @@
 package annotation
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strings"
@@ -41,7 +42,7 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 		candidates[key] = BlockBoundary{Offset: offset, AfterBlock: after, Following: kind != "", Kind: kind}
 		marker := footnoteReference(format, key)
 		if after {
-			marker = ending + ending + marker + ending
+			marker = afterBlockReference(data, offset, format, marker, ending)
 		}
 		patches = append(patches, sourcePatch{byteRange{offset, offset}, []byte(marker)})
 		definitions.WriteString(ending + ending + footnoteReference(format, key))
@@ -76,7 +77,7 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 				top := orgBlocks[len(orgBlocks)-1]
 				if upper == "#+END_"+top {
 					orgBlocks = orgBlocks[:len(orgBlocks)-1]
-					if len(orgBlocks) == 0 && top != "COMMENT" && top != "EXPORT" && line.text == trim {
+					if len(orgBlocks) == 0 && top != "COMMENT" && top != "EXPORT" {
 						offset, after := afterBlockBoundary(lines, i, format)
 						add(offset, after, "org:"+top)
 					}
@@ -212,11 +213,28 @@ func afterBlockBoundary(lines []sourceLine, i int, format string) (int, bool) {
 	for next < len(lines) && strings.TrimSpace(lines[next].text) == "" {
 		next++
 	}
-	if next < len(lines) && strings.HasPrefix(lines[next].text, "Annotations: ") {
-		tail := strings.TrimPrefix(lines[next].text, "Annotations: ")
+	if next < len(lines) && strings.HasPrefix(strings.TrimLeft(lines[next].text, " \t"), "Annotations: ") {
+		tail := strings.TrimPrefix(strings.TrimLeft(lines[next].text, " \t"), "Annotations: ")
 		if strings.TrimSpace(referencePattern(format).ReplaceAllString(tail, "")) == "" {
 			return lines[next].offset + len(strings.TrimRight(lines[next].text, " \t")), false
 		}
 	}
 	return lines[i].offset + len(lines[i].text), true
+}
+
+// Keep a reference following an Org container inside its enclosing list item.
+// Probe and saved references must use the same indentation to preserve shape.
+func afterBlockReference(data []byte, offset int, format, reference, ending string) string {
+	indent := ""
+	if format == "org" {
+		start := bytes.LastIndexByte(data[:offset], '\n') + 1
+		line := string(data[start:offset])
+		indent = line[:len(line)-len(strings.TrimLeft(line, " \t"))]
+	}
+	if indent != "" {
+		// Retain the original following line endings: another blank line here
+		// would terminate the enclosing Org list and split its later items.
+		return ending + ending + indent + reference
+	}
+	return ending + ending + indent + reference + ending
 }

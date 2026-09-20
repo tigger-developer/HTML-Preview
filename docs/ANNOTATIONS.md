@@ -63,6 +63,12 @@ fading, accompanied by a green border flash. The feedback keeps its reserved
 space after fading. Sustained connection problems and confirmed save failures
 open a recovery dialog without adding controls above the editor.
 
+Org descriptions remain annotatable when inline code or verbatim text wraps
+across source lines. Clicking a description label uses its first verified
+content block's insertion boundary. Quotes nested inside list descriptions use
+a following `Annotations:` paragraph at the same indentation, preserving the
+surrounding list. Repeated annotations extend that paragraph.
+
 Checkbox list items are annotation targets too. Their unchecked `[ ]`, checked
 `[X]`/`[x]` and partial `[-]`/`[/]` states use equally sized passive indicators
 with spacing before the item text. Clicking an item in annotation mode attaches
