@@ -269,7 +269,12 @@ func normalizeFootnotes(root *dom.Node) {
 	ids := make(map[string]string)
 	for n := range root.Descendants() {
 		id := attr(n, "id")
-		if strings.HasPrefix(id, "fn:") || strings.HasPrefix(id, "fnref") {
+		switch {
+		case strings.HasPrefix(id, "fn:"):
+			ids[id] = "fn" + strings.TrimPrefix(id, "fn:")
+		case strings.HasPrefix(id, "fnref:"):
+			ids[id] = "fnref" + strings.TrimPrefix(id, "fnref:")
+		case strings.HasPrefix(id, "fnref"):
 			ids[id] = strings.ReplaceAll(id, ":", "-")
 		}
 	}

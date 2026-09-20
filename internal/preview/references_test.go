@@ -101,7 +101,7 @@ func TestRT001_13_PassiveSource(t *testing.T) {
 			}
 		}
 	}
-	if !strings.Contains(textOf(body), "<script>literal</script>") || !strings.Contains(textOf(body), "kept") || r.stderr == "" {
+	if !strings.Contains(textOf(body), "<script>literal</script>") || strings.Contains(textOf(body), "kept") || strings.Count(r.stderr, markdownHTMLWarning) != 1 {
 		t.Fatal("passive content or diagnostics lost")
 	}
 	if !strings.Contains(r.raw[0], "default-src &#39;none&#39;") && !strings.Contains(r.raw[0], "default-src 'none'") {

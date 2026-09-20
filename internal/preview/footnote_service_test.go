@@ -349,7 +349,13 @@ func TestRT009_7_EditOrdinaryFootnotes(t *testing.T) {
 					mapped++
 				}
 			}
-			if mapped != 2 {
+			// Goldmark shares one endnote across references; Org emits a rendered
+			// note per occurrence. Both must preserve the same editable source label.
+			wantMapped := 2
+			if format == "md" {
+				wantMapped = 1
+			}
+			if mapped != wantMapped {
 				t.Fatalf("repeated rendered notes mapped=%d nodes=%v", mapped, nodes(page, "li")[0].Attr)
 			}
 		})

@@ -833,3 +833,22 @@ Observed footnote rendering delta:
   and its configuration remain outside this delivery's mutation boundary.
 - *Unavailable native lexers are tested through an existing source mapping*.
   Pandoc catalogue omissions no longer determine bundled highlighting support.
+
+** 2026-09-20T17:20:43Z :hands-off:review:
+
+*** Compatibility and verification details
+
+- *CRLF normalization occurs only inside Markdown conversion*. Original source
+  bytes remain the authority for plaintext view, revision checks and writes.
+  Literal code copies retain the established LF-normalized parsed value.
+- *Dependency-failure tests use an optional reader*. A native Markdown fixture
+  can no longer exercise missing-Pandoc preflight; optional CommonMark retains
+  that boundary without entering the configured retention wait.
+- *Older raw-HTML reading examples retain their source*. Their descriptions now
+  identify intentional Markdown omission; native HTML preservation still has
+  its own regression coverage.
+- *Installed-executable tests also receive private configuration and runtime
+  paths*. Desktop interception alone does not prevent service discovery.
+- *Race checks retain race detection*. The invocation disables only the Go
+  race runtime's post-exit sleep, using =GORACE=atexit_sleep_ms=0=; converter
+  process bounds and application deadlines remain unchanged.
