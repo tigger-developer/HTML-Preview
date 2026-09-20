@@ -240,54 +240,46 @@ audits:
       configured:
         harness: claude
         model: claude-opus-5
-      external_round: 1
+      external_round: 2
       status: active
-      updated: "2026-09-20T00:46:34Z"
-      revision: 77cd89d
-      verdict: FAIL
+      updated: "2026-09-20T00:52:19Z"
+      revision: bb7923b
+      verdict: PASS
       response: |-
         GATE: test-code
-        REVISION: 77cd89d
-        VERDICT: FAIL
+        REVISION: bb7923b
+        VERDICT: PASS
 
-        ## Summary
+        ## Prior findings — all resolved
 
-        - **Strong package overall**: routing, footnote-normalization, worker-protocol and trust-boundary cases are behavioural, use the real CLI/HTTP/subprocess boundaries, assert relationships rather than ID spellings or serialized HTML, and are retained under `make test` (`go test -race ./...`).
-        - **Scaffolding is acceptable**: `internal/orgconvert/worker.go` declares only the request record and an always-failing `Worker`; no production code imports it, and `cmd/htmlpreview` still has no `--internal-org-convert` dispatcher, so `TestRT011_1_PackagedNativeWorker` is genuine RED at the production boundary, not a setup failure.
-        - **Initially GREEN preservation is justified** and matches the maintained pack (RT002.1/RT002.3/RT004.3/RT005.2, checkbox, block-placement and W009 footnote tests).
-        - **FAIL cause**: three cases named in the signed-off definitions are not covered by meaningful assertions.
+        **F1 (cancelled/hung worker) — resolved.** `TestRT011_7_StartedNativeWorkerBounds` (`internal/preview/native_org_test.go:237`) substitutes the real `--process-blocker`/`--process-flood` children **only at the native `--internal-org-convert` Host invocation**, through the production `runProcess` path:
 
-        ## Blocking findings
+        - **Start proven**, not assumed: `writeWorkerPID` (`:229`) writes the child PID when invoked with three arguments; the CLI `converter-stall` path passes two and is unaffected.
+        - **Reaping proven**: `unix.Kill(pid, 0) == unix.ESRCH` after the response, with `cmd.Run` having waited, so no zombie can satisfy it.
+        - **Temporary state proven**: every `host.Temp` directory allocated during the failed conversion must be absent.
+        - **Classification and recovery**: 504 for the blocked child, 413 for the flooding child with `Limit = 4096`, no source text in the body, then the same Org URL returns 200 with content — covering slot reuse.
+        - The vacuous pre-cancelled-context weakness no longer carries the case, and `TestMain` (`preview_test.go:97-104`) now routes `converter-stall`/`converter-flood` faults to the native command, so the existing `dense.org` stall/flood coverage survives the routing change instead of silently lapsing.
+        - **RED is behavioural**: routing is absent, so the substitution never fires and the page returns 200 against an expected 504/413, as recorded.
 
-        **F1 — RT011.7 "cancelled/hung worker" has no behavioural coverage** (`internal/preview/native_org_test.go`, `internal/orgconvert/worker_test.go:138`)
+        **F2 (memory threshold) — resolved.** `TestRT011_7_RuntimeMemoryAbort` (`worker_test.go:213`) pairs a **positive control** (2.3 MiB structured Org converting under the ordinary 512 MiB bound) with the **same input under a valid lowered 16 MiB bound**, requiring failure, zero output and a `memory limit` diagnostic. A validation-only rejection of small values no longer satisfies the case, the bound stays within the design's injected-private-bound allowance, and no large allocation is required.
 
-        - **Evidence**: `TestRT011_7_WorkerCancelled` passes an already-cancelled context to `exec.CommandContext(...).Run()`. `os/exec.Start` returns `ctx.Err()` before the child starts when the context is already done, so `err != nil` and `len(out) == 0` hold for *any* implementation, including the present always-failing scaffold and a future correct worker. Independently of that stdlib detail, the test drives `exec` directly, so the parent's `runProcess` kill/reap, slot release and temporary-state cleanup are never observed.
-        - **Also missing**: no case where the worker starts and blocks. `TestRT011_7_NativeWorkerFailureAndRecovery` only forces an immediate `Execute` error (422 + recovery). The existing Org stall/flood coverage (`TestRT002_2_PassiveHighlighting`, `PREVIEW_TEST_FAULT=converter-stall`/`converter-flood` on `dense.org`) is keyed on `filepath.Base(cmd.Path) == "pandoc"` and stops exercising Org once routing is native, so deadline/timeout classification (504) and output-flood bounds lose their Org coverage rather than gaining native equivalents.
-        - **Remediation**: add a native case that starts a real blocked/flooding worker through the existing controllable `Host` boundary (the RT011.7 method), asserting: bounded failure with no partial page, the existing timeout/limit status classification, the child reaped, and a subsequent valid request serviceable. Retain or re-key the `dense.org` stall/flood expectations to the native path.
+        **F3 (RT011.5 converter-delta integration) — resolved.** `TestRT011_5_RepeatedMultiParagraphFootnoteLifecycle` (`native_org_test.go:299`) drives the RT011.2 fixture — repeated `[fn:note]` references with a two-paragraph definition — through the real service: one editable note identified by label and text, **both** rendered associations (`data-hp-footnote-label` count of 2), edit and delete asserted as **exact source bytes** with the unrelated `* Next` tail preserved, and zero notes listed afterwards. Initially GREEN with the oracle correction disclosed.
 
-        **F2 — RT011.7 "controlled low memory threshold" is indistinguishable from request rejection** (`internal/orgconvert/worker_test.go:112`)
+        **Additional items — resolved.** Exact serialized request allowance plus one-byte excess (`TestRT011_7_ExactRequestAllowance`, with a convergence loop and an explicit stability assertion); `TestRT011_1_NativeOrgRouting` now asserts normalized published content for all four rows, including `source.org` and `source.data`; RT011.2 evidence now cites `TestCheckboxRendering` and the checkbox rows of `TestHTTPBlockAnnotations`, and the second admission command includes them.
 
-        - **Evidence**: the only memory cases are `memory-ceiling` (513 MiB, correctly rejected as above the application maximum) and `memory-limit` (`MemoryBytes = 1`), both placed in the invalid-request table asserting the same generic "error, no output" as `{`, trailing data and unknown fields. An implementation that validates `MemoryBytes` against a floor at parse time satisfies the test while the design's runtime memory monitor and abort path (spec `#worker-contract`, "Verify its failure path") get no coverage at all.
-        - **Remediation**: one dedicated case with a *valid but lowered* private bound and an input large enough to exceed it, asserting the bounded limit-classified failure with no partial output — and, as a control, that the same input converts under the ordinary bound. Keep allocations small, per the spec's "do not allocate hundreds of MiB" bound.
+        ## Gate checks
 
-        **F3 — RT011.5 converter-delta integration case is absent**
+        - **Scaffolding**: `internal/orgconvert/worker.go` is unchanged — request record plus an always-failing `Worker`, imported only by tests. No production routing exists, so `TestRT011_1_PackagedNativeWorker` still fails on the missing private mode rather than on compilation.
+        - **Recorded states are accurate**: RT011.1/6/7 RED on intended assertions; RT011.2/3/4/5 initially GREEN preservation with stated justification; OT011.1/2 and UT011.1/2 AMBER with concrete pending plans (bounded two-build benchmark; release builds, `make vulncheck`, staged native trial; human browser reviews). Preflight-eligible under the declared `AMBER RED | GREEN` sequence.
+        - **Boundaries, determinism, doubles**: CLI, loopback HTTP and the real subprocess protocol throughout; doubles confined to the sanctioned `Host` seam and never lowering assertion strength or raising production ceilings; parallel worker subtests independent; retained under `make test` (`go test -race -timeout=20m ./...`). No source greps, no count-equality shortcuts, no test-only production endpoint.
 
-        - **Definition**: "Use the named footnote fixture from RT011.2 through the real service. Verify that identification, edit and delete address the intended note after normalization, including repeated references and a multi-paragraph definition. Correct-looking HTML alone does not establish a working annotation association."
-        - **Evidence**: no such test exists in the delta. The maintained tests cover the two halves separately and never together: `TestRT009_7_EditOrdinaryFootnotes` uses repeated references with a **single-paragraph** definition (`[fn:12] *Original* note.`); `TestRT009_7_HTTPCurrentFootnotes` edits **application-authored** multi-paragraph notes; `TestHTTPDeleteFootnote` deletes a single-paragraph note; `TestRT009_8_EditableNotesPreserveRenderedMarkup` checks rendering only. `TestRT011_2_FootnoteHTMLContract` asserts published HTML through the CLI, which the definition explicitly says is not sufficient.
-        - **Remediation**: one service test using the RT011.2 fixture (repeated references plus the two-paragraph definition) that lists the note, edits it, deletes it, and verifies the intended source bytes change with unrelated bytes preserved.
+        ## Non-blocking observations (not conditions of this PASS)
 
-        ## Additional items to correct in the same round
+        - The RT011.7 `:EVIDENCE:` property still describes only the first run; the started-worker, memory and allowance observations live in the second dated admission section. Traceable, but worth folding into the test node when the delivery-code evidence is written.
+        - Scratch-directory assertion assumes session cleanup completes before the response. If it proves asynchronous during implementation, replace it with a bounded wait rather than weakening the check.
+        - The recorded revision string ("64b4b81 plus W011 test package and worker scaffold") remains honest while production is untouched; it will need to name the candidate revision at delivery-code.
 
-        - **RT011.7 input allowance**: the exact/over pair is asserted for output only (`worker_test.go:68-77`). The definition names "maximum **and** excess admitted source/intermediary bytes"; `input-limit` tests only the excess side. Add the exact-maximum acceptance case.
-        - **RT011.1 native content assertion** (`internal/preview/native_org_test.go:33`): the compound condition exempts `source.org` and `source.data` from any content check, so the two primary native cases assert only exit status and page count. Assert the published heading/body text for them (the linked-page and RT011.2 tests cover content elsewhere, but the routing table's own "publish readable pages" expectation is unasserted).
-        - **RT011.2 evidence attribution**: the named checkbox delta case (`X`/`x` equivalent checked, space unchecked, `/` partial, label spacing, whole-item structure) is in fact covered by `TestCheckboxRendering` and the checkbox rows of `TestHTTPBlockAnnotations`, but `validation.org` records neither under RT011.2's command selection or `:EVIDENCE:`. Cite them so the named case is traceable to executed evidence.
-
-        ## Explicitly not findings
-
-        - Invalid-request controls passing trivially while the scaffold rejects everything is correctly disclosed in `validation.org` and paired with RED valid controls (`WorkerRoundTripAndBounds`, `OwnedLiteralRecords`, `ConcurrentWorkers`).
-        - The 503→422 classification correction is consistent with the renderer's existing generic conversion-failure mapping and was rerun independently; no scope change.
-        - `PREVIEW_TEST_FAULT=reject-pandoc-org` lives in the test binary's `TestMain` Host wrapper, not production — no test-only production hook is introduced.
-        - Recording the executed revision as "64b4b81 plus W011 test package and worker scaffold" is honest for a pre-commit run; no correction required.
+        Test-code PASS approves the test package only. Implementation may proceed; delivery remains subject to the delivery-code review with RT/OT GREEN.
       history:
         - readiness_check: test-code
           cache_key: sha256:2f0e1c6d0822b12cb6b1c38f5fe79ec0777378ddb9711c5845dd386143065a10
@@ -468,3 +460,174 @@ audits:
             - `PREVIEW_TEST_FAULT=reject-pandoc-org` lives in the test binary's `TestMain` Host wrapper, not production — no test-only production hook is introduced.
             - Recording the executed revision as "64b4b81 plus W011 test package and worker scaffold" is honest for a pre-commit run; no correction required.
           updated: "2026-09-20T00:40:53Z"
+        - readiness_check: test-code
+          cache_key: sha256:39f180566b1b14ca74425f3e29115a68c944e69c9f8ff82d3b5f8caf32ea72f9
+          session_id: eebb7842-60a6-4b7e-9531-af6c36993544
+          harness: claude
+          model: claude-opus-5
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: c08600318790748242a803d2e6cf166f51025e134170701a6b1fb18edf21d0aa
+              bytes: 14809
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 04a5798f1c77dfd9e0c4690bc43bbc4e7733ac7a18662e17d4f6cd8785f96858
+              bytes: 16237
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: c85d36a8547d0b8cb114e6f5d46f7eaef322f2c2d1784ed3edc7c037286bd692
+              bytes: 857
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: a9c70844a0eec811dd8d4be7b4c2b9310a75c9206adeff92e6d0500ed6c97f7d
+              bytes: 63969
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: b7aeef8c47d8df604b5a8fc4b7f81fc9ed6ef811f03be03cb46697ee95a500f4
+              bytes: 18753
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: fce97c20afac69c1005e748ed467b7b3a3b828aa29f5d8c113f7d57ac3163ed1
+              bytes: 15063
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: 4633e010c2678b7c489eeb154c6d3cbc5da2a095d916674bc6de76bd5e26d315
+              bytes: 375
+            - path: /Users/tigger/code/tigoss/html-preview/integration/cli_test.go
+              sha256: 676cd8867e703595506cde406ae03992298380004bc6c6e7b211f47aeefeb237
+              bytes: 4909
+            - path: /Users/tigger/code/tigoss/html-preview/integration/formats_test.go
+              sha256: 4fa3ff879a1cb40da5dfa7dddb2dfe16ca57b834a17e1f3848d8191c33042115
+              bytes: 3698
+            - path: /Users/tigger/code/tigoss/html-preview/integration/native_org_test.go
+              sha256: 59fe0811603d42ade81370c7acc702da669824366955c4b03c7160e3cba3692e
+              bytes: 1575
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/worker.go
+              sha256: 90969221fffb60c4fa49a4b52c10335689a5aa35d78007fbd0e42813c35af14e
+              bytes: 817
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/worker_test.go
+              sha256: 9e093ae1b18c9c93289e0e2601db808f30907688b1faa160405fb4de7863c418
+              bytes: 7660
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks.go
+              sha256: 69dcdca22051bdefead2de28f520b9bd3e0ef029f950bb2db8f82cbe9a151b41
+              bytes: 6306
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks_test.go
+              sha256: 445b845e705e65ce2f97bac090d09a1207a6a1bbdacca00f0a30b155699cd3ca
+              bytes: 12405
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/checkboxes_test.go
+              sha256: c0aa2603f1a7cf4252493a55f599499c29f0506ad19d49cba2103db5d106e4cd
+              bytes: 2059
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/code_outline_test.go
+              sha256: 667d669cb0ede02503a69253f4ded400135f971250536580c3e4c274c53cbb94
+              bytes: 14264
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/folding_config_test.go
+              sha256: 92ec8e5289e1318676b48dde2a0a4198c27d919dc237e0defb300de7be8fd3e7
+              bytes: 6061
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/footnote_delete_test.go
+              sha256: d46fd8b955084c5d96b736387a4dcb3daceed58b526a611478869951ad17b5c2
+              bytes: 3013
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/footnote_service_test.go
+              sha256: 941f973205f73e31dc844eb777e754e904ab6d4842bf1cdf57025304cc87ef25
+              bytes: 20705
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/native_org_test.go
+              sha256: 514cbb3d819a1f6160f5631347bb1e0c09c9c805ccbb98501f07d312406cd903
+              bytes: 13633
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/navigation_test.go
+              sha256: 8277b82fc93630130c84ad53b1d7cba988ec2f3cf33516194f62cff577a194ac
+              bytes: 1802
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/presentation_test.go
+              sha256: 5a27502cb1dd4b1331530023073ab14f96cabfd74c6cd02673d649627791ec30
+              bytes: 4050
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/preview_test.go
+              sha256: 13b6f0365837f3605e44dacd2a009d3a6e43f3eb8b4913072034aa9aac9db671
+              bytes: 21277
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/process.go
+              sha256: 162c5b3a0e17641aa12eb16e7740362566c551e34b3e5ece527d8acdee843201
+              bytes: 3286
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 88ec2c8c362350a1bac02daf0de90ebf9265f6e036c7f672fd163c8eb23ec32f
+              bytes: 14382
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
+              sha256: f1554c16b66c8b81666e4d560cb1eec8c9a5cf99bc799d7312f163716318f6d1
+              bytes: 9971
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_contract_test.go
+              sha256: a8be7de26df0d1c9bfb983645dcaec7f9ba92e4e078b34e72c42866baaa167de
+              bytes: 4583
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
+              sha256: bd91c7a33e4251747715a0aaea9fb603fb0516ce451ccb4f6b2112a98893003f
+              bytes: 6174
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_limits_test.go
+              sha256: 1c95da7e3d1ed10c82ab5cad9bd77600675bdff872b9e808f2296d35d8f52128
+              bytes: 5091
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
+              sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
+              bytes: 7425
+            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+              sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
+              bytes: 17064
+            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+              sha256: c1c6ef7fa1f3e23a9d1567dad78e961f135967522726deb1f6a83ad2c6f446ab
+              bytes: 54423
+            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/validation.org
+              sha256: 7c7ae8f837b14e3602e930e7ef9e9502d0b4ff502083943f0e34d9670d79de84
+              bytes: 8904
+          round: 2
+          revision: bb7923b
+          verdict: PASS
+          response: |-
+            GATE: test-code
+            REVISION: bb7923b
+            VERDICT: PASS
+
+            ## Prior findings — all resolved
+
+            **F1 (cancelled/hung worker) — resolved.** `TestRT011_7_StartedNativeWorkerBounds` (`internal/preview/native_org_test.go:237`) substitutes the real `--process-blocker`/`--process-flood` children **only at the native `--internal-org-convert` Host invocation**, through the production `runProcess` path:
+
+            - **Start proven**, not assumed: `writeWorkerPID` (`:229`) writes the child PID when invoked with three arguments; the CLI `converter-stall` path passes two and is unaffected.
+            - **Reaping proven**: `unix.Kill(pid, 0) == unix.ESRCH` after the response, with `cmd.Run` having waited, so no zombie can satisfy it.
+            - **Temporary state proven**: every `host.Temp` directory allocated during the failed conversion must be absent.
+            - **Classification and recovery**: 504 for the blocked child, 413 for the flooding child with `Limit = 4096`, no source text in the body, then the same Org URL returns 200 with content — covering slot reuse.
+            - The vacuous pre-cancelled-context weakness no longer carries the case, and `TestMain` (`preview_test.go:97-104`) now routes `converter-stall`/`converter-flood` faults to the native command, so the existing `dense.org` stall/flood coverage survives the routing change instead of silently lapsing.
+            - **RED is behavioural**: routing is absent, so the substitution never fires and the page returns 200 against an expected 504/413, as recorded.
+
+            **F2 (memory threshold) — resolved.** `TestRT011_7_RuntimeMemoryAbort` (`worker_test.go:213`) pairs a **positive control** (2.3 MiB structured Org converting under the ordinary 512 MiB bound) with the **same input under a valid lowered 16 MiB bound**, requiring failure, zero output and a `memory limit` diagnostic. A validation-only rejection of small values no longer satisfies the case, the bound stays within the design's injected-private-bound allowance, and no large allocation is required.
+
+            **F3 (RT011.5 converter-delta integration) — resolved.** `TestRT011_5_RepeatedMultiParagraphFootnoteLifecycle` (`native_org_test.go:299`) drives the RT011.2 fixture — repeated `[fn:note]` references with a two-paragraph definition — through the real service: one editable note identified by label and text, **both** rendered associations (`data-hp-footnote-label` count of 2), edit and delete asserted as **exact source bytes** with the unrelated `* Next` tail preserved, and zero notes listed afterwards. Initially GREEN with the oracle correction disclosed.
+
+            **Additional items — resolved.** Exact serialized request allowance plus one-byte excess (`TestRT011_7_ExactRequestAllowance`, with a convergence loop and an explicit stability assertion); `TestRT011_1_NativeOrgRouting` now asserts normalized published content for all four rows, including `source.org` and `source.data`; RT011.2 evidence now cites `TestCheckboxRendering` and the checkbox rows of `TestHTTPBlockAnnotations`, and the second admission command includes them.
+
+            ## Gate checks
+
+            - **Scaffolding**: `internal/orgconvert/worker.go` is unchanged — request record plus an always-failing `Worker`, imported only by tests. No production routing exists, so `TestRT011_1_PackagedNativeWorker` still fails on the missing private mode rather than on compilation.
+            - **Recorded states are accurate**: RT011.1/6/7 RED on intended assertions; RT011.2/3/4/5 initially GREEN preservation with stated justification; OT011.1/2 and UT011.1/2 AMBER with concrete pending plans (bounded two-build benchmark; release builds, `make vulncheck`, staged native trial; human browser reviews). Preflight-eligible under the declared `AMBER RED | GREEN` sequence.
+            - **Boundaries, determinism, doubles**: CLI, loopback HTTP and the real subprocess protocol throughout; doubles confined to the sanctioned `Host` seam and never lowering assertion strength or raising production ceilings; parallel worker subtests independent; retained under `make test` (`go test -race -timeout=20m ./...`). No source greps, no count-equality shortcuts, no test-only production endpoint.
+
+            ## Non-blocking observations (not conditions of this PASS)
+
+            - The RT011.7 `:EVIDENCE:` property still describes only the first run; the started-worker, memory and allowance observations live in the second dated admission section. Traceable, but worth folding into the test node when the delivery-code evidence is written.
+            - Scratch-directory assertion assumes session cleanup completes before the response. If it proves asynchronous during implementation, replace it with a bounded wait rather than weakening the check.
+            - The recorded revision string ("64b4b81 plus W011 test package and worker scaffold") remains honest while production is untouched; it will need to name the candidate revision at delivery-code.
+
+            Test-code PASS approves the test package only. Implementation may proceed; delivery remains subject to the delivery-code review with RT/OT GREEN.
+          updated: "2026-09-20T00:50:39Z"

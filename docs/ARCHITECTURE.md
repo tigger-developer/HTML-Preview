@@ -13,6 +13,54 @@ proposal wording below is retained as design history; the specification supplies
 the exact adopted contracts. Browser and release qualification require the
 separate validation record.
 
+## Native Org conversion candidate - 20 September 2026
+
+[W011 - Fast Org previews](../specs/011-conversion-performance/spec.org) replaces
+Pandoc only for Org and the internal Org wrappers for code/plaintext. Markdown
+and other readers retain Pandoc. The existing preservation, annotation projection,
+block-proof passes, passive-content policy and publication pipeline remain.
+Earlier descriptions below of Pandoc owning Org output describe the superseded
+converter; their source, browser and security contracts continue to apply.
+
+`internal/orgconvert` runs through a private mode of the same executable,
+resolved with `os.Executable`. Each conversion receives one bounded JSON request
+on stdin, never a source filename or resource path. The existing process executor
+owns cancellation, reaping and combined output bounds. The worker has a 512 MiB
+Go runtime memory target and checks accounted runtime memory every 10 ms. This is
+not a hard RSS ceiling. Intermediary/protocol bytes count against the existing
+session allowance, and worker output is limited to 50 MiB or the smaller remaining
+allowance. Conversion errors publish no partial page and do not fall back to
+Pandoc for Org.
+
+The pinned go-org parser has one local scanner-allowance patch for long admitted
+lines. Its writer hooks produce the established heading/code/contents transport
+and footnote HTML contract. Chroma supplies escaped literal spans using the
+existing highlight classes. The application then applies the same sanitization,
+resource authorization, heading catalogue and browser controllers. Parser file
+reads are denied; includes cannot fetch local or remote resources.
+
+The adapter handles repeated reference/backlink associations, declared task
+partitions, checkbox variants and the short `I.` definition-list case without
+weakening block proof. Only current generated block-reference labels receive an
+invisible conversion-only predecessor; authored footnote definitions do not.
+Generated preservation fragments avoid introducing an extra blank line that
+would prematurely terminate a native footnote definition. Source bytes remain
+under the existing annotation writer's ownership.
+
+The distribution retains parser, highlighter and transitive licences. The
+vulnerability gate checks the linked application and a locked unreplaced
+upstream module, preserving advisory coverage despite the local replacement.
+See [parser provenance](../third_party/go-org/README.md) and
+[validation](../specs/011-conversion-performance/validation.org) for the patch,
+execution evidence and pending human review.
+
+The accepted compatibility layer adds some formatting work. Future optimization
+may reduce converter passes, use native source offsets or avoid redundant HTML
+traversals once equivalent proof is demonstrated. Worker reuse would require a
+new isolation/lifetime decision. Markdown replacement still needs its own
+research and benchmark. These opportunities are recorded in W011's solution
+design and are outside this implementation.
+
 ## Local service proposal - 11 September 2026
 
 [W006 - Local preview service and automatic fallback](../specs/006-local-preview-service/spec.org)
@@ -169,7 +217,7 @@ GET/refresh supplies current text in service mode; file previews use their
 snapshot. No raw-source endpoint, binary extraction, wider capability or dependency is
 introduced. Payload growth counts against existing output/cache budgets.
 
-Pandoc retains ownership of footnote HTML: native reference anchors, one endnotes
+The selected converter supplies the shared footnote HTML contract: native reference anchors, one endnotes
 section and its backlinks. Annotation mode moves that existing section into the
 aside and returns it to the document end on exit. It does not clone or regenerate
 the notes. Refresh and print restore placement through the reader lifecycle;
@@ -185,7 +233,7 @@ mutation path are retired. The legacy decoder reads old stores until an authoriz
 save imports the selected destination's latest values.
 
 For sidecars and unplaced or legacy notes, a temporary projection combines native
-footnotes with the original document for Pandoc. Private markers verify virtual
+footnotes with the original document for the selected converter. Private markers verify virtual
 positions against the original canonical text; unverified positions become
 explicitly unplaced endnotes without false backlinks. The projection never
 replaces the source payload or authored revision. This uses the existing conversion
@@ -210,7 +258,7 @@ current content makes a repeated save harmless; conflicting text retains the
 browser draft. An unrelated source change can refresh and retry while the
 selected definition digest remains unchanged.
 
-Conversion-only markers associate Pandoc's endnotes with native labels, including
+Conversion-only markers associate the converter's endnotes with native labels, including
 repeated references. Markers are removed before publication; application-owned
 attributes retain the mapping. The sidebar uses the existing composer and
 source refresh. An edit fixes the existing ID and finishes after its latest
@@ -269,8 +317,8 @@ container, raster and native HTML implementation. The combined increase was
 an isolated measurement of the CSS dependency. Candidate verification is
 recorded in [the input-format validation record](../specs/008-input-formats/validation.org).
 
-`htmlpreview` is a local Go command-line application that uses Pandoc to render
-Markdown and Org as HTML, repairs references for temporary output, and opens
+`htmlpreview` is a local Go command-line application that uses go-org for Org
+and Pandoc for Markdown and other readers, repairs references, and opens
 the result in a browser. [VISION.md](VISION.md) defines the product intent.
 
 The application owns one private temporary directory per invocation. Sources
@@ -931,7 +979,7 @@ remains manual UT; the state-flow change has native lint and build checks.
 
 New annotation creation uses source-bound semantic blocks instead of clicked-word
 searches. The annotation boundary proposes native insertion positions outside
-literal content and definitions. One additional bounded Pandoc conversion uses
+literal content and definitions. One additional bounded conversion uses
 temporary native footnotes to verify that those references parse. The preview
 adapter associates supported block ends with the unchanged rendered structure
 and canonical text, then adds application-owned HTML attributes to the original
@@ -955,7 +1003,7 @@ their existing restrictions; this change does not invent a persisted block-ID
 format or approximate reattachment across source changes.
 
 The same after-block convention covers pipe tables and rendered Org block
-containers. Source scanning proposes the complete outer block's end; Pandoc
+containers. Source scanning proposes the complete outer block's end; the converter
 must produce its expected table, quote, verse or named container before that
 boundary is exposed. Nested content selects the outer container rather than
 individual cells or internal paragraphs. Hidden comment/export blocks and
@@ -1023,3 +1071,7 @@ and attempts to restart the prior job; failures retain actionable diagnostics an
 recovery files where needed. Configuration, service logs and other jobs remain
 untouched. This supports moving the stable installation between checkouts,
 including a submodule, without changing rendering or source authorization.
+
+## Document changes
+
+- Version 4: document native Org conversion, resource bounds and retained compatibility ownership.

@@ -36,6 +36,9 @@ func (s *session) markAnnotationBlocks(ctx context.Context, p *page, input []byt
 		return nil
 	}
 	probe := &page{source: p.source, name: p.name + "-blocks"}
+	for label := range boundaries {
+		probe.probeLabels = append(probe.probeLabels, label)
+	}
 	if err := s.render(ctx, probe, marked); err != nil {
 		return err
 	}

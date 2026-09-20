@@ -1,7 +1,7 @@
 ---
 title: Document annotations
 version: 3
-last-updated: 2026-09-19
+last-updated: 2026-09-20
 ---
 
 # Document annotations
@@ -122,7 +122,7 @@ consisting only of trailing line breaks does not refresh the attribution.
 
 ## Reading and source inspection
 
-Pandoc renders ordinary and owned footnotes in one endnotes section. Annotation
+The selected converter renders ordinary and owned footnotes in one endnotes section. Annotation
 mode moves that same section into the comment pane; switching it off returns
 it to the document end. Native reference links and backlinks remain available.
 Printing uses the normal endnotes, without a duplicate annotation appendix.

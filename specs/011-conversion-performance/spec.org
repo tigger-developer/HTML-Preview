@@ -666,7 +666,7 @@ footnote-structure cases.
   upstream's declared test/CLI dependencies need not enter the release binary.
 - Upstream advisories :: Retain the upstream module path, exact revision and
   corresponding Go module version in the patch provenance. In addition to the
-  actual application scan, =make vulncheck= runs =govulncheck -scan=module ./...=
+  actual application scan, =make vulncheck= runs =govulncheck -scan=module=
   on an OS-temporary minimal module importing the *unreplaced upstream org
   package at that pinned version*, with the same locked transitive versions.
   Prepare and commit its manifest/checksums during dependency adoption; the gate
@@ -957,3 +957,17 @@ verification or maintaining divergent server/browser interpretations.
 - The added HTML examples and explicit test cases elaborate the existing contract.
 - OTs use local temporary copies and public dependency advisory reads; no paid
   live service operation is required. Human browser/platform UTs remain pending.
+
+*** Dependency and compatibility details
+
+- Chroma =v2.27.0= supplies the native highlighter; its required =regexp2/v2=
+  dependency and both licences accompany the parser licence in packages.
+- The current scanner accepts =govulncheck -scan=module= without package
+  patterns. The command example was corrected to that documented interface;
+  the actual-code and unreplaced-upstream scan requirements are unchanged.
+- The adapter trims an initial UTF-8 byte-order mark for conversion and leaves
+  unresolved native footnote references literal, preserving existing reader
+  behaviour. The source snapshot and write proof remain unchanged.
+- Native short definition descriptions and preservation-fragment spacing are
+  normalized in the application adapter, without additional parser grammar
+  patches. Only the bounded scanner-allowance patch differs from upstream.

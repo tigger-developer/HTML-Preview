@@ -8,19 +8,24 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/tigger-developer/HTML-Preview/internal/annotation"
+	"github.com/tigger-developer/HTML-Preview/internal/orgconvert"
 
 	bundle "github.com/tigger-developer/HTML-Preview"
 	"golang.org/x/net/html"
 )
 
 type page struct {
+	probeLabels                   []string
 	annotationBlocks              map[string]annotationBlock
 	sourceData                    *string
 	annotationData                string
@@ -123,9 +128,14 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		args = append(args, "--metadata=htmlpreview-org:true")
 	}
 	args = append(args, "+RTS", "-M512M", "-RTS")
-	output, err := s.host.Execute(ctx, Command{Path: s.pandoc, Args: args, Input: data, Dir: s.path, Limit: s.cfg.outputBytes - s.used})
+	var output []byte
+	if format == "org" {
+		output, err = s.convertOrg(ctx, p, data, token)
+	} else {
+		output, err = s.host.Execute(ctx, Command{Path: s.pandoc, Args: args, Input: data, Dir: s.path, Limit: s.cfg.outputBytes - s.used})
+	}
 	if err != nil {
-		return fmt.Errorf("Pandoc conversion: %w", err)
+		return fmt.Errorf("%s conversion: %w", format, err)
 	}
 	if err := ctx.Err(); err != nil {
 		return err
@@ -164,6 +174,30 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (s *session) convertOrg(ctx context.Context, p *page, data []byte, token string) ([]byte, error) {
+	executable, err := os.Executable()
+	if err != nil {
+		return nil, fmt.Errorf("resolve native converter: %w", err)
+	}
+	remaining := s.cfg.outputBytes - s.used
+	request := orgconvert.Request{Version: 1, Text: string(data), Token: token, TOC: s.cfg.toc, TOCDepth: s.cfg.tocDepth, InputBytes: min(orgconvert.MaxInputBytes, remaining+int64(len(data))), OutputBytes: min(orgconvert.MaxOutputBytes, remaining), MemoryBytes: orgconvert.MaxMemoryBytes, ProbeLabels: p.probeLabels}
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+	// Intermediary bytes were counted above; count the protocol's additional bytes once.
+	s.used += int64(len(payload) - len(data))
+	if int64(len(payload)) > request.InputBytes || s.used >= s.cfg.outputBytes {
+		return nil, errors.New("native conversion input limit exceeded")
+	}
+	output, err := s.host.Execute(ctx, Command{Path: executable, Args: []string{"--internal-org-convert"}, Input: payload, Dir: s.path, Limit: min(orgconvert.MaxOutputBytes, s.cfg.outputBytes-s.used)})
+	var exit *exec.ExitError
+	if errors.As(err, &exit) && exit.ExitCode() == orgconvert.LimitExit {
+		return nil, errors.New("native conversion resource limit exceeded")
+	}
+	return output, err
 }
 
 func transportToken(data []byte) (string, error) {

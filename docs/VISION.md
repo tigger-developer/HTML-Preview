@@ -1,4 +1,20 @@
+---
+title: Vision
+version: 1
+last-updated: 2026-09-20
+---
+
 # Vision
+
+## Native Org previews
+
+[W011 - Fast Org previews](../specs/011-conversion-performance/spec.org)
+replaces Org conversion with bundled Go code while preserving reading,
+annotation and source-protection behaviour. Markdown and other readers retain
+Pandoc, which remains a runtime dependency. The earlier Pandoc-only conversion
+descriptions below are retained as history. Performance and compatibility
+evidence are recorded in [W011 validation](../specs/011-conversion-performance/validation.org);
+browser review remains separate from automated checks.
 
 **Status:** Product direction approved on 8 September 2026 through
 [the local-preview specification](../specs/001-local-document-preview/spec.org).
@@ -144,8 +160,8 @@ preview, applies a carefully maintained visual presentation, and opens it in
 the default browser.
 
 The tool should remain small and direct: select a document, read it, and leave
-the source untouched. Pandoc provides document conversion; Go manages the
-application and its temporary files.
+the source untouched. Go provides native Org conversion and manages the
+application and its temporary files; Pandoc converts other supported readers.
 
 ## The reading experience
 
@@ -324,3 +340,7 @@ Native directory notifications cover ordinary and atomic editor saves; manual
 browser UTs verify the reader experience. Persistent LaunchAgent logging makes
 service and annotation failures inspectable without recording document contents
 or capability URLs. These decisions are recorded in W010's paired amendments.
+
+## Document changes
+
+- Version 1 metadata: document the native Org converter and its dependency provenance where applicable.

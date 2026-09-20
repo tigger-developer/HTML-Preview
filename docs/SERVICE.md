@@ -85,7 +85,7 @@ folding:
 ```
 
 Each leaf accepts `open` or `closed`. `headers.todo` and `headers.done` use
-semantic task categories from Pandoc, including custom Org keywords declared
+semantic task categories from the document, including custom Org keywords declared
 before and after `|` in `#+TODO`, `#+SEQ_TODO` or `#+TYP_TODO`. They do not match
 the literal words TODO or DONE. `headers.default` applies to unclassified headings
 and supplies the fallback for an omitted category. If both are omitted, the

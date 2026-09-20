@@ -48,7 +48,7 @@ func preserveOrgCode(data []byte, token string, wrapperDisplay *string) (preserv
 	marker := func(fragment string) string {
 		key := fmt.Sprintf("%s_%d", prefix, len(p.fragments))
 		p.fragments[key] = fragment
-		return "\n#+begin_export html\n<p>" + key + "</p>\n#+end_export\n"
+		return "#+begin_export html\n<p>" + key + "</p>\n#+end_export\n"
 	}
 	lines := strings.SplitAfter(source, "\n")
 	var current *orgHeading

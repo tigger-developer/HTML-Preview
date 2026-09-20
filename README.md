@@ -12,6 +12,11 @@ documents use embedded Asap and Iosevka Custom fonts; native HTML retains its
 authored presentation. See [supported formats](docs/FORMATS.md) for mappings,
 reader selection and resource limits.
 
+Org previews and code/plaintext wrappers use the bundled native Go converter.
+Markdown and other readers retain Pandoc, which remains required. The
+[W011 validation record](specs/011-conversion-performance/validation.org) tracks
+compatibility checks, performance measurements and human review separately.
+
 The [W008 input-format candidate](specs/008-input-formats/spec.org) extends the
 earlier Org/Markdown-only scope. Its [validation record](specs/008-input-formats/validation.org)
 tracks automated evidence and pending native qualification separately.
@@ -285,7 +290,7 @@ make lint
 make vulncheck
 ```
 
-`make test` uses Go's race detector, real Pandoc conversion, subprocess tests,
+`make test` uses Go's race detector, real native/Pandoc conversion, subprocess tests,
 and controlled desktop boundaries. It also checks staged installation and
 cross-compiled archives. Its per-package timeout is twenty minutes for the full
 reader and filename-mapping corpus; application deadlines remain separate.
@@ -299,7 +304,9 @@ check in Pandoc's own host. No Node/npm or standalone Lua runtime is used;
 Native oxlint and biome check browser JavaScript and CSS; paired human checks
 cover actual browser interaction and appearance. The historical browser fixture
 is retired from the current workflow and is not execution evidence.
-The vulnerability target neither installs tools nor updates dependencies.
+The vulnerability target scans linked code and the pinned upstream Org parser
+identity, including its highlighter dependencies. It rejects stale advisory
+manifests, and neither installs tools nor updates dependencies.
 
 ```sh
 make release VERSION=0.1.0

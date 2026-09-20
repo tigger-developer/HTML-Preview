@@ -1,3 +1,9 @@
+---
+title: Licensing and third-party notices
+version: 1
+last-updated: 2026-09-20
+---
+
 # Licensing and third-party notices
 
 htmlpreview's project-owned code and documentation are licensed under the
@@ -42,10 +48,13 @@ notice and full licence, just as for the separately licensed Asap assets.
 The reviewed dependency versions are pinned in `go.mod` and `go.sum`.
 Their full upstream licence files are retained byte-for-byte under
 `assets/licenses`, copied from the checksum-verified Go module downloads.
-They accompany prefix installations, release archives, and embedded HTML.
+They accompany prefix installations and release archives. Font licences also accompany embedded font data in generated HTML.
 
 | Module | Version | Purpose | Licence |
 | --- | --- | --- | --- |
+| `github.com/niklasfasching/go-org` | 1.9.1, local scanner allowance patch | Native Org parsing and HTML writer | [MIT](assets/licenses/go-org-LICENSE) |
+| `github.com/alecthomas/chroma/v2` | 2.27.0 | Native Org source highlighting | [MIT](assets/licenses/chroma-COPYING) |
+| `github.com/dlclark/regexp2/v2` | 2.2.1 | Chroma lexer expressions | [MIT](assets/licenses/regexp2-LICENSE) |
 | `github.com/fsnotify/fsnotify` | 1.10.1 | Native filesystem change notifications | [BSD 3-Clause](assets/licenses/fsnotify-LICENSE) |
 | `golang.org/x/sys` | 0.47.0 | Filesystem notification OS bindings | [BSD 3-Clause](assets/licenses/golang-x-sys-LICENSE) |
 | `golang.org/x/net` | 0.58.0 | HTML5 parsing | [BSD 3-Clause](assets/licenses/golang-x-net-LICENSE) |
@@ -57,3 +66,12 @@ They accompany prefix installations, release archives, and embedded HTML.
 
 Go 1.26.8 is the reviewed delivery toolchain. Pandoc is separately installed
 and is not bundled or relicensed by this project.
+
+The go-org copy and its sole scanner correction are documented in
+[the local module provenance](third_party/go-org/README.md). Chroma's upstream
+notice also contains the SIL font licence for its SVG formatter; that formatter
+and its font are not linked into htmlpreview.
+
+## Document changes
+
+- Version 1 metadata: document the native Org converter and its dependency provenance where applicable.

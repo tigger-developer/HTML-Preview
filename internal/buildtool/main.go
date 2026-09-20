@@ -41,6 +41,8 @@ func task(args []string) error {
 		return release()
 	case "sync":
 		return synchronize()
+	case "vulncheck":
+		return vulnerabilityCheck()
 	case "lint":
 		return lint()
 	default:
@@ -85,7 +87,7 @@ func build(path, goos, arch, version string) error {
 }
 
 func licenceFiles() map[string]string {
-	return map[string]string{"fsnotify-LICENSE": "assets/licenses/fsnotify-LICENSE", "golang-x-sys-LICENSE": "assets/licenses/golang-x-sys-LICENSE", "LICENSE": "LICENSE", "THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md", "asap-OFL.txt": "assets/fonts/asap/OFL.txt", "iosevka-custom-OFL.md": "assets/fonts/iosevka-custom/OFL.md", "golang-x-net-LICENSE": "assets/licenses/golang-x-net-LICENSE", "bluemonday-LICENSE.md": "assets/licenses/bluemonday-LICENSE.md", "douceur-LICENSE": "assets/licenses/douceur-LICENSE", "gorilla-css-LICENSE": "assets/licenses/gorilla-css-LICENSE", "tdewolff-parse-LICENSE.md": "assets/licenses/tdewolff-parse-LICENSE.md", "go-yaml-LICENSE": "assets/licenses/go-yaml-LICENSE"}
+	return map[string]string{"go-org-LICENSE": "assets/licenses/go-org-LICENSE", "chroma-COPYING": "assets/licenses/chroma-COPYING", "regexp2-LICENSE": "assets/licenses/regexp2-LICENSE", "fsnotify-LICENSE": "assets/licenses/fsnotify-LICENSE", "golang-x-sys-LICENSE": "assets/licenses/golang-x-sys-LICENSE", "LICENSE": "LICENSE", "THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md", "asap-OFL.txt": "assets/fonts/asap/OFL.txt", "iosevka-custom-OFL.md": "assets/fonts/iosevka-custom/OFL.md", "golang-x-net-LICENSE": "assets/licenses/golang-x-net-LICENSE", "bluemonday-LICENSE.md": "assets/licenses/bluemonday-LICENSE.md", "douceur-LICENSE": "assets/licenses/douceur-LICENSE", "gorilla-css-LICENSE": "assets/licenses/gorilla-css-LICENSE", "tdewolff-parse-LICENSE.md": "assets/licenses/tdewolff-parse-LICENSE.md", "go-yaml-LICENSE": "assets/licenses/go-yaml-LICENSE"}
 }
 func copyFile(from, to string, mode fs.FileMode) error {
 	// #nosec G304 -- Callers select repository package assets or the binary just built.
