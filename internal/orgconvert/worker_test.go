@@ -184,3 +184,42 @@ func TestRT011_7_ConcurrentWorkers(t *testing.T) {
 		})
 	}
 }
+
+func TestRT011_7_ExactRequestAllowance(t *testing.T) {
+	r := requestFixture()
+	r.Text = strings.Repeat("é", 40000)
+	for range 8 {
+		size := int64(len(encodeRequest(t, r)))
+		if r.InputBytes == size {
+			break
+		}
+		r.InputBytes = size
+	}
+	raw := encodeRequest(t, r)
+	if int64(len(raw)) != r.InputBytes {
+		t.Fatal("unstable request size")
+	}
+	out, _, err := workerRun(t, t.Context(), raw)
+	if err != nil || !bytes.Contains(out, []byte(r.Text)) {
+		t.Fatal("exact request allowance rejected", err)
+	}
+	r.InputBytes--
+	out, _, err = workerRun(t, t.Context(), encodeRequest(t, r))
+	if err == nil || len(out) != 0 {
+		t.Fatal("request allowance exceeded")
+	}
+}
+
+func TestRT011_7_RuntimeMemoryAbort(t *testing.T) {
+	r := requestFixture()
+	r.Text = strings.Repeat("A paragraph with /emphasis/ and *bold*.\n\n", 60000)
+	out, diagnostic, err := workerRun(t, t.Context(), encodeRequest(t, r))
+	if err != nil || !bytes.Contains(out, []byte("A paragraph")) {
+		t.Fatal("normal memory control failed", err, diagnostic)
+	}
+	r.MemoryBytes = 16 << 20
+	out, diagnostic, err = workerRun(t, t.Context(), encodeRequest(t, r))
+	if err == nil || len(out) != 0 || !strings.Contains(diagnostic, "memory limit") {
+		t.Fatalf("runtime limit not enforced: err=%v output=%d diagnostic=%q", err, len(out), diagnostic)
+	}
+}

@@ -37,11 +37,13 @@ func TestMain(m *testing.M) {
 		os.Exit(orgconvert.Worker(os.Stdin, os.Stdout, os.Stderr))
 	}
 	if len(os.Args) > 1 && os.Args[1] == "--process-blocker" {
+		writeWorkerPID()
 		for {
 			time.Sleep(time.Hour)
 		}
 	}
 	if len(os.Args) > 1 && os.Args[1] == "--process-flood" {
+		writeWorkerPID()
 		for {
 			if _, err := os.Stdout.Write(bytes.Repeat([]byte("x"), 4096)); err != nil {
 				os.Exit(1)
@@ -92,6 +94,14 @@ func TestMain(m *testing.M) {
 	}
 	actual := host.Execute
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
+		if len(cmd.Args) > 0 && cmd.Args[0] == "--internal-org-convert" && (fault == "converter-stall" || fault == "converter-flood") {
+			cmd.Input = nil
+			cmd.Args = []string{"--process-blocker"}
+			if fault == "converter-flood" {
+				cmd.Args = []string{"--process-flood"}
+			}
+			return actual(ctx, cmd)
+		}
 		if filepath.Base(cmd.Path) == "wslpath" {
 			if len(cmd.Args) != 2 {
 				return nil, fmt.Errorf("translation needs one path")

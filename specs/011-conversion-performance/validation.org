@@ -21,7 +21,7 @@
 :CUSTOM_ID: rt011-2-result
 :REVISION: 64b4b81 plus W011 test package and worker scaffold
 :COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: Initially GREEN preservation: explicit footnote nesting, roles, ordered definitions, backlinks and multi-paragraph assertions pass against the Pandoc baseline. Existing metadata, navigation and semantic heading checks also passed.
+:EVIDENCE: Initially GREEN preservation: explicit footnote nesting, roles, ordered definitions, backlinks and multi-paragraph assertions pass against the Pandoc baseline. Existing metadata, navigation and semantic heading checks also passed. TestCheckboxRendering and checkbox rows of TestHTTPBlockAnnotations verify all task states, spacing and whole-item structure.
 :END:
 
 - Criteria :: See [[file:spec.org::#rt-011-2][RT011.2 - Semantic HTML]].
@@ -51,7 +51,7 @@
 :CUSTOM_ID: rt011-5-result
 :REVISION: 64b4b81 plus W011 test package and worker scaffold
 :COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: Initially GREEN preservation: ordinary-note editing/retries/conflicts, deletion, read-only sidecar endnotes and rendered markup checks passed through existing HTTP helpers.
+:EVIDENCE: Initially GREEN preservation: ordinary-note editing/retries/conflicts, deletion, read-only sidecar endnotes and rendered markup checks passed through existing HTTP helpers. The additional repeated two-paragraph fixture passed identification, edit, reload association and delete with exact unrelated-source preservation.
 :END:
 
 - Criteria :: See [[file:spec.org::#rt-011-5][RT011.5 - Footnote lifecycle]].
@@ -100,6 +100,25 @@
 - Static check :: =golangci-lint run ./internal/orgconvert/... ./internal/preview/... ./integration/...= passed.
 - Environment :: Local macOS; existing Go module/build caches isolated under
   operating-system temporary directories. No browser or live service was used.
+
+* Additional test-admission execution, 20 September 2026
+
+- Command :: =go test ./internal/orgconvert ./internal/preview -run 'TestRT011|TestCheckboxRendering|TestRT002_2_PassiveHighlighting' -count=1=.
+- Native behavioural RED :: Exact serialized input allowance and ordinary-memory
+  controls fail because conversion is not implemented. The new service cases
+  observe HTTP 200 instead of the specified 504/413: native routing does not yet
+  invoke the real blocked/flooding child. These tests subsequently check its
+  start acknowledgement, reaping, scratch cleanup and reuse of service capacity.
+- Memory boundary :: A 2.3 MiB structured document must convert under the ordinary
+  ceiling; the same input under a valid private 16 MiB allowance must report a
+  content-free memory-limit error without partial output.
+- Initially GREEN preservation :: =TestCheckboxRendering= and the existing
+  passive-highlighting checks passed. Repeated multi-paragraph footnote lifecycle
+  passed after correcting the deletion oracle to retain the blank lines outside
+  the note definition. No application behaviour changed.
+- Confirmation command :: =go test ./internal/preview -run 'TestRT011_5_Repeated|TestCheckboxRendering' -count=1= passed.
+- Static check :: Scoped =golangci-lint= passed for the converter, preview and
+  integration packages.
 
 * One-off tests
 
