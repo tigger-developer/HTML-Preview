@@ -6,73 +6,115 @@
 
 * Automated regression
 
-** RED RT011.1 - Format routing :testdef:
+** GREEN RT011.1 - Format routing :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-1-result
-:REVISION: 64b4b81 plus W011 test package and worker scaffold
-:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: Native .org, explicit Org reader and text/code wrappers still invoke Pandoc; guarded CLI/service tests reject them. The built executable rejects the missing private worker entry point.
+:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:COMMAND: make test; affected code/footnote race command recorded below
+:EVIDENCE: Native Org, explicit reader, linked Org, text/code wrappers and packaged symlink cases pass; Markdown and other reader preservation tests pass.
 :END:
+
+*** Earlier test-admission execution
+
+- State :: RED.
+- Revision :: 64b4b81 plus W011 test package and worker scaffold.
+- Observation :: Native .org, explicit Org reader and text/code wrappers still invoke Pandoc; guarded CLI/service tests reject them. The built executable rejects the missing private worker entry point.
 
 - Criteria :: See [[file:spec.org::#rt-011-1][RT011.1 - Format routing]].
 
 ** GREEN RT011.2 - Semantic HTML :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-2-result
-:REVISION: 64b4b81 plus W011 test package and worker scaffold
-:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: Initially GREEN preservation: explicit footnote nesting, roles, ordered definitions, backlinks and multi-paragraph assertions pass against the Pandoc baseline. Existing metadata, navigation and semantic heading checks also passed. TestCheckboxRendering and checkbox rows of TestHTTPBlockAnnotations verify all task states, spacing and whole-item structure.
+:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:COMMAND: make test; affected code/footnote race command recorded below
+:EVIDENCE: Semantic output checks pass for metadata, outline/navigation, declared task categories, checkbox variants and explicit footnote structure/roles/relationships.
 :END:
+
+*** Earlier test-admission execution
+
+- State :: GREEN.
+- Revision :: 64b4b81 plus W011 test package and worker scaffold.
+- Observation :: Initially GREEN preservation: explicit footnote nesting, roles, ordered definitions, backlinks and multi-paragraph assertions pass against the Pandoc baseline. Existing metadata, navigation and semantic heading checks also passed. TestCheckboxRendering and checkbox rows of TestHTTPBlockAnnotations verify all task states, spacing and whole-item structure.
 
 - Criteria :: See [[file:spec.org::#rt-011-2][RT011.2 - Semantic HTML]].
 
 ** GREEN RT011.3 - Literal code :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-3-result
-:REVISION: 64b4b81 plus W011 test package and worker scaffold
-:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: Initially GREEN preservation: existing exact literal/code-copy and highlighting cases plus JavaScript, Python and Java cases passed against the Pandoc baseline.
+:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:COMMAND: make test; affected code/footnote race command recorded below
+:EVIDENCE: Known-language highlighting and exact literal/copy payloads pass; source and example blocks remain inside multi-paragraph footnotes.
 :END:
+
+*** Earlier test-admission execution
+
+- State :: GREEN.
+- Revision :: 64b4b81 plus W011 test package and worker scaffold.
+- Observation :: Initially GREEN preservation: existing exact literal/code-copy and highlighting cases plus JavaScript, Python and Java cases passed against the Pandoc baseline.
 
 - Criteria :: See [[file:spec.org::#rt-011-3][RT011.3 - Literal code]].
 
 ** GREEN RT011.4 - Block placement :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-4-result
-:REVISION: 64b4b81 plus W011 test package and worker scaffold
-:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: Initially GREEN preservation: whole-block placement pack, newly added short definition, unverified-target rejection and repeated notes passed through real HTTP saves.
+:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:COMMAND: make test; affected code/footnote race command recorded below
+:EVIDENCE: Whole-block HTTP placement, short definition, nested/list/task/container cases, repeated notes and rejection of unverified targets pass without weakening source proof.
 :END:
+
+*** Earlier test-admission execution
+
+- State :: GREEN.
+- Revision :: 64b4b81 plus W011 test package and worker scaffold.
+- Observation :: Initially GREEN preservation: whole-block placement pack, newly added short definition, unverified-target rejection and repeated notes passed through real HTTP saves.
 
 - Criteria :: See [[file:spec.org::#rt-011-4][RT011.4 - Block placement]].
 
 ** GREEN RT011.5 - Footnote lifecycle :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-5-result
-:REVISION: 64b4b81 plus W011 test package and worker scaffold
-:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: Initially GREEN preservation: ordinary-note editing/retries/conflicts, deletion, read-only sidecar endnotes and rendered markup checks passed through existing HTTP helpers. The additional repeated two-paragraph fixture passed identification, edit, reload association and delete with exact unrelated-source preservation.
+:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:COMMAND: make test; affected code/footnote race command recorded below
+:EVIDENCE: Ordinary and repeated multi-paragraph footnotes pass identification, edit, reload and deletion; BOM, legacy reading, source preservation and sidecar cases pass.
 :END:
+
+*** Earlier test-admission execution
+
+- State :: GREEN.
+- Revision :: 64b4b81 plus W011 test package and worker scaffold.
+- Observation :: Initially GREEN preservation: ordinary-note editing/retries/conflicts, deletion, read-only sidecar endnotes and rendered markup checks passed through existing HTTP helpers. The additional repeated two-paragraph fixture passed identification, edit, reload association and delete with exact unrelated-source preservation.
 
 - Criteria :: See [[file:spec.org::#rt-011-5][RT011.5 - Footnote lifecycle]].
 
-** RED RT011.6 - Trust boundaries :testdef:
+** GREEN RT011.6 - Trust boundaries :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-6-result
-:REVISION: 64b4b81 plus W011 test package and worker scaffold
-:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: Published-page passive-content and no-fetch checks pass on the baseline; the new valid owned-literal-record case fails because the worker scaffold cannot convert it. Invalid and duplicate records must be assessed together with this valid control.
+:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:COMMAND: make test; affected code/footnote race command recorded below
+:EVIDENCE: No-fetch/no-execution publication checks and valid/malformed/duplicate private-record controls pass under the native converter.
 :END:
+
+*** Earlier test-admission execution
+
+- State :: RED.
+- Revision :: 64b4b81 plus W011 test package and worker scaffold.
+- Observation :: Published-page passive-content and no-fetch checks pass on the baseline; the new valid owned-literal-record case fails because the worker scaffold cannot convert it. Invalid and duplicate records must be assessed together with this valid control.
 
 - Criteria :: See [[file:spec.org::#rt-011-6][RT011.6 - Trust boundaries]].
 
-** RED RT011.7 - Limits and failure recovery :testdef:
+** GREEN RT011.7 - Limits and failure recovery :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt011-7-result
-:REVISION: 64b4b81 plus W011 test package and worker scaffold
-:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
-:EVIDENCE: The worker scaffold rejects valid empty, ordinary and long-line requests and subsequent/concurrent valid requests. The native worker failure injection receives HTTP 200 because the baseline never invokes that worker; required existing failure classification is 422.
+:REVISION: de0cb56; full race suite at 216bee6 with affected race checks after the source-block correction
+:COMMAND: make test; affected code/footnote race command recorded below
+:EVIDENCE: Native protocol, long lines, exact/excess input/output bounds, runtime memory abort, started-child cancellation/output flood, reaping, cleanup and recovery all pass.
 :END:
+
+*** Earlier test-admission execution
+
+- State :: RED.
+- Revision :: 64b4b81 plus W011 test package and worker scaffold.
+- Observation :: The worker scaffold rejects valid empty, ordinary and long-line requests and subsequent/concurrent valid requests. The native worker failure injection receives HTTP 200 because the baseline never invokes that worker; required existing failure classification is 422.
 
 - Criteria :: See [[file:spec.org::#rt-011-7][RT011.7 - Limits and failure recovery]].
 
@@ -131,7 +173,7 @@
 ** GREEN OT011.2 - Packaging and dependencies :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ot-011-2-result
-:REVISION: 216bee6 native converter checkpoint; package build used the identical implementation before commit
+:REVISION: de0cb56 native footnote compatibility checkpoint
 :EVIDENCE: Four release targets built; licence bytes matched; isolated Darwin arm64 service rendered through a symlink without Go/Rust on PATH. Actual-code and unreplaced-upstream vulnerability scans both reported no vulnerabilities.
 :END:
 
@@ -193,3 +235,28 @@ The candidate adds 4,750,368 bytes (28.0%), including the parser, highlighter an
 adapter; this is not an isolated library-size measurement. Linux/WSL runtime
 and desktop behaviour remain untested here; cross-compilation does not qualify
 those platforms.
+
+* Final regression and package refresh, 20 September 2026
+
+- Full suite :: =make test= passed at the native converter checkpoint with
+  =go test -race -timeout=20m ./...=. All packages passed; the preview package
+  took 1,161.022 seconds. No race detector finding occurred.
+- Additional compatibility case :: An Org =SRC= block following the first
+  paragraph of a footnote lost its containing note because preservation added
+  a blank line. The added case failed on missing footnote markup, then passed
+  after removing that generated separator, matching the =EXAMPLE= correction.
+- Final affected command :: =go test -race ./internal/preview -run 'TestRT009_8_EditableNotesPreserveRenderedMarkup|TestRT002_1_CodeFidelity|TestHTTPBlockAnnotations|TestRT011_3' -count=1=
+  passed in 72.520 seconds at =de0cb56=. The non-race execution passed in
+  4.536 seconds. No unrelated suite rerun was needed for that single spacing
+  correction.
+- Packaging refresh :: The four archives and isolated macOS symlink/service
+  trial were regenerated after that correction. Licences and content checks
+  passed again. Final Linux arm64 size is 21,147,286 bytes; the other three
+  sizes above are unchanged. Their embedded revision now identifies =de0cb56=.
+- Final static checks :: =make lint= passed after the correction. Dependency
+  graphs and reachability are unchanged from the successful two-part scan.
+- Documentation :: Converter ownership is updated in the README, Vision,
+  Architecture, annotation and service guides. Notices and parser provenance
+  cover the added dependencies. CLI help and format mappings are unaffected:
+  public invocation, Pandoc installation and admitted readers remain unchanged.
+  Technical prose passed =sanitize oed=.
