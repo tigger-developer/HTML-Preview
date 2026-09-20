@@ -1,13 +1,17 @@
+---
+title: Supported input formats
+version: 3
+last-updated: 2026-09-20
+---
+
 # Supported input formats
 
-Version: 2
-
-Updated: 13 September 2026
-
-htmlpreview previews documents using the installed Pandoc readers, wraps common
-source code and plain text, and preserves passive authored HTML. The W008
-candidate is under delivery; its [validation record](../specs/008-input-formats/validation.org)
-distinguishes development checks from browser qualification.
+htmlpreview converts Org and private code/plaintext wrappers with its bundled
+Go converter. Markdown and other document readers use the installed Pandoc;
+native HTML keeps its permitted authored presentation. Pandoc remains required
+for startup checks, reader discovery and non-Org conversion. The
+[input-format validation record](../specs/008-input-formats/validation.org)
+distinguishes automated checks from browser and platform validation.
 
 ## Selecting an input
 
@@ -172,8 +176,10 @@ SCHEMA field and one **Source code** section. Plain `.txt` uses a plaintext
 block with the same metadata and no synthetic section heading. No author, date
 or filesystem timestamp is invented.
 
-Code is never executed. Highlighting uses Pandoc's installed language catalogue;
-a missing language keeps the literal text and emits a notice. Delimiter-like
+Code is never executed. Native Org and wrapper highlighting uses bundled Chroma;
+other readers use Pandoc's highlighter. Unsupported languages retain literal
+text. Wrapper language admission still uses the installed Pandoc catalogue;
+an unavailable wrapper language emits a notice and selects plaintext. Delimiter-like
 lines, existing commas and markup stay inside the displayed block.
 
 Code/text must be valid UTF-8 without NUL. Display omits a leading BOM and
@@ -250,11 +256,15 @@ Code/text contents never create document links. The CLI does not start a service
 
 Converted-page headers identify the original logical source, never a wrapper
 or extraction path. Native HTML retains its own presentation and original
-identity in the publication mapping. Every source stays read-only. A generated
-Org wrapper does not make a code or office document eligible for annotations.
+identity in the publication mapping. Reading leaves sources unchanged. Service
+[annotations](ANNOTATIONS.md) can create, edit and delete native Org/Markdown
+footnotes, using a sidecar for read-only sources. A generated Org wrapper does
+not make a code or office document eligible for annotations.
 
 ## History
 
+- Version 3: distinguish native Org conversion from retained document readers and
+  clarify the service annotation exception to read-only previewing.
 - Version 2: W006 on-demand HTTP links, explicit target readers and graph retirement.
 - Version 1: W008 candidate format selection, literal wrappers, bounded resources
   and passive authored HTML.

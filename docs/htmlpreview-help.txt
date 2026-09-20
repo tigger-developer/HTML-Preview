@@ -1,10 +1,10 @@
 Usage: htmlpreview [--from FORMAT] FILE [FILE ...]
-Preview local Pandoc documents, source code, plain text and passive native HTML.
+Preview local documents, source code, plain text and passive native HTML.
 Use -- before a filename beginning with -. Open the system default browser.
 
   -h, --help           Show help without reading documents or settings
   --version            Show build identity without preview side effects
-  --list-input-formats List this installation's Pandoc readers; no browser opens
+  --list-input-formats List available document readers; no browser opens
   --from FORMAT        Select one installed reader for all explicit inputs
   --from=FORMAT        Equivalent reader selection; -f is not accepted
   --serve              Run the optional per-user loopback service; no browser
@@ -18,7 +18,7 @@ preview. Invalid settings, protocol and conversion errors remain errors.
 
 Filename mappings cover document aliases, common code languages and .txt.
 Unknown suffixes require --from. Ordinary .json is pretty-printed source code;
---from=json selects Pandoc's JSON document AST instead. Reader extensions such
+--from=json selects the structured document AST reader instead. Reader extensions such
 as markdown+smart are validated; custom readers, filters and extra arguments
 are not accepted. --from=html uses passive native HTML and accepts no extensions.
 
@@ -65,8 +65,9 @@ Quick mode removes its private temporary directory after the grace period;
 the delay does not guarantee browser readiness. SIGKILL can leave that directory.
 Reading never modifies source files. Service annotations update native footnotes
 in genuine Org/Markdown sources, or an adjacent Org sidecar for read-only sources.
-Annotations enables insertion by clicking in prose. Autosave retains current text
-only. Existing native footnotes can be edited while preserving their IDs.
+Annotations enables insertion by clicking an eligible block, including
+prose, headings, list items, code and tables. Autosave retains current text only.
+Existing native footnotes keep their IDs when edited. Deletion requires confirmation.
 Attribution uses Created initially and Edited after a text change.
 Click outside the editor to finish after the latest save is acknowledged.
 Show plaintext displays eligible Org/Markdown source, including embedded footnotes.
@@ -76,7 +77,7 @@ Missing display name and USER permit reading only. See packaged ANNOTATIONS.md.
 The command never starts a service implicitly.
 See the packaged SERVICE.md for configuration, activation, stop and rollback.
 
-Requires Pandoc 3.9.0.2 or a later 3.9 patch with bundled Lua 5.4.
+See the installation prerequisites in README.md and the packaged SERVICE.md.
 macOS uses /usr/bin/open; Linux desktops require xdg-open (xdg-utils).
 WSL requires wslpath, built-in Windows powershell.exe, enabled interoperation,
 and private Linux temporary storage. WSL opens the Windows default browser.

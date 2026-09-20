@@ -1,19 +1,34 @@
 ---
 title: Architecture
-version: 4
+version: 5
 last-updated: 2026-09-20
 ---
 
 # Architecture
 
-**Status:** Design adopted through
-[the approved local-preview specification](../specs/001-local-document-preview/spec.org)
-on 8 September 2026. Implementation and verification are in progress. Earlier
-proposal wording below is retained as design history; the specification supplies
-the exact adopted contracts. Browser and release qualification require the
-separate validation record.
+The application has two conversion backends and two publication transports.
+Org and internal code/plaintext wrappers use the bundled Go converter; Markdown
+and other readers use Pandoc. Passive authored HTML has its own sanitization
+route. A shared Go pipeline applies resource policy, reference rewriting and
+the reading interface before publishing a file preview or an authorized HTTP page.
 
-## Native Org conversion candidate - 20 September 2026
+Service annotations use current native footnotes with guarded create, edit and
+confirmed-delete operations. Source-bound block probes establish eligible
+insertion boundaries. Directory notifications drive server-sent events; the
+browser defers display updates during typing while saves continue independently.
+The [annotation guide](ANNOTATIONS.md) defines the current interaction and limits.
+
+**Status:** The native Org migration is implemented and remains in paired user
+testing on master. See [migration validation](../specs/011-conversion-performance/validation.org).
+Linux/WSL and browser evidence remain separate from Go/HTTP verification.
+
+**Historical sections:** The dated service, annotation and input-format proposals
+retain earlier design decisions. Explicitly superseded graph, append-history,
+polling and browser-runner descriptions are not current implementation contracts.
+Current operational interfaces are in [SERVICE.md](SERVICE.md),
+[FORMATS.md](FORMATS.md) and [ANNOTATIONS.md](ANNOTATIONS.md).
+
+## Native Org conversion - 20 September 2026
 
 [W011 - Fast Org previews](../specs/011-conversion-performance/spec.org) replaces
 Pandoc only for Org and the internal Org wrappers for code/plaintext. Markdown
@@ -62,7 +77,7 @@ new isolation/lifetime decision. Markdown replacement still needs its own
 research and benchmark. These opportunities are recorded in W011's solution
 design and are outside this implementation.
 
-## Local service proposal - 11 September 2026
+## Local service design history - 11 September 2026
 
 [W006 - Local preview service and automatic fallback](../specs/006-local-preview-service/spec.org)
 defines a second delivery transport around the existing renderer. A per-user Go
@@ -105,7 +120,7 @@ fallback. The startup grant stays fixed; later CLI working directories cannot
 expand it. Packaged managers retain an explicit user config path, now under
 `~/.config` on every platform. W006 owns this amendment and its delivery evidence.
 
-## Annotation proposal - 12 September 2026
+## Annotation design history - 12 September 2026
 
 [W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)
 depends on delivered and qualified W006 service behaviour. It proposes a separate
@@ -145,7 +160,7 @@ The source-preservation rule gains an explicit exception only for
 annotation records. A future Exodan deployment would require its own definition
 over server-owned documents and storage, never a client's personal filesystem.
 
-## Input format proposal - 12 September 2026
+## Input format design history - 12 September 2026
 
 [W008 - Input formats](../specs/008-input-formats/spec.org) introduces a shared
 format resolver ahead of the existing conversion and publication boundaries.
@@ -178,7 +193,7 @@ the order W008, W006, W007. These approvals are not implementation claims. The
 explicitly released that hold. Each work item's admission and qualification
 requirements remain applicable.
 
-## Reader and footnote proposal - 14 September 2026
+## Reader and footnote design history - 14 September 2026
 
 [W009 - Persistent reader controls and native footnote annotations](../specs/009-reader-annotation-ux/spec.org)
 implements one sticky info bar and a shared responsive grid in the existing page
@@ -286,7 +301,9 @@ no vulnerabilities. The [Go release history](https://go.dev/doc/devel/release)
 records the relevant security and correctness updates. This selection changes
 the build baseline, not the runtime dependency contract.
 
-Direct dependencies are `golang.org/x/net` 0.58.0 for HTML5 parsing and
+The complete dependency inventory is in `go.mod` and
+[the notices](../THIRD_PARTY_NOTICES.md). Original direct dependencies include
+`golang.org/x/net` 0.58.0 for HTML5 parsing and
 `github.com/microcosm-cc/bluemonday` 1.0.27 for allowlist sanitization. The
 standard library has no equivalent parser/sanitizer. Their module checksums are
 tracked; the two transitive CSS-parser dependencies and their licences are
@@ -322,21 +339,21 @@ recorded in [the input-format validation record](../specs/008-input-formats/vali
 and Pandoc for Markdown and other readers, repairs references, and opens
 the result in a browser. [VISION.md](VISION.md) defines the product intent.
 
-The application owns one private temporary directory per invocation. Sources
-remain in their original locations and are read without modification. The
-browser reads generated files through local file URLs; no HTTP server is needed
-for the proposed design.
+File previews own a private temporary directory per invocation. Service renders
+own temporary workspaces and publish through a bounded in-memory page cache.
+Reading leaves original sources unchanged; service annotation writes use the
+separate guarded native-footnote writer.
 
 The processing sequence is:
 
 1. Validate input files, installed Pandoc, and invocation settings.
-2. Allocate the session directory and register its cleanup.
-3. Render the explicit inputs and, when enabled, discover bounded linked inputs.
-4. Finalize the source-to-preview mapping and rewrite document references.
-5. Publish the generated pages within the session and open the explicit inputs.
-6. Retain the session for the selected reading mode, then clean up its directory.
+2. Select service transport where available and authorized, otherwise file delivery.
+3. Allocate each conversion workspace, register cleanup and render the explicit inputs.
+4. Rewrite references for that transport; HTTP links render targets on request, while file links retain original-file destinations.
+5. Publish prepared pages through the selected transport and open the explicit inputs.
+6. Clean up HTTP conversion workspaces before publication; retain file output for the selected reading mode before cleanup.
 
-## Existing foundations
+## Historical foundations
 
 The personal preview command provides the basic interaction: one or more input
 files, a styled Pandoc conversion, source-path metadata, browser opening, and a
@@ -382,8 +399,8 @@ it does not need a separate installed interpreter. Pandoc provides that runtime.
 | --- | --- |
 | Go entry point | Inputs, settings, dependency checks, diagnostics, and exit status |
 | Session manager | Private workspace, output budget, retention, cancellation, and cleanup |
-| Renderer | Org pre-processing, Pandoc invocation, packaged assets, and conversion errors |
-| Reference resolver | Source-relative URLs, filesystem identity, document graph, and output mapping |
+| Renderer | Source preservation, native Org worker or Pandoc invocation, assets, and conversion errors |
+| Reference resolver | Source-relative URLs, filesystem identity, authorized HTTP targets and file mappings |
 | HTML processor | Structured discovery and rewriting of rendered links and resource references |
 | Browser adapter | Open the finished entry pages using the platform's desktop mechanism |
 | HTML/CSS and browser JavaScript | Presentation, accessible folding, and source-path/code copying |
@@ -445,8 +462,8 @@ lookup. An executable symlink therefore needs no adjacent font directory.
 directories or caches. The prototype's sibling-file wrapper and system font
 stacks do not yet implement this contract.
 
-For Org, preserve planning information and logbooks before Pandoc parses the
-source, then apply the adapted Lua filter. Pre-processing must recognize literal
+For Org, preserve planning information and drawers before native parsing, then
+restore their owned presentation fragments. Pre-processing must recognize literal
 source and example blocks so that text inside them is not transformed. Keep
 section wrappers for outline folding. Preserve source content and identifiers;
 do not recompute task statistics or execute source blocks.
@@ -461,8 +478,8 @@ values no longer create independent boxes in the body. Their parser semantics
 remain active, and include/setup directives remain inert with diagnostics.
 Title, subtitle, author and date form a separate title block below the separator.
 W005 places navigation before that block in reading order and in a separate
-column on wide screens. An owned Org-format marker tells Lua not to
-duplicate that block. Markdown metadata behaviour remains unchanged.
+column on wide screens. The native Org worker leaves that title block to the
+final template. Markdown metadata passes through the retained Lua filter.
 
 The browser script should remain a small enhancement. Ordinary reading and
 navigation must work without it. Folding must preserve keyboard navigation,
@@ -487,8 +504,8 @@ keys have darker backgrounds, values use the normal foreground, and tags use
 plain muted pink without the TODO badge's border or background.
 
 The original filename header is required, including copying its full source
-path. Preserve the personal template's directory followed by an emphasized
-filename, compact right alignment, and separator above the document body.
+path. The sticky info bar places the directory and emphasized filename on the
+left, controls on the right, and a separator above the document body.
 Use Iosevka Custom at 400 for the directory and 700 for the filename, with
 accessible contrast and wrapping for long paths. The browser tab title uses
 the Org document title when supplied, falling back to the original filename.
@@ -497,8 +514,9 @@ filename-only tab title. The source path remains the dedicated copying target.
 On a titled Org page the document title is the sole semantic H1 and the filename
 is a non-heading source label. Without an Org title, retain the filename H1.
 
-Display and copy the absolute logical source path used for that preview,
-including the Linux path when viewed from WSL. Do not copy the temporary HTML
+Display the logical source path with the home directory abbreviated as `~`;
+copy the full absolute logical path, including the Linux path from WSL.
+Do not copy the temporary HTML
 name, a Windows handoff URL, or a shell-quoted string. Preserve spaces and
 special characters by keeping the copy value separate from formatted text;
 the personal template's whitespace trimming is not a path-serialization rule.
@@ -513,8 +531,8 @@ Clipboard access depends on browser policy and must be checked in the actual
 file previews across the qualification matrix.
 [Clipboard API working draft](https://www.w3.org/TR/clipboard-apis/#dom-clipboard-writetext).
 
-Application styling is included locally. Source images remain references to
-their original files unless a later requirement explicitly adds embedding.
+Application styling is included locally. Authorized raster bytes are embedded in
+file previews and served through registered asset routes in HTTP previews.
 Pandoc's `--embed-resources` also incorporates document resources and can fetch
 remote assets, so it is not the default mechanism for packaging only the theme.
 [Pandoc resource options](https://pandoc.org/MANUAL.html#option--embed-resources).
@@ -522,16 +540,17 @@ remote assets, so it is not the default mechanism for packaging only the theme.
 ### Code, contents and browser controls
 
 [W002 - Code and document navigation](../specs/002-code-and-outline/spec.org)
-extends the approved renderer. Pandoc always runs with standalone output and
+extends the approved renderer. The Pandoc route runs with standalone output and
 the owned `page.html5` template. This intermediate wrapper includes only the
-generated body and optional contents; the final Go template adds the original
+generated body and optional contents; native Org supplies the same contract.
+The final Go template adds the original
 source header, fonts, policy and browser script once.
 
 `HTMLPREVIEW_TOC` defaults to `1` for both Markdown and Org, accepting an
 explicit `0` or `1` for all documents in the invocation, including linked pages.
 `HTMLPREVIEW_TOC_DEPTH` defaults to `3`, accepting source levels `1` through `6`.
 Empty values select defaults. Each page carries an owned format attribute
-derived from the same input-format decision as Pandoc. The shared configuration
+derived from the selected input format. The shared configuration
 is never changed by rendering an Org file, so mixed inputs and linked targets
 remain independent. Validation precedes session allocation, including
 depth when contents are disabled. Source TOC metadata does not override these
@@ -542,17 +561,20 @@ default-on choice. Existing explicit overrides retain their meaning.
 
 The final template emits one navigation landmark immediately after the source
 header/frontmatter and before the title/body. With eligible navigation, CSS Grid
-uses a 16rem left column at widths of 72rem and above. Sticky positioning keeps
+uses a content-sized left column at widths of 72rem and above. Sticky positioning keeps
 it visible; a viewport height limit and independent overflow keep long lists
 reachable. Below the breakpoint it is hidden for Org and flows above Markdown
 content. Disabled or empty navigation reserves no column. Print returns it to
 normal flow without a height limit. The existing fragment handler reveals folded
-targets; no new navigation JavaScript or active-section tracking is introduced.
+targets. Navigation disclosure buttons fold branches; initial fitting tries three
+visible levels, then two, then one, within the configured maximum depth.
 
 The Org pre-pass preserves source-block bodies in string-only JSON records in
 an unpredictable per-document raw format. Lua validates the records and makes
-real Pandoc code blocks. Every AST code block receives an owned association
-and literal-value record. Pandoc's built-in highlighter supplies semantic spans;
+real Pandoc code blocks on the retained route. The native Org worker consumes
+the same preservation records. Code blocks receive owned associations and
+literal-value records. Chroma supplies native Org highlighting; Pandoc supplies
+highlighting for its readers. Both emit compatible semantic spans;
 the owned stylesheet supplies the light/dark palette. Shell aliases `sh` and
 `shell` use Bash. Unknown languages and examples remain plain.
 
@@ -562,12 +584,12 @@ or falls back to the exact plain value with a bounded diagnostic. Source and
 output limits cover conversion input, transport output and final pages.
 No language label selects an external syntax definition or executes code.
 
-Temporary heading identities bind Pandoc's contents to concrete heading nodes.
+Temporary heading identities bind the selected converter's contents to concrete heading nodes.
 Go restores source identifiers, applies Org properties and allocates unique
-final IDs before retargeting those links. Contents are separated before source
-graph discovery and receive their own passive sanitization. Heading images use
+final IDs before retargeting those links. Contents are separated before document
+link processing and receive their own passive sanitization. Heading images use
 alternative text in contents labels; document images keep normal resolution.
-Empty contents are omitted. The filename header never enters Pandoc's outline.
+Empty contents are omitted. The filename header never enters the document outline.
 
 The browser module owns one clipboard service for the source header and code.
 It captures literal text before inserting native copy buttons and permits one
@@ -588,9 +610,9 @@ The hit target fills its visible height and is at least 24 CSS pixels wide.
 A hidden body uses a four-pixel accent bar, large right-facing triangle and
 labelled Show more button; a visible body uses a one-pixel bar. These replace
 the small bottom plus after the operator's 10 September correction. The native
-bar and Show more buttons share the toggle action. A separate heading listener
-ignores links, code, controls, selection and modified clicks; it cannot reject
-the bar's own events. Headings and buttons use a pointer cursor. There is one
+bar and Show more buttons share the toggle action. Heading text has no folding
+listener; eligible text instead participates in annotation mode. Buttons have
+the appropriate pointer cursor. There is one
 bar per section and no additional decorative nested border.
 Compact blue, green and amber buttons for document outline actions share the
 filename row in both formats. They have filled backgrounds and no outline or
@@ -601,6 +623,11 @@ buttons are inserted. Lifecycle teardown removes listeners, controls and timers;
 page restoration enhances the passive document once.
 
 ## Temporary files and reference resolution
+
+The reference table below records the original file-graph design. Current file
+previews retain original document destinations and embed admitted rasters;
+HTTP previews use authorized document/asset routes. Native HTML may render as
+a document; PDF/SVG download policy is described in [SERVICE.md](SERVICE.md).
 
 Allocate a private session directory with the operating system API, using
 `os.MkdirTemp` with its default temporary location. This API creates a directory
@@ -630,12 +657,11 @@ signs, and literal filename delimiters. Use Go's
 | An external URL | The original external URL |
 
 Discover links and rewrite output with an HTML parser. This includes ordinary
-links emitted by Pandoc and literal HTML anchors preserved in source documents.
-The proposed dependency is `golang.org/x/net/html`, the Go project's HTML5
+links emitted by either converter and literal HTML anchors preserved in source documents.
+The dependency is `golang.org/x/net/html`, the Go project's HTML5
 parser. It handles HTML structure; the standard library's escaping helpers and
 XML parser are insufficient substitutes. Its maintained release series is a
-reason to prefer it to a project-written parser; select and pin the actual
-version during implementation.
+reason to prefer it to a project-written parser; `go.mod` pins the version.
 [HTML parser documentation](https://pkg.go.dev/golang.org/x/net/html).
 
 Reference coverage must include supported resource attributes as well as anchor
@@ -654,7 +680,11 @@ Source-supplied base elements also require an explicit policy before support.
 This output remains a local preview, not a portable export. Absolute resource
 references still depend on the original files being present and accessible.
 
-## Optional linked-document conversion
+## Historical linked-document pre-generation
+
+This section records the superseded file-graph design. The service now renders
+linked documents on demand; no eager graph is generated. Configured roots and
+request budgets are documented in [SERVICE.md](SERVICE.md).
 
 The proposed extension is opt-in. Treat the explicit inputs as graph roots,
 follow supported local Markdown and Org hyperlinks in source order, and render
@@ -745,20 +775,19 @@ the browser has read the file. Successful desktop handoff does not establish
 page readiness. Deleting output also prevents later reloads and linked-page
 navigation, regardless of whether the first page loaded.
 
-The proposed interface distinguishes two lifetimes:
+File transport distinguishes two lifetimes:
 
 - **Quick preview:** open explicit documents, retain output for a configurable
-  grace period, then remove the session. Three seconds is the initial candidate
+  grace period, then remove the session. Three seconds is the default,
   inherited from the personal command. This mode does not promise reload after
   cleanup or eliminate slow-browser races.
 - **Reading session:** keep all generated pages while the command remains
-  active; end the session explicitly from the terminal. Linked browsing uses
-  this lifetime so pages remain available until the reader ends it. It does
+  active; end the session with Ctrl+C or SIGTERM. It does
   not try to infer whether a browser tab is still open.
 
-The exact interaction and non-interactive retention option remain to be
-specified. Do not start a detached cleanup service or add a local server merely
-to retain files. Keep the whole linked set for the same lifetime.
+`HTMLPREVIEW_MODE=quick` or `read` selects file retention. The optional service
+has an independent lifetime and handles linked browsing; these settings do not
+start or stop it. No detached file-cleanup service is started.
 
 Register cleanup immediately after allocation. Normal exit, conversion failure,
 browser-launch failure, and supported termination signals must remove only the
@@ -789,9 +818,9 @@ The operator's installation correction on 8 September 2026 supersedes the
 original `/usr/local` default: plain `make install` builds the host executable
 and creates `~/.local/bin/htmlpreview` as an absolute symlink to the resolved
 checkout binary. The checkout must remain available. Repeated installation
-accepts the matching link and rejects conflicting files, directories and other
-links without replacing them. Moving the checkout requires moving the old
-link aside and reinstalling. Licence files remain available in the checkout.
+accepts the matching link and atomically replaces different or dangling links.
+Conflicting regular files and directories remain protected. Moving the checkout
+requires reinstalling. Licence files remain available in the checkout.
 A non-empty absolute `PREFIX` retains copied binary and licence installation.
 An absolute `DESTDIR` stages either mode; staged default links deliberately
 retain their checkout target. Releases and explicit prefix installs remain
@@ -819,8 +848,8 @@ These observations support the need for reference rewriting; they do not verify
 the proposed application or the prototype's full fidelity.
 
 Implementation verification should cover installation outside the checkout,
-real Pandoc output for both formats, reference resolution from nested and
-read-only sources, special characters in paths, graph cycles and limits, partial
+real native Org and Pandoc Markdown output, reference resolution from nested and
+read-only sources, special characters in paths, service routing and limits, partial
 failures, simultaneous invocations, cancellation, and cleanup ownership.
 Browser review should cover image loading from temporary pages, linked
 navigation, fragments inside folded sections, keyboard use, both themes, print
@@ -832,7 +861,7 @@ cleanup, passive content, aliases, traversal limits, and packaging for definitio
 The signed-off W001 specification now defines these contracts. Its approved
 defaults govern the implementation; the initial proposals remain in Git history.
 
-The regression suite uses real Pandoc and synthetic documents. Most command
+The regression suite uses the real native converter, Pandoc and synthetic documents. Most command
 cases run the same command coordinator in a subprocess with controlled OS
 boundaries. An additional staged-install regression selects a desktop capture
 adapter with the `htmlpreview_test_desktop` Go build tag, then installs and invokes
@@ -1017,7 +1046,7 @@ choices under folding.override. This intentionally replaces the scalar headers
 field; the YAML parser reports migration guidance rather than accepting both
 shapes. Category choices travel through the existing private registration,
 capability/cache identity and application-owned page attributes. The outline
-controller reuses Pandoc's direct heading task classes, the same semantics used
+controller uses normalized direct heading task classes, the same semantics used
 for active/completed heading styling. A category choice overrides headers.default;
 without either choice, authored startup/visibility remains. Restored reader state
 wins afterwards. The outer default continues to govern other foldables, including
@@ -1026,13 +1055,13 @@ user config files or persisted annotations are rewritten.
 
 ### Passive task checkboxes, 18 September 2026
 
-Pandoc checkbox inputs become owned, labelled span indicators with a common
+Converter checkbox inputs become owned, labelled span indicators with a common
 square style and an explicit text separator. Their label wrappers are unwrapped
 before annotation block verification, matching the final passive DOM rather than
 leaving native references inside a non-block label. First-position list markers
 cover lowercase checked and slash/dash partial extensions; standalone prose and
 literal code are excluded. The Org conversion prepass preserves native partial
-markers before Pandoc can reduce them to unchecked, without changing source bytes.
+markers before conversion, without changing source bytes.
 This adds neither task-state writeback nor interactive form controls.
 
 ### Confirmed native-footnote deletion
@@ -1075,4 +1104,6 @@ including a submodule, without changing rendering or source authorization.
 
 ## Document changes
 
+- Version 5: reconcile current converter, transport, folding, annotation and
+  installation contracts; label retained superseded designs as history.
 - Version 4: document native Org conversion, resource bounds and retained compatibility ownership.

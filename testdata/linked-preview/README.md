@@ -1,3 +1,9 @@
+---
+title: Linked preview fixture
+version: 1
+last-updated: 2026-09-20
+---
+
 # Linked preview fixture
 
 Open `index.org` through a running HTML Preview service whose roots include
@@ -16,6 +22,11 @@ To regenerate the synthetic DOCX from the repository root:
 pandoc --from=markdown --to=docx testdata/linked-preview/document-source.md --output=testdata/linked-preview/document.docx
 ```
 
-No fixture code should be executed during preview. Annotation controls are
-outside this reading fixture's current scope; their delivery is tracked in
-[the annotation specification](../../specs/007-service-annotations/spec.org).
+No fixture code should be executed during preview. Org and Markdown service
+pages can also expose annotation controls. Use disposable copies for write tests
+so the retained reading fixtures are not changed. Dedicated annotation cases
+are documented in [the annotation fixture guide](../annotation-targets/README.md).
+
+## Document changes
+
+- Version 1: clarify annotation availability and disposable-copy use.

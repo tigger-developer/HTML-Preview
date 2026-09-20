@@ -1,10 +1,45 @@
 ---
 title: Vision
-version: 1
+version: 2
 last-updated: 2026-09-20
 ---
 
 # Vision
+
+htmlpreview makes local documents comfortable to read and annotate in the system
+default browser. It combines a small global command, an optional localhost
+service and a consistent, self-contained reading presentation.
+
+## Current product direction
+
+- Org and code/plaintext wrappers use bundled Go conversion. Markdown and other
+  document formats retain Pandoc; replacing Markdown conversion is not yet implemented.
+- The optional service renders linked documents on demand within permitted roots.
+  Without it, the command opens temporary file previews of explicit inputs.
+- Service annotations are ordinary Org/Markdown footnotes. Current values autosave;
+  supported named notes can be edited or deleted with confirmation. Read-only
+  sources use adjacent Org sidecars. Reading and file previews do not write sources.
+- Annotation creation uses verified block boundaries. Paragraphs, headings,
+  list-item paragraphs and supported code/table/container blocks are eligible;
+  unsupported mappings remain inactive. Code and container notes follow the block.
+- Native change notifications reach open annotation pages through server-sent
+  events. Autosave continues while display refresh waits for editor exit or a
+  15-second pause in typing. There is no one-second document polling.
+- Folding uses bars and explicit controls, never heading text. Initial heading
+  states can differ for semantic TODO and DONE categories; drawers have a separate
+  setting. Navigation branches fold and initially fit the available sidebar height.
+- The native Org migration remains in user testing. Linux/WSL user validation
+  remains pending; implementation and automated checks do not establish those results.
+
+See [usage](../README.md), [formats](FORMATS.md), [service configuration](SERVICE.md)
+and [annotations](ANNOTATIONS.md) for the current interfaces.
+
+## Design history and continuing principles
+
+The dated proposals below preserve the evolution of the design. Their references
+to implementation holds, graph generation, event-history annotations, polling,
+point selection and deletion exclusions are historical, superseded by the current
+direction above. They are not current usage instructions or release status.
 
 ## Native Org previews
 
@@ -175,7 +210,7 @@ Multiple explicit inputs should produce separate previews, preserving the
 existing command's useful batch behaviour:
 
 ```sh
-htmlpreview README.md docs/notes.org
+htmlpreview README.md examples/work.org
 ```
 
 The reader should receive:
@@ -343,4 +378,6 @@ or capability URLs. These decisions are recorded in W010's paired amendments.
 
 ## Document changes
 
+- Version 2: lead with the current reading, native conversion, service and annotation
+  direction; explicitly separate superseded proposals from current behaviour.
 - Version 1 metadata: document the native Org converter and its dependency provenance where applicable.

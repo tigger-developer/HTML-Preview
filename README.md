@@ -1,12 +1,12 @@
 ---
 title: htmlpreview
-version: 1
+version: 2
 last-updated: 2026-09-20
 ---
 
 # htmlpreview
 
-Preview local Pandoc documents, source code, plain text and passive native HTML
+Preview local documents, source code, plain text and passive native HTML
 in the system default browser, using a private temporary directory. Converted
 documents use embedded Asap and Iosevka Custom fonts; native HTML retains its
 authored presentation. See [supported formats](docs/FORMATS.md) for mappings,
@@ -17,12 +17,13 @@ Markdown and other readers retain Pandoc, which remains required. The
 [W011 validation record](specs/011-conversion-performance/validation.org) tracks
 compatibility checks, performance measurements and human review separately.
 
-The [W008 input-format candidate](specs/008-input-formats/spec.org) extends the
+The [input-format support](specs/008-input-formats/spec.org) extends the
 earlier Org/Markdown-only scope. Its [validation record](specs/008-input-formats/validation.org)
 tracks automated evidence and pending native qualification separately.
 
 The optional [local service](docs/SERVICE.md) renders supported linked files on
-request within explicitly configured roots. Start it with `htmlpreview --serve`;
+request within configured roots, or its startup directory when no config exists.
+Start it with `htmlpreview --serve`;
 normal invocations then use its loopback HTTP URLs. Absent service or an input
 outside its roots selects a single-document file preview. Installation never
 starts the service. [Service validation](specs/006-local-preview-service/validation.org)
@@ -49,7 +50,7 @@ review; browser qualification remains pending in the
 [change evidence](specs/002-code-and-outline/validation.org).
 
 ```sh
-htmlpreview README.md docs/notes.org
+htmlpreview README.md examples/work.org
 ```
 
 Each distinct source context receives a separate preview. The header identifies
@@ -57,7 +58,7 @@ the original source; activating the filename text copies its full logical path. 
 clipboard access is unavailable, the header offers manual copying.
 
 Code uses local syntax highlighting and the embedded Iosevka Custom font.
-Click inline code, Org verbatim or a code block to copy its literal text, or
+In reading mode, click inline code, Org verbatim or a code block to copy its literal text, or
 activate its copy glyph with the keyboard. Existing selections and dragging
 retain normal selection behaviour. Code inside a link uses a separate copy
 button so the link keeps its navigation action. Clipboard refusal offers a
@@ -90,11 +91,13 @@ navigate. On initial load, the sidebar shows three navigation levels if they
 fit its viewport height, otherwise two, then one. It scrolls if one level is
 still too tall. Resizing and annotation refreshes preserve the chosen folds.
 This replaces the earlier default-off setting for Org. A thick accent margin
-bar opens a folded section; the thin bar closes it. Headings also toggle their
-sections, and folded sections show a large disclosure triangle and a labelled
+bar opens a folded section; the thin bar closes it. Heading text never toggles
+folding. Folded sections show a large disclosure triangle and a labelled
 Show more button. These supersede the earlier small bottom-plus indicator.
 Overview, Contents and Show all sit beside the filename in subtly coloured
-buttons for both formats. Generated Org drawers remain closed when sections open.
+buttons for both formats. By default, generated Org drawers remain closed when
+sections open. [Folding configuration](docs/SERVICE.md#initial-folding) can set
+different initial states for headings, semantic TODO/DONE categories and drawers.
 Tags are plain muted-pink text. Frontmatter and drawers use a quieter background
 than code. Drawer summaries name the drawer once; property keys have muted
 labels and darker backgrounds, while values retain the normal foreground.
@@ -106,7 +109,7 @@ Printing includes all content and hides the interactive controls.
 
 Quick previews retain their files for three seconds after the last browser
 handoff. This delay does not establish browser readiness. Use a reading session
-for slow browser startup, reloading, or linked navigation:
+for slow browser startup or reloading:
 
 ```sh
 HTMLPREVIEW_MODE=read htmlpreview README.md
@@ -301,7 +304,7 @@ Provision development tools separately: golangci-lint 1.64.8, StyLua 2.5.2,
 and govulncheck 1.7.0 are the inspected tool versions for this delivery.
 Lint includes Go formatting, vet, the selected Go linters, StyLua, and a Lua
 check in Pandoc's own host. No Node/npm or standalone Lua runtime is used;
-Native oxlint and biome check browser JavaScript and CSS; paired human checks
+native oxlint and biome check browser JavaScript and CSS; paired human checks
 cover actual browser interaction and appearance. The historical browser fixture
 is retired from the current workflow and is not execution evidence.
 The vulnerability target scans linked code and the pinned upstream Org parser
@@ -338,5 +341,7 @@ are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Document changes
 
+- Version 2: reconcile current converter routing, folding controls, service defaults
+  and file-preview lifetime; replace the missing example path.
 - 20 September 2026: default installation replaces stale executable symlinks
   without changing their former targets.

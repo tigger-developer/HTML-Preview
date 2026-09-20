@@ -1,6 +1,6 @@
 ---
 title: Local preview service
-version: 1
+version: 2
 last-updated: 2026-09-20
 ---
 
@@ -8,8 +8,8 @@ last-updated: 2026-09-20
 
 The optional service renders documents when a browser requests them. It listens
 only on `127.0.0.1`, on an automatically assigned HTTP port. There is no setting
-for another listening address. This is a delivery candidate; native service and
-browser qualification is recorded in the W006 validation record.
+for another listening address. The [service validation record](../specs/006-local-preview-service/validation.org)
+separates automated checks from user tests; Linux/WSL validation remains pending.
 
 The project is licensed under Apache License 2.0. Font and dependency licences
 are distributed with the executable.
@@ -44,7 +44,8 @@ An empty roots list serves no files. Configuration accepts at most 32 existing
 directory paths, written as absolute paths, with a leading `~/` for your home,
 or as `$TMPDIR` / `${TMPDIR}` with an optional child path. TMPDIR is expanded
 from the process environment when configuration loads. An unset, empty or
-relative TMPDIR is an error; no shell expressions or other variables are expanded.\nDuplicate canonical paths collapse; the most specific
+relative TMPDIR is an error; no shell expressions or other variables are expanded.
+Duplicate canonical paths collapse; the most specific
 configured root applies where roots overlap. Files must remain on the root's
 filesystem. Symlink escapes, directories and special files cannot be previewed.
 
@@ -110,7 +111,9 @@ own defaults. Neither case expands the running service's permitted roots.
 
 ## Start in the foreground
 
-With Pandoc installed, run:
+The current executable requires Pandoc 3.9.0.2 or a later 3.9 patch, with bundled
+Lua 5.4, for reader discovery and non-Org documents. Org conversion is native Go.
+With the dependency installed, run:
 
 ```sh
 htmlpreview --serve
@@ -388,5 +391,7 @@ existing journal; foreground mode writes diagnostics to stderr.
 
 ## Document changes
 
+- Version 2: clarify converter prerequisites and current service status; repair
+  the TMPDIR configuration paragraph.
 - 20 September 2026: service activation replaces an existing checkout registration;
   stopping an absent job succeeds, and failed activation attempts prior-state recovery.

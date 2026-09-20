@@ -1,6 +1,6 @@
 ---
 title: Document annotations
-version: 3
+version: 4
 last-updated: 2026-09-20
 ---
 
@@ -12,13 +12,14 @@ source. Read-only sources use an adjacent Org sidecar. Reading a page never
 creates annotations; file previews, code, plain text, binary documents and native
 HTML remain reading-only.
 
-This is the [W009 native-footnote candidate](../specs/009-reader-annotation-ux/spec.org).
+The [native-footnote specification](../specs/009-reader-annotation-ux/spec.org) records this interface.
 Its [validation record](../specs/009-reader-annotation-ux/validation.org) separates
 Go/HTTP checks from pending browser, accessibility and platform qualification.
 
 **Superseded contract:** W007 originally stored successive JSON draft events
 and attached comments to selections or whole documents. On 14 September 2026,
-Taḋg withdrew that history and selected insertion-point footnotes. The
+native footnotes replaced that history. Verified block boundaries now determine
+new annotation positions. The
 [original specification](../specs/007-service-annotations/spec.org) retains the
 historical contract. Current saves retain only each annotation's latest value.
 
@@ -326,6 +327,8 @@ confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
+- Version 4: distinguish the current native-footnote and block-target interface
+  from its superseded event-history design.
 - 19 September 2026: Fifteen-second request deadlines and connection recovery
   grace supersede the earlier five-second deadlines and two-second grace.
 - 17 September 2026: Reserved feedback space, connection grace period, modal
