@@ -275,8 +275,10 @@ classification; it is provenance, not current state.
 - Lineage :: The initial repeated-pass/native-reader assessment is superseded
   by the converter-only design; its earlier recommendation remains in the
   assessment history.
-- Delivery :: Native worker, HTML adapter and compatibility regressions are on
-  =011-conversion-performance=. The working master installation is unchanged.
+- Delivery :: Native worker, HTML adapter and compatibility regressions were
+  developed on =011-conversion-performance= and integrated into =master= on
+  20 September 2026 under explicit merge authority. Further paired development
+  continues on =master=; integration does not close the work item.
   [[file:../specs/011-conversion-performance/validation.org][Validation evidence]] records regression,
   packaging and complete benchmark results; human reader/annotation tests remain.
 
@@ -305,6 +307,8 @@ classification; it is provenance, not current state.
   remains in the backlog.
 - Boundary :: Keep open for explicitly agreed paired increments; track their
   evidence as work proceeds. No design audit at this stage.
+- Working branch :: Continue paired development on =master= following the
+  authorized feature-branch integration on 20 September 2026.
 
 * Migration record
 :PROPERTIES:

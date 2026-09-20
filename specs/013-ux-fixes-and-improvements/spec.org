@@ -27,6 +27,9 @@
   [[file:../../docs/SERVICE.md][Service configuration]] describe current use.
 - Mode :: *Paired development*, authorized on 20 September 2026. This skeleton
   records agreed behaviour, not a completed design or implementation.
+- Working branch :: *master*, following explicit integration authority on
+  20 September 2026. This supersedes feature-branch isolation for subsequent
+  paired increments; the ticket remains open.
 - Scope control :: The title reserves space for later UX increments; it does
   *not authorize unspecified changes*. Record each agreed addition before coding.
 - Preservation :: No migration or rearrangement of existing footnotes. Retain
