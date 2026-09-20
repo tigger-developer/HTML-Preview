@@ -179,7 +179,7 @@ func TestRT008_2_SelectionDoesNotPropagate(t *testing.T) {
 
 func TestRT008_3_MissingHighlighter(t *testing.T) {
 	root := t.TempDir()
-	r := run(t, root, []string{"PREVIEW_TEST_FAULT=missing-highlighter"}, source(t, root, "source.go", "package main\n"))
+	r := run(t, root, nil, source(t, root, "source.jsx", "const example = <Example />;\n"))
 	success(t, r, 1)
 	if len(r.wrappers) != 1 || !strings.Contains(r.wrappers[0], "#+BEGIN_SRC plaintext") || !strings.Contains(r.stderr, "highlighting language") {
 		t.Fatal("missing highlighter did not preserve literal code with a notice")

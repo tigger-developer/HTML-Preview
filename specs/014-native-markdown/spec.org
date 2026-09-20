@@ -819,3 +819,17 @@ Observed footnote rendering delta:
 - *Definition bodies and multi-paragraph quotes require correction*: baseline HTTP
   checks expose missing targets. Both block types are already required by
   [[#rt-014-4][RT014.4 - Clickable block creation]]; no browser contract change is implied.
+
+** 2026-09-20T14:01:40Z :hands-off:review:
+
+*** Verification isolation
+
+- *Desktop handoff is intercepted at the execution boundary*. PATH substitution
+  cannot intercept the absolute macOS opener. One-off CLI timings use the same
+  explicit execution-boundary interception as regression tests, in temporary
+  builds, before another measurement is started.
+- *All test services use private temporary configuration and runtime sockets*,
+  with independently allocated ephemeral loopback ports. The installed service
+  and its configuration remain outside this delivery's mutation boundary.
+- *Unavailable native lexers are tested through an existing source mapping*.
+  Pandoc catalogue omissions no longer determine bundled highlighting support.

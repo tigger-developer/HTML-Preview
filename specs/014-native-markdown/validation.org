@@ -123,3 +123,32 @@
   read-only sidecar, ordinary-footnote and authorization regressions passed.
 - Limits :: No visual tests, live installation, service restart or performance
   claims are represented by these regression results.
+
+** Run 2026-09-20 - Extended native contract coverage
+
+- Revision :: =e147668= - retained review evidence, plus the test-only working tree.
+- Commands :: Focused =go test ./internal/preview -run ... -count=1 -v= groups
+  cover the new metadata, copy, fragments, omission, resource, selector and
+  repeated-note checks. Raw execution logs accompany the retained review inputs.
+- Native routing :: Page load, advertised refresh, note creation and post-save
+  rendering invoked Pandoc five times; expected zero.
+- Semantics :: Native-only selector rejection fails with dependency exit 1,
+  not invocation exit 2. Served qualifiers consult Pandoc and return 415,
+  not 400. Metadata-only structured display is absent. Fenced-code copy and
+  intra/cross-document fragment checks pass as preservation evidence.
+- Notices :: Multi-region/multi-document and followed-link checks find no
+  omission notice. Native HTML/plaintext without Pandoc fails at startup.
+- Resources :: An out-of-root Markdown image receives no served asset URL.
+- Footnotes :: Two successive paragraph notes retain their exact source boundary
+  and two correctly labelled sidebar records. Existing repeated heading, code,
+  table and task-note checks also pass.
+- Optional formats :: The existing real DOCX mapping check passes with Pandoc.
+  The unavailable-lexer check now uses JSX, whose mapped =javascriptreact=
+  lexer is absent from the pinned Chroma registry; the old Pandoc-catalogue
+  fault no longer models native lexer availability. The baseline omits the
+  required literal-fallback notice.
+- Browser isolation :: Regression CLI helpers intercept =Host.Execute= for the
+  absolute system opener. Service helpers allocate private runtimes and ephemeral
+  loopback ports. The separate exploratory timing executable is disabled after
+  its PATH-only opener stub proved ineffective on macOS. No timing result from
+  that interrupted run establishes the end-to-end comparison.

@@ -69,7 +69,8 @@ func TestRT014_4_ClickableMarkdownCreation(t *testing.T) {
 				if !strings.Contains(data, "A subsequent body paragraph remains writable.[^reviewer-002]") {
 					t.Fatal("subsequent insertion moved away from paragraph end")
 				}
-				// Remove just the expected owned additions to prove the body wasn't rewritten.
+				// Check the unchanged first source line; exact unrelated-byte preservation
+				// for edits is covered by TestRT014_5_RepeatedMarkdownNoteLifecycle.
 				if !strings.HasPrefix(data, strings.Split(body, "\n")[0]) {
 					t.Fatal("source prefix changed")
 				}
@@ -220,5 +221,33 @@ func TestRT014_4_MarkdownRejectsUnverifiedTargets(t *testing.T) {
 	status, _ = annotationJSON(t, s, "POST", endpoint, request, headers)
 	if status != 409 || readMarkdownSource(t, path) != changed {
 		t.Fatal("stale target accepted or external edits overwritten", status)
+	}
+}
+
+func TestRT014_5_TwoNotesAtParagraphEnd(t *testing.T) {
+	s := startTestService(t, NativeHost())
+	path := source(t, s.root, "two.md", "An entire paragraph.\n\nAn unrelated paragraph.\n")
+	endpoint := annotationRegistrationURL(t, s, path, "Reviewer")
+	pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
+	for i := 1; i <= 2; i++ {
+		main, state := markdownBrowserPage(t, s, pageURL)
+		markdownCreateAtBlock(t, s, state, assertClickableAnnotationText(t, main, "An entire paragraph"), fmt.Sprintf("reviewer-%03d", i), i)
+	}
+	saved := readMarkdownSource(t, path)
+	if !strings.HasPrefix(saved, "An entire paragraph.[^reviewer-001][^reviewer-002]\n\nAn unrelated paragraph.\n") {
+		t.Fatal("successive references not at exact paragraph end")
+	}
+	status, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
+	if status != 200 {
+		t.Fatal(status)
+	}
+	notes := state["footnotes"].([]any)
+	if len(notes) != 2 {
+		t.Fatal("sidebar note count", len(notes))
+	}
+	for i, n := range notes {
+		if n.(map[string]any)["label"] != fmt.Sprintf("reviewer-%03d", i+1) {
+			t.Fatal("sidebar label mismatch")
+		}
 	}
 }

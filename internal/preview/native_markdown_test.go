@@ -5,6 +5,7 @@ package preview
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -95,6 +96,12 @@ func TestRT014_1_ServedMarkdownNeverInvokesPandoc(t *testing.T) {
 	if status != 200 || !strings.Contains(string(body), "A paragraph to annotate.") {
 		t.Fatal("linked native preview", status)
 	}
+	endpoint = annotationRegistrationURL(t, s, filepath.Join(s.root, "next.md"), "Reviewer")
+	main, state := markdownBrowserPage(t, s, strings.Replace(endpoint, "/_annotations/v2/", "/", 1))
+	main, state = markdownBrowserPage(t, s, state["page_url"].(string))
+	markdownCreateAtBlock(t, s, state, assertClickableAnnotationText(t, main, "A paragraph to annotate"), "reviewer-001", 1)
+	main, _ = markdownBrowserPage(t, s, state["page_url"].(string))
+	assertClickableAnnotationText(t, main, "A paragraph to annotate")
 	if calls.Load() != 0 {
 		t.Fatalf("Markdown invoked Pandoc %d times", calls.Load())
 	}
@@ -122,6 +129,9 @@ func TestRT014_2_NativeDialect(t *testing.T) {
 			r := run(t, root, nil, args...)
 			success(t, r, 1)
 			main := documentNode(t, r.pages[0], "hp-document")
+			if tc.name == "empty" && strings.TrimSpace(textOf(main)) != "" {
+				t.Fatal("empty document gained body content")
+			}
 			if !strings.Contains(strings.Join(strings.Fields(textOf(main)), " "), tc.want) {
 				t.Fatalf("want %q in %q", tc.want, textOf(main))
 			}
@@ -150,7 +160,7 @@ func TestRT014_2_NativeDialect(t *testing.T) {
 	for _, selector := range []string{"markdown+raw_html", "markdown+fenced_divs", "markdown+unknown", "markdown+" + strings.Repeat("x", 256)} {
 		t.Run(selector, func(t *testing.T) {
 			p := source(t, root, "option.md", "text\n")
-			r := run(t, root, nil, "--from="+selector, p)
+			r := run(t, root, []string{nativeOnlyPath(t)}, "--from="+selector, p)
 			if r.code != 2 {
 				t.Fatalf("unsupported selector status=%d: %s", r.code, r.stderr)
 			}
@@ -384,12 +394,27 @@ func TestRT014_3_CLIServiceRegistrationWarning(t *testing.T) {
 }
 
 func TestRT014_2_ServedSelectorRejection(t *testing.T) {
-	s := startTestService(t, NativeHost())
+	host := NativeHost()
+	execute := host.Execute
+	var calls atomic.Int32
+	var reject atomic.Bool
+	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
+		if reject.Load() && filepath.Base(cmd.Path) == "pandoc" {
+			calls.Add(1)
+			return nil, fmt.Errorf("native qualifier must not invoke Pandoc")
+		}
+		return execute(ctx, cmd)
+	}
+	s := startTestService(t, host)
 	target := s.register(t, "options.md", "# Options\n")
-	for _, selector := range []string{"markdown%2Braw_html", "markdown%2Bfenced_divs", "markdown%2Bunknown"} {
-		status, _, _ := responseAsset(t, s, "GET", target+"?htmlpreview-format="+selector)
+	reject.Store(true)
+	for _, selector := range []string{"markdown+raw_html", "markdown+fenced_divs", "markdown+unknown", "markdown+" + strings.Repeat("x", 256)} {
+		status, _, _ := responseAsset(t, s, "GET", target+"?htmlpreview-format="+url.QueryEscape(selector))
 		if status != 400 {
 			t.Errorf("unsupported native selector %s status=%d want=400", selector, status)
 		}
+	}
+	if calls.Load() != 0 {
+		t.Fatal("native selector delegated to Pandoc", calls.Load())
 	}
 }
