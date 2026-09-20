@@ -68,7 +68,8 @@
 
 ** Next step
 
-- Feature-branch implementation and validation through [[#delivery-handoff][Delivery Handoff]].
+- The *migration is implemented*. Continue *user testing and paired corrections
+  on master*; keep the ticket open until explicit closure.
 
 -----
 
@@ -155,8 +156,10 @@ Its timings are *feasibility evidence*, not release-test results.
 - Delivery starts from the *current working native-footnote implementation*,
   including the W009 timeout mitigation. W006/W008/W009/W010 are existing code
   prerequisites, not work to reimplement or close under this ticket.
-- Delivery uses the *separate W011 feature branch*; definition stays on the
-  current branch. The usable master/service is not replaced during development.
+- Initial delivery used the *separate W011 feature branch* to preserve the
+  usable master baseline. Following the authorized integration on 20 September
+  2026, the migration is accepted as implemented and *paired development
+  continues on master*. User testing and ticket closure remain outstanding.
 - *No private source text* is committed as a fixture or uploaded. Synthetic
   fixtures provide repeatability; authorized real documents are copied to OS
   temporary storage for bounded local comparison only.

@@ -180,6 +180,11 @@
 
 * User tests
 
+- Current stage, 20 September 2026 :: *Migration implemented and integrated into
+  master*. The ticket remains open in user test, with further corrections under
+  paired development on =master=. This milestone acceptance does not change the
+  outstanding user-test results below or claim ticket closure.
+
 ** AMBER UT011.1 - Reader review :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ut-011-1-result

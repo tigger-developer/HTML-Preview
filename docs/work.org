@@ -270,8 +270,9 @@ classification; it is provenance, not current state.
 - Scope :: Replace Org conversion with go-org while retaining the existing
   intermediary annotation workflow. Markdown and other readers retain Pandoc.
 - Evidence :: [[file:../specs/011-conversion-performance/assessment.org][Converter comparison and effort assessment]].
-- Boundary :: Definition only until sign-off and delivery authority; subsequent
-  implementation uses a separate branch from the working master build.
+- Earlier boundary :: Definition and feature-branch isolation governed the
+  migration implementation. The 20 September integration decision supersedes
+  that branch restriction for ongoing paired work.
 - Lineage :: The initial repeated-pass/native-reader assessment is superseded
   by the converter-only design; its earlier recommendation remains in the
   assessment history.
@@ -281,6 +282,9 @@ classification; it is provenance, not current state.
   continues on =master=; integration does not close the work item.
   [[file:../specs/011-conversion-performance/validation.org][Validation evidence]] records regression,
   packaging and complete benchmark results; human reader/annotation tests remain.
+- Current stage :: *Migration implemented; open in user test*. Continue paired
+  corrections on =master=. This records acceptance of the migration milestone,
+  not ticket closure or a blanket pass for outstanding user tests.
 
 ** ACTIVE W012 - Replace stale installation links and launchd services :defect:
 :PROPERTIES:
