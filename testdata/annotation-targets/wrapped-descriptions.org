@@ -1,0 +1,20 @@
+#+TITLE: Wrapped descriptions and quotes
+
+* Example
+
+- Purpose ::
+  - The last ordinary bullet is annotatable.
+- Attention :: =First phrase= is literal. A second =wrapped
+  phrase= continues with ordinary text.
+  This is the end of the description.
+- Code wording :: A ~wrapped code
+  span~ has a description tail.
+- Draft ::
+
+  #+BEGIN_QUOTE
+  First quoted paragraph with =literal words=.
+
+  Last quoted paragraph.
+  #+END_QUOTE
+
+- Following item :: Keep this description unchanged.

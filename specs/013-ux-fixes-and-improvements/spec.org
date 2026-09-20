@@ -54,6 +54,16 @@ annotations:
 #+END_SRC
 
 * Verification to retain
+** RT013.2 - Wrapped descriptions and indented containers :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-013-2
+:END:
+- Covers :: [[#ac-013-2][AC013.2 - Reachable block annotation targets]].
+- Check :: Serve synthetic descriptions containing multiline verbatim/code and
+  an indented quote. Select targets using the browser's nearest-block rules,
+  save through HTTP, verify placement and unchanged source syntax, then repeat.
+  Test the authorized personal document only through a disposable external copy.
+
 ** RT013.1 - Section creation and source preservation :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt-013-1
@@ -75,3 +85,21 @@ annotations:
 - 2026-09-20 :: *Skeleton created*. Footnote-section behaviour recorded;
   implementation and validation pending. Additional UX work awaits explicit
   paired instructions. Design review and ticket closure are deferred.
+- 2026-09-20 :: Prioritize *missing annotation targets* in wrapped descriptions
+  and indented quotes before the pending configurable section increment.
+
+* Agreed correction: reachable annotation blocks
+** AC013.2 - Reachable block annotation targets :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-013-2
+:END:
+- Wrapped descriptions :: Multiline inline verbatim/code must not prevent a
+  rendered description paragraph from being an annotation target. Its label
+  should reach the same verified description boundary.
+- Indented containers :: Quotes inside list descriptions remain whole-block
+  targets. Save the reference *after the closing delimiter*, preserving list
+  indentation and surrounding items; subsequent references reuse that paragraph.
+- Preservation :: Keep source/HTML correspondence checks and rejection of
+  unverified targets. No private source content enters tracked fixtures.
+- Baseline :: Restores the existing whole-block interaction described in
+  [[file:../011-conversion-performance/spec.org][W011 - Native Org preview compatibility]].
