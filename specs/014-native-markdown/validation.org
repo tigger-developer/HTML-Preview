@@ -6,73 +6,122 @@
 
 * Automated regression
 
-** RED RT014.1 - Public native routing :testdef:
+** GREEN RT014.1 - Public native routing :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt014-1-result
-:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
-:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
-:EVIDENCE: Native CLI previews reject absent Pandoc with exit 1; served Markdown invokes Pandoc twice. Expected native output without these calls.
+:REVISION: 75c13b0 - native Markdown delivery candidate
+:COMMAND: GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT014_|TestRT001_3_Markdown|TestRT001_13_PassiveSource|TestRT009_7_EditOrdinaryFootnotes|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1
+:EVIDENCE: Native CLI suffixes and explicit selection, served links, refresh and post-save projections pass with zero Markdown Pandoc conversion calls.
 :END:
+
+*** Initial execution retained
+
+- State :: RED.
+- Revision :: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree.
+- Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
+- Observation :: Native CLI previews reject absent Pandoc with exit 1; served Markdown invokes Pandoc twice. Expected native output without these calls.
 
 - Definition :: [[file:spec.org::#rt014-1][RT014.1 - Public native routing]].
 
-** RED RT014.2 - Semantic render compatibility :testdef:
+** GREEN RT014.2 - Semantic render compatibility :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt014-2-result
-:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
-:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
-:EVIDENCE: Fenced divs still become containers; unsupported native qualifiers return CLI 0 and HTTP 200/415 instead of 2/400. Invalid metadata can publish a page. Semantic heading and footnote adaptation preservation checks passed.
+:REVISION: 75c13b0 - native Markdown delivery candidate
+:COMMAND: GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT014_|TestRT001_3_Markdown|TestRT001_13_PassiveSource|TestRT009_7_EditOrdinaryFootnotes|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1
+:EVIDENCE: Metadata, code literals/highlighting, CRLF, Unicode heading IDs, explicit/duplicate fragments, selectors and semantic block contracts pass. Existing Org presentation checks pass.
 :END:
+
+*** Initial execution retained
+
+- State :: RED.
+- Revision :: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree.
+- Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
+- Observation :: Fenced divs still become containers; unsupported native qualifiers return CLI 0 and HTTP 200/415 instead of 2/400. Invalid metadata can publish a page. Semantic heading and footnote adaptation preservation checks passed.
 
 - Definition :: [[file:spec.org::#rt014-2][RT014.2 - Semantic render compatibility]].
 
-** RED RT014.3 - HTML omission and warning delivery :testdef:
+** GREEN RT014.3 - HTML omission and warning delivery :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt014-3-result
-:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
-:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
-:EVIDENCE: Inline/block raw HTML is retained and CLI/page omission notices are absent, including optional Markdown readers, service registration and refreshed pages.
+:REVISION: 75c13b0 - native Markdown delivery candidate
+:COMMAND: GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT014_|TestRT001_3_Markdown|TestRT001_13_PassiveSource|TestRT009_7_EditOrdinaryFootnotes|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1
+:EVIDENCE: Inline and block HTML omission, one CLI warning, current-revision banner refresh and optional Markdown-family reader policy pass; escaped/code examples remain literal.
 :END:
+
+*** Initial execution retained
+
+- State :: RED.
+- Revision :: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree.
+- Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
+- Observation :: Inline/block raw HTML is retained and CLI/page omission notices are absent, including optional Markdown readers, service registration and refreshed pages.
 
 - Definition :: [[file:spec.org::#rt014-3][RT014.3 - HTML omission and warning delivery]].
 
-** RED RT014.4 - Clickable block creation :testdef:
+** GREEN RT014.4 - Clickable block creation :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt014-4-result
-:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
-:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
-:EVIDENCE: Definition-list bodies and multi-paragraph quotations have no browser-selectable verified target; creation returns HTTP 409. Other isolated/mixed block creation and post-save second insertions pass; forged/stale targets are rejected without changing bytes.
+:REVISION: 75c13b0 - native Markdown delivery candidate
+:COMMAND: GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT014_|TestRT001_3_Markdown|TestRT001_13_PassiveSource|TestRT009_7_EditOrdinaryFootnotes|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1
+:EVIDENCE: Browser-equivalent nearest-block selection creates notes at verified source ends for isolated and mixed paragraph/list/definition/heading/code/table/quote fixtures. Refresh and successive creation pass; forged/stale targets change no bytes.
 :END:
+
+*** Initial execution retained
+
+- State :: RED.
+- Revision :: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree.
+- Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
+- Observation :: Definition-list bodies and multi-paragraph quotations have no browser-selectable verified target; creation returns HTTP 409. Other isolated/mixed block creation and post-save second insertions pass; forged/stale targets are rejected without changing bytes.
 
 - Definition :: [[file:spec.org::#rt014-4][RT014.4 - Clickable block creation]].
 
 ** GREEN RT014.5 - Footnote lifecycle :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt014-5-result
-:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
-:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
-:EVIDENCE: Repeated references including a quote map to one stored note. Multi-paragraph edit, idempotent retry, stale conflict and deletion preserve unrelated source. Existing Org/Markdown ordinary-note, rendered-markup and read-only-sidecar regressions passed. This is preservation coverage: no artificial failure is introduced.
+:REVISION: 75c13b0 - native Markdown delivery candidate
+:COMMAND: GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT014_|TestRT001_3_Markdown|TestRT001_13_PassiveSource|TestRT009_7_EditOrdinaryFootnotes|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1
+:EVIDENCE: Repeated references, multi-paragraph edits, idempotent retry, conflict rejection and deletion preserve native source labels and unrelated bytes. Ordinary-note and read-only-sidecar preservation checks pass.
 :END:
+
+*** Initial execution retained
+
+- State :: GREEN.
+- Revision :: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree.
+- Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
+- Observation :: Repeated references including a quote map to one stored note. Multi-paragraph edit, idempotent retry, stale conflict and deletion preserve unrelated source. Existing Org/Markdown ordinary-note, rendered-markup and read-only-sidecar regressions passed. This is preservation coverage: no artificial failure is introduced.
 
 - Definition :: [[file:spec.org::#rt014-5][RT014.5 - Footnote lifecycle]].
 
-** RED RT014.6 - Conditional dependency behaviour :testdef:
+** GREEN RT014.6 - Conditional dependency behaviour :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt014-6-result
-:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
-:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
-:EVIDENCE: Native formats and input listing reject absent Pandoc; native service cannot start. Removing Go from the optional highlight catalogue incorrectly disables bundled Go highlighting. Failed catalogue reporting remains a passing preservation check.
+:REVISION: 75c13b0 - native Markdown delivery candidate
+:COMMAND: GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT014_|TestRT001_3_Markdown|TestRT001_13_PassiveSource|TestRT009_7_EditOrdinaryFootnotes|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1
+:EVIDENCE: Native startup, CLI, listing, code highlighting and service requests pass without Pandoc. A DOCX request then returns a dependency-specific failure, followed by a successful native request. Optional installed readers remain available.
 :END:
+
+*** Initial execution retained
+
+- State :: RED.
+- Revision :: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree.
+- Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
+- Observation :: Native formats and input listing reject absent Pandoc; native service cannot start. Removing Go from the optional highlight catalogue incorrectly disables bundled Go highlighting. Failed catalogue reporting remains a passing preservation check.
 
 - Definition :: [[file:spec.org::#rt014-6][RT014.6 - Conditional dependency behaviour]].
 
-** RED RT014.7 - Failure and trust boundaries :testdef:
+** GREEN RT014.7 - Failure and trust boundaries :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt014-7-result
-:REVISION: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree
-:COMMAND: go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v
-:EVIDENCE: Markdown requests bypass the native-worker fault boundary and return HTTP 200 instead of conversion failure; cancellation/output-flood cases likewise return 200. Raw HTML remains in the passive-content fixture. Existing Org worker cancellation/reaping and annotation authority checks passed.
+:REVISION: 75c13b0 - native Markdown delivery candidate
+:COMMAND: GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT014_|TestRT001_3_Markdown|TestRT001_13_PassiveSource|TestRT009_7_EditOrdinaryFootnotes|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1
+:EVIDENCE: Worker failure, malformed input, cancellation after start, reaping and output overflow produce non-success without partial publication. Passive-content, resource-root and annotation-authority checks pass; subsequent valid requests recover.
 :END:
+
+*** Initial execution retained
+
+- State :: RED.
+- Revision :: 1d32001 - approved native Markdown baseline, plus test-only W014 working tree.
+- Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
+- Observation :: Markdown requests bypass the native-worker fault boundary and return HTTP 200 instead of conversion failure; cancellation/output-flood cases likewise return 200. Raw HTML remains in the passive-content fixture. Existing Org worker cancellation/reaping and annotation authority checks passed.
 
 - Definition :: [[file:spec.org::#rt014-7][RT014.7 - Failure and trust boundaries]].
 
@@ -96,18 +145,22 @@
 
 * One-off tests
 
-** AMBER OT014.1 - End-to-end comparison :testdef:
+** GREEN OT014.1 - End-to-end comparison :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ot014-1-result
-:REASON: Pending candidate implementation.
+:REVISION: 75c13b0 - candidate; 720e635 - pre-migration baseline
+:COMMAND: Temporary benchmark-safe executable, baseline-testdesktop/candidate-testdesktop, identical baseline README snapshot
+:EVIDENCE: Seven-run medians after warm-up: every uncached GET and annotation POST median improves; all three corpora preserve heading, verified-target and prior-reference counts. Exact measurements and procedure follow below.
 :END:
 
 - Definition :: [[file:spec.org::#ot014-1][OT014.1 - End-to-end comparison]].
 
-** AMBER OT014.2 - Packaging and documentation :testdef:
+** GREEN OT014.2 - Packaging and documentation :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ot014-2-result
-:REASON: Pending candidate implementation.
+:REVISION: 75c13b0 - native Markdown delivery candidate
+:COMMAND: Isolated PREFIX install with no Pandoc on PATH; plutil -lint; native --version and --list-input-formats; go test -race ./integration -run '^TestRT001_14_ReleaseArchives$' -count=1; make lint; make vulncheck
+:EVIDENCE: Temporary native installation and generated plist pass without Pandoc; all four release archives, licence manifests and optional-dependency formula pass. Documentation, help, exact module pin and graph reviewed; vulnerability scan reports no findings.
 :END:
 
 - Definition :: [[file:spec.org::#ot014-2][OT014.2 - Packaging and documentation]].
@@ -174,3 +227,101 @@
   directory. The installed service remained running on its different port.
 - Status :: Baseline evidence only. The candidate comparison remains pending;
   these measurements do not establish a performance improvement.
+
+** Run 2026-09-20 - Final regression checks
+
+- Revision :: =75c13b0= - native Markdown delivery candidate.
+- Environment :: macOS arm64, Go 1.26.8, Pandoc 3.9.0.2 for optional routes;
+  isolated temporary Go caches, fixture roots, configuration and runtime paths.
+- Native and preservation command :: =GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT014_|TestRT001_3_Markdown|TestRT001_13_PassiveSource|TestRT009_7_EditOrdinaryFootnotes|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1=.
+  Result: PASS, 75.219 seconds; all seven W014 groups and the named Org, sidecar,
+  authorization, footnote and browser-target preservation tests pass.
+- Full inventory :: =GORACE=atexit_sleep_ms=0 go test -race -timeout=20m ./...=
+  ran the repository suite. It exposed five outdated compatibility assertions:
+  mandatory Pandoc in the release formula, a settings test using native Markdown
+  to force a dependency failure, footnote fragment spelling, rendered repeated-note
+  counts, and retained raw HTML. The settings fixture also entered its one-hour
+  retention case; that test child received SIGINT to finish and report its failures.
+  All other tests passed. The run itself is retained as a failing observation.
+- Remediation checks :: The final command above covers the fragment, note and
+  HTML corrections. =GORACE=atexit_sleep_ms=0 go test -race ./internal/preview ./integration -run 'TestRT001_9_AllSettingBoundaries|TestRT001_14_ReleaseArchives|TestRT014_6' -count=1=
+  passed preview in 5.555 seconds and integration in 13.033 seconds. Thus every
+  failure from the full inventory has a passing targeted rerun; the whole inventory
+  was not needlessly repeated after those bounded corrections.
+- Coverage :: The entry-point run with
+  =-coverpkg=./internal/markdownconvert,./internal/convertworker,./internal/converthtml=
+  measured 88.5% statement coverage across those packages: Markdown conversion
+  93.5%, metadata 91.1%, shared highlighting 87.1%, extracted worker 75.6%.
+  This was measured before the final fragment-spelling adjustment, whose behaviour
+  is covered by the final race run; coverage is evidence of exercised statements,
+  not a substitute for the HTTP/source assertions.
+- Static checks :: =make lint= and the focused CSS lint passed. No browser JavaScript
+  was changed. =make vulncheck= reported no vulnerabilities for the application
+  and the existing locked Org-library advisory check.
+- Limits :: No browser or desktop automation. These checks do not establish visual
+  acceptance or native Linux/WSL operation. The two user tests remain pending.
+
+** Run 2026-09-20 - Candidate HTTP and CLI timing
+
+- Revision :: =75c13b0= - native Markdown candidate; compared with =720e635=,
+  the retained pre-migration baseline. Matching test-desktop build flags intercept
+  the absolute opener; no browser runs. Both executions used the same temporary
+  one-off benchmark executable and byte-identical corpus generation.
+- Procedure :: Seven samples after one warm-up per corpus, fresh authorized source
+  per GET and note POST. Timing ran after competing delivery tests stopped.
+  CLI measurements include the capture adapter's GET and are reported separately.
+- Semantic check :: README: 18,120 bytes, 8 headings, 64 verified targets, no prior
+  references. Long: 183,780 bytes, 1,200 headings, 4,800 targets, no prior references.
+  Footnotes: 17,320 bytes, 120 headings, 240 targets and 240 prior references.
+  Every candidate count equals the baseline. Every save returned 201 and persisted
+  its native footnote. Rendered semantic and exact insertion relationships are
+  additionally covered by the retained RT package.
+- Median milliseconds ::
+
+| Corpus | Baseline CLI | Native CLI | Baseline GET | Native GET | Baseline POST | Native POST |
+|--------+--------------+------------+--------------+------------+---------------+-------------|
+| README |      220.863 |     55.342 |      208.553 |     43.779 |        13.475 |      12.448 |
+| Long |       2307.520 |    455.682 |     2285.629 |    439.394 |        31.189 |      30.320 |
+| Footnotes |   425.322 |     85.515 |      412.463 |     73.453 |        18.561 |      17.052 |
+
+- Interpretation :: Uncached GET medians improve by 79.0-82.2%; POST medians by
+  2.8-8.1%. The small POST changes are local sample medians, not a statistical
+  claim about every save. No warmed-cache or parser-only ratio replaces these
+  end-to-end observations.
+- Isolation :: Candidate used an ephemeral loopback port and its own temporary
+  configuration, root and runtime socket. It exited successfully after the samples.
+  Neither run installed globally, restarted the daily driver or opened a browser.
+- Later optimization :: The existing multi-pass proof workflow and shared HTML
+  traversals remain. They can be measured and optimized separately; this delivery
+  preserves their established contract.
+
+** Run 2026-09-20 - Packaging and documentation
+
+- Revision :: =75c13b0= - candidate. The installed executable reports
+  =htmlpreview dev (75c13b00bd17)=.
+- Installation :: The existing build tool installed to a private temporary PREFIX,
+  with PATH containing only controlled Go/Git links and no Pandoc. Installation
+  succeeded, generated service artefacts without activation, and the launchd plist
+  passed =plutil -lint=. Installed =--list-input-formats= returned =html=,
+  =markdown= and =org= under the same no-Pandoc PATH.
+- Release check :: =GORACE=atexit_sleep_ms=0 go test -race ./integration -run '^TestRT001_14_ReleaseArchives$' -count=1=
+  passed in 11.007 seconds. It cross-builds Darwin/Linux amd64/arm64, validates
+  archive checksums and executable architectures, checks bundled licences and
+  confirms the generated formula has no mandatory Pandoc dependency.
+- Dependency evidence :: The resolved graph contains =github.com/yuin/goldmark v1.8.6=.
+  The bundled licence is byte-identical to that pin's upstream MIT licence,
+  SHA-256 =c1d6f653c38c80294dc7994647ba0dcc508ce64a86996303c804efa2f7982bff=.
+  No new JavaScript runtime or browser package was added.
+- Binary size :: Matching test-desktop builds: baseline 21,917,794 bytes;
+  candidate 23,367,522 bytes, an increase of 1,449,728 bytes (6.61%). The native
+  installation uses the normal production build, independently of those timing builds.
+- Documentation review :: README, format/service guides, Vision, Architecture,
+  help, notices and the code examples now describe native Markdown/Org, optional
+  office/specialist conversion, the accepted dialect and HTML omission notices.
+  Annotation and linked-fixture guidance remains applicable; its use of Pandoc to
+  regenerate a synthetic DOCX is intentional. Edited documentation passes =sanitize oed=.
+- Security/static evidence :: =make vulncheck= reported no vulnerabilities in both
+  existing scan stages. =make lint= and the focused preview CSS check passed.
+- Limits :: Cross-compilation does not establish native Linux/WSL or launchd runtime
+  acceptance. No installed user service, global executable or personal configuration
+  was replaced. Human browser checks remain AMBER.
