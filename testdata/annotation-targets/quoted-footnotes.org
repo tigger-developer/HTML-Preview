@@ -1,0 +1,30 @@
+#+TITLE: Quoted footnotes
+
+* First section
+
+- Draft text ::
+
+  #+BEGIN_QUOTE
+  A[fn:first] synthetic quotation with a note inside its opening word.
+  #+END_QUOTE
+
+* Second section
+
+- Draft text ::
+
+  #+BEGIN_QUOTE
+  Another quotation.[fn:second]
+  #+END_QUOTE
+
+* Footnotes
+
+[fn:first] First synthetic note.
+
+Another paragraph in the first note.
+
+Author: Reviewer; Edited: [2026-09-20 Sun 10:00]
+
+
+[fn:second] Second synthetic note.
+
+Author: Reviewer; Edited: [2026-09-20 Sun 10:01]
