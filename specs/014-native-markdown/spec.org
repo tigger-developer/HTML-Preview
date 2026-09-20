@@ -32,8 +32,10 @@
 
 - *Native conversion and HTML adaptation* replace the Markdown converter path.
 - *Dependency discovery becomes conditional*; packaging describes native and optional readers.
-- *Markdown dialect compatibility* needs the decision recorded under
-  [[#open-scope][Unresolved blockers]] before definition audit.
+- *The native dialect is a documented subset*. Pandoc-only syntax is not emulated;
+  additional constructs can be considered in later changes.
+- *Specialist Markdown dialects retain their optional Pandoc readers*, with the same
+  HTML omission policy; ordinary Markdown never falls back to them.
 
 ** Unchanged
 
@@ -49,6 +51,8 @@
 
 - *HTML examples inside code remain visible* and do not trigger HTML warnings.
 - *Repeated footnote references* resolve to the same editable note without duplicate records.
+- *Unsupported explicit Markdown options fail clearly*. Specialist Pandoc dialects
+  remain optional readers; they do not silently replace the native converter.
 - *Unverified insertion targets remain inactive*; conversion errors publish no partial page.
 - *Missing optional converters* affect their requested formats, not native previews.
 
@@ -60,7 +64,7 @@
 
 ** Next step
 
-- Resolve the *Markdown dialect boundary*, then definition audit and operator sign-off.
+- Definition audit, then *operator sign-off* before delivery.
 
 -----
 
@@ -112,6 +116,13 @@
   [[file:../../internal/preview/service_footnotes.go][Footnote projection]],
   [[file:../../internal/preview/annotation_target_contract_test.go][Browser target contract tests]]
   and [[file:../../testdata/annotation-targets/blocks.md][Synthetic Markdown fixture]].
+- Authoring corpus :: The SDLC's =templates/v3/spec.org=, =validation.org= and
+  =work.org= establish semantic needs such as hierarchy, named values, source examples
+  and links; they are Org templates, not evidence of Markdown-only syntax support.
+  =MARKDOWN.md= and =templates/AGENTS-or-CLAUDE.example.md= supply the Markdown
+  authoring boundary. Repository =README.md=, =docs/SERVICE.md=,
+  =testdata/linked-preview/notes.md= and =examples/code.md= supply concrete local cases.
+  The latter's raw-HTML demonstrations become *intentional omission cases*.
 
 ** Constraints and dependencies
 :PROPERTIES:
@@ -157,18 +168,20 @@
 - *Omit raw HTML in Markdown*. Detection is a parser classification heuristic,
   not a claim that every angle-bracket sequence is HTML or that all HTML is malicious.
 - *Keep native HTML separate*. Its passive authored presentation is unchanged.
+- *Adopt the native subset*, preserving the authored Markdown used by the project
+  and the SDLC authoring standard. *Do not emulate fenced divs or the full Pandoc dialect*.
+  Additions require a demonstrated need and a later scoped change.
+- *Preserve the shared browser annotation contract*. Converter differences belong
+  in the server-side adapter. UI changes are limited to presentation/refresh of the
+  new warning if necessary; annotation selectors and editing semantics remain unchanged.
 
 ** Unresolved blockers
 :PROPERTIES:
 :CUSTOM_ID: open-scope
 :END:
 
-- *The Markdown dialect boundary is pending*. The proposed baseline below uses the
-  SDLC subset plus existing footnotes, definition lists, smart punctuation and heading
-  IDs. Approval is needed before retiring other enabled Pandoc extensions. The choice
-  also settles explicit dialect selectors and warnings for recognized unsupported syntax.
-- *Do not audit or admit delivery while that decision is unresolved*. The remaining
-  requirements and design are a reviewable draft, not approval of a compatibility break.
+- None. The initial dialect question is *resolved by the native subset decision*;
+  the former full-Pandoc compatibility option remains in Git history.
 
 * Acceptance Criteria
 :PROPERTIES:
@@ -193,6 +206,8 @@
 - Criterion :: The agreed dialect *retains semantic content and reading controls*,
   metadata, title, navigation, heading links, literal code copying and highlighting
   through the [[#html-contract][HTML compatibility contract]].
+  Explicit options outside the [[#dialect][native selector contract]] are rejected,
+  not silently ignored or delegated to another converter.
 - Proven by :: [[#rt-014-2][RT014.2 - Semantic render compatibility]],
   [[#ut-014-1][UT014.1 - Reading interface]].
 
@@ -293,8 +308,8 @@
 - Setup :: Retained *synthetic Markdown fixtures* extending the existing target fixture.
 - Action :: Load file previews and served responses; parse their HTML with the existing
   Go DOM helpers. Assert relationships and literal values, not source-code strings.
-- Expected :: YAML title/subtitle/author/date and supplementary fields occupy their
-  established locations; source name stays original. Nested lists, loose and tight
+- Expected :: YAML display follows the existing Markdown metadata contract below;
+  source name stays original. Nested lists, loose and tight
   items, quotes, pipe tables, definition lists and Unicode text remain semantic.
   =X= and =x= tasks are checked, spaces unchecked, slash/dash partial states consistent.
   Code spans/blocks preserve copy payloads, known languages receive Chroma spans and
@@ -302,6 +317,13 @@
   TOC depth/defaults and cross-document fragments resolve correctly.
 - Cases :: Empty input; no metadata; malformed metadata; escaped punctuation; CRLF;
   UTF-8 accents; repeated headings; nested footnotes containing code or lists.
+- Dialect cases :: =markdown+smart= and =markdown-smart= change only typographic
+  punctuation; =markdown-raw_html= retains omission. Unsupported qualifiers, including
+  =markdown+raw_html= and =markdown+fenced_divs=, return CLI exit 2 or HTTP 400 before
+  rendering. Unknown qualifiers never select Pandoc. Fenced div delimiters remain
+  ordinary text; no class-bearing div is synthesized for them.
+- Org preservation :: Exercise the paired Org fixture through the same HTTP/DOM
+  assertions. *Markdown adaptation must not change Org output or annotation contracts*.
 - Retention :: =make test=; *independent expectations for each converter delta*.
 
 ** RT014.3 - HTML omission and warning delivery :testdef:
@@ -321,6 +343,9 @@
   document link, cached GET, fresh GET after removing/adding HTML, and note refresh.
   The *banner follows the current revision* and stays outside canonical annotation text.
   No repeated warning on unchanged SSE traffic. Native =.html= keeps its separate policy.
+- Optional reader cases :: With Pandoc installed, explicit =gfm=, =commonmark= and
+  =markdown_strict= documents containing raw HTML receive the same omission/notice
+  outcome without losing code examples or generated transport records.
 - Retention :: =make test=; assert status, stderr and returned HTML.
 
 ** RT014.4 - Clickable block creation :testdef:
@@ -333,10 +358,23 @@
   visible text in paragraphs, inline code/links/emphasis, nested and task-list items,
   definition lists, headings, tables, quotes and fenced code, *select the same nearest
   eligible element as the browser*. Submit its block ID to the real annotation endpoint.
+- Boundary :: Use =net/http/httptest= and the existing service helpers; parse returned
+  HTML with =golang.org/x/net/html=. This is *automated rendered-output and HTTP coverage*,
+  not a browser test. Keep the expected selection algorithm explicit and independent
+  of the converter under test; do not derive expected targets from its target registry.
 - Expected :: Each eligible element itself owns its verified attribute; bootstrap and
   endpoint revisions agree; HTTP creation succeeds. The source marker appears after
   the whole paragraph/list item, or after the container with the established annotation
   suffix. *Refresh preserves eligibility*. Marker-only wrappers cannot satisfy this test.
+- Required repetitions :: Run each block kind in an isolated fixture, then run a mixed
+  document containing all kinds. Test initial load, the advertised refresh URL, the
+  response after saving and a subsequent insertion into another body paragraph.
+  Include wrapped multi-sentence paragraphs and consecutive tight-list items to expose
+  attributes placed on outer wrappers while the actual clicked child remains inactive.
+- Required HTTP assertions :: For each kind, read the page's advertised annotation
+  endpoint, verify =writable= and matching revision fields, POST the selected ID,
+  expect HTTP 201, then inspect *the exact source insertion boundary*. A successful
+  edit of an existing note does not prove that a new annotation can be created.
 - Negative cases :: Frontmatter, warning banner, omitted HTML, endnotes and forged or
   stale target IDs never authorize a new block insertion. Failed requests change no bytes.
 - Retention :: =make test=; reusable fixtures, no browser runtime or private documents.
@@ -490,25 +528,50 @@
   Extract only its genuinely shared bounds/protocol supervision; keep Org and Markdown
   conversion code distinct. The public application interface gains no converter toggle.
 
-** Proposed dialect boundary
+** Native dialect and selector contract
 :PROPERTIES:
 :CUSTOM_ID: dialect
 :END:
 
-- Decision state :: *Pending the scope decision in Context*. This proposal must be
-  settled, including qualifier compatibility, before audit; it is not a licence to
-  silently downgrade documents during implementation.
-- Proposed core :: CommonMark parsing with tables, strikethrough, task lists,
-  definition lists, footnotes, typographic punctuation and heading attributes.
-  Preserve the SDLC authoring subset, YAML metadata and existing partial-task display.
-- Additional baseline syntax :: The current frozen reader enables percent title
-  blocks, fenced divs, bracketed spans, inline/link/code attributes, inline notes,
-  fancy/example lists, grid/simple/multiline tables, captions, line blocks, citations,
-  math and superscripts/subscripts. Their retention, literal treatment or explicit
-  incompatibility diagnostics *must not be inferred from Goldmark defaults*.
-- Reader boundary :: Implicit =.md= aliases and explicit =markdown= must use the same
-  final contract. Existing =gfm=, =commonmark= and =commonmark_x= selectors also need
-  explicit native-versus-optional-reader disposition in that decision.
+- Core :: *CommonMark plus the named Goldmark extensions*: Table, Strikethrough,
+  TaskList, DefinitionList, Footnote and Typographer, with application-owned heading
+  identifiers and heading attributes. Strikeout follows Goldmark's one- or two-tilde
+  delimiters; Pandoc-style subscript is not supported. This is a documented dialect
+  difference, not a reason to fork its inline parser. YAML metadata and existing
+  partial-checkbox display remain application responsibilities.
+- Supported authoring :: ATX and Setext headings, paragraphs, thematic breaks,
+  emphasis/strong text, escaped punctuation, links/images and reference links,
+  angle-bracket URI/email autolinks, ordered/unordered nested lists, task lists,
+  blockquotes, pipe tables, inline code and fenced/indented code. Bare URLs are
+  not newly autolinked. Preserve footnotes, definition lists and smart punctuation.
+- Native selection :: =.md=, =.markdown=, =.mdown=, =.mkd= and =.mkdn=, case-insensitively,
+  select =markdown=. Explicit =--from=markdown= and =htmlpreview-format=markdown=
+  use the *same native dialect*, regardless of filename or transport.
+- Native qualifiers :: Only =+smart=, =-smart= and =-raw_html= are accepted.
+  Smart punctuation is on by default; repeated smart qualifiers use the last value.
+  =-raw_html= confirms the fixed omission policy. Other qualifiers, including
+  =+raw_html=, fail with the unsupported name and supported choices: CLI exit 2 or
+  HTTP 400 for an explicit link selector. Preserve the existing 256-character ASCII
+  grammar limit. Do not pass native qualifiers to Pandoc for validation.
+- Specialist dialects :: Existing named Pandoc readers such as =gfm=, =commonmark=,
+  =commonmark_x= and =markdown_strict= retain their explicit optional-Pandoc route.
+  Their suffix aliases, installed-reader validation and annotation eligibility stay
+  unchanged. They are *not promised native equivalents* and never become an automatic
+  fallback for ordinary Markdown. Apply the HTML omission policy to Markdown-family
+  readers too, by removing raw HTML AST nodes in the existing Pandoc filter and
+  returning the same bounded warning flag; generated transport is added afterwards.
+- Unsupported native constructs :: Percent title blocks, fenced divs, bracketed spans,
+  inline/link/code attributes, inline notes, fancy/example lists, grid/simple/multiline
+  tables, captions, line blocks, citations, math and superscript/subscript extensions
+  are *not emulated*. Ordinary parsing renders their characters under the native
+  grammar; it may interpret ordinary emphasis or links within them. No promise of
+  byte-for-byte literal display or semantic equivalence is made for this syntax.
+- Diagnostics :: Warn for parser-recognized omitted HTML and reject unsupported
+  explicit qualifiers. *No second parser is introduced to guess every unsupported
+  Pandoc construct*. The format guide lists the retired native extensions and the
+  optional specialist-reader route. Requests to extend the native subset are later work.
+- Source fidelity :: Unsupported syntax never authorizes source rewriting. The original
+  source view remains exact and source-bound annotation proof remains required.
 
 ** Conversion flow and shared responsibilities
 
@@ -516,7 +579,7 @@
    bytes for plaintext display, copying and annotation revision checks.
 2. *Extract metadata and prepare existing annotation intermediaries*. Use the existing
    YAML dependency with bounded scalar/sequence/map handling; never execute metadata.
-   Retain title/subtitle/author/date and supplementary frontmatter field presentation.
+   Preserve the existing Markdown metadata display described below.
 3. *Convert in the bounded worker* with Goldmark and application-owned render hooks.
    Code highlighting reuses bundled Chroma and the current literal-copy records.
 4. *Normalize HTML before proof*: section structure, heading catalogue, TOC and endnotes
@@ -535,16 +598,33 @@
 - Footnotes :: Normalize Goldmark's reference wrapper and endnote container before
   =finalizeVirtualNotes= and block proof. Keep source-label associations independent of
   displayed numbers. *One stored note can have several references and backlinks*.
-- Headings :: Reuse the existing application heading-ID rules and section wrappers,
+- Headings :: Supply Pandoc-compatible original heading IDs to the existing catalogue
+  and section wrappers,
   including duplicate handling, explicit IDs and Unicode fragments. Generate TOC from
   the same catalogue; do not independently invent navigation IDs in two components.
+  The compatibility generator lowercases visible heading text, changes whitespace
+  to hyphens, retains letters, numbers, underscores, hyphens and periods, and removes
+  leading characters before the first letter; use =section= if empty. Preserve Unicode
+  letters. Thus =123 Héllo world= yields =héllo-world=, not Goldmark's =123-hllo-world=.
+  Use existing final duplicate-ID allocation after explicit ID handling.
 - Lists :: Preserve semantic =li=, =dt= and =dd= relationships. Annotation attributes
   belong to the *nearest eligible block the browser actually selects*, including
   paragraphs introduced inside loose items. Reuse checkbox normalization.
 - Code :: Render escaped text with the existing highlight classes and original-copy
   transport. Unknown languages stay literal. Code is never executed.
-- Metadata :: Produce the existing title block and single frontmatter area. Values are
-  escaped text; raw HTML in metadata is not an alternate markup route.
+- Metadata :: Preserve the *current Markdown path*, not a new Org-style metadata UI.
+  =assets/pandoc/fidelity.lua= currently prepends present title, author, date and lang
+  as paragraphs in that order when a body exists. Metadata-only documents use a
+  structured frontmatter definition list. Keep this display and the existing filename
+  page-title fallback; do not silently claim that Markdown already uses Org's title,
+  subtitle and frontmatter panel. Plaintext retains every source field. Metadata
+  strings are escaped text, never an alternate raw-HTML route.
+- YAML framing :: Recognize a leading =---= metadata block, after an optional UTF-8
+  BOM, terminated by =---= or =...=. Invalid YAML or a non-mapping metadata document
+  returns a conversion error; an unclosed delimiter sequence follows ordinary Markdown
+  parsing. Reuse the YAML library, reject duplicate keys, cap nesting at 64 and bound
+  all expanded values by the conversion budget. Alias cycles and over-budget expansion
+  are errors. Do not evaluate tags or perform external resolution.
 
 Observed footnote rendering delta:
 
@@ -563,6 +643,12 @@ Observed footnote rendering delta:
 - Rationale :: *Server-side normalization preserves the tested browser contract*
   and the current proof algorithm. Replacing browser selectors and mapping in the same
   change would add an unnecessary second migration.
+- Browser change boundary :: *Do not add format branches to annotation selectors,
+  canonical-text mapping, folding or footnote editing*. Reuse their existing elements,
+  attributes and relationships for both Org and Markdown. If this cannot be achieved,
+  report the concrete incompatibility before changing the shared browser contract.
+  A narrowly scoped warning-refresh update is allowed only if existing replaceable
+  page regions cannot carry the banner; it receives Org preservation coverage too.
 - Verification :: [[#rt-014-2][RT014.2 - Semantic render compatibility]],
   [[#rt-014-4][RT014.4 - Clickable block creation]] and
   [[#rt-014-5][RT014.5 - Footnote lifecycle]] assert the delivered HTML explicitly.
@@ -590,6 +676,10 @@ Observed footnote rendering delta:
 - Browser :: Place one compact, non-modal warning *below the info bar and above
   document content*, outside annotation targets. Include text, not colour alone:
   =Embedded HTML omitted: This Markdown source contains HTML that is not rendered in this preview. Some content may be missing.=
+- Region ownership :: Prefer the existing replaceable =hp-frontmatter= region as a
+  host for the banner, outside =hp-header= copy controls and =hp-document=. Keep it
+  visually separate from metadata. This lets the existing region-swap lifecycle
+  refresh warnings without altering annotation selection or canonical text.
 - Refresh :: Cache warnings with the rendered source revision; union repeated-pass
   detection into a single flag. Browser-followed links show their own warning without
   requiring a CLI. Re-rendering updates the banner; SSE events do not repeatedly log it.
@@ -655,8 +745,8 @@ Observed footnote rendering delta:
 - Required reading :: This specification, its named project authorities, format and
   annotation guides, and the existing native worker and rendered-target tests linked
   in Context. No temporary research directory or conversation is required for delivery.
-- Entry conditions :: Resolve [[#open-scope][the dialect scope blocker]], obtain current
-  definition evidence and *explicit operator sign-off*. Confirm the baseline and
+- Entry conditions :: Obtain current definition evidence and *explicit operator sign-off*.
+  The [[#dialect][native subset]] resolves the earlier scope blocker. Confirm the baseline and
   delivery branch at admission; leave the daily-driver installation untouched.
 - First implementation step :: Write the specified RT package and observe intended
   failures for native routing, HTML warnings and converter-delta contracts. Record
@@ -667,7 +757,7 @@ Observed footnote rendering delta:
   record per test. No execution states or audit verdicts belong in this specification.
 - Documentation impact :: Update =README.md=, =docs/FORMATS.md=, =docs/ARCHITECTURE.md=,
   =docs/VISION.md=, =docs/SERVICE.md= and relevant installer guidance. Review
-  =docs/ANNOTATIONS.md=, =docs/htmlpreview-help.txt=, fixture guidance and third-party
+  =docs/ANNOTATIONS.md=, =docs/htmlpreview-help.txt=, =examples/code.md=, fixture guidance and third-party
   notices for the changed dialect, dependency and warning contracts. Preserve earlier
   decisions as superseded history rather than silently erasing them.
 - Closure boundary :: Automated render/HTTP checks do not establish browser acceptance

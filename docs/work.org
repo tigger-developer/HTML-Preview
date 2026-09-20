@@ -323,9 +323,10 @@ classification; it is provenance, not current state.
 - Specification :: [[file:../specs/014-native-markdown/spec.org][W014 - Native Markdown previews with Goldmark]].
 - Scope :: *Pinned native Markdown conversion*, compatibility with the existing
   annotation HTML contract, omitted-HTML warnings and conditional dependencies.
-- Definition boundary :: The *Markdown dialect compatibility decision remains open*;
-  resolve it before definition audit and sign-off. Definition stays on =master=;
-  implementation and installation are not part of this phase.
+- Definition boundary :: *The native subset is selected*; fenced divs and other
+  Pandoc-only extensions are not emulated. Server-side adaptation preserves the
+  shared browser annotation contract, with rendered-HTML and HTTP creation tests.
+  Definition stays on =master=; implementation and installation are not part of this phase.
 
 * Migration record
 :PROPERTIES:
