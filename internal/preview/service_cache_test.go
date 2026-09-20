@@ -31,6 +31,11 @@ func startTestService(t *testing.T, host Host, extraRoots ...string) *runningTes
 
 func startObservedTestService(t *testing.T, host Host, diagnostics io.Writer, extraRoots ...string) *runningTestService {
 	t.Helper()
+	return startConfiguredTestService(t, host, diagnostics, "", extraRoots...)
+}
+
+func startConfiguredTestService(t *testing.T, host Host, diagnostics io.Writer, extraYAML string, extraRoots ...string) *runningTestService {
+	t.Helper()
 	root := t.TempDir()
 	canonical, err := filepath.EvalSymlinks(root)
 	if err != nil {
@@ -49,10 +54,22 @@ func startObservedTestService(t *testing.T, host Host, diagnostics io.Writer, ex
 	if err != nil {
 		t.Fatal(err)
 	}
+	svc := serviceConfig{roots: append([]string{canonical}, extraRoots...), runtime: runtime}
+	if extraYAML != "" {
+		roots, err := json.Marshal(svc.roots)
+		if err != nil {
+			t.Fatal(err)
+		}
+		path := source(t, t.TempDir(), "config.yaml", "version: 1\nserve:\n  roots: "+string(roots)+"\n"+extraYAML)
+		svc, err = serviceSettings(config{configPath: path, runtimePath: runtime})
+		if err != nil {
+			t.Fatal("service configuration:", err)
+		}
+	}
 	ctx, cancel := context.WithCancel(t.Context())
 	done := make(chan int, 1)
 	go func() {
-		done <- runService(ctx, cfg, serviceConfig{roots: append([]string{canonical}, extraRoots...), runtime: runtime}, host, &console{out: io.Discard, diagnostics: diagnostics})
+		done <- runService(ctx, cfg, svc, host, &console{out: io.Discard, diagnostics: diagnostics})
 	}()
 	var stopOnce sync.Once
 	stopCode := 0

@@ -1,15 +1,16 @@
 // ABOUTME: Guards native textarea edits before they enter annotation autosave.
 // ABOUTME: Preserves selections and composition while enforcing length and Org boundaries.
-const annotationCharacterLimit = 4000;
-const annotationByteLimit = 16384;
-
 function annotationTextSize(text) {
   return { characters: Array.from(text).length, bytes: new TextEncoder().encode(text).length };
 }
 
-function annotationTextFits(text) {
+function annotationTextFits(text, limits) {
   const size = annotationTextSize(text);
-  return size.characters <= annotationCharacterLimit && size.bytes <= annotationByteLimit;
+  return size.characters <= limits.characters && size.bytes <= limits.bytes;
+}
+
+function annotationLimitMessage(text, limits) {
+  return annotationTextSize(text).bytes > limits.bytes ? '16 KiB UTF-8 byte limit.' : `${limits.characters.toLocaleString()}-character limit.`;
 }
 
 function annotationOrgBoundary(text) {
@@ -35,17 +36,17 @@ function annotationOrgBoundary(text) {
   return false;
 }
 
-export function guardAnnotationInput(textarea, { org, onInput, onComposition, onNotice, events }) {
+export function guardAnnotationInput(textarea, { org, limits, onInput, onComposition, onNotice, events }) {
   const capture = () => ({ text: textarea.value, start: textarea.selectionStart, end: textarea.selectionEnd,
     direction: textarea.selectionDirection, scroll: textarea.scrollTop });
   let previous = capture(); let composing = false;
   const rejection = text => {
-    if (!annotationTextFits(text)) {
+    if (!annotationTextFits(text, limits)) {
       const before = annotationTextSize(previous.text); const after = annotationTextSize(text);
       // Do not truncate an oversized authored footnote on open. Permit gradual
       // shortening while the composer's existing validity check suspends saving.
-      if (!(after.characters < before.characters && after.bytes <= before.bytes)) {
-        return '4,000-character limit. Input not added.';
+      if (!(after.characters <= before.characters && after.bytes <= before.bytes && (after.characters < before.characters || after.bytes < before.bytes))) {
+        return annotationLimitMessage(text, limits) + ' Input not added.';
       }
     }
     if (org && annotationOrgBoundary(text)) return 'Use one blank line between paragraphs. Input not added.';
@@ -68,7 +69,7 @@ export function guardAnnotationInput(textarea, { org, onInput, onComposition, on
       return;
     }
     previous = capture();
-    onNotice(annotationTextFits(previous.text) ? '' : 'Shorten this footnote to 4,000 characters.');
+    onNotice(annotationTextFits(previous.text, limits) ? '' : annotationLimitMessage(previous.text, limits) + ' Shorten this footnote.');
     onInput(previous.text);
   };
   textarea.addEventListener('beforeinput', event => {
@@ -90,5 +91,5 @@ export function guardAnnotationInput(textarea, { org, onInput, onComposition, on
   textarea.addEventListener('compositionend', () => {
     composing = false; commit(); onComposition(false);
   }, events);
-  if (!annotationTextFits(previous.text)) onNotice('Shorten this footnote to 4,000 characters.');
+  if (!annotationTextFits(previous.text, limits)) onNotice(annotationLimitMessage(previous.text, limits) + ' Shorten this footnote.');
 }

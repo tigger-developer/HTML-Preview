@@ -73,6 +73,7 @@ function annotationRevisions(data) {
 function validateAnnotationState(state) {
   const revisions = ['revision', 'source_revision', 'body_revision'];
   if (!state || state.protocol !== 2 || !revisions.every(key => typeof state[key] === 'string' && /^[a-f0-9]{64}$/.test(state[key])) ||
+      !Number.isInteger(state.max_chars) || state.max_chars < 1 || state.max_chars > 16384 || state.max_bytes !== 16384 ||
       !Array.isArray(state.comments) || state.comments.length > 10000 || !Array.isArray(state.footnote_labels) || typeof state.writable !== 'boolean' ||
       typeof state.reason !== 'string' || (state.writable && (!['embedded', 'sidecar'].includes(state.storage) || typeof state.write_token !== 'string' || !state.write_token))) {
     throw new Error('Unsupported annotation state.');
@@ -286,7 +287,8 @@ export class
     this.editor.append(editorHeading, this.textarea, this.status, idLabel, this.idInput, this.idError);
 
     const org = (note?.storage || this.state.storage) === 'sidecar' || document.body.dataset.hpFormat === 'org';
-    this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, note, org, label: this.idInput.value,
+    const limits = { characters: this.state.max_chars, bytes: this.state.max_bytes };
+    this.composer = new AnnotationComposer({ clock: this.clock, revisions: annotationRevisions(this.state), target, note, org, limits, label: this.idInput.value,
       send: (request, secret) => this.request(this.data.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-HTMLPreview-Annotation-Token': this.state.write_token, 'X-HTMLPreview-Composer-Token': secret }, body: JSON.stringify(request) }),
       onState: state => {
         const saved = !this.inputNotice && !state.error && !state.dirty && (state.status === 'Autosaved draft' || state.status === 'Saved');
@@ -309,7 +311,7 @@ export class
       },
     });
     this.idInput.addEventListener('input', () => this.composer.setLabel(this.idInput.value), this.events);
-    guardAnnotationInput(this.textarea, { org, events: this.events,
+    guardAnnotationInput(this.textarea, { org, limits, events: this.events,
       onInput: text => this.composer.input(text),
       onComposition: active => { this.holdReader(); this.composer.composition(active); },
       onNotice: message => { this.inputNotice = message; this.composer.emit(); },

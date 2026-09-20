@@ -88,25 +88,72 @@
   wraps literal text, but the final readable serializer and its reparse still
   enforce the native definition boundary.
 
-** AMBER UT013.3 - Annotation length input guard :testdef:
+** GREEN UT013.3 - Annotation length input guard :testdef:
 :PROPERTIES:
-:REASON: Awaiting user validation in the real browser; automated browser and CLI JavaScript execution are excluded by the project instructions.
+:REVISION: 62a219c input-guard review build
+:EVIDENCE: Operator stated "otherwise those UTs pass" on 21 September 2026, after reporting the separate plaintext wrapping defect.
 :END:
 - Prepared review :: Disposable Org and Markdown documents each contain an
   existing 3,999-code-point footnote. Test the next two typed characters,
   selection replacement, deletion, oversized paste, undo/redo and composition.
-- Remaining evidence :: New-note and existing-note input handling, supplementary
+- Review scope :: New-note and existing-note input handling, supplementary
   and combining characters, progressive reduction of legacy oversized notes,
   feedback accessibility, stable layout, autosave and reopening.
 
-** AMBER UT013.4 - Org paragraph input guard :testdef:
+** GREEN UT013.4 - Org paragraph input guard :testdef:
 :PROPERTIES:
-:REASON: Awaiting user validation of textarea events, clipboard handling and feedback in Org, embedded Markdown and a read-only Markdown source with an Org sidecar.
+:REVISION: 62a219c input-guard review build
+:EVIDENCE: Operator stated "otherwise those UTs pass" on 21 September 2026. This records the user verdict without asserting unreported device-specific test steps.
 :END:
 - Prepared review :: The Org page includes copyable one-blank-line and
   two-blank-line samples, and links to Markdown and sidecar review documents.
-- Remaining evidence :: Typing and paste rejection, whitespace-only lines and
+- Review scope :: Typing and paste rejection, whitespace-only lines and
   CRLF, preserved block content, selection, and successful save after rejection.
+
+* Current increment: configurable length and plaintext wrapping
+** GREEN RT013.3 - Configured annotation policy through HTTP :testdef:
+:PROPERTIES:
+:REVISION: 51cd265 plus configurable length and plaintext wrapping increment
+:COMMAND: go test -race ./internal/annotation ./internal/preview -run 'TestRT013_3|TestRT007_7_10|TestServiceConfig|TestConfiguration|TestFolding' -count=1 -timeout=2m
+:EVIDENCE: Preview package passed in 59.797 seconds. New tests first failed because YAML rejected annotations and HTTP state omitted limits; corrected focused tests passed. Maximum escaped-text HTTP case additionally passed in 0.170 seconds.
+:END:
+- Coverage :: Explicit/global configuration, first-found failure, defaults, valid
+  and invalid values; server-advertised policy; 5,000 accented code points in
+  Org, Markdown and read-only Markdown's sidecar; rejected character and byte
+  overflow with unchanged source/store; exactly 16 KiB supplementary Unicode;
+  existing 5,000-character notes readable/deletable under a limit of 20; submitted
+  policy override rejected. A 16,384-character note with JSON Unicode escaping
+  also saves, covering transport overhead above the former HTTP envelope.
+- Writer compatibility :: Full annotation race package passed separately in
+  5.696 seconds. The combined selection above matched no annotation-package tests;
+  it is not claimed as writer coverage.
+- Browser boundary :: Custom-value feedback remains UT013.6. No browser automation,
+  CLI JavaScript or private-document fixtures were used.
+- Static checks :: Go vet and scoped golangci-lint passed for the annotation and
+  preview packages; oxlint and Biome passed for changed JavaScript, and oxlint
+  passed on the module extracted from the served page. Initial gosec warnings
+  concerned test-fixture reads; their local temporary-path provenance is documented.
+
+** GREEN OT013.2 - Plaintext stylesheet packaging :testdef:
+:PROPERTIES:
+:REVISION: 51cd265 plus configurable length and plaintext wrapping increment
+:EVIDENCE: CSS lint, production build and Go vet passed. A one-off Go HTTP/DOM/CSS-parser probe confirmed the emitted plaintext rule and byte-identical original source payload on synthetic Org and Markdown pages.
+:END:
+- Scope :: The packaged rule uses pre-wrap and overflow-wrap:anywhere only for
+  the plaintext source element. Authored line breaks are not rewritten. This
+  confirms packaging and payload preservation, not visual browser layout.
+- Isolation :: Review services use separate OS-temporary roots, configurations,
+  runtime sockets and ports. The installed daily-driver and global YAML are unchanged.
+
+** AMBER UT013.5 - Read long lines in plaintext view :testdef:
+:PROPERTIES:
+:REASON: Awaiting human review of wrapping, long tokens, copying and formatted-code preservation in the new isolated build.
+:END:
+
+** AMBER UT013.6 - Configured editor feedback :testdef:
+:PROPERTIES:
+:REASON: Awaiting human input/paste/replacement checks with a 20-character service and byte-limit feedback with a 5,000-character service; HTTP enforcement is already checked.
+:END:
 
 * Pending section-heading increment
 - The reserved configurable-section requirement and its planned tests remain

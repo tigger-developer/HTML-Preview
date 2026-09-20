@@ -14,8 +14,10 @@
   separate from the document's final content section when folding in Emacs.
 - Earlier increment :: Restore *annotation targets in wrapped descriptions and
   indented quotes*, including the corresponding description labels.
-- Current increment :: Guard annotation input at the existing length limit and
-  preserve Org footnote paragraph boundaries while typing and pasting.
+- Input guards :: Preserve length and Org footnote paragraph boundaries while
+  typing and pasting. User validation accepted on 21 September 2026.
+- Current increment :: Wrap plaintext visually and configure annotation length
+  through =annotations.max-chars=, shared by browser and server.
 - State :: *Keep this ticket open*. Append subsequent authorized increments and
   their evidence here; no design audit is requested at this stage.
 
@@ -77,10 +79,10 @@ annotations:
   with immediate, accessible feedback. Preserve accepted text and allow deletion
   or replacement at the limit; handle typing, paste and input-method composition
   without silently discarding existing text.
-- Current limit :: *4,000 Unicode code points and 16,384 UTF-8 bytes*, hardcoded in
-  =assets/web/annotation-input.js= and =internal/annotation/{event,replace}.go=;
-  the composer uses the shared browser limit check.
-  These are not YAML configuration keys. Retain server-side enforcement.
+- Original limit :: *4,000 Unicode code points and 16,384 UTF-8 bytes*, initially
+  hardcoded in the browser and writer. AC013.6 supersedes the absence of a YAML
+  setting: keep the default, configure the character limit, retain the byte
+  ceiling and server-side enforcement.
 - Verification :: Boundary input, paste, selection replacement, accented
   and supplementary characters, composition, editing existing notes and recovery.
   Input rejection must occur before the leave-editor workflow.
@@ -165,6 +167,99 @@ annotations:
   service serves the built assets for Org and Markdown. These checks protect
   persistence and packaging; they do not establish browser input-event behaviour.
 
+* Paired increment: configurable annotation length
+** AC013.6 - Configure the annotation character limit :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-013-6
+:END:
+- Setting :: =annotations.max-chars= in the existing version-1 YAML configuration
+  accepts an integer from 1 to 16,384, defaulting to 4,000 when omitted. Reject
+  zero, negative, fractional, string, duplicate, unknown and out-of-range values.
+  It uses the existing first-found configuration selection, including
+  =~/.config/htmlpreview/config.yaml=. No configuration file is rewritten.
+- Authority :: The service's startup configuration sets the write policy for
+  every served Org/Markdown page and sidecar. Restart applies changes; client
+  preview settings and submitted JSON cannot override this limit.
+- Units :: Count Unicode code points. Retain the independent 16,384-byte UTF-8
+  text ceiling, the existing source/store and native frame limits. Advertise
+  both text limits in annotation state; the browser rejects the first exceeded
+  limit with an accurate character or byte explanation.
+- Compatibility :: Creation and editing enforce the effective policy; deletion
+  and reading existing longer notes remain available after lowering it. An
+  oversized note may be shortened progressively; do not truncate it on open.
+  Keep reading/serialization validity separate from the configured write policy.
+- Transport :: Allow worst-case JSON escaping of the permitted text plus the
+  existing request envelope: =6 * 16,384 + 65,536= bytes. This increases only the
+  HTTP envelope bound, not the accepted text or storage limits.
+- Design :: Decode one integer in service configuration. Carry it into the
+  server-owned write location, enforce it before native writer mutation and
+  publish it to the existing annotation-state endpoint. The editor and composer
+  share one limit object, obtained from validated state. No new endpoint,
+  persistence format, dependency or per-request override.
+
+#+BEGIN_SRC yaml
+annotations:
+  max-chars: 4000
+#+END_SRC
+
+** RT013.3 - Configured annotation policy through HTTP :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-013-3
+:END:
+- Covers :: [[#ac-013-6][AC013.6 - Configure the annotation character limit]].
+- Check :: Read default, global/discovered and explicit YAML settings; reject
+  invalid types/ranges and unknown keys. Start the real service with a custom
+  value, verify advertised limits, create and edit native Org/Markdown notes
+  above the former 4,000-character limit, and reject configured character or
+  UTF-8 byte overflow without changing source bytes. Include supplementary
+  Unicode, sidecar writes, reading/deleting existing longer notes under a lower
+  policy, and attempts to override policy through submitted data.
+
+** UT013.6 - Configured editor feedback :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-013-6
+:END:
+- Covers :: [[#ac-013-6][AC013.6 - Configure the annotation character limit]].
+- Check :: In an isolated service configured with a small limit, typing and paste
+  stop at that value and name it in feedback. Deletion and replacement remain
+  available; autosave persists accepted text. At a larger character setting,
+  UTF-8 overflow reports the byte ceiling. Existing input-guard validation at
+  the default remains the baseline, not proof of custom-value behaviour.
+
+* Paired correction: plaintext wrapping
+** AC013.5 - Wrap plaintext source visually :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-013-5
+:END:
+- Outcome :: Plaintext view wraps long Org and Markdown source lines within the
+  available content width, including unbroken URLs and other long tokens.
+- Preservation :: Retain authored newlines, spacing, tabs and copied source text.
+  This is CSS-only soft wrapping; do not insert source line breaks or change
+  formatted code-block presentation.
+- Design :: Scope =white-space:pre-wrap= and =overflow-wrap:anywhere= to
+  =#hp-source-text=. Its existing grid sizing and minimum width remain in force.
+
+** UT013.5 - Read long lines in plaintext view :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-013-5
+:END:
+- Covers :: [[#ac-013-5][AC013.5 - Wrap plaintext source visually]].
+- Check :: In Org and Markdown, select Show plaintext and resize the viewport.
+  Read the complete long line without horizontal scrolling; verify long tokens,
+  indentation and explicit line breaks. Copying preserves the original text.
+  Return to formatted view and confirm code blocks retain their existing layout.
+- Evidence boundary :: Visual wrapping is a human browser test. No browser
+  automation or source-string regression assertions are introduced.
+
+** OT013.2 - Plaintext stylesheet packaging :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-013-2
+:END:
+- Covers :: [[#ac-013-5][AC013.5 - Wrap plaintext source visually]].
+- Check :: Lint CSS and build the executable. Inspect the served stylesheet with
+  a CSS parser to confirm the plaintext rule is packaged; compare source payload
+  bytes with the synthetic input. Browser layout remains separately unverified.
+
 * Verification to retain
 ** RT013.2 - Wrapped descriptions and indented containers :testdef:
 :PROPERTIES:
@@ -209,6 +304,12 @@ annotations:
   save and a reference after the block. No automated desktop interaction.
 
 * Increment ledger
+- 2026-09-21 :: Plaintext source view must wrap visually, including long tokens,
+  while preserving source whitespace and copied text. The screenshot showed a
+  long Markdown source line extending beyond the visible content column.
+- 2026-09-21 :: Make the default 4,000-character annotation limit configurable as
+  =annotations.max-chars=. Browser and server must share the effective limit.
+  Retain the existing 16 KiB UTF-8 text ceiling; see the configuration increment.
 - 2026-09-20 :: *Skeleton created*. Footnote-section behaviour recorded;
   implementation and validation pending. Additional UX work awaits explicit
   paired instructions. Design review and ticket closure are deferred.

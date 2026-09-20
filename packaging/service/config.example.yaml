@@ -4,6 +4,11 @@ version: 1
 serve:
   roots: []
 
+# Annotation length: Unicode code points, from 1 to 16384; default 4000.
+# The independent 16 KiB UTF-8 text ceiling also applies. Restart to change.
+# annotations:
+#   max-chars: 4000
+
 # Optional initial folding; uncomment to override the document's own settings.
 # headers is a mapping, not the former scalar open/closed value.
 # folding:

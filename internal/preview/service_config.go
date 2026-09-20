@@ -9,17 +9,20 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 	"unicode/utf8"
 
+	"github.com/tigger-developer/HTML-Preview/internal/annotation"
 	"go.yaml.in/yaml/v3"
 )
 
 type serviceConfig struct {
-	roots   []string
-	folding foldingOverride
-	runtime string
+	roots    []string
+	folding  foldingOverride
+	runtime  string
+	maxChars int
 }
 
 func serviceSettings(cfg config) (serviceConfig, error) {
@@ -127,7 +130,7 @@ func decodeServiceConfiguration(data []byte) (serviceConfig, error) {
 	if len(doc.Content) != 1 {
 		return serviceConfig{}, errors.New("configuration requires a mapping")
 	}
-	fields, err := yamlFields(doc.Content[0], "version", "serve", "folding")
+	fields, err := yamlFields(doc.Content[0], "version", "serve", "folding", "annotations")
 	if err != nil {
 		return serviceConfig{}, err
 	}
@@ -140,6 +143,10 @@ func decodeServiceConfiguration(data []byte) (serviceConfig, error) {
 		return serviceConfig{}, err
 	}
 	result := serviceConfig{folding: folding}
+	result.maxChars, err = decodeAnnotationLimit(fields["annotations"])
+	if err != nil {
+		return serviceConfig{}, err
+	}
 	if fields["serve"] == nil {
 		return result, nil
 	}
@@ -156,6 +163,25 @@ func decodeServiceConfiguration(data []byte) (serviceConfig, error) {
 	}
 	result.roots, err = canonicalRoots(roots.Content)
 	return result, err
+}
+
+func decodeAnnotationLimit(node *yaml.Node) (int, error) {
+	if node == nil {
+		return annotation.DefaultMaxCharacters, nil
+	}
+	fields, err := yamlFields(node, "max-chars")
+	if err != nil {
+		return 0, err
+	}
+	value := fields["max-chars"]
+	if value == nil {
+		return annotation.DefaultMaxCharacters, nil
+	}
+	limit, err := strconv.Atoi(value.Value)
+	if value.Kind != yaml.ScalarNode || value.Tag != "!!int" || err != nil || limit < 1 || limit > annotation.MaxTextBytes {
+		return 0, errors.New("annotations.max-chars must be an integer from 1 to 16384")
+	}
+	return limit, nil
 }
 
 func safeYAML(node *yaml.Node, depth int) error {

@@ -313,10 +313,13 @@ classification; it is provenance, not current state.
   evidence as work proceeds. No design audit at this stage.
 - Working branch :: Continue paired development on =master= following the
   authorized feature-branch integration on 20 September 2026.
-- Current input guards :: Prevent typing/pasting beyond the fixed annotation limit
+- Current input guards :: Prevent typing/pasting beyond the annotation limit
   and guard against Org footnote-ending blank lines while retaining paragraph
-  separation. Paired implementation is in progress; browser validation remains
+  separation. User validation accepted on 21 September 2026; evidence remains
   separate from the HTTP/writer preservation checks.
+- Current increment :: Plaintext visual wrapping and configurable
+  =annotations.max-chars=; new browser checks remain separate from the accepted
+  default input guards. See the linked validation record.
 
 ** DONE W014 - Native Markdown previews with Goldmark :feature:
 :PROPERTIES:

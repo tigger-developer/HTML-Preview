@@ -1,7 +1,7 @@
 ---
 title: Document annotations
-version: 6
-last-updated: 2026-09-20
+version: 7
+last-updated: 2026-09-21
 ---
 
 # Document annotations
@@ -116,8 +116,11 @@ seconds during continuous typing when no previous save is in flight. Only one
 save runs at a time. Text entered during a save is batched through the debounce
 after acknowledgement; it does not trigger immediate back-to-back submissions.
 Leaving the editor flushes the latest text. Input-method composition suspends submission.
-Comments accept up to **4,000 Unicode code points** and **16 KiB of UTF-8 text**.
-These fixed browser/server limits have no YAML setting. A code point is not
+Comments default to **4,000 Unicode code points**, configurable through
+`annotations.max-chars` in the [service YAML configuration](SERVICE.md#annotation-length).
+The independent **16 KiB UTF-8 text ceiling** remains in force; whichever limit
+is reached first applies. These are application limits, not footnote syntax limits.
+A code point is not
 necessarily a whole visible character: combining accents and multi-part emoji
 can use several. The editor rejects typing or paste that would exceed the limit,
 retaining the preceding text and selection. It does not truncate a paste to fit.
@@ -161,7 +164,9 @@ source path. Wide viewports show navigation, the article and the annotation pane
 Phone annotation mode keeps document text above a larger comment pane.
 
 **Show plaintext** displays the original Org or Markdown source, including
-embedded footnotes and their optional attribution. It disables annotation and retains the
+embedded footnotes and their optional attribution. Long lines wrap to the available
+width, preserving authored whitespace and the original text when copied.
+It disables annotation and retains the
 info bar. **Overview**, **Contents** or **Show all** returns to formatted content
 and applies that folding preset. Sidecar content is not substituted for source text. TXT, source-code
 wrappers, HTML and binary documents do not offer this view.
@@ -348,6 +353,8 @@ confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
+- Version 7: wrap long lines visually in plaintext source view and document the
+  configurable character limit with server-owned editor policy.
 - Version 6: describe immediate length and Org paragraph input guards, selection
   preservation and composition handling. Browser validation remains in W013.
 - Version 5: clarify fixed code-point/byte limits, the then-current excess-input

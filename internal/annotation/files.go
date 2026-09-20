@@ -15,6 +15,7 @@ import (
 type Location struct {
 	Root, Path, Format string
 	Limit              int64
+	MaxCharacters      int
 }
 
 type Snapshot struct {

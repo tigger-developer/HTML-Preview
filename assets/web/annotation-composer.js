@@ -29,6 +29,7 @@ export class AnnotationComposer {
     this.target = structuredClone(options.target);
     this.editing = Boolean(options.note);
     this.org = Boolean(options.org);
+    this.limits = options.limits;
     this.label = options.label || defaultFootnoteID(options.author || '', options.labels || []);
     this.savedLabel = this.label;
     this.annotationID = crypto.randomUUID();
@@ -73,7 +74,7 @@ export class AnnotationComposer {
     if (!this.editing && !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(this.label)) {
       this.error = new Error('Use 1–64 letters, digits, underscores or hyphens, beginning with a letter.'); this.error.code = 'invalid_label'; return false;
     }
-    return ((!this.editing && this.text === '') || this.text.trim() !== '') && !this.text.includes('\0') && annotationTextFits(this.text) && !(this.org && annotationOrgBoundary(this.text));
+    return ((!this.editing && this.text === '') || this.text.trim() !== '') && !this.text.includes('\0') && annotationTextFits(this.text, this.limits) && !(this.org && annotationOrgBoundary(this.text));
   }
 
   composition(active) {
@@ -87,7 +88,10 @@ export class AnnotationComposer {
   schedule() {
     this.cancelTimer();
     if (this.disposed || this.closed || this.composing || this.paused || this.failed || this.inFlight || !this.dirty) return;
-    if (!this.valid()) { this.error ||= new Error('Enter a comment of up to 4,000 characters.'); return; }
+    if (!this.valid()) {
+      this.error ||= new Error(annotationTextFits(this.text, this.limits) ? 'Enter a non-empty comment with valid footnote paragraph boundaries.' : annotationLimitMessage(this.text, this.limits));
+      return;
+    }
     if (!this.text && !this.sequence && !this.inFlight) return;
     const wait = Math.max(0, Math.min(300, 2000 - (this.clock.now() - this.dirtySince)));
     this.timer = this.clock.setTimeout(() => {

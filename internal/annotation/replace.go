@@ -33,11 +33,14 @@ type currentSave struct {
 	definitionRevision string
 }
 
-func validateCurrentRequest(r Request) error {
+func validateCurrentRequest(r Request, maxCharacters int) error {
+	if len(r.Text) > MaxTextBytes || utf8.RuneCountInString(r.Text) > CharacterLimit(maxCharacters) {
+		return fail("body_limit")
+	}
 	if r.Action == "edit" || r.Action == "delete" {
 		return validateFootnoteEdit(r)
 	}
-	if len(r.Text) > 16384 || utf8.RuneCountInString(r.Text) > 4000 || len(r.Target.Run) > 8192 || utf8.RuneCountInString(r.Target.Prefix) > 64 || utf8.RuneCountInString(r.Target.Suffix) > 64 || len(r.Target.HeadingID) > 4096 {
+	if len(r.Target.Run) > 8192 || utf8.RuneCountInString(r.Target.Prefix) > 64 || utf8.RuneCountInString(r.Target.Suffix) > 64 || len(r.Target.HeadingID) > 4096 {
 		return fail("body_limit")
 	}
 	if !ValidLabel(r.Label) {
@@ -65,10 +68,12 @@ func validateCurrentRequest(r Request) error {
 	return nil
 }
 
-func (r Request) ValidateCurrent() error { return validateCurrentRequest(r) }
+func (r Request) ValidateCurrent(maxCharacters int) error {
+	return validateCurrentRequest(r, maxCharacters)
+}
 
 func (w *Writer) Replace(ctx context.Context, loc Location, expected os.FileInfo, author, secret string, r Request, verify PointVerifier) (Replacement, error) {
-	if err := validateCurrentRequest(r); err != nil {
+	if err := validateCurrentRequest(r, loc.MaxCharacters); err != nil {
 		return Replacement{}, err
 	}
 	// Native definitions use terminal line breaks as separators, not note text.

@@ -166,6 +166,8 @@ func (s *previewService) serveAnnotations(w http.ResponseWriter, r *http.Request
 	}
 	if strings.HasPrefix(r.URL.Path, "/_annotations/v2/") {
 		response := map[string]any{"protocol": 2, "revision": state.Revision, "source_revision": state.SourceRevision, "body_revision": state.BodyRevision, "comments": state.Events, "storage": state.Storage, "writable": state.Writable, "reason": state.Reason, "footnote_labels": state.Labels, "footnotes": state.Footnotes}
+		response["max_chars"] = annotation.CharacterLimit(s.config.maxChars)
+		response["max_bytes"] = annotation.MaxTextBytes
 		if state.WriteToken != "" {
 			response["write_token"] = state.WriteToken
 		}
@@ -226,7 +228,7 @@ func (s *previewService) readAnnotationDocument(ctx context.Context, cap *readCa
 }
 
 func (s *previewService) authorizeAnnotations(state *annotationState, cap *readCapability, src sourceContext, snap annotation.Snapshot) error {
-	loc := annotation.Location{Root: cap.root, Path: src.canonical, Format: annotationFormat(src), Limit: min(cap.settings.sourceBytes, cap.settings.totalBytes)}
+	loc := annotation.Location{Root: cap.root, Path: src.canonical, Format: annotationFormat(src), Limit: min(cap.settings.sourceBytes, cap.settings.totalBytes), MaxCharacters: annotation.CharacterLimit(s.config.maxChars)}
 	if !cap.settings.annotations {
 		state.Reason = "read_only_preview"
 		return nil
@@ -291,7 +293,9 @@ func (s *previewService) appendAnnotation(w http.ResponseWriter, r *http.Request
 		s.annotationError(w, r, 400, "invalid_content_type")
 		return
 	}
-	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 65536))
+	// JSON can escape each permitted text byte as six ASCII bytes. Preserve
+	// the existing metadata allowance without reducing the decoded text limit.
+	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 6*annotation.MaxTextBytes+65536))
 	if err != nil {
 		s.annotationError(w, r, 413, "body_limit")
 		return
@@ -341,7 +345,7 @@ func (s *previewService) annotationFailure(w http.ResponseWriter, r *http.Reques
 }
 
 func (s *previewService) writeCurrentAnnotation(w http.ResponseWriter, r *http.Request, cap *readCapability, src sourceContext, grant annotationGrant, secret string, request annotation.Request) {
-	if err := request.ValidateCurrent(); err != nil {
+	if err := request.ValidateCurrent(grant.location.MaxCharacters); err != nil {
 		s.annotationFailure(w, r, err)
 		return
 	}

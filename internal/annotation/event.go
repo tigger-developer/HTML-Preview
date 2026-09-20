@@ -20,6 +20,16 @@ import (
 const MaxStore = 10 * 1024 * 1024
 const MaxEvents = 10000
 const MaxFrame = 64 * 1024
+const DefaultMaxCharacters = 4000
+const MaxTextBytes = 16384
+
+// CharacterLimit supplies the default for callers without an explicit policy.
+func CharacterLimit(configured int) int {
+	if configured == 0 {
+		return DefaultMaxCharacters
+	}
+	return configured
+}
 
 type Header struct {
 	Schema       int    `json:"schema"`
@@ -105,7 +115,8 @@ func ValidateName(name string) error {
 }
 
 func ValidText(text string) bool {
-	return utf8.ValidString(text) && strings.TrimSpace(text) != "" && !strings.ContainsRune(text, 0) && len(text) <= 16384 && utf8.RuneCountInString(text) <= 4000
+	// Stored notes remain readable when the operator lowers the write policy.
+	return utf8.ValidString(text) && strings.TrimSpace(text) != "" && !strings.ContainsRune(text, 0) && len(text) <= MaxTextBytes
 }
 
 func (t Target) Validate() error {

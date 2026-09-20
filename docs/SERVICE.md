@@ -1,7 +1,7 @@
 ---
 title: Local preview service
-version: 3
-last-updated: 2026-09-20
+version: 4
+last-updated: 2026-09-21
 ---
 
 # Local preview service
@@ -108,6 +108,32 @@ A command with folding overrides supplies them to the service for its preview
 and linked pages. Otherwise the service's startup folding settings apply. The
 CLI reads configuration on each invocation; restart the service to change its
 own defaults. Neither case expands the running service's permitted roots.
+
+## Annotation length
+
+Add this to the selected YAML configuration, commonly
+`~/.config/htmlpreview/config.yaml`:
+
+```yaml
+annotations:
+  max-chars: 4000
+```
+
+`max-chars` accepts an integer from **1 to 16,384**, defaulting to **4,000**.
+It counts Unicode code points, not UTF-8 bytes. The separate **16 KiB UTF-8 text
+ceiling** still applies, so multi-byte text can reach that ceiling first.
+Combining accents and multi-part emoji can contain several code points.
+
+Restart the service and reopen previews after changing this setting. The service
+advertises its startup policy to the editor and enforces it on every save;
+per-document commands cannot override it. The existing first-found configuration
+selection applies, without merging files. Invalid values fail configuration loading.
+
+The editor rejects excess input immediately and identifies the reached limit.
+Lowering the limit does not truncate existing longer notes or prevent reading
+and deletion. Such notes can be shortened progressively; saving resumes once
+they fit both limits. See [annotation guidance](ANNOTATIONS.md) for input and
+footnote paragraph handling.
 
 ## Start in the foreground
 
@@ -392,6 +418,8 @@ directory/file before loading the generated plist. Linux user services use their
 existing journal; foreground mode writes diagnostics to stderr.
 
 ## Document changes
+
+- Version 4: configure annotation character limits through `annotations.max-chars`.
 
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
   with HTML omission notices and unchanged shared annotation boundaries.
