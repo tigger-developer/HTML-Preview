@@ -3,7 +3,7 @@
 #+SUBTITLE: Native conversion within the existing annotation workflow
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: APPROVED 2026-09-20
 
 * Synopsis
 :PROPERTIES:
@@ -68,7 +68,7 @@
 
 ** Next step
 
-- Definition review, then operator sign-off through [[#delivery-handoff][Delivery Handoff]].
+- Feature-branch implementation and validation through [[#delivery-handoff][Delivery Handoff]].
 
 -----
 
@@ -889,6 +889,31 @@ contract without adding a new converter path or changing source syntax.
 - No change to converter choice, pass count, source writer, proof strength,
   public settings, data format or the stated worker lifetime/resource contract.
 
+** Deferred optimization opportunities
+:PROPERTIES:
+:CUSTOM_ID: deferred-optimizations
+:END:
+
+*Preserve the tested HTML contract first.* The following opportunities are
+recorded for later measurement and separate authorization, not this delivery:
+
+- Direct writer output :: Where normalization requires a second HTML traversal,
+  measure its cost and consider emitting the same structure directly through
+  writer hooks. Existing writer-hook choices remain routine implementation detail.
+- Conversion passes :: Profile the ordinary, footnote-identification and
+  block-verification passes after native conversion. Combining them requires
+  equivalent source-preservation and placement evidence before removing any pass.
+- Native block boundaries :: Assess parser source ranges against the established
+  intermediary proof only if measurement justifies replacing that mechanism.
+- Worker startup :: Measure process startup separately from parsing; any reuse
+  must retain cancellable execution, resource bounds and request isolation.
+- Markdown :: The Goldmark discussion has no measured Markdown comparison.
+  Benchmark fidelity and full-pipeline latency before proposing replacement.
+
+Record additional measured opportunities here during delivery, including the
+cost, expected benefit and compatibility constraint. Do not optimize by weakening
+verification or maintaining divergent server/browser interpretations.
+
 * Delivery Handoff
 :PROPERTIES:
 :CUSTOM_ID: delivery-handoff
@@ -918,3 +943,17 @@ contract without adding a new converter path or changing source syntax.
   Keep =docs/work.org= descriptive; audit state belongs only in =audits.yaml=.
 - Closure boundary :: Native platform/browser evidence remains explicit. No
   claim that a cross-build or HTTP test establishes Linux/WSL desktop behaviour.
+
+* Hands-off mode decision log
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+
+** 2026-09-20T00:33:38Z :hands-off:review:
+
+*** Delivery boundary
+
+- Feature branch =011-conversion-performance= retains the working master baseline.
+- The added HTML examples and explicit test cases elaborate the existing contract.
+- OTs use local temporary copies and public dependency advisory reads; no paid
+  live service operation is required. Human browser/platform UTs remain pending.

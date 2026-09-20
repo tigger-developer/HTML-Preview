@@ -260,7 +260,7 @@ classification; it is provenance, not current state.
 - Authority :: Taḋg authorized *BYPASS-GATE-7*, prioritized =make serve= and the
   working config, and required *removal of browser automation*.
 
-** REVIEW W011 - Fast Org previews with go-org :feature:
+** ACTIVE W011 - Fast Org previews with go-org :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-011
 :CREATED: 2026-09-19
