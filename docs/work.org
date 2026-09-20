@@ -314,10 +314,11 @@ classification; it is provenance, not current state.
 - Working branch :: Continue paired development on =master= following the
   authorized feature-branch integration on 20 September 2026.
 
-** ACTIVE W014 - Native Markdown previews with Goldmark :feature:
+** DONE W014 - Native Markdown previews with Goldmark :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-014
 :CREATED: 2026-09-20
+:CLOSED: 2026-09-20
 :END:
 
 - Specification :: [[file:../specs/014-native-markdown/spec.org][W014 - Native Markdown previews with Goldmark]].
@@ -330,6 +331,12 @@ classification; it is provenance, not current state.
   Definition stays on =master=; implementation and installation are not part of this phase.
 - Approval :: Approved 2026-09-20. Delivery uses a separate feature branch;
   the daily-driver installation remains unchanged.
+- Acceptance :: Delivery accepted 2026-09-20 after user validation; integration
+  into =master= authorized. No live installation or service restart is included.
+- Validation :: [[file:../specs/014-native-markdown/validation.org][W014 - Native Markdown validation evidence]].
+- Separate work :: Annotation input guards remain in
+  [[file:../specs/013-ux-fixes-and-improvements/spec.org][W013 - UX fixes and improvements]].
+  Native Linux/WSL execution remains a separately disclosed platform limitation.
 
 * Migration record
 :PROPERTIES:
