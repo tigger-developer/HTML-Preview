@@ -1,6 +1,6 @@
 ---
 title: Vision
-version: 2
+version: 3
 last-updated: 2026-09-20
 ---
 
@@ -12,8 +12,8 @@ service and a consistent, self-contained reading presentation.
 
 ## Current product direction
 
-- Org and code/plaintext wrappers use bundled Go conversion. Markdown and other
-  document formats retain Pandoc; replacing Markdown conversion is not yet implemented.
+- Org and Markdown are first-class native Go formats, alongside code/plaintext
+  wrappers and passive HTML. Pandoc is optional for other formats such as DOCX.
 - The optional service renders linked documents on demand within permitted roots.
   Without it, the command opens temporary file previews of explicit inputs.
 - Service annotations are ordinary Org/Markdown footnotes. Current values autosave;
@@ -45,8 +45,8 @@ direction above. They are not current usage instructions or release status.
 
 [W011 - Fast Org previews](../specs/011-conversion-performance/spec.org)
 replaces Org conversion with bundled Go code while preserving reading,
-annotation and source-protection behaviour. Markdown and other readers retain
-Pandoc, which remains a runtime dependency. The earlier Pandoc-only conversion
+annotation and source-protection behaviour. W014 subsequently adds native Markdown
+conversion; Pandoc remains optional for other readers. The earlier Pandoc-only conversion
 descriptions below are retained as history. Performance and compatibility
 evidence are recorded in [W011 validation](../specs/011-conversion-performance/validation.org);
 browser review remains separate from automated checks.
@@ -195,7 +195,7 @@ preview, applies a carefully maintained visual presentation, and opens it in
 the default browser.
 
 The tool should remain small and direct: select a document, read it, and leave
-the source untouched. Go provides native Org conversion and manages the
+the source untouched. Go provides native Org and Markdown conversion and manages the
 application and its temporary files; Pandoc converts other supported readers.
 
 ## The reading experience
@@ -289,8 +289,8 @@ limits and link semantics are proposed in [the architecture](ARCHITECTURE.md).
 
 ## Installation and technology
 
-The distribution should install `htmlpreview` on `PATH` and declare Pandoc as
-a runtime dependency. Packaged use should not require a Go toolchain, a source
+The distribution should install `htmlpreview` on `PATH`, with Pandoc optional
+for specialist readers. Packaged use should not require a Go toolchain, a source
 checkout, personal shell functions, or a user's existing Pandoc configuration.
 For source development, plain `make install` creates a user-local symlink from
 `~/.local/bin/htmlpreview` to the checkout's built executable. That mode retains
@@ -377,6 +377,9 @@ service and annotation failures inspectable without recording document contents
 or capability URLs. These decisions are recorded in W010's paired amendments.
 
 ## Document changes
+
+- 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
+  with HTML omission notices and unchanged shared annotation boundaries.
 
 - Version 2: lead with the current reading, native conversion, service and annotation
   direction; explicitly separate superseded proposals from current behaviour.

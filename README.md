@@ -1,6 +1,6 @@
 ---
 title: htmlpreview
-version: 2
+version: 3
 last-updated: 2026-09-20
 ---
 
@@ -12,8 +12,9 @@ documents use embedded Asap and Iosevka Custom fonts; native HTML retains its
 authored presentation. See [supported formats](docs/FORMATS.md) for mappings,
 reader selection and resource limits.
 
-Org previews and code/plaintext wrappers use the bundled native Go converter.
-Markdown and other readers retain Pandoc, which remains required. The
+Org and Markdown are first-class native Go formats. Code/plaintext wrappers
+and passive HTML also work without Pandoc. Install optional Pandoc only for other
+readers, such as DOCX, ODT, EPUB and specialist Markdown dialects. The
 [W011 validation record](specs/011-conversion-performance/validation.org) tracks
 compatibility checks, performance measurements and human review separately.
 
@@ -163,10 +164,11 @@ This is a local preview, not a portable export or a whole-process sandbox.
 
 ## Prerequisites and installation
 
-Binary use requires **Pandoc 3.9.0.2 through the 3.9 patch series**, including its
-bundled Lua 5.4. Prefix installation does not download Pandoc. The command checks
-compatibility before allocating preview output; a distribution package is not
-automatically a compatible version.
+Org, Markdown, code/plaintext and passive HTML need no external converter.
+Other readers require optional **Pandoc 3.9.0.2 through the 3.9 patch series**,
+including its bundled Lua 5.4. Compatibility and reader discovery run only when
+an optional reader or the full installed-reader listing is requested. Installation
+and native service startup work without Pandoc; installation never downloads it.
 
 | Platform | Default-browser handoff |
 | --- | --- |
@@ -230,9 +232,12 @@ mode. The service uses a strict versioned YAML configuration for permitted roots
 there is no arbitrary Pandoc-argument interface. Use `--` before a filename
 beginning with `-`.
 
-An optional `--from FORMAT` or `--from=FORMAT` selects an installed built-in
-reader for the explicit input batch. It never propagates to linked documents.
-`--list-input-formats` lists available readers without opening a browser.
+An optional `--from FORMAT` or `--from=FORMAT` selects a native or installed
+built-in reader for the explicit input batch. It never propagates to linked documents.
+`--list-input-formats` lists available readers without opening a browser; without
+Pandoc it lists `html`, `markdown` and `org`. Native Markdown supports `+smart`,
+`-smart` and `-raw_html`; other Markdown qualifiers are errors. Embedded Markdown
+HTML is omitted, with one CLI notice per document and a visible page warning.
 Ordinary `.json` defaults to pretty-printed code; `--from=json` selects Pandoc's
 JSON document AST. Unknown extensions need explicit selection. Native HTML
 uses its separate passive policy and receives no application reading controls.
@@ -320,7 +325,7 @@ darwin/amd64, darwin/arm64, linux/amd64, and linux/arm64, plus `SHA256SUMS`
 and `dist/Formula/htmlpreview.rb`. WSL uses a Linux archive. Each archive
 contains a CGO-free binary and the application, font, and dependency licences.
 
-The macOS-only Homebrew formula declares Pandoc and selects the corresponding
+The macOS-only Homebrew formula leaves Pandoc optional and selects the corresponding
 architecture's archive and checksum. Its default URLs point to the actual local
 archives. `RELEASE_BASE_URL` can identify an existing HTTP(S) archive location;
 generation verifies those remote bytes before emitting that formula. It does
@@ -340,6 +345,9 @@ Custom retain their SIL OFL 1.1 licences. Dependency licences and font provenanc
 are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Document changes
+
+- 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
+  with HTML omission notices and unchanged shared annotation boundaries.
 
 - Version 2: reconcile current converter routing, folding controls, service defaults
   and file-preview lifetime; replace the missing example path.

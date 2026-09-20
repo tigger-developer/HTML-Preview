@@ -1,6 +1,6 @@
 ---
 title: Local preview service
-version: 2
+version: 3
 last-updated: 2026-09-20
 ---
 
@@ -111,9 +111,9 @@ own defaults. Neither case expands the running service's permitted roots.
 
 ## Start in the foreground
 
-The current executable requires Pandoc 3.9.0.2 or a later 3.9 patch, with bundled
-Lua 5.4, for reader discovery and non-Org documents. Org conversion is native Go.
-With the dependency installed, run:
+Service startup, Org, Markdown, code/plaintext and passive HTML need no external
+converter. Other readers require optional Pandoc 3.9.0.2 or a later 3.9 patch,
+with bundled Lua 5.4. To start the service, run:
 
 ```sh
 htmlpreview --serve
@@ -130,7 +130,8 @@ entries. Follow relative links to render other supported documents, source code
 and plain text. Targets use their own detected format. An individual link may
 select a reader with `?htmlpreview-format=markdown%2Bsmart`; encode a literal plus
 as `%2B`. `--from` selects the reader for explicit CLI inputs. The service's
-Pandoc installation validates HTTP reader choices.
+native resolver validates native choices; its optional Pandoc installation
+validates other readers only when requested.
 
 Ctrl+C stops a foreground service. Restarting revokes previously issued browser
 URLs; run `htmlpreview` again to obtain a current URL. Cache eviction alone does
@@ -152,8 +153,8 @@ make install PREFIX=/absolute/installation/prefix
 
 The shared directory is `PREFIX/share/htmlpreview/`; the generated service uses
 `PREFIX/bin/htmlpreview`. `DESTDIR` stages destinations only and never enters the
-service's executable or configuration arguments. Installation requires Pandoc
-to determine a fixed service PATH. Neither installation mode creates or changes
+service's executable or configuration arguments. Installation works without
+Pandoc; when present, its discovered directory is included in the service PATH. Neither installation mode creates or changes
 your active configuration, registers a service, or starts it.
 
 The generated template explicitly sets `~/.config/htmlpreview/config.yaml` for
@@ -168,7 +169,7 @@ are not moved or rewritten automatically.
 
 ## macOS with Homebrew
 
-The generated local Homebrew formula declares the Pandoc dependency and supplies
+The generated local Homebrew formula leaves Pandoc optional and supplies
 a service definition. Its archive URLs are local unless release generation was
 given a verified publication location. This project does not assume that a tap
 has been published. Install the generated formula using the release instructions
@@ -200,7 +201,7 @@ make serve
 
 `make service` is the equivalent target. It builds the executable, writes
 `~/Library/LaunchAgents/org.htmlpreview.agent.plist` with absolute executable,
-configuration and Pandoc PATH values. It replaces the existing
+configuration and service PATH values. It replaces the existing
 `gui/<uid>/org.htmlpreview.agent` registration using `launchctl bootout`,
 `enable` and `bootstrap`. Run it directly after switching checkouts: no manual
 unload or plist deletion is needed. An absent job is normal; other manager errors
@@ -312,7 +313,8 @@ Archives cannot know your installation paths. Make an inactive copy without the
 | `{{.Log}}` | XML-escaped absolute service log path | Not used; systemd captures stderr |
 | `{{.Path}}` | XML-escaped fixed PATH | Quoted `PATH=/pandoc/directory:/usr/bin:/bin` assignment |
 
-Use your installed Pandoc directory and platform system directories in PATH.
+Use platform system directories in PATH, adding your optional Pandoc directory
+when specialist readers are needed.
 Keep `--serve` as its separate argument. In systemd values, escape backslashes
 and double quotes, and double literal percent signs. In the executable argument,
 also double literal dollar signs. Do not introduce shell commands, profile
@@ -390,6 +392,9 @@ directory/file before loading the generated plist. Linux user services use their
 existing journal; foreground mode writes diagnostics to stderr.
 
 ## Document changes
+
+- 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
+  with HTML omission notices and unchanged shared annotation boundaries.
 
 - Version 2: clarify converter prerequisites and current service status; repair
   the TMPDIR configuration paragraph.

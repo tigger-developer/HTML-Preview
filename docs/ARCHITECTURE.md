@@ -1,14 +1,14 @@
 ---
 title: Architecture
-version: 5
+version: 6
 last-updated: 2026-09-20
 ---
 
 # Architecture
 
 The application has two conversion backends and two publication transports.
-Org and internal code/plaintext wrappers use the bundled Go converter; Markdown
-and other readers use Pandoc. Passive authored HTML has its own sanitization
+Org, Markdown and internal code/plaintext wrappers use bundled Go converters;
+other readers use optional Pandoc. Passive authored HTML has its own sanitization
 route. A shared Go pipeline applies resource policy, reference rewriting and
 the reading interface before publishing a file preview or an authorized HTTP page.
 
@@ -27,6 +27,32 @@ retain earlier design decisions. Explicitly superseded graph, append-history,
 polling and browser-runner descriptions are not current implementation contracts.
 Current operational interfaces are in [SERVICE.md](SERVICE.md),
 [FORMATS.md](FORMATS.md) and [ANNOTATIONS.md](ANNOTATIONS.md).
+
+## Native Markdown conversion - 20 September 2026
+
+[W014 - Native Markdown previews](../specs/014-native-markdown/spec.org) adds pinned
+Goldmark 1.8.6 without a fork. Its adapter normalizes heading sections and IDs,
+contents, highlighted code records and footnote/backlink markup to the established
+browser contract. Existing block-probe, projection and source-write boundaries
+remain authoritative. The browser does not need a second Markdown implementation.
+
+`internal/convertworker` shares the disposable-worker protocol, output bounds and
+memory supervision between Org and Markdown. `internal/converthtml` shares Chroma
+highlighting. Each conversion still owns a separate process; there is no worker
+pool, pass reduction or new source-offset mapping. Those are future opportunities.
+
+Markdown raw-HTML AST nodes are omitted before rendering. A private transport
+marker carries one omission flag into the page record; it is removed before
+publication. Optional Markdown readers apply equivalent omission in the owned
+Lua filter before generated transport is added. The banner uses the existing
+replaceable frontmatter region, outside canonical annotation text. HTTP response
+metadata lets an explicit CLI invocation emit one notice per affected document.
+
+Native requests never query Pandoc. Optional-reader discovery is lazy, bounded
+and cached on success for the service lifetime; failed discovery remains retryable.
+Native conversion failure never falls back to Pandoc. File-mode, service, link,
+annotation and packaging evidence is retained in
+[W014 validation](../specs/014-native-markdown/validation.org).
 
 ## Native Org conversion - 20 September 2026
 
@@ -73,8 +99,8 @@ execution evidence and pending human review.
 The accepted compatibility layer adds some formatting work. Future optimization
 may reduce converter passes, use native source offsets or avoid redundant HTML
 traversals once equivalent proof is demonstrated. Worker reuse would require a
-new isolation/lifetime decision. Markdown replacement still needs its own
-research and benchmark. These opportunities are recorded in W011's solution
+new isolation/lifetime decision. W014 supplies the separate Markdown replacement
+and benchmark; further pass reduction remains deferred. These opportunities are recorded in W011's solution
 design and are outside this implementation.
 
 ## Local service design history - 11 September 2026
@@ -336,7 +362,7 @@ an isolated measurement of the CSS dependency. Candidate verification is
 recorded in [the input-format validation record](../specs/008-input-formats/validation.org).
 
 `htmlpreview` is a local Go command-line application that uses go-org for Org
-and Pandoc for Markdown and other readers, repairs references, and opens
+and Goldmark for Markdown, with optional Pandoc for other readers, repairs references, and opens
 the result in a browser. [VISION.md](VISION.md) defines the product intent.
 
 File previews own a private temporary directory per invocation. Service renders
@@ -346,7 +372,7 @@ separate guarded native-footnote writer.
 
 The processing sequence is:
 
-1. Validate input files, installed Pandoc, and invocation settings.
+1. Validate input files and invocation settings; discover Pandoc only for optional readers.
 2. Select service transport where available and authorized, otherwise file delivery.
 3. Allocate each conversion workspace, register cleanup and render the explicit inputs.
 4. Rewrite references for that transport; HTTP links render targets on request, while file links retain original-file destinations.
@@ -399,7 +425,7 @@ it does not need a separate installed interpreter. Pandoc provides that runtime.
 | --- | --- |
 | Go entry point | Inputs, settings, dependency checks, diagnostics, and exit status |
 | Session manager | Private workspace, output budget, retention, cancellation, and cleanup |
-| Renderer | Source preservation, native Org worker or Pandoc invocation, assets, and conversion errors |
+| Renderer | Source preservation, native Org/Markdown worker or optional Pandoc invocation, assets, and conversion errors |
 | Reference resolver | Source-relative URLs, filesystem identity, authorized HTTP targets and file mappings |
 | HTML processor | Structured discovery and rewriting of rendered links and resource references |
 | Browser adapter | Open the finished entry pages using the platform's desktop mechanism |
@@ -479,7 +505,8 @@ remain active, and include/setup directives remain inert with diagnostics.
 Title, subtitle, author and date form a separate title block below the separator.
 W005 places navigation before that block in reading order and in a separate
 column on wide screens. The native Org worker leaves that title block to the
-final template. Markdown metadata passes through the retained Lua filter.
+final template. Native Markdown metadata uses bounded YAML parsing; optional
+readers retain the Lua metadata filter.
 
 The browser script should remain a small enhancement. Ordinary reading and
 navigation must work without it. Folding must preserve keyboard navigation,
@@ -573,7 +600,7 @@ The Org pre-pass preserves source-block bodies in string-only JSON records in
 an unpredictable per-document raw format. Lua validates the records and makes
 real Pandoc code blocks on the retained route. The native Org worker consumes
 the same preservation records. Code blocks receive owned associations and
-literal-value records. Chroma supplies native Org highlighting; Pandoc supplies
+literal-value records. Chroma supplies native Org/Markdown highlighting; Pandoc supplies
 highlighting for its readers. Both emit compatible semantic spans;
 the owned stylesheet supplies the light/dark palette. Shell aliases `sh` and
 `shell` use Bash. Unknown languages and examples remain plain.
@@ -802,13 +829,13 @@ presentation assets, Asap, and Iosevka Custom fonts. Project code and documentat
 are under [Apache License 2.0](../LICENSE); both font families retain OFL 1.1 as recorded in
 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). Build and release checks
 must include the appropriate licence files alongside packaged assets.
-Pandoc is a separately managed runtime dependency; the Go
+Pandoc is a separately managed optional runtime dependency; the Go
 toolchain is needed only to build from source. Check compatibility before
 creating output and give an actionable dependency error.
 
-A macOS Homebrew formula declaring Pandoc is the selected package-manager route.
-This provides dependency installation through the package manager rather than
-download or installation during previewing. A prefix-based binary installation
+A macOS Homebrew formula is the selected package-manager route. Pandoc is
+optional and separately provisioned for specialist readers; previews never
+download or install dependencies. A prefix-based binary installation
 serves macOS, Linux, and WSL, with Pandoc provisioned separately and checked by
 the command. The current specification defines release targets and qualification
 baselines; it establishes no published package name or release URL.
@@ -848,7 +875,7 @@ These observations support the need for reference rewriting; they do not verify
 the proposed application or the prototype's full fidelity.
 
 Implementation verification should cover installation outside the checkout,
-real native Org and Pandoc Markdown output, reference resolution from nested and
+real native Org/Markdown and optional Pandoc output, reference resolution from nested and
 read-only sources, special characters in paths, service routing and limits, partial
 failures, simultaneous invocations, cancellation, and cleanup ownership.
 Browser review should cover image loading from temporary pages, linked
@@ -1103,6 +1130,9 @@ untouched. This supports moving the stable installation between checkouts,
 including a submodule, without changing rendering or source authorization.
 
 ## Document changes
+
+- 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
+  with HTML omission notices and unchanged shared annotation boundaries.
 
 - Version 5: reconcile current converter, transport, folding, annotation and
   installation contracts; label retained superseded designs as history.

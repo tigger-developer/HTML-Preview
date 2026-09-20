@@ -98,11 +98,23 @@ func TestMain(m *testing.M) {
 	}
 	actual := host.Execute
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
-		if len(cmd.Args) > 0 && cmd.Args[0] == "--internal-org-convert" && (fault == "converter-stall" || fault == "converter-flood") {
+		if len(cmd.Args) > 0 && (cmd.Args[0] == "--internal-org-convert" || cmd.Args[0] == "--internal-markdown-convert") && (fault == "converter-stall" || fault == "converter-flood" || fault == "converter-signal") {
 			cmd.Input = nil
 			cmd.Args = []string{"--process-blocker"}
 			if fault == "converter-flood" {
 				cmd.Args = []string{"--process-flood"}
+			}
+			if fault == "converter-signal" {
+				go func() {
+					time.Sleep(100 * time.Millisecond)
+					p, err := os.FindProcess(os.Getpid())
+					if err != nil {
+						os.Exit(99)
+					}
+					if err = p.Signal(os.Interrupt); err != nil {
+						os.Exit(99)
+					}
+				}()
 			}
 			return actual(ctx, cmd)
 		}

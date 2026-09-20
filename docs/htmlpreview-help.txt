@@ -5,7 +5,7 @@ Use -- before a filename beginning with -. Open the system default browser.
   -h, --help           Show help without reading documents or settings
   --version            Show build identity without preview side effects
   --list-input-formats List available document readers; no browser opens
-  --from FORMAT        Select one installed reader for all explicit inputs
+  --from FORMAT        Select one native or installed reader for explicit inputs
   --from=FORMAT        Equivalent reader selection; -f is not accepted
   --serve              Run the optional per-user loopback service; no browser
 
@@ -19,8 +19,11 @@ preview. Invalid settings, protocol and conversion errors remain errors.
 Filename mappings cover document aliases, common code languages and .txt.
 Unknown suffixes require --from. Ordinary .json is pretty-printed source code;
 --from=json selects the structured document AST reader instead. Reader extensions such
-as markdown+smart are validated; custom readers, filters and extra arguments
-are not accepted. --from=html uses passive native HTML and accepts no extensions.
+as markdown+smart are validated. Native Markdown accepts only +smart, -smart
+and -raw_html. Other qualifiers, custom readers, filters and extra arguments
+are not accepted. Org, Markdown, code/text and HTML use bundled converters.
+Other document readers require the optional converter described in README.md.
+Embedded HTML in Markdown is omitted with a CLI notice and preview banner. --from=html uses passive native HTML and accepts no extensions.
 
 Code and .txt use private Org wrappers. Code has one Source code heading;
 plain text has none. Copying preserves original UTF-8 text. Sources never execute.

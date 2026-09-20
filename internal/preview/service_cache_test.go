@@ -1,5 +1,5 @@
 // ABOUTME: Verifies cache reuse and bounded conversion work through real service HTTP.
-// ABOUTME: Counts and stalls only the existing Pandoc process boundary for deterministic concurrency.
+// ABOUTME: Counts and stalls only the native Markdown process boundary for deterministic concurrency.
 package preview
 
 import (
@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -133,7 +132,7 @@ func TestRT006_9_ShutdownWaitsForConversionCleanup(t *testing.T) {
 	cleaning := make(chan struct{}, 1)
 	release := make(chan struct{})
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
-		if len(cmd.Args) > 0 && strings.HasPrefix(cmd.Args[0], "--defaults=") {
+		if len(cmd.Args) > 0 && cmd.Args[0] == "--internal-markdown-convert" {
 			entered <- struct{}{}
 			<-ctx.Done()
 			return nil, ctx.Err()
@@ -216,7 +215,7 @@ func TestRT006_8_CacheRehashesSourceAndStylesheet(t *testing.T) {
 	actual := host.Execute
 	var conversions atomic.Int64
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
-		if len(cmd.Args) > 0 && strings.HasPrefix(cmd.Args[0], "--defaults=") {
+		if len(cmd.Args) > 0 && cmd.Args[0] == "--internal-markdown-convert" {
 			conversions.Add(1)
 		}
 		return actual(ctx, cmd)
@@ -279,7 +278,7 @@ func TestRT006_8_BoundsDistinctWorkersAndSharesDuplicates(t *testing.T) {
 	release := make(chan struct{})
 	var count atomic.Int64
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
-		if len(cmd.Args) > 0 && strings.HasPrefix(cmd.Args[0], "--defaults=") {
+		if len(cmd.Args) > 0 && cmd.Args[0] == "--internal-markdown-convert" {
 			count.Add(1)
 			entered <- struct{}{}
 			select {

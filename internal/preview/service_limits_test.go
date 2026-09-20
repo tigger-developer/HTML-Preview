@@ -127,7 +127,7 @@ func TestRT006_8_CancelledLastWaiterReleasesWorker(t *testing.T) {
 	entered := make(chan struct{}, 2)
 	reaped := make(chan struct{}, 2)
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
-		if len(cmd.Args) > 0 && strings.HasPrefix(cmd.Args[0], "--defaults=") {
+		if len(cmd.Args) > 0 && cmd.Args[0] == "--internal-markdown-convert" {
 			entered <- struct{}{}
 			<-ctx.Done()
 			reaped <- struct{}{}

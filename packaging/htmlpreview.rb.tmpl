@@ -1,4 +1,4 @@
-# ABOUTME: Installs the macOS archive and declares the Pandoc dependency.
+# ABOUTME: Installs the macOS archive with optional specialist-reader support.
 # ABOUTME: Release generation supplies verified archive locations and hashes.
 class Htmlpreview < Formula
   desc "Preview local documents and source code in the default browser"
@@ -6,7 +6,7 @@ class Htmlpreview < Formula
   version {{.Version}}
   license "Apache-2.0"
   depends_on :macos
-  depends_on "pandoc"
+  # Pandoc is optional for specialist formats such as DOCX.
 
   if Hardware::CPU.arm?
     url {{.ArmURL}}
@@ -21,7 +21,9 @@ class Htmlpreview < Formula
     pkgshare.install "LICENSE", "THIRD_PARTY_NOTICES.md", "asap-OFL.txt",
                      "iosevka-custom-OFL.md", "golang-x-net-LICENSE",
                      "bluemonday-LICENSE.md", "douceur-LICENSE", "gorilla-css-LICENSE",
-                     "tdewolff-parse-LICENSE.md", "go-yaml-LICENSE"
+                     "tdewolff-parse-LICENSE.md", "go-yaml-LICENSE", "goldmark-LICENSE",
+                     "go-org-LICENSE", "chroma-COPYING", "regexp2-LICENSE",
+                     "fsnotify-LICENSE", "golang-x-sys-LICENSE"
     pkgshare.install Dir["share/htmlpreview/*"]
   end
 

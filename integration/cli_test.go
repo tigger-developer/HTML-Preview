@@ -79,7 +79,7 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 		// #nosec G204 -- Executes the installed command through its test-owned symlink.
 		cmd = exec.Command(symlink, filepath.Join(root, "Taḋg  & <notes>.md"), filepath.Join(root, "notes.org"))
 		cmd.Dir = t.TempDir()
-		cmd.Env = append(os.Environ(), "HTMLPREVIEW_GRACE=100ms", "HTMLPREVIEW_LINKS=0", "HTMLPREVIEW_MODE=quick", "PREVIEW_TEST_CAPTURE="+capture)
+		cmd.Env = append(standaloneEnvironment(t), "HTMLPREVIEW_GRACE=100ms", "HTMLPREVIEW_LINKS=0", "HTMLPREVIEW_MODE=quick", "PREVIEW_TEST_CAPTURE="+capture)
 		if out, err := cmd.CombinedOutput(); err != nil {
 			t.Fatalf("installed rendering: %v %s", err, out)
 		}
@@ -115,4 +115,15 @@ func TestRT001_14_PrefixInstall(t *testing.T) {
 			}
 		}
 	})
+}
+
+// File-install checks must not discover the operator's running service or config.
+func standaloneEnvironment(t *testing.T) []string {
+	t.Helper()
+	root := t.TempDir()
+	config := filepath.Join(root, "config.yaml")
+	if err := os.WriteFile(config, []byte("version: 1\nserve:\n  roots: []\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	return append(os.Environ(), "HTMLPREVIEW_CONFIG="+config, "HTMLPREVIEW_RUNTIME_DIR="+filepath.Join(root, "runtime"))
 }

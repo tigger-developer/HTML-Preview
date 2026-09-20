@@ -146,8 +146,8 @@ func TestRT008_2_ReaderSelection(t *testing.T) {
 func TestRT008_2_ReaderSelectionLengthAndLiteralFilename(t *testing.T) {
 	root := t.TempDir()
 	path := source(t, root, "document.unknown", "# Bounded reader\n")
-	valid := "markdown" + strings.Repeat("+smart", 40) + "+raw_tex"
-	oversized := "markdown" + strings.Repeat("+smart", 40) + "+raw_html"
+	valid := "commonmark" + strings.Repeat("+smart", 41)
+	oversized := valid + "x"
 	if len(valid) != 256 || len(oversized) != 257 {
 		t.Fatal("fixture no longer exercises the reader length boundary")
 	}

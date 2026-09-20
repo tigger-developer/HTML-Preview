@@ -21,30 +21,30 @@ import (
 )
 
 type previewService struct {
-	optionalMu               sync.Mutex
-	optionalPath             string
-	optionalCatalogue        *formatCatalogue
-	eventStreams             int
-	annotationWriter         *annotation.Writer
-	annotationGrants         map[string]*annotationGrant
-	annotationPollMu         sync.Mutex
-	annotationPolls          map[string]annotationPoll
-	mu                       sync.Mutex
-	workers                  sync.WaitGroup
-	ctx                      context.Context
-	config                   serviceConfig
-	base                     config
-	host                     Host
-	diagnostics              *log.Logger
-	pandoc, origin, instance string
-	capabilities             map[string]*readCapability
-	contexts                 map[string]*readCapability
-	cache                    map[string]*httpPage
-	inflight                 map[string]*renderWork
-	cacheBytes               int64
-	clock                    uint64
-	assets                   map[string]assetGrant
-	media                    map[string]mediaGrant
+	optionalMu        sync.Mutex
+	optionalPath      string
+	optionalCatalogue *formatCatalogue
+	eventStreams      int
+	annotationWriter  *annotation.Writer
+	annotationGrants  map[string]*annotationGrant
+	annotationPollMu  sync.Mutex
+	annotationPolls   map[string]annotationPoll
+	mu                sync.Mutex
+	workers           sync.WaitGroup
+	ctx               context.Context
+	config            serviceConfig
+	base              config
+	host              Host
+	diagnostics       *log.Logger
+	origin, instance  string
+	capabilities      map[string]*readCapability
+	contexts          map[string]*readCapability
+	cache             map[string]*httpPage
+	inflight          map[string]*renderWork
+	cacheBytes        int64
+	clock             uint64
+	assets            map[string]assetGrant
+	media             map[string]mediaGrant
 }
 
 type readCapability struct {
@@ -63,7 +63,6 @@ func randomCapability() (string, error) {
 func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, console *console) (code int) {
 	ctx, stop := context.WithCancel(ctx)
 	defer stop()
-	pandoc := ""
 	cfg.formats = nativeFormats()
 	runtime, err := openServiceRuntime(svc.runtime)
 	if err != nil {
@@ -89,7 +88,7 @@ func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, c
 		}
 		return 1
 	}
-	s := &previewService{ctx: ctx, config: svc, base: cfg, host: host, pandoc: pandoc, origin: "http://" + listener.Addr().String(), instance: instance, capabilities: make(map[string]*readCapability), contexts: make(map[string]*readCapability)}
+	s := &previewService{ctx: ctx, config: svc, base: cfg, host: host, origin: "http://" + listener.Addr().String(), instance: instance, capabilities: make(map[string]*readCapability), contexts: make(map[string]*readCapability)}
 	s.cache = make(map[string]*httpPage)
 	s.diagnostics = log.New(console.diagnostics, "htmlpreview: ", log.LstdFlags)
 	s.diagnostics.Printf("service started pid=%d origin=%s", os.Getpid(), s.origin)

@@ -60,6 +60,10 @@ func convert(r convertworker.Request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Match the existing Markdown literal contract while the original snapshot
+	// remains untouched for plaintext view and source-bound annotation writes.
+	source = bytes.ReplaceAll(source, []byte("\r\n"), []byte("\n"))
+	source = bytes.ReplaceAll(source, []byte("\r"), []byte("\n"))
 	extensions := []goldmark.Extender{extension.Table, extension.Strikethrough, extension.TaskList, extension.DefinitionList, extension.Footnote}
 	if !r.SmartOff {
 		extensions = append(extensions, extension.Typographer)

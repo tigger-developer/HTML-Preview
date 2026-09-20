@@ -142,7 +142,7 @@ func TestRT006_11_ReaderSelectorBoundary(t *testing.T) {
 		query  string
 		status int
 	}{
-		{"", 200}, {"htmlpreview-format=", 400}, {"htmlpreview-format=json&htmlpreview-format=markdown", 400}, {"htmlpreview-format=missing_reader", 415}, {"htmlpreview-format=markdown+smart", 400}, {"htmlpreview-format=markdown%2Bsmart", 200}, {"htmlpreview-format=markdown%2Bno_such_extension", 415}, {"htmlpreview-format=json", 422},
+		{"", 200}, {"htmlpreview-format=", 400}, {"htmlpreview-format=json&htmlpreview-format=markdown", 400}, {"htmlpreview-format=missing_reader", 415}, {"htmlpreview-format=markdown+smart", 400}, {"htmlpreview-format=markdown%2Bsmart", 200}, {"htmlpreview-format=markdown%2Bno_such_extension", 400}, {"htmlpreview-format=json", 422},
 	} {
 		t.Run(tc.query, func(t *testing.T) {
 			status, _, _ := serviceResponse(t, s.public, "GET", target+"?"+tc.query, nil)

@@ -12,7 +12,7 @@ import (
 
 func TestRT001_7_BareHTMLHeadings(t *testing.T) {
 	root := t.TempDir()
-	p := source(t, root, "doc.md", `<h1 id="raw-one">One</h1><p>Body one.</p><h2 id="raw-two">Two</h2><p>Body two.</p>`)
+	p := source(t, root, "doc.html", `<h1 id="raw-one">One</h1><p>Body one.</p><h2 id="raw-two">Two</h2><p>Body two.</p>`)
 	r := run(t, root, nil, p)
 	success(t, r, 1)
 	for _, want := range []string{"raw-one", "raw-two"} {
@@ -57,25 +57,21 @@ func TestRT001_10_ResourceLinksDoNotDiscover(t *testing.T) {
 	success(t, r, 1)
 }
 
+// W014 supersedes authored Markdown resource placeholders with whole-node omission.
 func TestRT001_13_ResourceLinksKeepOriginalDestinations(t *testing.T) {
 	root := t.TempDir()
 	a := source(t, root, "a.md", "<link rel=\"stylesheet\" href=\"b.org\">\n")
 	b := source(t, root, "b.org", "* Explicit document\n")
 	r := run(t, root, []string{"HTMLPREVIEW_LINKS=1"}, a, b)
 	success(t, r, 2)
-	links := nodes(r.pages[0], "a")
-	if len(links) != 1 {
-		t.Fatal("resource placeholder missing")
-	}
-	u, err := url.Parse(attr(links[0], "href"))
-	if err != nil || u.Scheme != "file" || u.Path != b {
-		t.Fatalf("resource became document navigation: %s", attr(links[0], "href"))
+	if len(nodes(documentNode(t, r.pages[0], "hp-document"), "a")) != 0 || strings.Count(r.stderr, "Embedded HTML omitted:") != 1 {
+		t.Fatal("omitted Markdown resource gained navigation authority or lost its warning")
 	}
 }
 
 func TestRT001_13_BoundedSourceWarnings(t *testing.T) {
 	root := t.TempDir()
-	p := source(t, root, "doc.md", strings.Repeat("<span onclick=\"alert(1)\">text</span>\n", 1600))
+	p := source(t, root, "doc.md", strings.Repeat("![Unavailable image](missing.png)\n", 1600))
 	r := run(t, root, []string{"PREVIEW_TEST_FAULT=cleanup"}, p)
 	if r.code != 1 || len(r.stderr) > 67000 || !strings.Contains(r.stderr, "further source warnings omitted") || !strings.Contains(r.stderr, "remaining directory") {
 		t.Fatalf("warning bound/cleanup diagnostic: status %d bytes %d", r.code, len(r.stderr))
@@ -129,19 +125,15 @@ func TestRT001_7_InvalidAndDuplicateIDs(t *testing.T) {
 	}
 }
 
+// W014 omits Markdown HTML blocks instead of generating resource links.
 func TestRT001_13_StylesheetPlaceholder(t *testing.T) {
 	root := t.TempDir()
 	p := source(t, root, "doc.md", "Before.\n\n<link rel=\"stylesheet\" href=\"https://example.invalid/theme.css\">\n\nAfter.\n")
 	r := run(t, root, nil, p)
 	success(t, r, 1)
-	found := false
-	for _, a := range nodes(r.pages[0], "a") {
-		if attr(a, "href") == "https://example.invalid/theme.css" {
-			found = true
-		}
-	}
-	if !found {
-		t.Fatal("unsupported stylesheet lost its explanatory link")
+	main := documentNode(t, r.pages[0], "hp-document")
+	if len(nodes(main, "a")) != 0 || !strings.Contains(textOf(main), "Before.") || !strings.Contains(textOf(main), "After.") || strings.Count(r.stderr, "Embedded HTML omitted:") != 1 {
+		t.Fatal("stylesheet omission lost adjacent prose or omission notice")
 	}
 }
 

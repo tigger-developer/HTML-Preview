@@ -252,3 +252,5 @@ body[data-hp-format=org] #hp-toc { display:none; }
 .hp-annotations .hp-footnote-expand[hidden] { display:none; }
 .hp-annotations .hp-editable-footnote:focus-visible { outline: 2px solid var(--accent); outline-offset: .15rem; }
 .hp-editing-footnote { outline: 2px solid var(--accent); outline-offset: .2rem; border-radius: .2rem; }
+
+.hp-render-warning { margin:.6rem 0; padding:.5rem .75rem; border-left:3px solid var(--accent); background:var(--metadata-bg); color:var(--muted); font-size:.9rem; }

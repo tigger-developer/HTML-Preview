@@ -1,15 +1,16 @@
 ---
 title: Supported input formats
-version: 3
+version: 4
 last-updated: 2026-09-20
 ---
 
 # Supported input formats
 
 htmlpreview converts Org and private code/plaintext wrappers with its bundled
-Go converter. Markdown and other document readers use the installed Pandoc;
-native HTML keeps its permitted authored presentation. Pandoc remains required
-for startup checks, reader discovery and non-Org conversion. The
+Go converter. Markdown uses bundled Goldmark 1.8.6; native HTML keeps its permitted
+authored presentation. These formats need no Pandoc installation. Other document
+readers use optional Pandoc 3.9.0.2 or a later 3.9 patch. Discovery is lazy and a
+failed optional-reader request does not disable subsequent native previews. The
 [input-format validation record](../specs/008-input-formats/validation.org)
 distinguishes automated checks from browser and platform validation.
 
@@ -30,7 +31,9 @@ htmlpreview --from=markdown+smart document.unusual
 `--from FORMAT` and `--from=FORMAT` are equivalent. One selection applies to
 all explicitly supplied files. Linked documents select their own format.
 The short `-f` option is refused. Use `--` before a filename beginning with
-a dash. Help and version require no Pandoc installation; reader listing does.
+a dash. Help, version and native reader listing require no Pandoc installation.
+With Pandoc present, listing validates it and merges its readers with native ones;
+an incompatible installation produces an error rather than a partial listing.
 
 Selection precedence is:
 
@@ -44,12 +47,39 @@ Selection precedence is:
 Suffixes are case-insensitive; named basenames are exact. A code mapping wins
 an equal-length conflict. Thus `.csl.json` is a bibliography, `.json` is
 ordinary JSON code, and `CMakeLists.txt` is CMake code. Ambiguous `.m` is
-unmapped. Reader availability comes from Pandoc, so a table entry can report
+unmapped. Optional-reader availability comes from Pandoc, so a table entry can report
 that the installed dependency does not provide its reader.
 
-Only installed built-in readers and their supported extension qualifiers are
-accepted. A selection is limited to 256 ASCII characters. Custom reader paths,
+Native readers and installed optional readers are accepted. Native `markdown`
+accepts only `+smart`, `-smart` and `-raw_html`; smart punctuation is on by default
+and the last smart qualifier wins. Unsupported Markdown qualifiers fail without
+consulting Pandoc. Optional readers accept their installed extension qualifiers. A selection is limited to 256 ASCII characters. Custom reader paths,
 filters, executable code and arbitrary Pandoc options are excluded.
+
+## Native Markdown
+
+The supported subset is CommonMark with tables, strikethrough, checked/unchecked
+and partial task lists, definition lists, footnotes, heading IDs and smart
+punctuation. Soft newlines remain soft; two trailing spaces or a backslash make
+a hard break. Fenced divs, citations, pipe-less grid tables and other Pandoc dialect
+extensions are not emulated. Select an optional specialist reader when needed.
+
+Leading YAML frontmatter accepts a mapping between `---` and `---` or `...`.
+With body content, title, author, date and lang appear as ordinary paragraphs;
+metadata alone appears as structured fields. The tab title remains the filename.
+Duplicate keys, malformed mappings, cycles and excessive expansion are errors.
+
+Embedded HTML is omitted in every Markdown-family route, including optional
+`gfm`, `commonmark` and `markdown_strict`. Inline HTML tags disappear while
+surrounding text remains; an HTML block and its payload disappear together.
+Code examples containing HTML and ordinary autolinks remain content. The CLI
+prints one notice per affected explicit document, and the preview displays:
+
+> Embedded HTML omitted: This Markdown source contains HTML that is not rendered in this preview. Some content may be missing.
+
+The banner follows the current source revision, outside annotatable text.
+Followed links receive their own banner; refresh notifications do not repeat CLI
+notices. Native `.html` files retain the separate passive policy below.
 
 ## Document aliases
 
@@ -176,10 +206,10 @@ SCHEMA field and one **Source code** section. Plain `.txt` uses a plaintext
 block with the same metadata and no synthetic section heading. No author, date
 or filesystem timestamp is invented.
 
-Code is never executed. Native Org and wrapper highlighting uses bundled Chroma;
-other readers use Pandoc's highlighter. Unsupported languages retain literal
-text. Wrapper language admission still uses the installed Pandoc catalogue;
-an unavailable wrapper language emits a notice and selects plaintext. Delimiter-like
+Code is never executed. Native Org, Markdown and wrapper highlighting use bundled
+Chroma; optional readers use Pandoc's highlighter. Unsupported languages retain
+literal text. Wrapper language admission uses the bundled Chroma registry; an
+unavailable wrapper language emits a notice and selects plaintext. Delimiter-like
 lines, existing commas and markup stay inside the displayed block.
 
 Code/text must be valid UTF-8 without NUL. Display omits a leading BOM and
@@ -262,6 +292,9 @@ footnotes, using a sidecar for read-only sources. A generated Org wrapper does
 not make a code or office document eligible for annotations.
 
 ## History
+
+- 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
+  with HTML omission notices and unchanged shared annotation boundaries.
 
 - Version 3: distinguish native Org conversion from retained document readers and
   clarify the service annotation exception to read-only previewing.

@@ -82,8 +82,14 @@ func TestRT008_2_AllCodeMappings(t *testing.T) {
 			if len(r.wrappers) != len(files) {
 				t.Fatal("missing private Org wrappers")
 			}
+			language := fields[0]
+			// These W008 names have no lexer in pinned Chroma 2.27.0.
+			switch language {
+			case "javascriptreact", "commonlisp", "dosbat", "fortranfree":
+				language = "plaintext"
+			}
 			for i, wrapper := range r.wrappers {
-				if !strings.Contains(wrapper, "\n#+BEGIN_SRC "+fields[0]+"\n") {
+				if !strings.Contains(wrapper, "\n#+BEGIN_SRC "+language+"\n") {
 					t.Fatalf("incorrect source language for %s", files[i])
 				}
 				code := nodes(documentNode(t, r.pages[i], "hp-document"), "pre")

@@ -46,7 +46,7 @@ var errLimit = errors.New("native conversion resource limit exceeded")
 var tokenPattern = regexp.MustCompile(`^[0-9a-f]{32}$`)
 var labelPattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
-// Worker is a process entry point: the caller must exit with its returned status.
+// Run is a process entry point: the caller must exit with its returned status.
 // Returning after a memory abort terminates the in-flight library conversion too.
 func Run(input io.Reader, output, diagnostic io.Writer, convert func(Request) ([]byte, error)) int {
 	debug.SetMemoryLimit(MaxMemoryBytes)

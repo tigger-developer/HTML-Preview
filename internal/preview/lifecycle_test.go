@@ -33,7 +33,7 @@ func TestRT001_8_PublicationExpiryThroughCommand(t *testing.T) {
 
 func TestRT001_15_PreflightBoundsBeforeAllocation(t *testing.T) {
 	root := t.TempDir()
-	p := source(t, root, "doc.md", "text")
+	p := source(t, root, "doc.commonmark", "text")
 	for _, fault := range []string{"preflight-stall", "preflight-flood"} {
 		tmp := t.TempDir()
 		start := time.Now()
@@ -140,7 +140,7 @@ func TestRT001_2_ConcurrentSessions(t *testing.T) {
 
 func TestRT001_15_PandocPreflight(t *testing.T) {
 	root := t.TempDir()
-	p := source(t, root, "doc.md", "test")
+	p := source(t, root, "doc.commonmark", "test")
 	for _, version := range []string{"3.8.3", "3.9.0.1", "3.10.0", "4.0"} {
 		r := run(t, root, []string{"PREVIEW_TEST_PANDOC_VERSION=" + version}, p)
 		if r.code != 1 || len(r.opens) != 0 || !strings.Contains(r.stderr, "compatibility") {

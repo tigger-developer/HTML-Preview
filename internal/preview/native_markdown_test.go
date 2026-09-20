@@ -97,8 +97,8 @@ func TestRT014_1_ServedMarkdownNeverInvokesPandoc(t *testing.T) {
 		t.Fatal("linked native preview", status)
 	}
 	endpoint = annotationRegistrationURL(t, s, filepath.Join(s.root, "next.md"), "Reviewer")
-	main, state := markdownBrowserPage(t, s, strings.Replace(endpoint, "/_annotations/v2/", "/", 1))
-	main, state = markdownBrowserPage(t, s, state["page_url"].(string))
+	_, state := markdownBrowserPage(t, s, strings.Replace(endpoint, "/_annotations/v2/", "/", 1))
+	main, state := markdownBrowserPage(t, s, state["page_url"].(string))
 	markdownCreateAtBlock(t, s, state, assertClickableAnnotationText(t, main, "A paragraph to annotate"), "reviewer-001", 1)
 	main, _ = markdownBrowserPage(t, s, state["page_url"].(string))
 	assertClickableAnnotationText(t, main, "A paragraph to annotate")

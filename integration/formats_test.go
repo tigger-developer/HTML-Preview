@@ -52,7 +52,7 @@ func TestRT008_9_InstalledFormats(t *testing.T) {
 	// #nosec G204 -- env resolves the test-owned PATH symlink; all arguments are synthetic paths.
 	cmd = exec.Command("env", args...)
 	cmd.Dir = t.TempDir()
-	cmd.Env = append(os.Environ(), "HTMLPREVIEW_GRACE=100ms", "HTMLPREVIEW_LINKS=0", "HTMLPREVIEW_MODE=quick", "PREVIEW_TEST_CAPTURE="+capture)
+	cmd.Env = append(standaloneEnvironment(t), "HTMLPREVIEW_GRACE=100ms", "HTMLPREVIEW_LINKS=0", "HTMLPREVIEW_MODE=quick", "PREVIEW_TEST_CAPTURE="+capture)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("installed broad-format preview: %v\n%s", err, output)
 	}

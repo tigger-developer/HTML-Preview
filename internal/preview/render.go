@@ -1,4 +1,4 @@
-// ABOUTME: Renders bounded source snapshots with isolated packaged Pandoc inputs.
+// ABOUTME: Renders bounded snapshots through native workers or optional Pandoc.
 // ABOUTME: Restores source metadata before final passive HTML publication.
 package preview
 
@@ -18,7 +18,7 @@ import (
 	"strings"
 
 	"github.com/tigger-developer/HTML-Preview/internal/annotation"
-	"github.com/tigger-developer/HTML-Preview/internal/orgconvert"
+	"github.com/tigger-developer/HTML-Preview/internal/convertworker"
 
 	bundle "github.com/tigger-developer/HTML-Preview"
 	"golang.org/x/net/html"
@@ -176,7 +176,7 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	s.scrub(doc, p)
 	p.dom = element(doc, "body")
 	if p.dom == nil {
-		return errors.New("Pandoc produced no HTML body")
+		return errors.New("Converter produced no HTML body")
 	}
 	p.ids = make(map[string][]string)
 	p.headings = make(map[string][]string)
@@ -198,7 +198,7 @@ func (s *session) convertNative(ctx context.Context, p *page, data []byte, token
 		return nil, fmt.Errorf("resolve native converter: %w", err)
 	}
 	remaining := s.cfg.outputBytes - s.used
-	request := orgconvert.Request{Version: 1, Text: string(data), Token: token, TOC: s.cfg.toc, TOCDepth: s.cfg.tocDepth, InputBytes: min(orgconvert.MaxInputBytes, remaining+int64(len(data))), OutputBytes: min(orgconvert.MaxOutputBytes, remaining), MemoryBytes: orgconvert.MaxMemoryBytes, ProbeLabels: p.probeLabels}
+	request := convertworker.Request{Version: 1, Text: string(data), Token: token, TOC: s.cfg.toc, TOCDepth: s.cfg.tocDepth, InputBytes: min(convertworker.MaxInputBytes, remaining+int64(len(data))), OutputBytes: min(convertworker.MaxOutputBytes, remaining), MemoryBytes: convertworker.MaxMemoryBytes, ProbeLabels: p.probeLabels}
 	if readerBase(format) == "markdown" {
 		request.SmartOff = markdownSmartOff(format)
 	}
@@ -211,9 +211,9 @@ func (s *session) convertNative(ctx context.Context, p *page, data []byte, token
 	if int64(len(payload)) > request.InputBytes || s.used >= s.cfg.outputBytes {
 		return nil, errors.New("native conversion input limit exceeded")
 	}
-	output, err := s.host.Execute(ctx, Command{Path: executable, Args: []string{"--internal-" + readerBase(format) + "-convert"}, Input: payload, Dir: s.path, Limit: min(orgconvert.MaxOutputBytes, s.cfg.outputBytes-s.used)})
+	output, err := s.host.Execute(ctx, Command{Path: executable, Args: []string{"--internal-" + readerBase(format) + "-convert"}, Input: payload, Dir: s.path, Limit: min(convertworker.MaxOutputBytes, s.cfg.outputBytes-s.used)})
 	var exit *exec.ExitError
-	if errors.As(err, &exit) && exit.ExitCode() == orgconvert.LimitExit {
+	if errors.As(err, &exit) && exit.ExitCode() == convertworker.LimitExit {
 		return nil, errors.New("native conversion resource limit exceeded")
 	}
 	return output, err

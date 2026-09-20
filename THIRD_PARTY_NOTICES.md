@@ -1,6 +1,6 @@
 ---
 title: Licensing and third-party notices
-version: 1
+version: 2
 last-updated: 2026-09-20
 ---
 
@@ -52,8 +52,9 @@ They accompany prefix installations and release archives. Font licences also acc
 
 | Module | Version | Purpose | Licence |
 | --- | --- | --- | --- |
+| `github.com/yuin/goldmark` | 1.8.6 | Native Markdown parsing and HTML rendering | [MIT](assets/licenses/goldmark-LICENSE) |
 | `github.com/niklasfasching/go-org` | 1.9.1, local scanner and list corrections | Native Org parsing and HTML writer | [MIT](assets/licenses/go-org-LICENSE) |
-| `github.com/alecthomas/chroma/v2` | 2.27.0 | Native Org source highlighting | [MIT](assets/licenses/chroma-COPYING) |
+| `github.com/alecthomas/chroma/v2` | 2.27.0 | Native Org/Markdown and code highlighting | [MIT](assets/licenses/chroma-COPYING) |
 | `github.com/dlclark/regexp2/v2` | 2.2.1 | Chroma lexer expressions | [MIT](assets/licenses/regexp2-LICENSE) |
 | `github.com/fsnotify/fsnotify` | 1.10.1 | Native filesystem change notifications | [BSD 3-Clause](assets/licenses/fsnotify-LICENSE) |
 | `golang.org/x/sys` | 0.47.0 | Filesystem notification OS bindings | [BSD 3-Clause](assets/licenses/golang-x-sys-LICENSE) |
@@ -62,9 +63,9 @@ They accompany prefix installations and release archives. Font licences also acc
 | `github.com/aymerick/douceur` | 0.2.0 | Transitive sanitizer dependency | [MIT](assets/licenses/douceur-LICENSE) |
 | `github.com/gorilla/css` | 1.0.1 | Transitive sanitizer dependency | [BSD 3-Clause](assets/licenses/gorilla-css-LICENSE) |
 | `github.com/tdewolff/parse/v2` | 2.8.16 | Native HTML CSS grammar and tokens | [MIT](assets/licenses/tdewolff-parse-LICENSE.md) |
-| `go.yaml.in/yaml/v3` | 3.0.5 | Strict service configuration parsing | [MIT and Apache 2.0](assets/licenses/go-yaml-LICENSE) |
+| `go.yaml.in/yaml/v3` | 3.0.5 | Service configuration and Markdown YAML metadata parsing | [MIT and Apache 2.0](assets/licenses/go-yaml-LICENSE) |
 
-Go 1.26.8 is the reviewed delivery toolchain. Pandoc is separately installed
+Go 1.26.8 is the reviewed delivery toolchain. Optional Pandoc is separately installed
 and is not bundled or relicensed by this project.
 
 The go-org copy and its scanner and list corrections are documented in
@@ -73,5 +74,8 @@ notice also contains the SIL font licence for its SVG formatter; that formatter
 and its font are not linked into htmlpreview.
 
 ## Document changes
+
+- 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
+  with HTML omission notices and unchanged shared annotation boundaries.
 
 - Version 1 metadata: document the native Org converter and its dependency provenance where applicable.
