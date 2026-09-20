@@ -1,0 +1,675 @@
+#+TITLE: W014 - Native Markdown previews with Goldmark
+#+SCHEMA: 8
+#+SUBTITLE: Unified change specification
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: PENDING
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+** Outcome
+
+- *Markdown previews and annotations* use bundled Go conversion, removing the
+  external converter requirement for the native reading workflow.
+
+** Before
+
+- *Markdown conversion* invokes Pandoc, including intermediary annotation passes.
+- *Startup and format discovery* require Pandoc even for native Org inputs.
+- *Raw HTML in Markdown* can reach the passive-content sanitizer.
+
+** After
+
+- *Markdown* uses pinned Goldmark with the existing reading and annotation interface.
+- *Recognized embedded HTML is omitted*, with a CLI notice and preview banner.
+- *Native inputs work without Pandoc*; other readers require it only when selected.
+- *Annotation creation, editing and deletion* retain native footnotes and guarded writes.
+
+** Changes
+
+- *Native conversion and HTML adaptation* replace the Markdown converter path.
+- *Dependency discovery becomes conditional*; packaging describes native and optional readers.
+- *Markdown dialect compatibility* needs the decision recorded under
+  [[#open-scope][Unresolved blockers]] before definition audit.
+
+** Unchanged
+
+- *Original files remain unchanged during reading*; authorized service annotations can write.
+- *Org conversion, passive standalone HTML, resource policy and localhost grants* remain.
+- *Browser annotation behaviour and source-bound block proof* remain the compatibility boundary.
+- *Definition stays on master*. No implementation or installation occurs in this phase.
+
+** Edge cases
+:PROPERTIES:
+:CUSTOM_ID: synopsis-edge-cases
+:END:
+
+- *HTML examples inside code remain visible* and do not trigger HTML warnings.
+- *Repeated footnote references* resolve to the same editable note without duplicate records.
+- *Unverified insertion targets remain inactive*; conversion errors publish no partial page.
+- *Missing optional converters* affect their requested formats, not native previews.
+
+** Decisions
+
+- *Goldmark v1.8.6* is the selected, pinned library; no new runtime or browser stack.
+- *Server-side adaptation* preserves the tested HTML contract before annotation proof.
+- *The existing intermediary workflow remains*; reducing conversion passes is separate work.
+
+** Next step
+
+- Resolve the *Markdown dialect boundary*, then definition audit and operator sign-off.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+- *External Markdown conversion adds latency* to opening and refreshing local documents.
+  The native Org migration demonstrates the established integration pattern; Markdown
+  still incurs external conversion and discovery work.
+- *A similar-looking page is insufficient*: the annotation interface depends on
+  exact block, reference and endnote relationships in rendered HTML.
+
+** Outcome
+
+- *Native Markdown conversion preserves the supported reading and editing workflow*
+  and reduces measured uncached preview latency against the current master baseline.
+
+** Scope
+
+- Included :: Markdown conversion, metadata, navigation, highlighting, annotation
+  HTML compatibility, HTML omission notices and *conditional converter dependencies*.
+- Excluded :: Org parser replacement, new annotation storage, source-offset mapping,
+  conversion-pass reduction, worker pooling, remote services and new browser tooling.
+- Preserved :: Original source identity, relative links, root authorization,
+  passive resource controls, folding defaults, fonts, copying and service-only writes.
+
+** Authority and starting point
+
+- Profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product :: [[file:../../docs/VISION.md][Vision]], current product direction.
+- Architecture :: [[file:../../docs/ARCHITECTURE.md][Architecture]], native Org conversion
+  and shared publication boundaries.
+- Format baseline :: [[file:../../docs/FORMATS.md][Supported input formats]] and
+  [[file:../008-input-formats/spec.org][W008 - Input formats]]. This change supersedes
+  mandatory startup discovery and the selected Markdown conversion contract only.
+- Service baseline :: [[file:../006-local-preview-service/spec.org][W006 - Local service]]
+  and [[file:../../docs/SERVICE.md][Service guide]] retain transport authorization.
+- Annotation baseline :: [[file:../../docs/ANNOTATIONS.md][Annotation guide]] and
+  [[file:../009-reader-annotation-ux/spec.org][W009 - Native footnote annotations]] retain
+  current-value footnotes, block placement, attribution and guarded mutations.
+- Native pattern :: [[file:../011-conversion-performance/spec.org][W011 - Fast Org previews]]
+  and [[file:../../internal/orgconvert/worker.go][Bounded native worker]].
+- Brownfield evidence :: [[file:../../internal/preview/render.go][Render coordinator]],
+  [[file:../../internal/preview/formats.go][Format catalogue]],
+  [[file:../../internal/preview/service_footnotes.go][Footnote projection]],
+  [[file:../../internal/preview/annotation_target_contract_test.go][Browser target contract tests]]
+  and [[file:../../testdata/annotation-targets/blocks.md][Synthetic Markdown fixture]].
+
+** Constraints and dependencies
+:PROPERTIES:
+:CUSTOM_ID: constraints-and-dependencies
+:END:
+
+- *Goldmark is pinned to v1.8.6* in =go.mod= and =go.sum=. Its MIT licence must
+  accompany distribution; the project remains Apache-2.0.
+- *No source documents are migrated*. Conversion markers and normalized HTML are private
+  intermediaries; the existing annotation writer continues to own file changes.
+- *Personal documents may be tested only in disposable local copies*, never committed,
+  uploaded to an auditor or copied into fixtures. Retained fixtures are synthetic.
+- *No browser automation is added*. Rendered HTML and HTTP contracts use Go tests;
+  interaction, layout and perceived latency use human validation.
+- *Definition remains on master*. Delivery requires explicit sign-off and its branch
+  choice at admission; this specification does not create a branch or change a service.
+
+** Research evidence
+
+- Method :: Local converter-only comparison on 20 September 2026; seven timed runs
+  after one warm-up. Native calls were in-process; Pandoc included subprocess startup.
+  *These are not end-to-end application timings* and exclude the compatibility adapter.
+- Corpus :: Repository README, 18,120 bytes; synthetic 1,200-section Markdown,
+  180,090 bytes. No private text is needed to reproduce the synthetic comparison.
+- Results :: Goldmark v1 medians were *0.244 ms and 5.471 ms* respectively; Pandoc
+  medians were *253.870 ms and 412.569 ms*. Goldmark v2 medians were 0.183 ms and
+  5.468 ms; gomarkdown medians were 0.157 ms and 5.322 ms.
+- Fidelity :: Goldmark retained multi-paragraph footnotes, repeated-reference backlinks,
+  pipe tables, definition lists and checked task inputs. Additional adaptation is
+  needed for metadata, heading identifiers, partial checkboxes and the application's
+  footnote HTML contract. Several Pandoc-only constructs rendered literally.
+- Selection :: *The v1 pin keeps the accepted library baseline*. Comparable parser
+  speed alone does not establish annotation fidelity or justify switching candidates.
+- Sources :: [[https://pkg.go.dev/github.com/yuin/goldmark@v1.8.6][Pinned Goldmark documentation]];
+  [[https://github.com/yuin/goldmark/tree/v1.8.6][Goldmark v1.8.6 source and MIT licence]].
+  The module declares Go 1.22 and no external requirements. Delivery checks the
+  resolved graph, binary size and current advisories rather than assuming safety.
+
+** Decisions
+
+- *Keep the intermediary annotation workflow*. Normalize converter output before
+  source-proof comparisons; do not replace established block mapping with cursor offsets.
+- *Omit raw HTML in Markdown*. Detection is a parser classification heuristic,
+  not a claim that every angle-bracket sequence is HTML or that all HTML is malicious.
+- *Keep native HTML separate*. Its passive authored presentation is unchanged.
+
+** Unresolved blockers
+:PROPERTIES:
+:CUSTOM_ID: open-scope
+:END:
+
+- *The Markdown dialect boundary is pending*. The proposed baseline below uses the
+  SDLC subset plus existing footnotes, definition lists, smart punctuation and heading
+  IDs. Approval is needed before retiring other enabled Pandoc extensions. The choice
+  also settles explicit dialect selectors and warnings for recognized unsupported syntax.
+- *Do not audit or admit delivery while that decision is unresolved*. The remaining
+  requirements and design are a reviewable draft, not approval of a compatibility break.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC014.1 - Native Markdown routing :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-014-1
+:END:
+
+- Criterion :: Ordinary Markdown inputs, explicit =--from=markdown= selections and
+  served links to those inputs *render without invoking Pandoc*, including subsequent
+  annotation projection and block-proof conversions.
+- Proven by :: [[#rt-014-1][RT014.1 - Public native routing]].
+
+** AC014.2 - Supported Markdown presentation :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-014-2
+:END:
+
+- Criterion :: The agreed dialect *retains semantic content and reading controls*,
+  metadata, title, navigation, heading links, literal code copying and highlighting
+  through the [[#html-contract][HTML compatibility contract]].
+- Proven by :: [[#rt-014-2][RT014.2 - Semantic render compatibility]],
+  [[#ut-014-1][UT014.1 - Reading interface]].
+
+** AC014.3 - Omitted HTML is explained :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-014-3
+:END:
+
+- Criterion :: When Markdown parsing recognizes authored raw HTML, *that HTML is
+  omitted*, a successful CLI preview reports one warning for the affected document,
+  and the preview displays one warning beneath the info bar. Code examples and valid
+  Markdown autolinks *do not generate false HTML warnings*.
+- Proven by :: [[#rt-014-3][RT014.3 - HTML omission and warning delivery]],
+  [[#ut-014-1][UT014.1 - Reading interface]].
+
+** AC014.4 - Annotation targets remain usable :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-014-4
+:END:
+
+- Criterion :: In service mode, supported Markdown blocks *expose verified targets
+  on the elements selected by the browser*. New notes attach at the source block's
+  syntactically permitted end. Unverified and omitted content *exposes no writable target*.
+- Proven by :: [[#rt-014-4][RT014.4 - Clickable block creation]],
+  [[#ut-014-2][UT014.2 - Annotation workflow]].
+
+** AC014.5 - Existing footnotes remain editable :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-014-5
+:END:
+
+- Criterion :: Native Markdown footnotes *remain associated with their source labels*,
+  including multiple paragraphs, repeated references and references within quotations.
+  Authorized edits and confirmed deletion *preserve unrelated source bytes* and do not
+  create duplicate or falsely unplaced sidebar records.
+- Proven by :: [[#rt-014-5][RT014.5 - Footnote lifecycle]],
+  [[#ut-014-2][UT014.2 - Annotation workflow]].
+
+** AC014.6 - Native use has no optional-reader prerequisite :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-014-6
+:END:
+
+- Criterion :: Without Pandoc, the application *installs, starts its service and
+  previews native inputs*. Requests for other readers fail with a dependency-specific
+  diagnostic without disabling native operation. With Pandoc present, existing other
+  readers and format selectors *remain available*.
+- Proven by :: [[#rt-014-6][RT014.6 - Conditional dependency behaviour]],
+  [[#ot-014-2][OT014.2 - Packaging and documentation]].
+
+** AC014.7 - Resource and mutation safeguards survive :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-014-7
+:END:
+
+- Criterion :: Markdown conversion *retains process and byte bounds, passive resource
+  policy and service authorization*. Failure produces no partial preview or unsafe write;
+  subsequent valid requests remain usable. Reading alone *never changes source files*.
+- Proven by :: [[#rt-014-7][RT014.7 - Failure and trust boundaries]].
+
+** AC014.8 - Faster uncached Markdown previews :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-014-8
+:END:
+
+- Criterion :: On the same machine and corpus, the candidate *reduces median uncached
+  Markdown service GET and annotation-save response time* against the master baseline,
+  with equivalent supported content and annotation results. Report first CLI open
+  separately; warmed cache results cannot stand in for conversion timings.
+- Proven by :: [[#ot-014-1][OT014.1 - End-to-end comparison]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT014.1 - Public native routing :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-014-1
+:END:
+
+- Covers :: [[#ac-014-1][AC014.1 - Native Markdown routing]].
+- Boundary :: Built executable and real local HTTP requests using the existing harness.
+- Action :: Preview every Markdown suffix, mixed-case suffixes and explicit
+  =--from=markdown= on an unusual suffix. Follow a served Org-to-Markdown link and
+  the advertised refresh URL; create a note and fetch the resulting page.
+- Expected :: *The requested content renders on every path without external conversion*.
+  Run with no Pandoc on the isolated PATH and with the existing executor boundary
+  rejecting a Markdown Pandoc conversion when optional readers are installed.
+- Retention :: =make test=; *new native assertions fail before implementation*.
+
+** RT014.2 - Semantic render compatibility :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-014-2
+:END:
+
+- Covers :: [[#ac-014-2][AC014.2 - Supported Markdown presentation]].
+- Setup :: Retained *synthetic Markdown fixtures* extending the existing target fixture.
+- Action :: Load file previews and served responses; parse their HTML with the existing
+  Go DOM helpers. Assert relationships and literal values, not source-code strings.
+- Expected :: YAML title/subtitle/author/date and supplementary fields occupy their
+  established locations; source name stays original. Nested lists, loose and tight
+  items, quotes, pipe tables, definition lists and Unicode text remain semantic.
+  =X= and =x= tasks are checked, spaces unchecked, slash/dash partial states consistent.
+  Code spans/blocks preserve copy payloads, known languages receive Chroma spans and
+  unknown languages remain literal. Heading IDs, duplicate suffixes, explicit IDs,
+  TOC depth/defaults and cross-document fragments resolve correctly.
+- Cases :: Empty input; no metadata; malformed metadata; escaped punctuation; CRLF;
+  UTF-8 accents; repeated headings; nested footnotes containing code or lists.
+- Retention :: =make test=; *independent expectations for each converter delta*.
+
+** RT014.3 - HTML omission and warning delivery :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-014-3
+:END:
+
+- Covers :: [[#ac-014-3][AC014.3 - Omitted HTML is explained]].
+- Action :: Open synthetic Markdown containing inline tags, block HTML, comments,
+  script/style blocks and malformed tag-like text. Compare with escaped tags, inline
+  code, fenced and indented code, URL/email autolinks and plain comparisons.
+- Expected :: *Recognized raw HTML is absent from the rendered body*; raw block
+  payload is not accidentally reinterpreted as Markdown. Surrounding parsed Markdown
+  remains visible. Recognized authored HTML triggers *one warning per document*, not
+  one per node or conversion pass. Literal examples and autolinks trigger none.
+- Transport cases :: CLI file preview, CLI service registration, browser-followed
+  document link, cached GET, fresh GET after removing/adding HTML, and note refresh.
+  The *banner follows the current revision* and stays outside canonical annotation text.
+  No repeated warning on unchanged SSE traffic. Native =.html= keeps its separate policy.
+- Retention :: =make test=; assert status, stderr and returned HTML.
+
+** RT014.4 - Clickable block creation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-014-4
+:END:
+
+- Covers :: [[#ac-014-4][AC014.4 - Annotation targets remain usable]].
+- Action :: Extend =TestHTTPAnnotationTargetContract= for Markdown. Starting at
+  visible text in paragraphs, inline code/links/emphasis, nested and task-list items,
+  definition lists, headings, tables, quotes and fenced code, *select the same nearest
+  eligible element as the browser*. Submit its block ID to the real annotation endpoint.
+- Expected :: Each eligible element itself owns its verified attribute; bootstrap and
+  endpoint revisions agree; HTTP creation succeeds. The source marker appears after
+  the whole paragraph/list item, or after the container with the established annotation
+  suffix. *Refresh preserves eligibility*. Marker-only wrappers cannot satisfy this test.
+- Negative cases :: Frontmatter, warning banner, omitted HTML, endnotes and forged or
+  stale target IDs never authorize a new block insertion. Failed requests change no bytes.
+- Retention :: =make test=; reusable fixtures, no browser runtime or private documents.
+
+** RT014.5 - Footnote lifecycle :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-014-5
+:END:
+
+- Covers :: [[#ac-014-5][AC014.5 - Existing footnotes remain editable]].
+- Action :: Through HTTP, load existing notes, add two notes to one block, edit a
+  multi-paragraph note, retry an identical operation and delete a repeatedly referenced
+  note. Repeat with a reference in a quote, a read-only source/sidecar and external edits.
+- Expected :: *One sidebar record per stored note*, correct label, complete text,
+  resolved references/backlinks and native Markdown persistence. Attribution updates
+  through existing Created/Edited rules. Repetition is idempotent; stale revisions are
+  rejected; deletion removes only the selected definition/references. Sidecar edits
+  leave the read-only original unchanged. Compare *unrelated bytes exactly*.
+- Retention :: =make test=; reuse writer, conflict and HTTP lifecycle coverage.
+
+** RT014.6 - Conditional dependency behaviour :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-014-6
+:END:
+
+- Covers :: [[#ac-014-6][AC014.6 - Native use has no optional-reader prerequisite]].
+- Action :: Use isolated PATHs with absent, supported and failing optional converters.
+  Exercise help/version, format listing, native file previews and service startup,
+  native links, one DOCX fixture, specialist explicit selection and invalid qualifiers.
+- Expected :: *Absent Pandoc does not prevent native use*. Other-format requests give
+  actionable non-success results; successful DOCX conversion remains available with
+  the dependency. An installed but failing catalogue query is reported, not treated as
+  a successful empty list. A failed optional request does not poison native requests.
+- Retention :: =make test=; dependency doubles only at the existing executable boundary.
+
+** RT014.7 - Failure and trust boundaries :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-014-7
+:END:
+
+- Covers :: [[#ac-014-7][AC014.7 - Resource and mutation safeguards survive]].
+- Action :: Extend native worker fault cases to Markdown: cancellation after process
+  start, output overflow, malformed protocol and conversion failure. Exercise harmful
+  URLs, metadata injection, marker-like source, out-of-root resources, missing tokens,
+  wrong Origin and unauthorized writes through the existing public boundaries.
+- Expected :: *No partial page, leaked worker or source mutation*; errors retain
+  existing HTTP/status conventions. The next valid request succeeds. Hostile source
+  cannot manufacture application controls or target attributes, execute scripts,
+  fetch remote resources automatically or expand served roots.
+- Retention :: =make test=, including race checks on affected concurrent paths.
+
+** UT014.1 - Reading interface :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-014-1
+:END:
+
+- Covers :: [[#ac-014-2][AC014.2 - Supported Markdown presentation]],
+  [[#ac-014-3][AC014.3 - Omitted HTML is explained]].
+- Method :: User validation in the system default browser on a disposable fixture.
+- Procedure :: Compare light/dark and narrow/wide layouts; use navigation, folding,
+  source/code copying and plaintext mode. Follow a Markdown link containing omitted HTML.
+- Expected :: *Existing controls remain legible and usable*. The compact warning is
+  visible below the info bar without overlap and does not conceal document content.
+- Record :: Dated revision and observations in =validation.org=; no simulated visual pass.
+
+** UT014.2 - Annotation workflow :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-014-2
+:END:
+
+- Covers :: [[#ac-014-4][AC014.4 - Annotation targets remain usable]],
+  [[#ac-014-5][AC014.5 - Existing footnotes remain editable]].
+- Method :: User validation against disposable synthetic Markdown served locally.
+- Procedure :: Activate annotations; click body text, headings, tasks, code, table
+  and quote blocks. Type a long multi-paragraph note, leave the composer, edit a note,
+  delete with confirmation, follow its backlink and reload.
+- Expected :: *Pencil cursor, block highlight and composer agree on eligibility*;
+  autosave does not rearrange the active editor. Saved notes remain attached and editable;
+  leaving annotation mode restores ordinary endnotes. No duplicate unplaced entries.
+- Record :: Dated revision, browser and viewport in =validation.org=.
+
+** OT014.1 - End-to-end comparison :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-014-1
+:END:
+
+- Covers :: [[#ac-014-8][AC014.8 - Faster uncached Markdown previews]].
+- Procedure :: Build baseline =720e635= and candidate in isolated temporary checkouts.
+  Use the same repository README snapshot and deterministic synthetic long document,
+  plus a synthetic repeated/multi-paragraph footnote corpus. Record tool versions,
+  input bytes, heading/block/note counts and *seven-run medians after one warm-up*.
+- Boundaries :: Measure first CLI open with a test opener, uncached service GET and
+  real annotation POST with fresh fixture state per mutation. Record cache hits and
+  converter-only timings separately. Establish semantic equivalence before comparing.
+- Expected :: *Both uncached HTTP medians improve* for each corpus, with no loss of
+  declared content or writable targets. Report any slower case and its stage timings;
+  do not silently change the corpus or claim the exploratory parser ratio end-to-end.
+- Bounds :: Local CPU and temporary files only; no live service changes, external
+  metered calls or persistent benchmark suite. Necessary corrective reruns are permitted
+  and recorded; no arbitrary operation-count gate is introduced.
+
+** OT014.2 - Packaging and documentation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-014-2
+:END:
+
+- Covers :: [[#ac-014-6][AC014.6 - Native use has no optional-reader prerequisite]].
+- Procedure :: Build/install to existing supported temporary test destinations and
+  generate service artefacts without activation. Inspect help and current documentation,
+  resolved module graph, licence bundle, binary size delta and =make vulncheck= output.
+- Expected :: *Native installation and service definitions do not require Pandoc*;
+  optional reader instructions remain accurate. The exact Goldmark pin and MIT notice
+  are distributed; security findings follow the existing gate. Cross-build macOS/Linux;
+  native Linux/WSL use remains an explicitly pending user observation if unavailable.
+- Bounds :: No global installation, user configuration rewrite or live service restart.
+  Documentation receives a one-off review, not a prose-coupled regression test.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** Omission and source mapping
+
+- Boundary :: HTML removal can leave *no rendered text for a source block*.
+- Outcome :: Such a block receives *no target*. Neighbouring supported blocks still
+  require successful source proof; warnings must not alter their canonical body.
+- Covered by :: [[#rt-014-3][RT014.3 - HTML omission]] and
+  [[#rt-014-4][RT014.4 - Clickable block creation]].
+
+** Source notes and generated probes
+
+- Boundary :: *Authored footnotes and private probes share Markdown syntax*.
+- Outcome :: Recognize only the exact labels minted for the current conversion;
+  authored labels, repeated references and unknown text cannot impersonate probes.
+  No automatic rewriting or relabelling of existing notes occurs during reading.
+- Covered by :: [[#rt-014-5][RT014.5 - Footnote lifecycle]] and
+  [[#rt-014-7][RT014.7 - Failure and trust boundaries]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Ownership :: *The library parses Markdown; the application owns presentation,
+  resources, annotations and publication*. No parser fork or broad extension framework
+  is proposed. A necessary parser change requires a separately justified decision.
+- Integration :: Extend the same-executable native worker with a Markdown dispatch.
+  Extract only its genuinely shared bounds/protocol supervision; keep Org and Markdown
+  conversion code distinct. The public application interface gains no converter toggle.
+
+** Proposed dialect boundary
+:PROPERTIES:
+:CUSTOM_ID: dialect
+:END:
+
+- Decision state :: *Pending the scope decision in Context*. This proposal must be
+  settled, including qualifier compatibility, before audit; it is not a licence to
+  silently downgrade documents during implementation.
+- Proposed core :: CommonMark parsing with tables, strikethrough, task lists,
+  definition lists, footnotes, typographic punctuation and heading attributes.
+  Preserve the SDLC authoring subset, YAML metadata and existing partial-task display.
+- Additional baseline syntax :: The current frozen reader enables percent title
+  blocks, fenced divs, bracketed spans, inline/link/code attributes, inline notes,
+  fancy/example lists, grid/simple/multiline tables, captions, line blocks, citations,
+  math and superscripts/subscripts. Their retention, literal treatment or explicit
+  incompatibility diagnostics *must not be inferred from Goldmark defaults*.
+- Reader boundary :: Implicit =.md= aliases and explicit =markdown= must use the same
+  final contract. Existing =gfm=, =commonmark= and =commonmark_x= selectors also need
+  explicit native-versus-optional-reader disposition in that decision.
+
+** Conversion flow and shared responsibilities
+
+1. *Authorize and snapshot* through the existing file/service path. Preserve original
+   bytes for plaintext display, copying and annotation revision checks.
+2. *Extract metadata and prepare existing annotation intermediaries*. Use the existing
+   YAML dependency with bounded scalar/sequence/map handling; never execute metadata.
+   Retain title/subtitle/author/date and supplementary frontmatter field presentation.
+3. *Convert in the bounded worker* with Goldmark and application-owned render hooks.
+   Code highlighting reuses bundled Chroma and the current literal-copy records.
+4. *Normalize HTML before proof*: section structure, heading catalogue, TOC and endnotes
+   must satisfy the same contract for base, projected-note and block-probe conversions.
+5. *Apply existing sanitizer and resource/reference rewriting*. Private marker ownership
+   remains checked; source HTML cannot bypass the sanitizer or introduce owned attributes.
+6. *Publish the existing page shell and annotation data*. Warnings are shell content,
+   outside =hp-document= and its canonical text. Only authorized annotation operations
+   write the source or its established sidecar.
+
+** HTML compatibility contract
+:PROPERTIES:
+:CUSTOM_ID: html-contract
+:END:
+
+- Footnotes :: Normalize Goldmark's reference wrapper and endnote container before
+  =finalizeVirtualNotes= and block proof. Keep source-label associations independent of
+  displayed numbers. *One stored note can have several references and backlinks*.
+- Headings :: Reuse the existing application heading-ID rules and section wrappers,
+  including duplicate handling, explicit IDs and Unicode fragments. Generate TOC from
+  the same catalogue; do not independently invent navigation IDs in two components.
+- Lists :: Preserve semantic =li=, =dt= and =dd= relationships. Annotation attributes
+  belong to the *nearest eligible block the browser actually selects*, including
+  paragraphs introduced inside loose items. Reuse checkbox normalization.
+- Code :: Render escaped text with the existing highlight classes and original-copy
+  transport. Unknown languages stay literal. Code is never executed.
+- Metadata :: Produce the existing title block and single frontmatter area. Values are
+  escaped text; raw HTML in metadata is not an alternate markup route.
+
+Observed footnote rendering delta:
+
+#+BEGIN_SRC html
+<!-- Goldmark output -->
+<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>
+<div class="footnotes" role="doc-endnotes">...</div>
+<!-- Application-compatible output -->
+<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">...</section>
+#+END_SRC
+
+- Backlinks :: Goldmark's =footnote-backref= becomes =footnote-back= with
+  =role="doc-backlink"=. Every href resolves to a unique reference ID. The example
+  shows one occurrence; repeated occurrences receive distinct IDs.
+- Rationale :: *Server-side normalization preserves the tested browser contract*
+  and the current proof algorithm. Replacing browser selectors and mapping in the same
+  change would add an unnecessary second migration.
+- Verification :: [[#rt-014-2][RT014.2 - Semantic render compatibility]],
+  [[#rt-014-4][RT014.4 - Clickable block creation]] and
+  [[#rt-014-5][RT014.5 - Footnote lifecycle]] assert the delivered HTML explicitly.
+
+** Raw HTML and warning contract
+:PROPERTIES:
+:CUSTOM_ID: html-warning
+:END:
+
+- Detection :: *Use Goldmark raw-HTML nodes*, not an angle-bracket regular expression.
+  Classify inline raw nodes and raw block nodes in authored Markdown. The parser's
+  classification is intentionally heuristic; malformed or ambiguous text follows
+  Markdown parsing. It is not a general HTML validator.
+- Rendering :: *Do not enable unsafe HTML rendering*. Drop recognized inline HTML
+  nodes but retain adjacent parsed text; omit complete raw block payloads. Thus an
+  inline tag pair can leave its plain text, while a block HTML region can lose its
+  contents. Literal code remains escaped and readable.
+- Comments :: Authored HTML comments count as recognized omitted HTML. Application-owned
+  legacy records, when recognized by the existing annotation parser, are extracted
+  before detection; do not invent a second legacy-record parser or warn about generated
+  conversion transport. An arbitrary comment is not a trusted record.
+- CLI :: Emit *one stderr notice per affected document per explicit invocation* after
+  successful rendering, including when the service supplied the page. Extend the
+  existing registration response with a bounded notice if needed; no extra fetch loop.
+- Browser :: Place one compact, non-modal warning *below the info bar and above
+  document content*, outside annotation targets. Include text, not colour alone:
+  =Embedded HTML omitted: This Markdown source contains HTML that is not rendered in this preview. Some content may be missing.=
+- Refresh :: Cache warnings with the rendered source revision; union repeated-pass
+  detection into a single flag. Browser-followed links show their own warning without
+  requiring a CLI. Re-rendering updates the banner; SSE events do not repeatedly log it.
+- Safety :: Never include omitted source snippets in logs or warnings. Plaintext view
+  remains a literal source view and may show the ignored markup as escaped text.
+
+** Dependency discovery and packaging
+
+- Native catalogue :: *Org, Markdown, code/plaintext and passive HTML are available
+  without Pandoc*. Keep document suffix precedence and original source kinds. Chroma
+  supplies native language support; stop requiring Pandoc's language catalogue for wrappers.
+- Optional catalogue :: Resolve and validate Pandoc only for a selected non-native
+  reader or full reader listing. Existing reader extension validation still applies
+  on that optional route. Cache successful service discovery for that service lifetime;
+  a failed request must not disable native routes.
+- Listing :: =--list-input-formats= lists native reader names even when Pandoc is absent.
+  When present, merge its validated catalogue without duplicate names. Native code/text
+  routing remains suffix-based, not invented Pandoc reader names. Report operational
+  discovery errors rather than publishing a misleading successful complete list.
+- Missing dependency :: A selected optional reader fails with an actionable dependency
+  diagnostic and existing error status. *No automatic Markdown fallback to Pandoc* on
+  conversion failure or unrecognized syntax.
+- Installation :: Remove unconditional Pandoc prerequisites from installation and service
+  generation. Retain documented optional installation for office/specialist readers.
+  Do not remove or alter another installed converter, package or service.
+- Verification :: [[#rt-014-6][RT014.6 - Conditional dependency behaviour]] and
+  [[#ot-014-2][OT014.2 - Packaging and documentation]].
+
+** Failure and security impact
+
+- Process bounds :: Preserve *one disposable same-executable worker per conversion*,
+  stdin-only authorized bytes, existing cancellation/reaping and session accounting.
+  Keep the 100 MiB protocol ceiling, 50 MiB output ceiling and smaller remaining session
+  limits. Retain the 512 MiB runtime-memory target and 10 ms accounted-memory check;
+  this is not a hard operating-system RSS limit. No source paths are passed to the parser.
+- Untrusted inputs :: *Markdown, metadata, links and generated HTML remain untrusted*.
+  No includes, external fetches, executable plugins, scripts or source-controlled flags.
+  The existing sanitizer, CSP, rooted resource checks and capability validation remain.
+- Mutation :: *The converter owns no persistent writes*. Existing revision checks,
+  atomic replacement, symlink/hardlink rules, idempotence and authorization guard notes.
+  Converter errors do not become annotation success responses.
+- Supply chain :: Add only the pinned Goldmark module and its licence. Check the actual
+  resolved graph with the existing vulnerability target; no unversioned plugins.
+- Data :: Keep private documents, document bodies and service tokens out of committed
+  test evidence and diagnostics. Research metrics do not require source disclosure.
+- Verification :: [[#rt-014-7][RT014.7 - Failure and trust boundaries]] and
+  [[#ot-014-2][OT014.2 - Packaging and documentation]].
+
+** Routine details and later optimization
+
+- Implementation discretion :: Local helper names, small module boundaries and DOM
+  traversal organization may follow existing conventions. They may not change the
+  accepted dialect, browser contract, storage or security boundary.
+- Later opportunities :: *Fewer conversion passes, direct block offsets and fewer HTML
+  traversals* may reduce remaining cost. Record observed costs during delivery, but
+  do not implement these additional changes under this migration.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: This specification, its named project authorities, format and
+  annotation guides, and the existing native worker and rendered-target tests linked
+  in Context. No temporary research directory or conversation is required for delivery.
+- Entry conditions :: Resolve [[#open-scope][the dialect scope blocker]], obtain current
+  definition evidence and *explicit operator sign-off*. Confirm the baseline and
+  delivery branch at admission; leave the daily-driver installation untouched.
+- First implementation step :: Write the specified RT package and observe intended
+  failures for native routing, HTML warnings and converter-delta contracts. Record
+  initially GREEN preservation tests honestly. No production behaviour before the
+  normal test-code gate.
+- Definition evidence :: =audits.yaml= is created and maintained only by the harness.
+- Validation evidence :: Create =validation.org= by delivery admission with one tagged
+  record per test. No execution states or audit verdicts belong in this specification.
+- Documentation impact :: Update =README.md=, =docs/FORMATS.md=, =docs/ARCHITECTURE.md=,
+  =docs/VISION.md=, =docs/SERVICE.md= and relevant installer guidance. Review
+  =docs/ANNOTATIONS.md=, =docs/htmlpreview-help.txt=, fixture guidance and third-party
+  notices for the changed dialect, dependency and warning contracts. Preserve earlier
+  decisions as superseded history rather than silently erasing them.
+- Closure boundary :: Automated render/HTTP checks do not establish browser acceptance
+  or Linux/WSL operation. Record those observations separately; do not close other
+  open tickets as a side effect of this migration.
