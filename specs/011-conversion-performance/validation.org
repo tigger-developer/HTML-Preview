@@ -164,10 +164,11 @@
 
 * One-off tests
 
-** AMBER OT011.1 - Full-pipeline benchmark :testdef:
+** GREEN OT011.1 - Full-pipeline benchmark :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ot-011-1-result
-:REASON: Preliminary corpus comparison identified list and local-link differences; synthetic regressions and corrections are recorded below. Final corrected-build measurement is pending.
+:REVISION: e171898 production checkpoint against 96a8a2ce165333045a377c38da044bb501461e4f
+:EVIDENCE: Complete 108-operation final comparison passes all GET thresholds and source-preserving POST checks; 33 preliminary/interrupted operations retained separately. Final results below.
 :END:
 
 ** GREEN OT011.2 - Packaging and dependencies :testdef:
@@ -304,10 +305,11 @@ those platforms.
   corrected candidate =e171898=. Go =1.26.8=, Pandoc =3.9.0.2=,
   Darwin arm64. The live installation was not changed.
 - Progress :: 75 retained final-build operations, plus 33 preliminary or
-  interrupted operations, reached the approved cap of 108. The script stopped
-  there. Approval for up to 36 additional operations was requested; no increased
-  cap is assumed. The spec-document samples remain incomplete, so OT011.1
-  remains AMBER.
+  interrupted operations, initially reached the agent-authored cap of 108.
+  The script stopped there and OT011.1 was AMBER. The operator clarified that
+  routine verification estimates may be amended during hands-off delivery.
+  The remaining 33 measurements then ran, giving 108 retained final operations
+  and 33 preliminary/interrupted operations overall.
 - Method :: Fresh disposable source copies and service contexts; one warm-up
   and five measured samples per completed row. GET and POST retain every
   normal conversion/proof pass. CLI timing ends at captured browser handoff;
@@ -328,9 +330,10 @@ those platforms.
   The work ledger GET uses two, POST/refresh three. The initial specification
   GET uses two. The CLI subprocess capture does not instrument converter calls;
   its raw counter value zero is not a claim of zero conversion work.
-- Qualification :: The completed large GET row is 8.4% of baseline, satisfying
-  that numerical threshold. The work-ledger row improves. The third document's
-  required sampling is outstanding; these results do not qualify the whole OT.
+- Qualification :: Final GET medians are 8.36%, 8.48% and 10.32% of baseline
+  for the large document, work ledger and specification respectively. All
+  required warm-ups and five measured samples per operation/build/document
+  are present. The large threshold and both smaller-document requirements pass.
 
 | Document | Operation | Pandoc median seconds (range) | Native median seconds (range) |
 |----------+-----------+-------------------------------+-------------------------------|
@@ -340,6 +343,9 @@ those platforms.
 | Work ledger | GET | 0.558 (0.556–0.566) | 0.047 (0.047–0.050) |
 | Work ledger | POST and refresh | 0.858 (0.849–0.872) | 0.074 (0.073–0.078) |
 | Work ledger | CLI handoff | 0.454 (0.447–0.456) | 0.206 (0.205–0.211) |
+| Specification | GET | 1.415 (1.341–1.662) | 0.146 (0.145–0.152) |
+| Specification | POST and refresh | 1.959 (1.936–1.971) | 0.198 (0.195–0.201) |
+| Specification | CLI handoff | 0.745 (0.735–0.798) | 0.224 (0.219–0.243) |
 
 Frozen input SHA-256 identities and byte sizes:
 

@@ -278,7 +278,7 @@ classification; it is provenance, not current state.
 - Delivery :: Native worker, HTML adapter and compatibility regressions are on
   =011-conversion-performance=. The working master installation is unchanged.
   [[file:../specs/011-conversion-performance/validation.org][Validation evidence]] records regression,
-  packaging and partial benchmark results; human reader/annotation tests remain.
+  packaging and complete benchmark results; human reader/annotation tests remain.
 
 ** ACTIVE W012 - Replace stale installation links and launchd services :defect:
 :PROPERTIES:

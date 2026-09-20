@@ -472,8 +472,11 @@ footnote-structure cases.
   smaller corpus regresses. All passes and correctness checks remain enabled.
   Record POST and CLI timings separately without conflating them with page GET.
 - Bounds :: Two builds, three corpus documents, one warm-up and five measured
-  runs per build/document/operation, at most 108 operations. Local disposable
-  files only, normal request deadlines, no remote service or browser automation.
+  runs per build/document/operation: 108 operations for one complete comparison.
+  Repeat affected measurements after corrections as necessary; retain discarded
+  runs separately. This planning estimate is not an approval gate for routine
+  hands-off verification. Local disposable files only, normal request deadlines,
+  no remote service or browser automation.
 - Record :: Dated revision and results in =validation.org=; raw personal data
   stays in private temporary storage. This is not a timing assertion in CI.
 
@@ -493,7 +496,8 @@ footnote-structure cases.
   licence. Vulnerability gate succeeds without unapproved exemptions. Evidence
   identifies both the actual application scan and the pinned upstream go-org
   advisory scan, so the local replacement cannot hide upstream findings.
-- Bounds :: One candidate build/package set and one staged native trial; no live
+- Bounds :: One candidate build/package set and one staged native trial, refreshed
+  when implementation corrections invalidate earlier evidence; no live
   installation, service replacement or global package changes. Cross-builds
   are not native Linux/WSL runtime evidence; unavailable trials remain explicit.
 - Record :: =validation.org=, including actual native platform coverage.
@@ -985,3 +989,11 @@ verification or maintaining divergent server/browser interpretations.
 - Same-document heading searches are emitted as path-free Org searches and
   resolved by the existing final heading catalogue in both delivery modes.
   Missing or ambiguous targets stay inactive; explicit custom IDs are retained.
+
+*** Verification allowance clarification
+
+- The operator clarified that agent-authored verification estimates may be
+  amended during hands-off delivery. The original 108-operation estimate counts
+  one complete comparison; it does not prohibit justified replacement samples
+  after remediation. Preserve measured evidence, avoid unrelated reruns and
+  continue through verification without requesting a routine budget extension.
