@@ -290,6 +290,17 @@ classification; it is provenance, not current state.
 - Scope :: Emergency correction for switching stable installations between checkouts.
 - Evidence :: [[file:../specs/012-install-service-replacement/validation.org][Replacement verification and native user test]].
 
+** ACTIVE W013 - UX fixes and improvements :feature:defect:
+:PROPERTIES:
+:CUSTOM_ID: w-013
+:CREATED: 2026-09-20
+:END:
+
+- Specification :: [[file:../specs/013-ux-fixes-and-improvements/spec.org][W013 - Open paired UX record]].
+- First increment :: Configurable top-level Org section for the first footnote.
+- Boundary :: Keep open for explicitly agreed paired increments; track their
+  evidence as work proceeds. No design audit at this stage.
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

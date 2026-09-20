@@ -1,0 +1,77 @@
+#+TITLE: W013 - UX fixes and improvements
+#+SCHEMA: 8
+#+SUBTITLE: Open paired-development record
+#+STARTUP: overview
+#+OPTIONS: num:nil toc:2
+#+OPERATOR_SIGNOFF: Paired development authorized 2026-09-20; closure pending
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+- Outcome :: Track *explicitly agreed UX changes* during paired development.
+- First increment :: Give new Org footnotes their *own configurable section*,
+  separate from the document's final content section when folding in Emacs.
+- State :: *Keep this ticket open*. Append subsequent authorized increments and
+  their evidence here; no design audit is requested at this stage.
+
+* Context and boundaries
+- Authorities :: [[file:../../docs/VISION.md][Vision]],
+  [[file:../../docs/ARCHITECTURE.md][Architecture]] and
+  [[file:../../.sdlc/project.yaml][Project profile]].
+- Baseline :: [[file:../009-reader-annotation-ux/spec.org][W009 - Reader and annotation UX]]
+  defines native footnotes and source preservation.
+  [[file:../../docs/ANNOTATIONS.md][Annotation guidance]] and
+  [[file:../../docs/SERVICE.md][Service configuration]] describe current use.
+- Mode :: *Paired development*, authorized on 20 September 2026. This skeleton
+  records agreed behaviour, not a completed design or implementation.
+- Scope control :: The title reserves space for later UX increments; it does
+  *not authorize unspecified changes*. Record each agreed addition before coding.
+- Preservation :: No migration or rearrangement of existing footnotes. Retain
+  native reference IDs, definitions, attribution and unrelated source bytes.
+- Separate correction :: The duplicate unplaced-footnote correction remains
+  recorded under [[file:../011-conversion-performance/validation.org][W011 - Native Org preview validation]].
+
+* Agreed increment: Org footnote section
+** AC013.1 - First footnote gets a configurable section :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-013-1
+:END:
+- Default :: When creating the *first footnote in an Org document*, append a
+  top-level =* Footnotes & Annotations= heading and a *blank line* before the
+  first definition.
+- Configuration :: =annotations.section_title= defaults to
+  =Footnotes & Annotations=. A custom string changes the title; an *empty string
+  disables* automatic heading creation.
+- Repetition :: Later footnotes reuse the section without duplicating its heading.
+- Existing documents :: Preserve existing footnote organization and headings.
+- Boundary :: This increment concerns *Org source organization*. Markdown
+  behaviour and the block-end insertion policy remain unchanged.
+
+#+BEGIN_SRC yaml
+annotations:
+  section_title: "Footnotes & Annotations"
+#+END_SRC
+
+* Verification to retain
+** RT013.1 - Section creation and source preservation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-013-1
+:END:
+- Covers :: [[#ac-013-1][AC013.1 - Configurable section]].
+- Check :: Default, custom and disabled configuration; first and subsequent
+  saves; existing native footnotes and section headings; unrelated source bytes.
+- Boundary :: Configuration and authenticated annotation writes with synthetic
+  documents in temporary storage. No browser automation or personal fixtures.
+** UT013.1 - Native Org folding and annotation workflow :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-013-1
+:END:
+- Covers :: [[#ac-013-1][AC013.1 - Configurable section]].
+- Check :: Review the generated source in Emacs and the refreshed preview;
+  verify the section folds independently and annotations remain usable.
+
+* Increment ledger
+- 2026-09-20 :: *Skeleton created*. Footnote-section behaviour recorded;
+  implementation and validation pending. Additional UX work awaits explicit
+  paired instructions. Design review and ticket closure are deferred.
