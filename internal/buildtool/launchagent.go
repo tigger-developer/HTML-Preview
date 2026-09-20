@@ -3,13 +3,16 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"syscall"
+	"time"
 )
 
 func launchAgent(stop bool) error {
@@ -20,7 +23,7 @@ func launchAgent(stop bool) error {
 	if err != nil {
 		return err
 	}
-	run := func(args ...string) error { return command(nil, "launchctl", args...) }
+	run := launchctlCommand
 	if stop {
 		return stopLaunchAgent(home, run)
 	}
@@ -53,6 +56,19 @@ func launchAgent(stop bool) error {
 		}
 	}
 	return startLaunchAgent(home, executable, config, pandoc, run)
+}
+
+func launchctlCommand(args ...string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	output, err := exec.CommandContext(ctx, "launchctl", args...).CombinedOutput()
+	if ctx.Err() != nil {
+		return fmt.Errorf("launchctl %s: %w", args[0], ctx.Err())
+	}
+	if err != nil {
+		return fmt.Errorf("launchctl %s: %w: %s", args[0], err, strings.TrimSpace(string(output)))
+	}
+	return nil
 }
 
 func launchAgentPath(home string) (string, error) {
@@ -102,16 +118,14 @@ func startLaunchAgent(home, executable, config, pandoc string, run func(...strin
 	if err != nil {
 		return err
 	}
-	if err = writePackage(plist, data, 0644); err != nil {
-		return err
-	}
-	return run("load", plist)
+	return replaceLaunchAgent(plist, data, run)
 }
 
 func stopLaunchAgent(home string, run func(...string) error) error {
-	plist, err := launchAgentPath(home)
+	_, err := launchAgentPath(home)
 	if err != nil {
 		return err
 	}
-	return run("unload", plist)
+	_, err = bootoutLaunchAgent(run)
+	return err
 }

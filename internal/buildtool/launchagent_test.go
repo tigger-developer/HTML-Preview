@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -39,7 +40,9 @@ func TestLaunchAgentLifecycle(t *testing.T) {
 	if err := stopLaunchAgent(home, run); err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(calls, [][]string{{"load", plist}, {"unload", plist}}) {
+	domain := fmt.Sprintf("gui/%d", os.Getuid())
+	service := domain + "/org.htmlpreview.agent"
+	if !reflect.DeepEqual(calls, [][]string{{"bootout", service}, {"enable", service}, {"bootstrap", domain, plist}, {"bootout", service}}) {
 		t.Fatalf("manager calls: %v", calls)
 	}
 	// #nosec G304 -- Reads only this test's generated plist beneath t.TempDir.

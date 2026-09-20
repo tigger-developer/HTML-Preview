@@ -1,7 +1,7 @@
 ---
 title: Architecture
-version: 3
-last-updated: 2026-09-19
+version: 4
+last-updated: 2026-09-20
 ---
 
 # Architecture
@@ -1007,3 +1007,19 @@ Desktop article grid rows above the body remain content-sized. The body row
 absorbs surplus height required by the spanning annotation or navigation pane,
 preventing composer growth from inserting blank space before the title. The
 phone annotation layout retains its explicit reader/pane split.
+
+## Checkout installation and service replacement, 20 September 2026
+
+[W012 - Replace stale installation links and launchd services](../specs/012-install-service-replacement/spec.org)
+supersedes the earlier refusal of mismatched user-local executable links and the
+load/unload service sequence. Default installation atomically replaces an existing
+symlink with the current checkout target, preserving the former target. Ordinary
+files/directories at the executable destination and prefix-copy safeguards remain.
+
+The Go build tool replaces only `gui/<uid>/org.htmlpreview.agent`: prepare the
+new plist, boot out the old registration, enable the label and bootstrap the new
+plist. Absent jobs are normal. Activation failure restores the previous plist
+and attempts to restart the prior job; failures retain actionable diagnostics and
+recovery files where needed. Configuration, service logs and other jobs remain
+untouched. This supports moving the stable installation between checkouts,
+including a submodule, without changing rendering or source authorization.

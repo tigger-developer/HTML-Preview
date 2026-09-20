@@ -57,7 +57,7 @@ func TestRT001_14_DefaultInstall(t *testing.T) {
 }
 
 func TestRT001_14_DefaultInstallPreservesConflicts(t *testing.T) {
-	for _, kind := range []string{"file", "directory", "live link", "dangling link"} {
+	for _, kind := range []string{"file", "directory"} {
 		t.Run(kind, func(t *testing.T) {
 			stage := t.TempDir()
 			link := stagedDefaultLink(t, stage)
@@ -187,4 +187,50 @@ func stagedInstall(t *testing.T, stage string, args ...string) ([]byte, error) {
 		cmd.Env = append(cmd.Env, setting)
 	}
 	return cmd.CombinedOutput()
+}
+
+// RT012.1 - Switching checkouts replaces only the managed link, never its target.
+func TestRT012_1_ReplaceInstallSymlink(t *testing.T) {
+	for _, kind := range []string{"live", "dangling", "relative"} {
+		t.Run(kind, func(t *testing.T) {
+			stage := t.TempDir()
+			link := stagedDefaultLink(t, stage)
+			if err := os.MkdirAll(filepath.Dir(link), 0700); err != nil {
+				t.Fatal(err)
+			}
+			target := filepath.Join(filepath.Dir(link), "previous checkout")
+			if kind != "dangling" {
+				if err := os.WriteFile(target, []byte("previous executable"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			old := target
+			if kind == "relative" {
+				old = "previous checkout"
+			}
+			if err := os.Symlink(old, link); err != nil {
+				t.Fatal(err)
+			}
+			out, err := stagedInstall(t, stage)
+			if err != nil {
+				t.Fatalf("replace %s link: %v\n%s", kind, err, out)
+			}
+			want, err := filepath.EvalSymlinks("../bin/htmlpreview")
+			if err != nil {
+				t.Fatal(err)
+			}
+			want, err = filepath.Abs(want)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got, err := os.Readlink(link); err != nil || got != want {
+				t.Fatalf("got %q want %q: %v", got, want, err)
+			}
+			if kind != "dangling" {
+				assertInstallSentinel(t, target, "previous executable")
+			} else if _, err := os.Lstat(target); !os.IsNotExist(err) {
+				t.Fatalf("dangling target changed: %v", err)
+			}
+		})
+	}
 }

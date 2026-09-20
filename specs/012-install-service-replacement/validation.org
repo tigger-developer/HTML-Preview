@@ -1,0 +1,36 @@
+#+TITLE: W012 - Installation replacement validation
+#+SCHEMA: 1
+#+TODO: AMBER RED | GREEN
+#+STARTUP: overview
+
+* GREEN RT012.1 - Staged link replacement :testdef:
+:PROPERTIES:
+:REVISION: 4a61a91 plus W012 installer, regression and documentation changes
+:COMMAND: go test -race ./internal/buildtool ./integration -count=1
+:EVIDENCE: Both packages passed; integration 40.169s. Live, dangling and relative links were replaced; existing matching-link and conflict protections passed.
+:END:
+
+** Execution 2026-09-20
+- Before implementation, the three new stale-link cases failed with the expected
+  existing-destination error. After implementation, the affected package suites
+  passed. Tests used temporary installation destinations, not the live home.
+- Focused golangci-lint for both affected packages passed after adding scoped
+  explanations for reads of test-owned temporary sentinel files.
+
+* AMBER RT012.2 - Service replacement and recovery :testdef:
+:PROPERTIES:
+:REASON: Main replacement and failure tests passed, but secondary recovery-failure assertions remain to be added before this record establishes the full defined coverage.
+:END:
+
+** Partial execution 2026-09-20
+- Command :: =go test -race ./internal/buildtool ./integration -count=1=.
+- Candidate :: =4a61a91= plus the W012 changes.
+- Evidence :: Build-tool package passed in 1.033s. Captured manager calls covered
+  absent jobs, checkout replacement, repetition, stop, plist symlinks, and
+  primary bootout/enable/bootstrap failures with restoration.
+- Boundary :: No real LaunchAgent was started or stopped by these tests.
+
+* AMBER UT012.1 - Native checkout switch :testdef:
+:PROPERTIES:
+:REASON: Requires user validation of the intended macOS checkout/submodule and live LaunchAgent; not exercised by captured manager calls.
+:END:

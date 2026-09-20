@@ -276,6 +276,16 @@ classification; it is provenance, not current state.
   by the converter-only design; its earlier recommendation remains in the
   assessment history.
 
+** ACTIVE W012 - Replace stale installation links and launchd services :defect:
+:PROPERTIES:
+:CUSTOM_ID: w-012
+:CREATED: 2026-09-20
+:END:
+
+- Specification :: [[file:../specs/012-install-service-replacement/spec.org][W012 - Installer and service replacement]].
+- Scope :: Emergency correction for switching stable installations between checkouts.
+- Evidence :: [[file:../specs/012-install-service-replacement/validation.org][Replacement verification and native user test]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

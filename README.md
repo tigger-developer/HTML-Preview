@@ -1,3 +1,9 @@
+---
+title: htmlpreview
+version: 1
+last-updated: 2026-09-20
+---
+
 # htmlpreview
 
 Preview local Pandoc documents, source code, plain text and passive native HTML
@@ -179,9 +185,11 @@ make install
 
 The default installation creates `~/.local/bin/htmlpreview` as an absolute
 symlink to this checkout's `bin/htmlpreview`. Keep the checkout at a stable
-location; rebuilding the binary updates the linked command. Reinstalling accepts
-the matching link. A conflicting file, directory or different link is preserved
-and reported; move it aside before retrying.
+location; rebuilding the binary updates the linked command. Reinstalling retains
+a matching link and atomically replaces a different or dangling symlink, so
+installation can switch between checkouts. The previous link target is untouched.
+A regular file or directory at the destination is preserved and reported; move
+that conflicting entry aside before retrying.
 
 Put `~/.local/bin` on PATH. Check command shadowing with
 `command -v htmlpreview`, particularly if you already have a personal script.
@@ -320,3 +328,8 @@ See [VISION.md](docs/VISION.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md), and
 Project code and documentation use [Apache 2.0](LICENSE). Asap and Iosevka
 Custom retain their SIL OFL 1.1 licences. Dependency licences and font provenance
 are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Document changes
+
+- 20 September 2026: default installation replaces stale executable symlinks
+  without changing their former targets.

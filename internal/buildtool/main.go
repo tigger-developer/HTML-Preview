@@ -162,20 +162,46 @@ func installLink(stage string) error {
 	if err := os.MkdirAll(filepath.Dir(link), 0755); err != nil {
 		return fmt.Errorf("create installation directory: %w", err)
 	}
-	if err := os.Symlink(target, link); err != nil {
-		if !errors.Is(err, fs.ErrExist) {
-			return fmt.Errorf("install symlink %q: %w", link, err)
-		}
-		existing, readErr := os.Readlink(link)
-		if readErr != nil || existing != target {
-			return fmt.Errorf("installation destination %q already exists; move it aside and retry: %w", link, err)
-		}
-	}
 	if err := installService(filepath.Join(stage, userHome, ".local/share/htmlpreview"), target, runtime.GOOS); err != nil {
+		return err
+	}
+	if err := replaceInstallLink(target, link); err != nil {
 		return err
 	}
 	_, err = fmt.Fprintf(os.Stdout, "%s -> %s\n", link, target)
 	return err
+}
+
+// Replace the directory entry, never follow or modify an earlier checkout target.
+func replaceInstallLink(target, link string) (err error) {
+	info, err := os.Lstat(link)
+	if err == nil {
+		if info.Mode()&os.ModeSymlink == 0 {
+			return fmt.Errorf("installation destination %q is not a symlink; move it aside and retry", link)
+		}
+		existing, readErr := os.Readlink(link)
+		if readErr != nil {
+			return fmt.Errorf("read installation symlink: %w", readErr)
+		}
+		if existing == target {
+			return nil
+		}
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("inspect installation destination: %w", err)
+	}
+	dir, err := os.MkdirTemp(filepath.Dir(link), ".htmlpreview-install-")
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, os.RemoveAll(dir)) }()
+	candidate := filepath.Join(dir, "htmlpreview")
+	if err := os.Symlink(target, candidate); err != nil {
+		return fmt.Errorf("prepare installation link: %w", err)
+	}
+	if err := os.Rename(candidate, link); err != nil {
+		return fmt.Errorf("replace installation link: %w", err)
+	}
+	return nil
 }
 
 func synchronize() error {

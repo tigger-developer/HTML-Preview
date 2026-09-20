@@ -1,3 +1,9 @@
+---
+title: Local preview service
+version: 1
+last-updated: 2026-09-20
+---
+
 # Local preview service
 
 The optional service renders documents when a browser requests them. It listens
@@ -191,7 +197,12 @@ make serve
 
 `make service` is the equivalent target. It builds the executable, writes
 `~/Library/LaunchAgents/org.htmlpreview.agent.plist` with absolute executable,
-configuration and Pandoc PATH values, and invokes `launchctl load` on that file.
+configuration and Pandoc PATH values. It replaces the existing
+`gui/<uid>/org.htmlpreview.agent` registration using `launchctl bootout`,
+`enable` and `bootstrap`. Run it directly after switching checkouts: no manual
+unload or plist deletion is needed. An absent job is normal; other manager errors
+are reported. Existing regular or symlinked plists are replaced without writing
+through a symlink to another checkout.
 It uses the configuration search order above, but requires an existing file;
 it never uses launchd's incidental working directory as a fallback root.
 The generated plist uses the checkout binary, so retain the checkout.
@@ -202,8 +213,13 @@ To stop it:
 make service-stop
 ```
 
-This invokes `launchctl unload` and retains the plist. Stop before restarting
-with changed settings. These convenience targets are macOS-only; Linux and WSL
+This invokes `launchctl bootout` by service label and retains the plist. Repeating
+it when the job is absent succeeds. `make service` also handles a running job,
+so a separate stop is optional. If replacement activation fails, the installer
+restores the previous plist and attempts to restart a previously registered job;
+it reports both activation and recovery errors. If recovery cannot restore the
+plist, its diagnostic identifies retained recovery files. Existing configuration
+and service logs are preserved. These convenience targets are macOS-only; Linux and WSL
 use the foreground command or the user service instructions below. They do not
 open a browser. The following manual procedure remains an alternative for
 prefix installations or inspecting a plist before activation.
@@ -357,7 +373,7 @@ timestamp, HTTP method, status, error code and opaque document identifier.
 Annotation diagnostics omit document text, comment text, author names and
 capability URLs. Successful refresh requests are not access-logged.
 
-After updating an older installation, stop it and run `make serve` to regenerate
+After updating an older installation, run `make serve` to regenerate
 and reload its plist. Reopen previews to load the current browser code. Inspect
 recent diagnostics without opening a browser:
 
@@ -369,3 +385,8 @@ The application does not rotate the log. Stop the service before archiving or
 truncating it. For manual/prefix LaunchAgent installation, create the private log
 directory/file before loading the generated plist. Linux user services use their
 existing journal; foreground mode writes diagnostics to stderr.
+
+## Document changes
+
+- 20 September 2026: service activation replaces an existing checkout registration;
+  stopping an absent job succeeds, and failed activation attempts prior-state recovery.

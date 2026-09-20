@@ -1,0 +1,235 @@
+#+TITLE: W012 - Replace stale installation links and launchd services
+#+SCHEMA: 8
+#+SUBTITLE: Emergency installer correction
+#+STARTUP: overview
+#+OPTIONS: num:nil toc:2
+#+OPERATOR_SIGNOFF: Emergency implementation authorized 2026-09-20; closure pending
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+** Outcome
+- *Installation can switch checkouts* without manually deleting the old link or
+  unloading the old HTMLPreview LaunchAgent.
+** Before
+- A *different or dangling executable symlink* stopped installation.
+- Repeated service activation used *launchctl load* against an existing job.
+** After
+- The default executable link is *atomically replaced* when its target differs.
+- Service activation *replaces the registered job* by its stable user label.
+** Changes
+- *bootout, enable and bootstrap* replace the older load/unload sequence.
+- A failed replacement *restores the prior plist* and attempts to restart the
+  old registration. Recovery failures remain explicit.
+** Unchanged
+- *Regular executable files and directories are protected*; prefix copy policy,
+  user configuration, logs, roots and rendering remain unchanged.
+- This correction stays on *master*, separate from W011's feature branch.
+** Edge cases
+- *Missing jobs are normal*; other launchd failures are reported.
+- Stale plist symlinks are *replaced without changing their targets*.
+- An old registration with *no recoverable plist* cannot be reconstructed after
+  a failed replacement; the error identifies that limitation.
+** Decisions
+- Reuse the *existing Go build tool*, a same-directory staged rename and the
+  single =org.htmlpreview.agent= label. No new service or dependency.
+** Next step
+- Review implementation evidence and perform the native checkout-switch user
+  test before operator closure.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+** Problem and emergency scope
+- Temporary specification :: The 20 September 2026 =BYPASS-GATE-7= request
+  requires replacement of a stale =~/.local/bin/htmlpreview= link and an old
+  launchd service when installing from another checkout, including a submodule.
+- Sequence :: This durable record follows the emergency code correction; it
+  does not claim advance definition review.
+- Included :: Default user-local installation; macOS =make service=/=make serve=
+  and =make service-stop=; failure recovery and their documentation.
+- Excluded :: Converter work, prefix-copy migration, other service labels,
+  Linux service changes, automatic updates of another repository's submodule
+  pointer, live activation by the agent and configuration changes.
+** Authorities and baseline
+- Profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product and architecture :: [[file:../../docs/VISION.md][Vision]] and
+  [[file:../../docs/ARCHITECTURE.md][Architecture]].
+- Superseded detail :: [[file:../001-local-document-preview/spec.org][W001 - Installation contract]]
+  previously refused mismatched links. [[file:../010-folding-and-service/spec.org][W010 - Service commands]]
+  used load/unload. This delta supersedes only those replacement behaviours.
+- Current evidence :: [[file:../../internal/buildtool/main.go][Installer]],
+  [[file:../../internal/buildtool/launchagent.go][LaunchAgent commands]],
+  [[file:../../integration/install_test.go][Staged install regressions]] and
+  [[file:../../internal/buildtool/launchagent_test.go][Manager-boundary regressions]].
+** Constraints and dependencies
+- Keep the *working master renderer* and the separate W011 definition intact.
+- All automated checks use *temporary destinations and captured manager calls*.
+  Actual launchd state and checkout switching require the defined native UT.
+** Unresolved blockers
+- None for the bounded implementation. Native user validation remains separate.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+** AC012.1 - Default link installation replaces stale links safely :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-012-1
+:END:
+- Criterion :: Default installation retains a matching symlink and *replaces a
+  different, relative or dangling symlink* with the current checkout's absolute
+  binary path. It never changes the previous target; a regular file or directory
+  at the executable destination remains untouched and produces an actionable error.
+- Proven by :: [[#rt-012-1][RT012.1 - Staged link replacement]].
+** AC012.2 - Service activation replaces the old user registration :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-012-2
+:END:
+- Criterion :: Starting from an absent, stopped, disabled or registered
+  HTMLPreview job, service activation *registers the current checkout's plist*
+  under the existing user label. Repetition requires no manual stop. A stale
+  plist symlink is replaced without modifying its target. Stop succeeds when
+  the job is already absent and retains the plist.
+- Proven by :: [[#rt-012-2][RT012.2 - Service replacement and recovery]],
+  [[#ut-012-1][UT012.1 - Native checkout switch]].
+** AC012.3 - Genuine failures preserve recovery evidence :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-012-3
+:END:
+- Criterion :: Preparation failure leaves the old registration untouched.
+  Manager failures other than an absent job remain errors. After a failed
+  activation, the installer *restores the previous plist* and attempts to restart
+  a previously registered job. Failed recovery is reported with any retained
+  recovery location; no success is claimed from that failure. Configuration,
+  existing logs and unrelated services are not removed or rewritten.
+- Proven by :: [[#rt-012-2][RT012.2 - Service replacement and recovery]],
+  [[#ut-012-1][UT012.1 - Native checkout switch]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+** RT012.1 - Staged link replacement :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-012-1
+:END:
+- Covers :: [[#ac-012-1][AC012.1 - Safe link replacement]].
+- Boundary :: Public =make install= using =DESTDIR= and temporary files.
+- Action :: Install over live absolute, relative and dangling links; repeat a
+  matching install. Exercise regular-file/directory conflicts and prefix copies.
+- Expected :: Link points to the canonical current binary; the previous target
+  is byte-identical or still absent. A matching link retains its identity.
+  Regular-file/directory conflicts remain untouched; prefix-copy safeguards hold.
+- Retention :: =integration/install_test.go= under =make test=; the new replacement
+  cases are TDD regressions and existing safeguards are preservation evidence.
+** RT012.2 - Service replacement and recovery :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-012-2
+:END:
+- Covers :: [[#ac-012-2][AC012.2 - Service replacement]],
+  [[#ac-012-3][AC012.3 - Failure recovery]].
+- Boundary :: Generated real plist and captured launchctl command boundary,
+  using temporary homes. No native service is activated by automated tests.
+- Action :: Activate from absent state, replace a loaded job with another
+  executable path, repeat, stop twice and replace live/dangling plist symlinks.
+  Force bootout, enable, bootstrap and recovery failures; try a missing config.
+- Expected :: Exact user-label operations; enable precedes bootstrap; correct
+  executable/XML paths and private persistent log. Absence is tolerated but a
+  genuine manager error is retained. Failed switches restore prior plist bytes
+  and registration where possible; failed rollback retains recoverable files
+  or the restored old plist and reports the recovery failure.
+- Retention :: =internal/buildtool= Go tests under =make test=; existing Host-style
+  function injection controls the documented external manager boundary.
+** UT012.1 - Native checkout switch :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-012-1
+:END:
+- Covers :: [[#ac-012-2][AC012.2 - Service replacement]],
+  [[#ac-012-3][AC012.3 - Failure recovery]].
+- Method :: User validation on macOS, without automated desktop control.
+- Procedure :: From the intended stable checkout/submodule containing this
+  change, run =make install= then =make service=. Repeat =make service= while
+  running, inspect =launchctl print gui/<uid>/org.htmlpreview.agent=, and preview
+  a disposable served document. Stop twice and start once more.
+- Expected :: Correct new executable path; one current registration; the
+  command opens the service preview; configuration/log history survives; no
+  false load/absence failure. Preserve the old checkout until validation ends.
+- Record :: Dated candidate, macOS version and observations in =validation.org=.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+- No old plist :: An already registered job can be replaced by label even when
+  its plist is absent. If new activation fails after stopping it, recovery
+  cannot reconstruct that missing definition and reports this explicitly.
+- Disabled job :: Explicit service activation enables the same label before
+  bootstrapping. It does not enable any other service or alter configured roots.
+- No GUI domain :: Domain/permission errors are genuine failures, not treated as
+  an absent job. The automatic route remains a macOS user LaunchAgent operation.
+- Recovery error :: Retain the old plist or named staging directory instead of
+  silently deleting the only remaining recovery copy.
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+** Link installation
+- Build and resolve the current executable and generate inactive service assets.
+  Inspect the destination using *Lstat*, so dangling symlinks remain identifiable.
+- A matching link is unchanged. For an absent or mismatched symlink, create a
+  candidate in a private directory under the destination's parent, then rename
+  it over the link. The same filesystem provides *atomic entry replacement*.
+- Never write through a previous target or replace an ordinary executable file.
+  Remove only the operation's staging directory and report cleanup errors.
+** LaunchAgent lifecycle
+- Reuse the existing plist renderer, configuration selection and private log.
+  Prepare candidate bytes before stopping the job; preserve old plist entries,
+  including symlinks, by renaming them into the private staging directory.
+- Invoke *bootout gui/<uid>/org.htmlpreview.agent*, followed by *enable* for the
+  same label, then *bootstrap gui/<uid> <absolute-plist>*. Only launchctl's
+  ESRCH/exit 3 absent-job result is benign. =service-stop= uses the same bootout
+  helper and is idempotent when the job is absent.
+- Manager execution has a 30-second deadline. Capture diagnostics so expected
+  absence does not print a spurious error; wrap genuine errors with operation
+  context and retain their exit identity.
+- If enabling or bootstrapping fails, remove any partially registered replacement,
+  restore the old plist and restart it when a previous job existed. Preserve
+  recovery files when restoration fails. Return the original error together
+  with recovery errors; do not retry indefinitely or report success.
+- Rollback cannot reconstruct a registered job's old in-memory definition when
+  its original plist was already missing. No broad launchd enumeration or
+  reconstruction subsystem is introduced for that case.
+** Simplicity and verification
+- Reuse the existing Go build tool and function-injected launchctl boundary.
+  No new dependency, persistent state service, browser harness or shell execution.
+- The small replacement transaction is necessary to avoid losing the old plist
+  on a failed switch. Verify observable filesystem and manager outcomes through
+  the two RTs; the real launchd exit/status behaviour remains a native UT.
+** Security impact
+- The existing *user-owned executable entry and one named user service* are the
+  only replacement targets. No root escalation, remote listener or directory
+  grant is added. Arguments remain separate and paths remain XML-escaped.
+- Symlink targets, configuration and prior log content are preserved. Existing
+  no-follow/private-log checks remain. Prefix copy installation is unchanged.
+- A service restart invalidates previews according to the existing service
+  lifetime contract; reopening documents obtains current URLs.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+- Evidence :: [[file:validation.org][Validation]] and [[file:audits.yaml][Harness-owned audits]].
+- Documentation :: Update =README.md= installation guidance, =docs/SERVICE.md=
+  activation/recovery instructions and =docs/ARCHITECTURE.md= replacement ownership.
+  Vision is unaffected: local-only preview and source-write boundaries do not change.
+- Deployment :: This repository's master carries the emergency correction.
+  The external SDLC checkout/submodule and actual LaunchAgent remain operator-owned;
+  this task does not update that repository or activate the live job.
+- Remaining authority :: Native UT evidence and operator closure. W011's
+  implementation still requires its separate feature branch and delivery authority.
