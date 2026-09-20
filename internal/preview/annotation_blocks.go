@@ -111,6 +111,14 @@ func (s *session) markAnnotationBlocks(ctx context.Context, p *page, input []byt
 		}
 		key := fmt.Sprintf("b%s-%d", revision, boundaries[h.key].Offset)
 		setAttribute(actual, "data-hp-annotation-block", key)
+		if boundaries[h.key].Kind == "quote" {
+			// Browser selection takes the nearest paragraph, not its quote container.
+			for child := range actual.Descendants() {
+				if eligibleBlock(child) {
+					setAttribute(child, "data-hp-annotation-block", key)
+				}
+			}
+		}
 		// A description label selects its first verified content block, using
 		// the same server-owned boundary rather than inserting into the term.
 		dd := actual
@@ -177,7 +185,7 @@ func previousAnnotationBlock(n *html.Node, kind string) *html.Node {
 	if n == nil {
 		return nil
 	}
-	if kind == "heading" && isHeading(n) || kind == "table" && n.Data == "table" || kind == "org:QUOTE" && n.Data == "blockquote" || kind == "org:VERSE" && hasClass(n, "line-block") {
+	if kind == "heading" && isHeading(n) || kind == "table" && n.Data == "table" || (kind == "quote" || kind == "org:QUOTE") && n.Data == "blockquote" || kind == "org:VERSE" && hasClass(n, "line-block") {
 		return n
 	}
 	if kind == "code" || kind == "org:SRC" || kind == "org:EXAMPLE" {

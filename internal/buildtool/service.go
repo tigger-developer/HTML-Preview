@@ -51,16 +51,8 @@ func installService(share, executable, goos string) error {
 	if err != nil {
 		return err
 	}
-	pandoc, err := exec.LookPath("pandoc")
-	if err != nil {
-		return errors.New("service template requires installed Pandoc; install Pandoc and rerun make install")
-	}
-	pandoc, err = filepath.Abs(pandoc)
-	if err != nil {
-		return err
-	}
 	config := filepath.Join(base, ".config/htmlpreview/config.yaml")
-	path := filepath.Dir(pandoc) + ":/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+	path := serviceSearchPath(installedPandoc())
 	data, err := renderService(goos, executable, config, path)
 	if err != nil {
 		return err
@@ -122,3 +114,23 @@ func renderServiceLog(goos, executable, config, path, logPath string) ([]byte, e
 
 // systemd accepts C-style quoting; percent specifiers must stay literal.
 func unitQuote(value string) string { return strconv.Quote(strings.ReplaceAll(value, "%", "%%")) }
+
+// Pandoc is optional; retain its discovered directory for specialist readers.
+func installedPandoc() string {
+	path, err := exec.LookPath("pandoc")
+	if err != nil {
+		return ""
+	}
+	path, err = filepath.Abs(path)
+	if err != nil {
+		return ""
+	}
+	return path
+}
+func serviceSearchPath(pandoc string) string {
+	path := "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+	if pandoc != "" {
+		path = filepath.Dir(pandoc) + ":" + path
+	}
+	return path
+}

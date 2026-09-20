@@ -21,6 +21,9 @@ import (
 )
 
 type previewService struct {
+	optionalMu               sync.Mutex
+	optionalPath             string
+	optionalCatalogue        *formatCatalogue
 	eventStreams             int
 	annotationWriter         *annotation.Writer
 	annotationGrants         map[string]*annotationGrant
@@ -60,25 +63,8 @@ func randomCapability() (string, error) {
 func runService(ctx context.Context, cfg config, svc serviceConfig, host Host, console *console) (code int) {
 	ctx, stop := context.WithCancel(ctx)
 	defer stop()
-	pandoc, err := host.LookPath("pandoc")
-	if err == nil {
-		err = checkPandoc(ctx, host, pandoc)
-	}
-	if err != nil {
-		console.warn("service dependency: %v", err)
-		return 1
-	}
-	cfg.formats, err = discoverFormats(ctx, host, pandoc)
-	if err != nil || len(cfg.formats.readers) > 256 {
-		console.warn("service reader catalogue unavailable or oversized")
-		return 1
-	}
-	for reader := range cfg.formats.readers {
-		if len(reader) > 128 {
-			console.warn("service reader name exceeds limit")
-			return 1
-		}
-	}
+	pandoc := ""
+	cfg.formats = nativeFormats()
 	runtime, err := openServiceRuntime(svc.runtime)
 	if err != nil {
 		console.warn("service runtime: %v", err)

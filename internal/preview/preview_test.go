@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tigger-developer/HTML-Preview/internal/markdownconvert"
 	"github.com/tigger-developer/HTML-Preview/internal/orgconvert"
 	"golang.org/x/net/html"
 )
@@ -33,6 +34,9 @@ type handoff struct {
 }
 
 func TestMain(m *testing.M) {
+	if len(os.Args) == 2 && os.Args[1] == "--internal-markdown-convert" {
+		os.Exit(markdownconvert.Worker(os.Stdin, os.Stdout, os.Stderr))
+	}
 	if len(os.Args) > 1 && os.Args[1] == "--internal-org-convert" {
 		os.Exit(orgconvert.Worker(os.Stdin, os.Stdout, os.Stderr))
 	}

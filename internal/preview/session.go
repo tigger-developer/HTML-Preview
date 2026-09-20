@@ -41,7 +41,7 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 	}
 	pandoc := ""
 	if connection == nil {
-		pandoc, err = localFormats(ctx, &cfg, host)
+		pandoc, err = localFormats(ctx, &cfg, host, files)
 		if err != nil {
 			return inputFailure(log, err)
 		}
@@ -78,7 +78,7 @@ func execute(ctx context.Context, files, env []string, cfg config, host Host, lo
 		return openHTTP(ctx, allSources, served, desktop, log)
 	}
 	if pandoc == "" {
-		pandoc, err = localFormats(ctx, &cfg, host)
+		pandoc, err = localFormats(ctx, &cfg, host, files)
 		if err != nil {
 			return inputFailure(log, err)
 		}
@@ -217,24 +217,34 @@ func explicitSources(files []string, cfg config, log *console) ([]sourceContext,
 	return result, invalid, nil
 }
 
-func localFormats(ctx context.Context, cfg *config, host Host) (string, error) {
-	pandoc, err := host.LookPath("pandoc")
-	if err != nil {
-		return "", fmt.Errorf("install Pandoc 3.9.0.2 or a later 3.9 patch: %w", err)
-	}
-	if err = checkPandoc(ctx, host, pandoc); err != nil {
-		return "", fmt.Errorf("Pandoc compatibility: %w", err)
-	}
-	cfg.formats, err = discoverFormats(ctx, host, pandoc)
-	if err != nil {
-		return "", err
-	}
-	if cfg.from != "" {
-		if err = cfg.formats.validateSelection(ctx, host, pandoc, cfg.from); err != nil {
+func localFormats(ctx context.Context, cfg *config, host Host, files []string) (string, error) {
+	cfg.formats = nativeFormats()
+	if readerBase(cfg.from) == "markdown" {
+		if err := validateMarkdown(cfg.from); err != nil {
 			return "", &readerError{err}
 		}
 	}
-	return pandoc, nil
+	optional := !nativeReader(cfg.from)
+	for _, file := range files {
+		f, err := cfg.formats.resolve(file, cfg.from)
+		if err != nil || !nativeReader(f.reader) {
+			optional = true
+		}
+	}
+	path := ""
+	if optional {
+		var err error
+		path, cfg.formats, err = optionalFormats(ctx, host)
+		if err != nil {
+			return "", err
+		}
+	}
+	if cfg.from != "" {
+		if err := cfg.formats.validateSelection(ctx, host, path, cfg.from); err != nil {
+			return "", &readerError{err}
+		}
+	}
+	return path, nil
 }
 
 func inputFailure(log *console, err error) int {
@@ -345,6 +355,9 @@ func (s *session) convert(ctx context.Context, p *page) {
 		return
 	}
 	p.ready = true
+	if p.omittedHTML {
+		s.log.notice("%q: %s", p.source.logical, markdownHTMLWarning)
+	}
 }
 
 func (s *session) publish(ctx context.Context) error {

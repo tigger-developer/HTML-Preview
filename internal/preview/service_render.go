@@ -18,21 +18,21 @@ import (
 	"golang.org/x/net/html"
 )
 
-func (service *previewService) renderHTTP(ctx context.Context, cap *readCapability, src sourceContext, lookup *orgLookup) ([]byte, int) {
+func (service *previewService) renderHTTP(ctx context.Context, cap *readCapability, src sourceContext, lookup *orgLookup) ([]byte, int, bool) {
 	result, status := service.currentPage(ctx, cap, src)
 	if status != 200 {
-		return nil, status
+		return nil, status, false
 	}
 	if lookup == nil {
-		return result.data, 200
+		return result.data, 200, result.omittedHTML
 	}
 	lookup.fragment = catalogueAnchor(result.ids, result.headings, lookup.search)
 	if lookup.fragment != "" {
-		return result.data, 200
+		return result.data, 200, result.omittedHTML
 	}
 	doc, err := html.Parse(bytes.NewReader(result.data))
 	if err != nil {
-		return nil, 422
+		return nil, 422, false
 	}
 	notice := &html.Node{Type: html.ElementNode, Data: "p"}
 	notice.AppendChild(nodeText("Org search not resolved: " + lookup.search))
@@ -40,12 +40,12 @@ func (service *previewService) renderHTTP(ctx context.Context, cap *readCapabili
 	body.InsertBefore(notice, body.FirstChild)
 	var output bytes.Buffer
 	if err = html.Render(&output, doc); err != nil {
-		return nil, 422
+		return nil, 422, false
 	}
 	if int64(output.Len()) > cap.settings.outputBytes {
-		return nil, 413
+		return nil, 413, false
 	}
-	return output.Bytes(), 200
+	return output.Bytes(), 200, result.omittedHTML
 }
 
 func (service *previewService) buildHTTP(ctx context.Context, cap *readCapability, src sourceContext, input []byte) (result *httpPage, status int) {
@@ -62,7 +62,15 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 	}()
 	cfg := cap.settings
 	cfg.httpOrigin = service.origin
-	s := &session{path: path, pandoc: service.pandoc, host: service.host, cfg: cfg, log: &console{out: io.Discard, diagnostics: io.Discard}, byKey: make(map[string]*page), sourceUsed: int64(len(input))}
+	pandoc := ""
+	if !nativeReader(src.input.reader) {
+		var dependencyErr error
+		pandoc, cfg.formats, dependencyErr = service.optional(ctx)
+		if dependencyErr != nil {
+			return nil, 415
+		}
+	}
+	s := &session{path: path, pandoc: pandoc, host: service.host, cfg: cfg, log: &console{out: io.Discard, diagnostics: io.Discard}, byKey: make(map[string]*page), sourceUsed: int64(len(input))}
 	revision := digestText(input)
 	s.imageResolver = func(p *page, name, kind string, data []byte) (string, error) {
 		return service.registerImage(cap, p, revision, name, kind, data)
@@ -128,7 +136,7 @@ func (service *previewService) buildHTTP(ctx context.Context, cap *readCapabilit
 		return nil, 413
 	}
 	bodyText, headingSpans := annotation.CanonicalDocument(p.dom, p.explicitIDs)
-	return &httpPage{annotationBlocks: p.annotationBlocks, annotationLocations: locations, annotationSourceRevision: p.annotationSourceRevision, bodyText: bodyText, headingSpans: headingSpans, explicitIDs: p.explicitIDs, data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants, cap: cap, catalogueSensitive: p.catalogueSensitive}, 200
+	return &httpPage{omittedHTML: p.omittedHTML, annotationBlocks: p.annotationBlocks, annotationLocations: locations, annotationSourceRevision: p.annotationSourceRevision, bodyText: bodyText, headingSpans: headingSpans, explicitIDs: p.explicitIDs, data: data, source: src, ids: p.ids, headings: p.headings, orgIDs: p.orgIDs, dependencies: p.dependencies, cacheable: !p.uncacheable, media: p.httpMedia, assetGrants: p.assetGrants, mediaGrants: p.mediaGrants, cap: cap, catalogueSensitive: p.catalogueSensitive}, 200
 }
 func renderStatus(ctx context.Context, err error) int {
 	if ctx.Err() != nil || errors.Is(err, context.DeadlineExceeded) {

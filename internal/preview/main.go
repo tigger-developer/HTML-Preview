@@ -58,19 +58,16 @@ func Main(args, env []string, out, diagnostics io.Writer, version, revision stri
 
 func listFormats(host Host, log *console) int {
 	ctx := context.Background()
-	path, err := host.LookPath("pandoc")
+	_, err := host.LookPath("pandoc")
+	catalogue := nativeFormats()
 	if err == nil {
-		err = checkPandoc(ctx, host, path)
+		_, catalogue, err = optionalFormats(ctx, host)
+		if err != nil {
+			log.warn("%v", err)
+			return 1
+		}
 	}
-	if err != nil {
-		log.warn("Pandoc input-format listing: %v", err)
-		return 1
-	}
-	catalogue, err := discoverFormats(ctx, host, path)
-	if err != nil {
-		log.warn("%v", err)
-		return 1
-	}
+
 	log.print("%s", catalogue.listing)
 	return log.status(0)
 }

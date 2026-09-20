@@ -107,6 +107,13 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 		if literal.active() {
 			continue
 		}
+		if format != "org" && strings.HasPrefix(trim, ">") {
+			if i+1 == len(lines) || !strings.HasPrefix(strings.TrimSpace(lines[i+1].text), ">") {
+				offset, after := afterBlockBoundary(lines, i, format)
+				add(offset, after, "quote")
+			}
+			continue
+		}
 		if format == "org" && drawerNameForAnnotation(trim) {
 			drawer = !strings.EqualFold(trim, ":END:")
 			continue
@@ -118,7 +125,7 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 			}
 			continue
 		}
-		if drawer || trim == "" || strings.HasPrefix(trim, "|") || strings.HasPrefix(trim, ">") || strings.HasPrefix(trim, "<") || strings.HasPrefix(trim, ":") {
+		if drawer || trim == "" || strings.HasPrefix(trim, "|") || strings.HasPrefix(trim, ">") || strings.HasPrefix(trim, "<") || (format == "org" && strings.HasPrefix(trim, ":")) {
 			continue
 		}
 		start, end, heading := headingProse(line.text, format, states)

@@ -25,6 +25,7 @@ func (f inputFormat) binary() bool {
 }
 
 type formatCatalogue struct {
+	optional           bool
 	readers, languages map[string]bool
 	listing            string
 }
@@ -40,7 +41,7 @@ func discoverFormats(ctx context.Context, host Host, pandoc string) (*formatCata
 	if err != nil {
 		return nil, fmt.Errorf("list Pandoc highlighting languages: %w", err)
 	}
-	c := &formatCatalogue{readers: make(map[string]bool), languages: make(map[string]bool), listing: string(readers)}
+	c := &formatCatalogue{optional: true, readers: make(map[string]bool), languages: make(map[string]bool), listing: string(readers)}
 	for _, reader := range strings.Fields(string(readers)) {
 		if !regexp.MustCompile(`^[a-z][a-z0-9_]*$`).MatchString(reader) {
 			return nil, fmt.Errorf("invalid installed reader name")
@@ -67,6 +68,9 @@ func (c *formatCatalogue) validateSelection(ctx context.Context, host Host, pand
 		return fmt.Errorf("invalid --from reader; use --list-input-formats")
 	}
 	base := readerBase(selection)
+	if base == "markdown" {
+		return validateMarkdown(selection)
+	}
 	if !c.readers[base] {
 		return fmt.Errorf("--from reader %q is unavailable; use --list-input-formats", base)
 	}
@@ -179,7 +183,7 @@ func (c *formatCatalogue) resolve(path, selected string) (inputFormat, error) {
 	if best == 0 {
 		return f, fmt.Errorf("unknown input format; select --from FORMAT or use --list-input-formats")
 	}
-	if f.reader != "" && !c.readers[f.reader] {
+	if f.reader != "" && !c.readers[f.reader] && c.optional {
 		return f, fmt.Errorf("Pandoc reader %q is unavailable; use --list-input-formats", f.reader)
 	}
 	return f, nil

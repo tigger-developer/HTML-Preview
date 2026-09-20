@@ -120,7 +120,12 @@ func (s *previewService) serveDocument(w http.ResponseWriter, r *http.Request, c
 		s.serveAsset(w, r, cap, path)
 		return
 	}
-	src, err := identifyFormat(path, cap.root, from, s.base.formats)
+	catalogue, catalogueErr := s.catalogueFor(r.Context(), path, from)
+	if catalogueErr != nil {
+		publicError(w, r, 415, "Optional reader unavailable; install compatible Pandoc")
+		return
+	}
+	src, err := identifyFormat(path, cap.root, from, catalogue)
 	if err != nil {
 		publicError(w, r, sourceHTTPStatus(err), "Document unavailable")
 		return
@@ -130,7 +135,7 @@ func (s *previewService) serveDocument(w http.ResponseWriter, r *http.Request, c
 		publicError(w, r, 403, "Document outside authorized filesystem")
 		return
 	}
-	data, status := s.renderHTTP(r.Context(), cap, src, lookup)
+	data, status, omittedHTML := s.renderHTTP(r.Context(), cap, src, lookup)
 	if status != 200 {
 		publicError(w, r, status, "Preview could not be rendered")
 		return
@@ -142,6 +147,9 @@ func (s *previewService) serveDocument(w http.ResponseWriter, r *http.Request, c
 		w.Header().Set("Location", s.documentURL(cap, src.logical, "", query.Encode(), lookup.fragment))
 		publicResponse(w, r, 303, "text/html; charset=utf-8", nil)
 		return
+	}
+	if omittedHTML {
+		w.Header().Set("X-HTMLPreview-Omitted-HTML", "1")
 	}
 	publicResponse(w, r, 200, "text/html; charset=utf-8", data)
 }
@@ -184,7 +192,10 @@ func (s *previewService) requestFormat(r *http.Request) (string, int) {
 	if len(values) != 1 || len(values[0]) == 0 || len(values[0]) > 256 || !readerSelectionPattern.MatchString(values[0]) {
 		return "", 400
 	}
-	if err := s.base.formats.validateSelection(r.Context(), s.host, s.pandoc, values[0]); err != nil {
+	if err := s.selection(r.Context(), values[0]); err != nil {
+		if readerBase(values[0]) == "markdown" {
+			return "", 400
+		}
 		return "", 415
 	}
 	return values[0], 0

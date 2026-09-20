@@ -25,6 +25,7 @@ import (
 )
 
 type page struct {
+	omittedHTML                   bool
 	probeLabels                   []string
 	annotationBlocks              map[string]annotationBlock
 	sourceData                    *string
@@ -88,6 +89,9 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		return err
 	}
 	format := strings.TrimSpace(string(dialect))
+	if p.source.input.kind == "markdown" {
+		format = p.source.input.reader
+	}
 	p.format = "markdown"
 	if p.source.selected || p.source.input.reader != "markdown" {
 		format = p.source.input.reader
@@ -127,10 +131,15 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	if format == "org" {
 		args = append(args, "--metadata=htmlpreview-org:true")
 	}
+	if markdownFamily(format) {
+		args = append(args, "--metadata=htmlpreview-omit-html:true")
+	}
 	args = append(args, "+RTS", "-M512M", "-RTS")
 	var output []byte
 	if format == "org" {
-		output, err = s.convertOrg(ctx, p, data, token)
+		output, err = s.convertNative(ctx, p, data, token, "org")
+	} else if readerBase(format) == "markdown" {
+		output, err = s.convertNative(ctx, p, data, token, format)
 	} else {
 		output, err = s.host.Execute(ctx, Command{Path: s.pandoc, Args: args, Input: data, Dir: s.path, Limit: s.cfg.outputBytes - s.used})
 	}
@@ -151,6 +160,13 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	if p.source.input.binary() {
 		if err := s.restoreMedia(doc, p, token); err != nil {
 			return err
+		}
+	}
+	for n := range doc.Descendants() {
+		if attribute(n, "id") == "htmlpreview-omitted-html-"+token {
+			p.omittedHTML = true
+			n.Parent.RemoveChild(n)
+			break
 		}
 	}
 	headings, err := s.restoreTransport(doc, p, token)
@@ -176,13 +192,16 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 	return nil
 }
 
-func (s *session) convertOrg(ctx context.Context, p *page, data []byte, token string) ([]byte, error) {
+func (s *session) convertNative(ctx context.Context, p *page, data []byte, token, format string) ([]byte, error) {
 	executable, err := os.Executable()
 	if err != nil {
 		return nil, fmt.Errorf("resolve native converter: %w", err)
 	}
 	remaining := s.cfg.outputBytes - s.used
 	request := orgconvert.Request{Version: 1, Text: string(data), Token: token, TOC: s.cfg.toc, TOCDepth: s.cfg.tocDepth, InputBytes: min(orgconvert.MaxInputBytes, remaining+int64(len(data))), OutputBytes: min(orgconvert.MaxOutputBytes, remaining), MemoryBytes: orgconvert.MaxMemoryBytes, ProbeLabels: p.probeLabels}
+	if readerBase(format) == "markdown" {
+		request.SmartOff = markdownSmartOff(format)
+	}
 	payload, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -192,7 +211,7 @@ func (s *session) convertOrg(ctx context.Context, p *page, data []byte, token st
 	if int64(len(payload)) > request.InputBytes || s.used >= s.cfg.outputBytes {
 		return nil, errors.New("native conversion input limit exceeded")
 	}
-	output, err := s.host.Execute(ctx, Command{Path: executable, Args: []string{"--internal-org-convert"}, Input: payload, Dir: s.path, Limit: min(orgconvert.MaxOutputBytes, s.cfg.outputBytes-s.used)})
+	output, err := s.host.Execute(ctx, Command{Path: executable, Args: []string{"--internal-" + readerBase(format) + "-convert"}, Input: payload, Dir: s.path, Limit: min(orgconvert.MaxOutputBytes, s.cfg.outputBytes-s.used)})
 	var exit *exec.ExitError
 	if errors.As(err, &exit) && exit.ExitCode() == orgconvert.LimitExit {
 		return nil, errors.New("native conversion resource limit exceeded")

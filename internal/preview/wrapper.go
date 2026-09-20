@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/alecthomas/chroma/v2/lexers"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
@@ -32,7 +33,7 @@ func (s *session) preserveWrapper(p *page, data []byte, token string) (preservat
 			display = formatted.String()
 		}
 	}
-	if language != "plaintext" && !s.cfg.formats.languages[language] {
+	if language != "plaintext" && lexers.Get(language) == nil {
 		s.log.notice("%q: highlighting language %q unavailable; displaying plain code", p.source.logical, language)
 		language = "plaintext"
 	}

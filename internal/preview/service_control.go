@@ -113,7 +113,7 @@ func (s *previewService) serveControl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if request.From != "" {
-		if err = s.base.formats.validateSelection(r.Context(), s.host, s.pandoc, request.From); err != nil {
+		if err = s.selection(r.Context(), request.From); err != nil {
 			writeControl(w, 400, map[string]string{"error": "invalid_reader"})
 			return
 		}
@@ -256,7 +256,12 @@ func (s *previewService) register(path, from string, cfg config) registrationRes
 		result.Error = "outside_root"
 		return result
 	}
-	if _, err := s.base.formats.resolve(path, from); err != nil {
+	catalogue, catalogueErr := s.catalogueFor(s.ctx, path, from)
+	if catalogueErr != nil {
+		result.Error = "optional_reader_unavailable"
+		return result
+	}
+	if _, err := catalogue.resolve(path, from); err != nil {
 		result.Error = "invalid_source"
 		return result
 	}

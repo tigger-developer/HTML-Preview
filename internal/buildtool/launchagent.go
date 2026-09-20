@@ -35,14 +35,7 @@ func launchAgent(stop bool) error {
 	if err != nil {
 		return err
 	}
-	pandoc, err := exec.LookPath("pandoc")
-	if err != nil {
-		return errors.New("make service requires Pandoc on PATH")
-	}
-	pandoc, err = filepath.Abs(pandoc)
-	if err != nil {
-		return err
-	}
+	pandoc := installedPandoc()
 	config := os.Getenv("HTMLPREVIEW_CONFIG")
 	if config == "" {
 		config, err = filepath.Abs("config.yaml")
@@ -83,9 +76,9 @@ func startLaunchAgent(home, executable, config, pandoc string, run func(...strin
 	if err != nil {
 		return err
 	}
-	for _, path := range []string{executable, config, pandoc} {
+	for _, path := range []string{executable, config} {
 		if !filepath.IsAbs(path) {
-			return errors.New("LaunchAgent executable, config and Pandoc paths must be absolute")
+			return errors.New("LaunchAgent executable and config paths must be absolute")
 		}
 	}
 	info, err := os.Stat(config)
@@ -113,7 +106,7 @@ func startLaunchAgent(home, executable, config, pandoc string, run func(...strin
 	if err := errors.Join(logFile.Chmod(0600), logFile.Close()); err != nil {
 		return err
 	}
-	data, err := renderServiceLog("darwin", executable, config, filepath.Dir(pandoc)+":/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin", logPath)
+	data, err := renderServiceLog("darwin", executable, config, serviceSearchPath(pandoc), logPath)
 
 	if err != nil {
 		return err

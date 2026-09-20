@@ -262,6 +262,9 @@ func preflightHTTP(ctx context.Context, sources []sourceContext, cfg config, sta
 		}
 		prepared.sources += int64(len(input))
 		prepared.outputs += resp.ContentLength
+		if resp.Header.Get("X-HTMLPreview-Omitted-HTML") == "1" {
+			log.notice("%q: %s", src.logical, markdownHTMLWarning)
+		}
 		prepared.urls[src.key] = result.URL
 	}
 	return prepared, fallback, nil

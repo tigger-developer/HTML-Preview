@@ -135,6 +135,20 @@ local function preserve_values(doc)
     error("missing or malformed htmlpreview transport token")
   end
   doc.meta["htmlpreview-code-token"] = nil
+local omitted = false
+local omit_html = doc.meta["htmlpreview-omit-html"]
+doc.meta["htmlpreview-omit-html"] = nil
+if omit_html then
+  doc = doc:walk({
+    RawInline = function(raw)
+      if raw.format == "html" then omitted = true; return {} end
+    end,
+    RawBlock = function(raw)
+      if raw.format == "html" then omitted = true; return {} end
+    end,
+  })
+end
+
   local media_budget = tonumber(pandoc.utils.stringify(doc.meta["htmlpreview-media-budget"]))
   doc.meta["htmlpreview-media-budget"] = nil
   if not media_budget or media_budget < 0 then
@@ -219,7 +233,12 @@ local function preserve_values(doc)
       return { header, record("heading", headings, { id = id, originalID = original }) }
     end,
   })
-  return export_media(display_metadata(doc), token, media_budget)
+doc = display_metadata(doc)
+if omitted then
+  doc.blocks:insert(pandoc.RawBlock("html", '<span id="htmlpreview-omitted-html-' .. token .. '"></span>'))
+end
+return export_media(doc, token, media_budget)
+
 end
 
 return { { Inlines = mark_inlines }, { Pandoc = preserve_values } }

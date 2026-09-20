@@ -17,6 +17,7 @@ type assetRevision struct {
 	sum    [32]byte
 }
 type httpPage struct {
+	omittedHTML                        bool
 	annotationBlocks                   map[string]annotationBlock
 	annotationLocations                map[string]bool
 	annotationSourceRevision, bodyText string

@@ -223,7 +223,7 @@ func TestRT014_6_NativeHTMLAndPlainMappings(t *testing.T) {
 	}
 	r := run(t, root, []string{nativeOnlyPath(t)}, source(t, root, "native.html", "<p><em>Authored HTML</em></p>"))
 	success(t, r, 1)
-	if len(nodes(documentNode(t, r.pages[0], "hp-document"), "em")) != 1 || strings.Contains(r.stderr, "Embedded HTML omitted:") || strings.Contains(textOf(r.pages[0]), omittedHTMLWarning) {
+	if len(nodes(r.pages[0], "em")) != 1 || strings.Contains(r.stderr, "Embedded HTML omitted:") || strings.Contains(textOf(r.pages[0]), omittedHTMLWarning) {
 		t.Fatal("native HTML omission policy changed")
 	}
 }
