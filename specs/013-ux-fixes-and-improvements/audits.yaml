@@ -16,19 +16,23 @@ audits:
           model: claude-opus-5
           reason: start-failed-fallback
           updated: "2026-09-20T11:19:43Z"
-      external_round: 4
+      external_round: 5
       status: passed
-      updated: "2026-09-20T22:42:16Z"
-      revision: 62a219cc15d5af5bad6bd3da7e90104835a3e92b
+      updated: "2026-09-20T23:30:42Z"
+      revision: a4728c4
       verdict: PASS
       response: |-
         GATE: delivery-code
-        REVISION: 62a219cc15d5af5bad6bd3da7e90104835a3e92b
+        REVISION: a4728c4
         VERDICT: PASS
 
-        Finding 1 is withdrawn. My claim rested on encodeFootnote's leading-newline insertion in footnote_patch.go, but that is the legacy intermediate serializer: replace.go runs updateFootnote and then readableFootnotes, and encodeReadableFootnote (native_attribution.go) emits `definition + " " + lines[0]` with no leading-newline wrap, then reparses through EditableFootnotes/ordinaryNoteEnd, which starts literal tracking only after the definition line. The supplied authenticated HTTP probes against the isolated candidate confirm the resulting public boundary: first-line #+BEGIN_EXAMPLE / #+BEGIN_SRC text / #+BEGIN_QUOTE openers each containing two internal blank lines all return 409 invalid_footnote with source bytes unchanged, while the same bodies with a leading newline return 201. The writer therefore refuses exactly the form I claimed it accepted; the browser guard's first-line exemption matches the observed writer contract, and my proposed change would have bypassed the guard for text the writer rejects, recreating the recovery failure. The original finding was unsupported against the actual boundary.
+        Scope verified as AC013.5 (plaintext wrapping) and AC013.6 (annotations.max-chars) only; the section-heading requirement remains reserved backlog and no retrospective definition review was implied.
 
-        Reassessed changed evidence: the spec's corrected limit path (annotation-input.js) and the documented first-line rule are accurate against delivered behaviour; the added OT013.1 probe record in validation.org is dated execution evidence without duplicated audit verdicts or session identity; footnote_patch.go as supplied is consistent with the challenge's source analysis. No new findings. RT/OT evidence is current (RT013.2 GREEN retained; OT013.1 GREEN with the added probe), and UT013.2/UT013.3/UT013.4 remain explicitly AMBER for operator browser validation, which delivery-code permits. Implementation sign-off for this increment is not conditional on further code work.
+        Tests first: RT013.3 is real behavioural coverage through the authenticated HTTP boundary — YAML acceptance/rejection matrix (1/4000/5000/16384 valid; zero, negative, fractional, string, null, boolean, list, duplicate-key, unknown-key rejected), first-found precedence including failure propagation, default and configured advertised limits, 5,000-code-point creates across Org, embedded Markdown and a read-only Markdown source's Org sidecar, character and UTF-8 byte overflow rejected 413 with source and store bytes unchanged, exact 16 KiB supplementary-Unicode boundary accepted, existing 5,000-character notes readable and deletable under a limit of 20, and a submitted max_chars field rejected (DisallowUnknownFields gives a stronger guarantee than mere override-ignoring). RED evidence for the intended failures (unknown annotations key, missing state limits) precedes GREEN; the writer race package was rerun separately with an honest note that the combined selection matched no annotation-package tests. The escaped-JSON test legitimately exercises the enlarged envelope (6 × MaxTextBytes + 65,536 is a correct worst-case bound: \uXXXX escapes are at most 6 bytes per code point against a 16 KiB decoded ceiling).
+
+        Production code conformance: the policy is server-owned (startup config → grant location → validateCurrentRequest before any writer mutation); per-request override is impossible; deletion and reading stay available after lowering because ValidText now enforces only the byte ceiling, which is the documented "reading/serialization validity separate from write policy" decision, and the byte ceiling, store and frame limits are retained. The browser limit object comes only from validated state (validateAnnotationState requires integer max_chars 1..16384 and max_bytes 16384), and feedback names the limit actually reached. The refined input-guard rejection condition still accepts equal-size selection replacement at exactly the limit (the new text fits, so no rejection path runs) and only requires strict shortening for already-oversized notes — consistent with the accepted guards, not a regression against the operator's UT013.3 validation. Plaintext wrapping is scoped to #hp-source-text as CSS-only soft wrapping; the one-off Go probe verified the packaged rule with a real CSS parser and byte-identical source payload, with authored line breaks untouched and the copy channel separate.
+
+        Docs: ANNOTATIONS.md v7, SERVICE.md v4 (new Annotation length section), config.example.yaml and work.org are accurate, impersonal and versioned with changelogs. validation.org records UT013.3/UT013.4 GREEN as scoped user validation with revision and honest boundaries; UT013.5/UT013.6 are explicitly AMBER for operator browser checks, which delivery-code permits. No unauthorized scope, dependency, endpoint or persistence change; test-helper changes (startConfiguredTestService) are justified by the configured-service tests; no duplicated audit state in the spec or validation record.
       history:
         - readiness_check: delivery-code
           cache_key: sha256:a75b297105cc5901b7544a9d42b584652c894a761340abe86f3006ad5e392493
@@ -551,3 +555,158 @@ audits:
 
             Reassessed changed evidence: the spec's corrected limit path (annotation-input.js) and the documented first-line rule are accurate against delivered behaviour; the added OT013.1 probe record in validation.org is dated execution evidence without duplicated audit verdicts or session identity; footnote_patch.go as supplied is consistent with the challenge's source analysis. No new findings. RT/OT evidence is current (RT013.2 GREEN retained; OT013.1 GREEN with the added probe), and UT013.2/UT013.3/UT013.4 remain explicitly AMBER for operator browser validation, which delivery-code permits. Implementation sign-off for this increment is not conditional on further code work.
           updated: "2026-09-20T22:41:23Z"
+        - readiness_check: delivery-code
+          cache_key: sha256:ac6974a1767efd607b9e3d4941568e420c01ccb62d11e3cff4f096a74bf571fe
+          session_id: 20260920_121945_c5a815
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 17aefd3515d0d1deb97cbbf0f36e05891c581ec686159c40fc4ae0bcd62f76dc
+              bytes: 15497
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/PAIRING.md
+              sha256: 6143ccad299a5cd89cb8b73fbb4082caa7a9826d065d78b1a41cdcaba9fed854
+              bytes: 6035
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 04a5798f1c77dfd9e0c4690bc43bbc4e7733ac7a18662e17d4f6cd8785f96858
+              bytes: 16237
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-composer.js
+              sha256: 1f8cc58acd2dcac95df0ee132a4e5092b952a0d6b2ac1bf2c506b5d9aeb9cf04
+              bytes: 12301
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-input.js
+              sha256: 8d80948fe5ea158ecf8ce905629871c4d55fc33231f86df3ccb5a637178489bb
+              bytes: 4530
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: b9bc49a53057726a67dd02ec2f2784402d818ffe497695defc8411a2b44ab323
+              bytes: 54883
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: 44c9d3e04f33cf05f7cb781c2523c3f9f4328fa2f2899bb3f48ba9f1e5db5668
+              bytes: 2072
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: 4c4c5d477a3f1109d9a4f9ef1d932862de98ae929a4a00d4069590961f1657c0
+              bytes: 25107
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: 9ae8ce5b67ced89be79fede2582b9fdf4ca24a0ed7f7c6e21f367f435921b1dc
+              bytes: 22914
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 78e26f21ef17caebcfa18c3697eb1eb7e8933ad67dcab3dc108d85e4927e85f5
+              bytes: 71831
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: ab2d6bc909e397add8a835e9774d26ed2605068c0eed94d5de236f6aae843fcb
+              bytes: 19371
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 6ad308d71239585b0df2ea7215281e56691d83fb1b732bd2644fcd247937ca7d
+              bytes: 22403
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 39ddf940ef28486f9df4c3139007b43daa1aebedd529dbc04ecfdee4a121d76a
+              bytes: 18776
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/codec.go
+              sha256: 96f15d80c8c65f2a5d2bbaf7b39f5fb51e5cacde9d8daa6a3e89e78cd04c1abf
+              bytes: 8672
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/event.go
+              sha256: 15f504e185b99f28320be4a4169967294fe97cc471f86398997f00437d9426ad
+              bytes: 8905
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/files.go
+              sha256: 299c7cfe04c313ffe46afc9e6c16422a29e9457a64c16fb5bece3bb39c998817
+              bytes: 6029
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_edit.go
+              sha256: be3f4fb805f06da596918a43c25992f74aa5a34389e9d26e972447e6769d3947
+              bytes: 11517
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_edit_test.go
+              sha256: 4d5c97d36d1676d05f07ea58a6742a5654b5446204b7f5e74b4d69e022b204cb
+              bytes: 9170
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_patch.go
+              sha256: 5061b07184a8cc51fd856bae99e9495deac539f74a9b1eacd36eb7395bb6b482
+              bytes: 7788
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/native_attribution.go
+              sha256: 8ad67293a21623a66d25ef0b106581ded1e6977f87f07837442cbde2e1a64109
+              bytes: 6896
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/native_attribution_test.go
+              sha256: 26f15fd1d8a8ebb66a95bedee3d99753ea55221552543865fd3a001b9a7c13b0
+              bytes: 13948
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/replace.go
+              sha256: 6dc0ebcec6242328d737f28a57f11ad8f5502c7772d52d643e1bbb7f2d88d769
+              bytes: 16278
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_config_test.go
+              sha256: ad75c45c9f3288590db92458dd6b0083da447568d58d43d8e11c6d614cb6f5f4
+              bytes: 10280
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_limits_test.go
+              sha256: 45575146b68783cee0a38d2ae3c682e002191b8272460ecfd99b0ec1f826b6c2
+              bytes: 3123
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_service_test.go
+              sha256: fa9ba5eb8bce499885d465e936aaac23e5c5236128a7f18a4b04db1de91c49da
+              bytes: 10791
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 3d7bf111ad2ccc143b2da910ccd18bc611bbe2e6e881423c0813d417ae59ce80
+              bytes: 12041
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_annotations.go
+              sha256: 7380c7a633e619d3286d94577af08b3e05a5b2af21195b192919b60f95bc62d7
+              bytes: 17595
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
+              sha256: 0ea88898e1377f2863ebabcd02b11d43a6b94883f7574712f7c80e38ef6a1870
+              bytes: 10556
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_config.go
+              sha256: 887878233e3230dbdca8ba8965827c3cff539040e5d2318b6d4ff16178849630
+              bytes: 8206
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/service/config.example.yaml
+              sha256: 86c525f2c06543e6c30fc68bd9b853fefecf7d29d6eb3b4afd6f2302d760962c
+              bytes: 650
+            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/spec.org
+              sha256: b8d5815827ea4c9296da139b00817862b1e887de1bbed51984c4708325baf76c
+              bytes: 20399
+            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/validation.org
+              sha256: eb58a71400fe4a18db6feffa81565cc917f8762d0dfa7c91aba63f6e67dd0a5a
+              bytes: 10901
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w013-config.JJmArLdGud/check.go
+              sha256: 028b3fc9e64708f89f913cd5e83df14491ad9a30863a55679605626974498dd1
+              bytes: 4083
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w013-config.JJmArLdGud/increment.diff
+              sha256: 0fce42ec0abdadef4c2486d35b733b808a3f78bd4dcb347963d15a3d10203e35
+              bytes: 50548
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w013-input.ydzNuWzRCf/block-boundary-probe.txt
+              sha256: 12b1a7ad6e42537063d8cfbd8a02d14fde146aa08e415d8a51a3723e0e36e893
+              bytes: 697
+          round: 5
+          revision: a4728c4
+          verdict: PASS
+          response: |-
+            GATE: delivery-code
+            REVISION: a4728c4
+            VERDICT: PASS
+
+            Scope verified as AC013.5 (plaintext wrapping) and AC013.6 (annotations.max-chars) only; the section-heading requirement remains reserved backlog and no retrospective definition review was implied.
+
+            Tests first: RT013.3 is real behavioural coverage through the authenticated HTTP boundary — YAML acceptance/rejection matrix (1/4000/5000/16384 valid; zero, negative, fractional, string, null, boolean, list, duplicate-key, unknown-key rejected), first-found precedence including failure propagation, default and configured advertised limits, 5,000-code-point creates across Org, embedded Markdown and a read-only Markdown source's Org sidecar, character and UTF-8 byte overflow rejected 413 with source and store bytes unchanged, exact 16 KiB supplementary-Unicode boundary accepted, existing 5,000-character notes readable and deletable under a limit of 20, and a submitted max_chars field rejected (DisallowUnknownFields gives a stronger guarantee than mere override-ignoring). RED evidence for the intended failures (unknown annotations key, missing state limits) precedes GREEN; the writer race package was rerun separately with an honest note that the combined selection matched no annotation-package tests. The escaped-JSON test legitimately exercises the enlarged envelope (6 × MaxTextBytes + 65,536 is a correct worst-case bound: \uXXXX escapes are at most 6 bytes per code point against a 16 KiB decoded ceiling).
+
+            Production code conformance: the policy is server-owned (startup config → grant location → validateCurrentRequest before any writer mutation); per-request override is impossible; deletion and reading stay available after lowering because ValidText now enforces only the byte ceiling, which is the documented "reading/serialization validity separate from write policy" decision, and the byte ceiling, store and frame limits are retained. The browser limit object comes only from validated state (validateAnnotationState requires integer max_chars 1..16384 and max_bytes 16384), and feedback names the limit actually reached. The refined input-guard rejection condition still accepts equal-size selection replacement at exactly the limit (the new text fits, so no rejection path runs) and only requires strict shortening for already-oversized notes — consistent with the accepted guards, not a regression against the operator's UT013.3 validation. Plaintext wrapping is scoped to #hp-source-text as CSS-only soft wrapping; the one-off Go probe verified the packaged rule with a real CSS parser and byte-identical source payload, with authored line breaks untouched and the copy channel separate.
+
+            Docs: ANNOTATIONS.md v7, SERVICE.md v4 (new Annotation length section), config.example.yaml and work.org are accurate, impersonal and versioned with changelogs. validation.org records UT013.3/UT013.4 GREEN as scoped user validation with revision and honest boundaries; UT013.5/UT013.6 are explicitly AMBER for operator browser checks, which delivery-code permits. No unauthorized scope, dependency, endpoint or persistence change; test-helper changes (startConfiguredTestService) are justified by the configured-service tests; no duplicated audit state in the spec or validation record.
+          updated: "2026-09-20T23:29:19Z"
