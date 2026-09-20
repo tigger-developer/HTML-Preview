@@ -436,3 +436,302 @@ audits:
             - **No scope growth:** the 1,999 added bytes are the four remediations and the advisory clarifications. No new product behaviour, dependency, storage, browser change or security surface. The accepted subset and shared-browser boundary are untouched.
             - **Design, architecture fit and test strategy** stand as assessed: server-side adaptation over the existing native-worker pattern, reuse of Chroma, the YAML library, the sanitizer and the annotation writer; RT/UT/OT classification and TDD suitability appropriate; mandatory security impact present.
           updated: "2026-09-20T13:05:37Z"
+    - readiness_check: test-code
+      work_item: W014-native-markdown
+      gate: implementation
+      session_id: 26b85102-7fbf-40b7-8b6f-277234e9c3f7
+      harness: claude
+      model: claude-opus-5
+      configured:
+        harness: claude
+        model: claude-opus-5
+      external_round: 1
+      status: active
+      updated: "2026-09-20T13:45:56Z"
+      revision: de96070
+      verdict: FAIL
+      response: |-
+        GATE: test-code
+        REVISION: de96070
+        VERDICT: FAIL
+
+        ## Basis reviewed
+
+        Read in full: the signed-off `spec.org` (schema 8) and `validation.org`; the new tests (`native_markdown_test.go`, `markdown_annotation_contract_test.go`, `markdown_boundaries_test.go`) and the reused/changed ones (`native_org_test.go`, `annotation_target_contract_test.go`, `checkboxes_test.go`, `contents_defaults_test.go`, `footnote_service_test.go`, `annotation_service_test.go`, `annotation_security_test.go`, `service_cache_test.go`, `preview_test.go`); fixtures `testdata/native-markdown/semantics.md` and `testdata/annotation-targets/blocks.md`; all four execution logs; `Makefile`, `go.mod`, `.sdlc/project.yaml`; production `render.go`, `formats.go`, `annotation_blocks.go`, `service_http.go`, `orgconvert/worker.go`; SDLC `MAIN.md`, `TESTING.md`, `AUDITS.md`, `technologies/GO.md`.
+
+        **Accepted without further comment:** boundaries (built CLI through the subprocess harness, real local HTTP service, `golang.org/x/net/html` selectors reproducing browser precedence independently of the converter's own registry); doubles confined to the existing `Host.Execute`/`LookPath` boundary; synthetic fixtures and `t.TempDir` isolation; `make test` runs `-race`; no production behaviour added (no Goldmark in `go.mod`, `render.go`/`formats.go` unchanged) and no scaffolding that implements the target behaviour; RED evidence is intended-assertion failure, not compilation or setup failure (`TestRT014_6_NativeServiceWithoutPandoc`'s "service did not become ready" *is* the assertion under test); RT014.5 initially GREEN preservation is legitimate and honestly explained; recorded states in `validation.org` match the logs; changing `TestRT011_1_ServedOrgAndMarkdown`'s Markdown expectation while retaining its Org assertions is exactly what the specification authorizes; OT/UT AMBER is correct at this gate and product documentation is not demanded here.
+
+        The findings below are all **coverage or oracle defects against the signed-off RT definitions**. No requirement is reopened and no new scope is introduced. For any item already protected by an existing test I did not see, citing that test in the resumed round is acceptable remediation.
+
+        ## Findings
+
+        **F1 — RT014.1/AC014.1: no evidence that annotation projection and block-proof conversions avoid Pandoc.**
+        `TestRT014_1_ServedMarkdownNeverInvokesPandoc` is the only test counting Pandoc `--from=markdown` calls, and it fetches the linked page in ordinary reading mode; it never creates a note and never fetches the advertised refresh URL. The tests that *do* create notes (`TestRT014_4_ClickableMarkdownCreation`, `TestRT014_5_…`) install no counter. AC014.1 names "subsequent annotation projection and block-proof conversions" and RT014.1's Action requires "the advertised refresh URL; create a note and fetch the resulting page".
+        *Remediation:* keep the Pandoc counter installed across an annotation-registered Markdown page load, `bootstrap["page_url"]` refresh, a successful note creation and the post-save fetch, asserting zero Markdown Pandoc invocations.
+
+        **F2 — RT014.2: unsupported-qualifier rejection has a weak oracle that Pandoc already satisfies.**
+        `TestRT014_2_NativeDialect` runs the selector cases with the ambient PATH, and `TestRT014_2_ServedSelectorRejection` asserts status only. `rt-package-red.log` shows `markdown+unknown` already exits 2 today, and `final-test-additions.log` shows the served case returning 415 via `formats.validateSelection`, i.e. via Pandoc's `--list-extensions`. These cases therefore cannot detect violations of "Unknown qualifiers never select Pandoc" and "Do not pass native qualifiers to Pandoc for validation"; they would pass on a wholly non-compliant implementation.
+        *Remediation:* exercise the native-qualifier rejections (including the 256-character grammar case) on the native-only PATH, or with an `Execute` interceptor that fails on any `pandoc` invocation, for both CLI exit 2 and HTTP 400.
+
+        **F3 — RT014.2: enumerated cases not covered.**
+
+        - `markdown-raw_html` ("retains omission") is never exercised; only `+smart`, `-smart`, `-smart+smart` and the rejected qualifiers are.
+        - Metadata contract is asserted only as unordered text presence. The signed-off contract requires title/author/date/lang **as paragraphs in that order when a body exists** and a **structured frontmatter definition list for metadata-only documents**; neither the ordering nor the metadata-only document is tested.
+        - Markdown fenced code: `semantics.md` contains a ```` ```go ```` block but `TestRT014_2_MetadataAndHeadingContract` asserts only that `pre`/`code` exist. "Copy payloads preserved, known languages receive Chroma spans, unknown languages remain literal" is unasserted for Markdown (the Chroma assertions in RT014.6 use `.go` *source files*, a different route).
+        - Fragment resolution: heading IDs are asserted to exist, but no link fragment (intra-document, e.g. `blocks.md`'s `[a local link](#heading-emphasis)`, or cross-document) is asserted to resolve to a generated ID. `TestRT003_1_FormatContentsDefaults` covers cross-document links, not fragments.
+
+        (The "nested footnotes containing code or lists" case *is* covered — `TestRT009_8_EditableNotesPreserveRenderedMarkup/md` — no action needed there.)
+
+        **F4 — RT014.3: warning-delivery cases not covered.**
+
+        - No document containing **several distinct raw-HTML regions** (e.g. inline + block + comment) asserting exactly one warning, and no **multi-document CLI invocation** asserting one notice per affected document. The current fixtures each hold a single region, so "one per document, not one per node" is only weakly evidenced.
+        - **Browser-followed document link** to Markdown containing raw HTML: not covered (the link-following test uses HTML-free Markdown).
+        - **Note refresh**: no assertion that the banner survives, unchanged, the page returned after saving an annotation.
+        - **Unchanged SSE traffic must not repeat the warning**: no coverage; if this cannot be exercised at the existing public boundary, record that reason rather than leaving it silently absent.
+        - **Native `.html` keeps its separate policy**: `TestRT014_6_OptionalDependencyCLI` previews `native.html` but asserts only exit status — neither that the authored HTML is retained nor that no omission notice is emitted.
+        - Related: `TestRT014_4_MarkdownRejectsUnverifiedTargets` scans only `hp-document` descendants, so the banner region itself is never proven non-writable, although RT014.3's "warning stays out of the canonical body" assertions cover the substantive risk.
+
+        **F5 — RT014.5: "add two notes to one block" is not exercised.**
+        `TestRT014_5_RepeatedMarkdownNoteLifecycle` covers load/edit/idempotent retry/stale conflict/delete; `TestRT014_4_…` creates one note per block plus one on a *different* paragraph. Two distinct stored notes attached to the same block — and the resulting sidebar records and source boundary — appear nowhere.
+        *Remediation:* add the second creation on an already-annotated block, asserting two sidebar records, correct labels and the exact source insertion boundary.
+
+        **F6 — RT014.6: the "with the dependency" half of the dependency matrix is missing.**
+        The only DOCX case uses an invalid fixture (`"not a real archive"`) on a Pandoc-free PATH, so "successful DOCX conversion remains available with the dependency" is untested; RT014.6 explicitly requires isolated PATHs with **absent, supported and failing** optional converters. Likewise, "existing explicitly plaintext mappings stay literal" and "an unavailable native lexer follows the existing literal-text notice behaviour" are not evident anywhere in the supplied package.
+        *Remediation:* add a real minimal DOCX fixture (or the project's existing one) converted with Pandoc present; cover the plaintext-mapping and unavailable-lexer expectations, or cite the existing tests that already do.
+
+        **F7 — RT014.7: out-of-root local resources for Markdown are not exercised.**
+        `TestRT014_7_MarkdownPassiveContent` covers remote fetch suppression, `javascript:` URLs, forged block attributes, metadata injection, diagnostics leakage and source immutability, but no out-of-root local resource reference (e.g. an image path escaping the authorized root), which RT014.7's Action names and which is converter-sensitive because link/image rewriting changes with the reader. Missing-token/wrong-Origin/unauthorized-write reuse via `TestRT007_7_AnnotationHTTPAuthority` is accepted.
+
+        **F8 — bounded mechanical corrections.**
+
+        - `markdown_annotation_contract_test.go:72-75`: the comment "Remove just the expected owned additions to prove the body wasn't rewritten" is not what the code does — it only checks the first line as a prefix. Either compare the full expected source (original plus the two owned additions) or correct the comment; as written it claims more evidence than it produces.
+        - `native_markdown_test.go:112` "empty" case: `want` is `""`, making the content assertion vacuous (`strings.Contains(x, "")`). The case still proves successful rendering; make the intent explicit or assert the empty body directly.
+      history:
+        - readiness_check: test-code
+          cache_key: sha256:07b27b632df643fb33b410de5c05be5fa30eb30f878f21567c783db1eca60c0e
+          session_id: 26b85102-7fbf-40b7-8b6f-277234e9c3f7
+          harness: claude
+          model: claude-opus-5
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: c08600318790748242a803d2e6cf166f51025e134170701a6b1fb18edf21d0aa
+              bytes: 14809
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/GIT.md
+              sha256: 97bbf89af1c65d159688b452a0434e77d9775f7a98dd1c822ffd264b41012bbb
+              bytes: 7807
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: baffdd38fac0c2dd24d2be5389edb2a0b88ea19e8d67e1bc2f6f65d55601b7b3
+              bytes: 2974
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 04a5798f1c77dfd9e0c4690bc43bbc4e7733ac7a18662e17d4f6cd8785f96858
+              bytes: 16237
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/LUA.md
+              sha256: 83386b235c96e1ee1209e854764c41c604196db62c6db729a1641bd61027bae1
+              bytes: 10768
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/skills/deliver-change/SKILL.md
+              sha256: 8ec56c213667143c0f86561cbdf1d825a81a6d8edc487ed769a0af24ff5e037a
+              bytes: 8593
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: 9d4fcbd0cdec0f0ce57fab68e9f3ffc43fe4be18f97db29ce6efffea76ec178a
+              bytes: 877
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: b3bae22ff2a66123c5b7bab71296d7c1cc7398343a54cf37636082a9a46ddac4
+              bytes: 9113
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: 0cbd8a81a1ec14db99f9f1271647abe68bab91da6b83d99af878d07e5e46029c
+              bytes: 54336
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: f0d041e3ce03329a2fb1a19b6b08e150cfc7701253a461eed1798396724971ca
+              bytes: 20555
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 99507a213646ca5710b9d88c28fff6e23391fab489d27da80b380b28e6521b10
+              bytes: 69383
+            - path: /Users/tigger/code/tigoss/html-preview/docs/FORMATS.md
+              sha256: 83e8b3b353878c00a8565921935880d89dda75536d694459d5683b40edc14e97
+              bytes: 10673
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 38e5a17257d5ca6d849d08b8a50b133d8a32a300093b976820f91d1a64568873
+              bytes: 21907
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: c0f93df2b16a41abccdbba6c189dfce493e415af79c33ec1c6abe4e889c60f9a
+              bytes: 17771
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: 9adc714356282e6cc3f19a5537ad722f986a8109f5b82a4cbc408cfd516c357a
+              bytes: 581
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/worker.go
+              sha256: 458e052eae77b000042d30cb13de8fd5004dc531d9f1b990856ab455fa6175fb
+              bytes: 5333
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks.go
+              sha256: c88b7bba7e8d2d11c3a65379a206eb2603b75319d045f65e9ac49258cdce4380
+              bytes: 7571
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks_test.go
+              sha256: d9be9e09a91c4878536d76e5868b5697ad0a28bed04040eb822c04cf5477bb61
+              bytes: 12867
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_security_test.go
+              sha256: cbb32660d4355a4a6067a076b83a72284ed41c67fe679e1599ae70bafc8deb3c
+              bytes: 3981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_service_test.go
+              sha256: fa9ba5eb8bce499885d465e936aaac23e5c5236128a7f18a4b04db1de91c49da
+              bytes: 10791
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_target_contract_test.go
+              sha256: 7dff40c2323306a56f9e270f9bc682029edea0983f0815a62ad8f291e2fb67da
+              bytes: 6830
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/checkboxes_test.go
+              sha256: c0aa2603f1a7cf4252493a55f599499c29f0506ad19d49cba2103db5d106e4cd
+              bytes: 2059
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contents_defaults_test.go
+              sha256: fdb02e348ac9878b115fe049130b47e86170405a7a863b1372d24697d80d6bbe
+              bytes: 2388
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/footnote_service_test.go
+              sha256: 725450a4ef919e5e75605c6169a59b484fc8fa3a8eea431e64fd881b747cc5e9
+              bytes: 20824
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats.go
+              sha256: 3154a18d48461d2a5fee934395767ad56422061cf695d12217ed33e729225350
+              bytes: 7853
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/markdown_annotation_contract_test.go
+              sha256: 22943e6c44e5f8ae118675876f72c1bd3ee2b74919ac8ca0c3c8d12a6edb81f1
+              bytes: 11780
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/markdown_boundaries_test.go
+              sha256: 55f22c3a38dd17c5d363b27892485cbae2f9d920059a2e095b60066c1a010987
+              bytes: 5205
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/native_markdown_test.go
+              sha256: feb9fc62a5f2c7d10f28efc3bc41cb30ec00c10790a825bdc2c942b21d995fa5
+              bytes: 14299
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/native_org_test.go
+              sha256: aa6fb2a5e29949a0a8a4b2b5e0e8eb3907f2da8084b7f0a7954029bf2d75cc97
+              bytes: 13968
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/preview_test.go
+              sha256: 13b6f0365837f3605e44dacd2a009d3a6e43f3eb8b4913072034aa9aac9db671
+              bytes: 21277
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 5edc1f83ba7625f1b8806d38f2181eed1e1f1acf485684a341f29cae670c1093
+              bytes: 16302
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
+              sha256: f1554c16b66c8b81666e4d560cb1eec8c9a5cf99bc799d7312f163716318f6d1
+              bytes: 9971
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
+              sha256: bd91c7a33e4251747715a0aaea9fb603fb0516ce451ccb4f6b2112a98893003f
+              bytes: 6174
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_http.go
+              sha256: 695d102292648654c01592a43292ff5c3385a77f0c6021c429369b449b439fd5
+              bytes: 6289
+            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+              sha256: d386c116443aa42bb6bfa4880bf09e6b67825792397bf3e4b38ca8ef23b83a44
+              bytes: 47611
+            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+              sha256: d3cbb39214526e829ae52ced822c85bf8a5febc5706b387a6158a54f6f831e6b
+              bytes: 7766
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
+              sha256: 8f069f7cd7330f3b4b73cde29e8fec5bbc45ef8aafa4d572a9be0fc7fe809963
+              bytes: 634
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.org
+              sha256: e6d5b6da9c8f4399630be4e2893e8cb920c414d2c7e9dd4681297627f20bcd86
+              bytes: 1377
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/native-markdown/semantics.md
+              sha256: e5be8c7f7458740de8c0a16f16bf13f3fa1ac81c7daac8dbc47eeb338ceb2999
+              bytes: 589
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/final-test-additions.log
+              sha256: 222a4a2e5b3a4b2f953d36634a70f716490feaa52289f2821cd888735439dc29
+              bytes: 787
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/preservation-and-additions.log
+              sha256: e790af8fe0aac55cf3e9562ae8e01a1092d25e7d14767171fd28e3add3249d78
+              bytes: 14698
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/rt-package-red.log
+              sha256: d60714d2f12facbc18e4ca8c475e7dab2bcbe0b8566e82e2018e72ff5d1dd548
+              bytes: 8449
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/superseded-routing.log
+              sha256: b27467322e7cd14a497fffc8a9aebc44eb33ea9f449bf1338e8a2e5fdbcfcee1
+              bytes: 244
+          round: 1
+          revision: de96070
+          verdict: FAIL
+          response: |-
+            GATE: test-code
+            REVISION: de96070
+            VERDICT: FAIL
+
+            ## Basis reviewed
+
+            Read in full: the signed-off `spec.org` (schema 8) and `validation.org`; the new tests (`native_markdown_test.go`, `markdown_annotation_contract_test.go`, `markdown_boundaries_test.go`) and the reused/changed ones (`native_org_test.go`, `annotation_target_contract_test.go`, `checkboxes_test.go`, `contents_defaults_test.go`, `footnote_service_test.go`, `annotation_service_test.go`, `annotation_security_test.go`, `service_cache_test.go`, `preview_test.go`); fixtures `testdata/native-markdown/semantics.md` and `testdata/annotation-targets/blocks.md`; all four execution logs; `Makefile`, `go.mod`, `.sdlc/project.yaml`; production `render.go`, `formats.go`, `annotation_blocks.go`, `service_http.go`, `orgconvert/worker.go`; SDLC `MAIN.md`, `TESTING.md`, `AUDITS.md`, `technologies/GO.md`.
+
+            **Accepted without further comment:** boundaries (built CLI through the subprocess harness, real local HTTP service, `golang.org/x/net/html` selectors reproducing browser precedence independently of the converter's own registry); doubles confined to the existing `Host.Execute`/`LookPath` boundary; synthetic fixtures and `t.TempDir` isolation; `make test` runs `-race`; no production behaviour added (no Goldmark in `go.mod`, `render.go`/`formats.go` unchanged) and no scaffolding that implements the target behaviour; RED evidence is intended-assertion failure, not compilation or setup failure (`TestRT014_6_NativeServiceWithoutPandoc`'s "service did not become ready" *is* the assertion under test); RT014.5 initially GREEN preservation is legitimate and honestly explained; recorded states in `validation.org` match the logs; changing `TestRT011_1_ServedOrgAndMarkdown`'s Markdown expectation while retaining its Org assertions is exactly what the specification authorizes; OT/UT AMBER is correct at this gate and product documentation is not demanded here.
+
+            The findings below are all **coverage or oracle defects against the signed-off RT definitions**. No requirement is reopened and no new scope is introduced. For any item already protected by an existing test I did not see, citing that test in the resumed round is acceptable remediation.
+
+            ## Findings
+
+            **F1 — RT014.1/AC014.1: no evidence that annotation projection and block-proof conversions avoid Pandoc.**
+            `TestRT014_1_ServedMarkdownNeverInvokesPandoc` is the only test counting Pandoc `--from=markdown` calls, and it fetches the linked page in ordinary reading mode; it never creates a note and never fetches the advertised refresh URL. The tests that *do* create notes (`TestRT014_4_ClickableMarkdownCreation`, `TestRT014_5_…`) install no counter. AC014.1 names "subsequent annotation projection and block-proof conversions" and RT014.1's Action requires "the advertised refresh URL; create a note and fetch the resulting page".
+            *Remediation:* keep the Pandoc counter installed across an annotation-registered Markdown page load, `bootstrap["page_url"]` refresh, a successful note creation and the post-save fetch, asserting zero Markdown Pandoc invocations.
+
+            **F2 — RT014.2: unsupported-qualifier rejection has a weak oracle that Pandoc already satisfies.**
+            `TestRT014_2_NativeDialect` runs the selector cases with the ambient PATH, and `TestRT014_2_ServedSelectorRejection` asserts status only. `rt-package-red.log` shows `markdown+unknown` already exits 2 today, and `final-test-additions.log` shows the served case returning 415 via `formats.validateSelection`, i.e. via Pandoc's `--list-extensions`. These cases therefore cannot detect violations of "Unknown qualifiers never select Pandoc" and "Do not pass native qualifiers to Pandoc for validation"; they would pass on a wholly non-compliant implementation.
+            *Remediation:* exercise the native-qualifier rejections (including the 256-character grammar case) on the native-only PATH, or with an `Execute` interceptor that fails on any `pandoc` invocation, for both CLI exit 2 and HTTP 400.
+
+            **F3 — RT014.2: enumerated cases not covered.**
+
+            - `markdown-raw_html` ("retains omission") is never exercised; only `+smart`, `-smart`, `-smart+smart` and the rejected qualifiers are.
+            - Metadata contract is asserted only as unordered text presence. The signed-off contract requires title/author/date/lang **as paragraphs in that order when a body exists** and a **structured frontmatter definition list for metadata-only documents**; neither the ordering nor the metadata-only document is tested.
+            - Markdown fenced code: `semantics.md` contains a ```` ```go ```` block but `TestRT014_2_MetadataAndHeadingContract` asserts only that `pre`/`code` exist. "Copy payloads preserved, known languages receive Chroma spans, unknown languages remain literal" is unasserted for Markdown (the Chroma assertions in RT014.6 use `.go` *source files*, a different route).
+            - Fragment resolution: heading IDs are asserted to exist, but no link fragment (intra-document, e.g. `blocks.md`'s `[a local link](#heading-emphasis)`, or cross-document) is asserted to resolve to a generated ID. `TestRT003_1_FormatContentsDefaults` covers cross-document links, not fragments.
+
+            (The "nested footnotes containing code or lists" case *is* covered — `TestRT009_8_EditableNotesPreserveRenderedMarkup/md` — no action needed there.)
+
+            **F4 — RT014.3: warning-delivery cases not covered.**
+
+            - No document containing **several distinct raw-HTML regions** (e.g. inline + block + comment) asserting exactly one warning, and no **multi-document CLI invocation** asserting one notice per affected document. The current fixtures each hold a single region, so "one per document, not one per node" is only weakly evidenced.
+            - **Browser-followed document link** to Markdown containing raw HTML: not covered (the link-following test uses HTML-free Markdown).
+            - **Note refresh**: no assertion that the banner survives, unchanged, the page returned after saving an annotation.
+            - **Unchanged SSE traffic must not repeat the warning**: no coverage; if this cannot be exercised at the existing public boundary, record that reason rather than leaving it silently absent.
+            - **Native `.html` keeps its separate policy**: `TestRT014_6_OptionalDependencyCLI` previews `native.html` but asserts only exit status — neither that the authored HTML is retained nor that no omission notice is emitted.
+            - Related: `TestRT014_4_MarkdownRejectsUnverifiedTargets` scans only `hp-document` descendants, so the banner region itself is never proven non-writable, although RT014.3's "warning stays out of the canonical body" assertions cover the substantive risk.
+
+            **F5 — RT014.5: "add two notes to one block" is not exercised.**
+            `TestRT014_5_RepeatedMarkdownNoteLifecycle` covers load/edit/idempotent retry/stale conflict/delete; `TestRT014_4_…` creates one note per block plus one on a *different* paragraph. Two distinct stored notes attached to the same block — and the resulting sidebar records and source boundary — appear nowhere.
+            *Remediation:* add the second creation on an already-annotated block, asserting two sidebar records, correct labels and the exact source insertion boundary.
+
+            **F6 — RT014.6: the "with the dependency" half of the dependency matrix is missing.**
+            The only DOCX case uses an invalid fixture (`"not a real archive"`) on a Pandoc-free PATH, so "successful DOCX conversion remains available with the dependency" is untested; RT014.6 explicitly requires isolated PATHs with **absent, supported and failing** optional converters. Likewise, "existing explicitly plaintext mappings stay literal" and "an unavailable native lexer follows the existing literal-text notice behaviour" are not evident anywhere in the supplied package.
+            *Remediation:* add a real minimal DOCX fixture (or the project's existing one) converted with Pandoc present; cover the plaintext-mapping and unavailable-lexer expectations, or cite the existing tests that already do.
+
+            **F7 — RT014.7: out-of-root local resources for Markdown are not exercised.**
+            `TestRT014_7_MarkdownPassiveContent` covers remote fetch suppression, `javascript:` URLs, forged block attributes, metadata injection, diagnostics leakage and source immutability, but no out-of-root local resource reference (e.g. an image path escaping the authorized root), which RT014.7's Action names and which is converter-sensitive because link/image rewriting changes with the reader. Missing-token/wrong-Origin/unauthorized-write reuse via `TestRT007_7_AnnotationHTTPAuthority` is accepted.
+
+            **F8 — bounded mechanical corrections.**
+
+            - `markdown_annotation_contract_test.go:72-75`: the comment "Remove just the expected owned additions to prove the body wasn't rewritten" is not what the code does — it only checks the first line as a prefix. Either compare the full expected source (original plus the two owned additions) or correct the comment; as written it claims more evidence than it produces.
+            - `native_markdown_test.go:112` "empty" case: `want` is `""`, making the content assertion vacuous (`strings.Contains(x, "")`). The case still proves successful rendering; make the intent explicit or assert the empty body directly.
+          updated: "2026-09-20T13:39:52Z"
