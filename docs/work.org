@@ -314,7 +314,7 @@ classification; it is provenance, not current state.
 - Working branch :: Continue paired development on =master= following the
   authorized feature-branch integration on 20 September 2026.
 
-** REVIEW W014 - Native Markdown previews with Goldmark :feature:
+** ACTIVE W014 - Native Markdown previews with Goldmark :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-014
 :CREATED: 2026-09-20
@@ -328,6 +328,8 @@ classification; it is provenance, not current state.
   Pandoc-only extensions are not emulated. Server-side adaptation preserves the
   shared browser annotation contract, with rendered-HTML and HTTP creation tests.
   Definition stays on =master=; implementation and installation are not part of this phase.
+- Approval :: Approved 2026-09-20. Delivery uses a separate feature branch;
+  the daily-driver installation remains unchanged.
 
 * Migration record
 :PROPERTIES:

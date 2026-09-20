@@ -3,7 +3,7 @@
 #+SUBTITLE: Unified change specification
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: APPROVED 2026-09-20
 
 * Synopsis
 :PROPERTIES:
@@ -68,7 +68,7 @@
 
 ** Next step
 
-- Definition audit, then *operator sign-off* before delivery.
+- *Delivery on a separate feature branch*, beginning with the regression-test package.
 
 -----
 
