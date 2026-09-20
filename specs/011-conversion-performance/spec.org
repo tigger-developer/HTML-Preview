@@ -327,6 +327,24 @@ Its timings are *feasibility evidence*, not release-test results.
 - Retention :: Persistent under =make test=. Use semantic assertions rather than
   complete serialized-HTML equality or source-code searches.
 
+*** Named converter-delta cases
+
+Exercise the *real native converter and adapter* with synthetic Org, including
+[[#observed-html-deltas][the observed footnote example]]. Existing broad regression results do
+not substitute for these *explicit semantic assertions*.
+
+| Case | Observable expectation in published HTML |
+|------+------------------------------------------|
+| Named footnote reference | The reference anchor carries footnote-ref and doc-noteref and contains sup; it is not nested inside sup |
+| Footnote definition | One section.footnotes contains an ordered list with the intended definition and every paragraph, without duplicate native div-based definitions |
+| Backlink and repeated reference | Each footnote-back/doc-backlink anchor resolves to its corresponding reference; every reference resolves to the correct definition and IDs are unique |
+| Checkbox X/x, space and slash | X and x produce equivalent checked indicators; space and slash produce distinct unchecked/partial indicators; label spacing and whole-item structure survive |
+
+Assert *relationships rather than generated ID spellings* or serialized HTML
+whitespace. The fixtures and expected semantics must expose removal of the
+relevant adapter handling; a raw go-org render alone must not satisfy the
+footnote-structure cases.
+
 ** RT011.3 - Literal code :testdef:
 :PROPERTIES:
 :CUSTOM_ID: rt-011-3
@@ -392,6 +410,11 @@ Its timings are *feasibility evidence*, not release-test results.
   File previews and ordinary GETs perform no source writes.
 - Retention :: Persistent under =make test=; unchanged write rules are preservation
   coverage, not a redesign of annotation persistence.
+- Converter-delta integration :: Use the named footnote fixture from
+  [[#rt-011-2][RT011.2 - Semantic HTML]] through the real service. Verify that
+  *identification, edit and delete address the intended note* after normalization,
+  including repeated references and a multi-paragraph definition. Correct-looking
+  HTML alone does not establish a working annotation association.
 
 ** RT011.6 - Trust boundaries :testdef:
 :PROPERTIES:
@@ -689,6 +712,86 @@ semantic contract suffices.
 - Inline fidelity :: Port the small Lua presentation responsibilities needed for
   Org into the adapter. Keep Lua for remaining Pandoc readers; do not run a new
   standalone Lua interpreter or send individual Org blocks back to Pandoc.
+
+*** Observed rendering differences and adapter handling
+:PROPERTIES:
+:CUSTOM_ID: observed-html-deltas
+:END:
+
+The [[file:assessment.org][conversion assessment]] identified *footnote structure and checkbox
+differences*. The following footnote example was reproduced on 20 September
+2026 with the pinned go-org revision and Pandoc's =org= reader/=html5= writer,
+without application filters. It shows *raw converter output*, not a completed
+production adapter. Only HTML indentation and line wrapping are adjusted below.
+
+Identical Org input:
+
+#+BEGIN_SRC org
+A sentence.[fn:note]
+
+[fn:note] A comment.
+#+END_SRC
+
+go-org output:
+
+#+BEGIN_SRC html
+<p>A sentence.<sup class="footnote-reference"><a id="footnote-reference-1" href="#footnote-1">1</a></sup></p>
+<div class="footnotes">
+  <hr class="footnotes-separatator"/>
+  <div class="footnote-definitions">
+    <div class="footnote-definition">
+      <sup id="footnote-1"><a href="#footnote-reference-1">1</a></sup>
+      <div class="footnote-body">
+        <p>A comment.</p>
+      </div>
+    </div>
+  </div>
+</div>
+#+END_SRC
+
+Pandoc output:
+
+#+BEGIN_SRC html
+<p>A sentence.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+  <hr />
+  <ol>
+    <li id="fn1"><p>A comment.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+  </ol>
+</section>
+#+END_SRC
+
+| Observed difference | Adapter handling and reason |
+|---------------------+-----------------------------|
+| go-org nests the reference anchor inside sup; Pandoc nests sup inside the anchor | Emit the direct anchor expected by existing footnote identification |
+| go-org puts footnote-reference on sup and omits doc-noteref; Pandoc marks the anchor with footnote-ref and doc-noteref | Attach the existing semantic class and role to the anchor for server-side block and footnote verification |
+| go-org uses nested div elements for definitions; Pandoc uses section/ol/li | Emit one endnotes section with ordered definitions, preserving every paragraph and note association |
+| go-org uses the definition number as the backlink; Pandoc appends a footnote-back/doc-backlink anchor | Emit the established backlink structure for navigation and existing footnote processing |
+| Generated reference and definition ID spellings differ | Preserve unique, consistent destinations; spelling alone does not require renaming to Pandoc's fn/fnref convention |
+
+These changes belong in the *Go writer adapter or HTML normalization*, before
+server-side verification and browser presentation. They do not require changing
+go-org's footnote grammar. Literal class names above, including go-org's
+=footnotes-separatator= spelling, are retained as observed output.
+
+Other *observed compatibility cases* from the assessment remain part of the
+same adapter work:
+
+- Checkboxes :: The raw go-org probe recognized =[X]= but left =[x]= and =[/]=
+  as literal text. Existing preservation and adapter output must retain the
+  *checked, unchecked and partial indicators*, their spacing and whole-item
+  annotation targets; changing CSS alone cannot supply missing semantics.
+- Generated references :: Standalone probe references were parsed as
+  definitions. The *owned inline predecessor* described below preserves their
+  reference role; it is removed before publication.
+- Definition descriptions :: Two short descriptions in the long corpus lost
+  annotation targets. Their *whole-block correspondence* needs the focused
+  compatibility cases already defined; target-count equality alone is not proof.
+
+Verification remains [[#rt-011-2][RT011.2 - Semantic HTML]],
+[[#rt-011-4][RT011.4 - Block placement]] and
+[[#rt-011-5][RT011.5 - Footnote lifecycle]]. These examples explain the existing
+contract without adding a new converter path or changing source syntax.
 
 ** Intermediary annotation compatibility
 
