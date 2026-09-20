@@ -24,6 +24,8 @@
 ** After
 
 - *Markdown* uses pinned Goldmark with the existing reading and annotation interface.
+- *Uncached Markdown previews and annotation saves have lower median latency*
+  than the pre-migration master baseline on the same machine and corpus.
 - *Recognized embedded HTML is omitted*, with a CLI notice and preview banner.
 - *Native inputs work without Pandoc*; other readers require it only when selected.
 - *Annotation creation, editing and deletion* retain native footnotes and guarded writes.
@@ -111,6 +113,12 @@
   current-value footnotes, block placement, attribution and guarded mutations.
 - Native pattern :: [[file:../011-conversion-performance/spec.org][W011 - Fast Org previews]]
   and [[file:../../internal/orgconvert/worker.go][Bounded native worker]].
+- Superseded contrast :: W011's =TestRT011_1_ServedOrgAndMarkdown= in
+  [[file:../../internal/preview/native_org_test.go][Native routing regressions]] requires a
+  Pandoc call for served Markdown to contrast it with native Org. This migration
+  *replaces that Markdown assertion with native routing* while preserving the Org
+  assertions, linked navigation and mixed-format coverage. Do not delete the test
+  or weaken its Org checks merely because its Markdown expectation changes.
 - Brownfield evidence :: [[file:../../internal/preview/render.go][Render coordinator]],
   [[file:../../internal/preview/formats.go][Format catalogue]],
   [[file:../../internal/preview/service_footnotes.go][Footnote projection]],
@@ -156,6 +164,9 @@
   footnote HTML contract. Several Pandoc-only constructs rendered literally.
 - Selection :: *The v1 pin keeps the accepted library baseline*. Comparable parser
   speed alone does not establish annotation fidelity or justify switching candidates.
+- Compared modules :: =github.com/yuin/goldmark/v2 v2.1.5= and
+  =github.com/gomarkdown/markdown v0.0.0-20260917010721-cc30ffac3c05= were the
+  alternative pins; neither is added to the application by this change.
 - Sources :: [[https://pkg.go.dev/github.com/yuin/goldmark@v1.8.6][Pinned Goldmark documentation]];
   [[https://github.com/yuin/goldmark/tree/v1.8.6][Goldmark v1.8.6 source and MIT licence]].
   The module declares Go 1.22 and no external requirements. Delivery checks the
@@ -317,6 +328,9 @@
   TOC depth/defaults and cross-document fragments resolve correctly.
 - Cases :: Empty input; no metadata; malformed metadata; escaped punctuation; CRLF;
   UTF-8 accents; repeated headings; nested footnotes containing code or lists.
+- Line-break cases :: A single newline within one paragraph *remains a soft break*,
+  with no =br= element. Two trailing spaces or a backslash followed by a newline
+  produce an explicit =br=. The whole wrapped paragraph retains one annotation end.
 - Dialect cases :: =markdown+smart= and =markdown-smart= change only typographic
   punctuation; =markdown-raw_html= retains omission. Unsupported qualifiers, including
   =markdown+raw_html= and =markdown+fenced_divs=, return CLI exit 2 or HTTP 400 before
@@ -408,6 +422,10 @@
   actionable non-success results; successful DOCX conversion remains available with
   the dependency. An installed but failing catalogue query is reported, not treated as
   a successful empty list. A failed optional request does not poison native requests.
+- Language admission :: Preview a =.go= source with Pandoc absent, then with an
+  optional converter advertising no Go highlight language. *Bundled Chroma still
+  highlights it* in both cases. Existing explicitly plaintext mappings stay literal;
+  an unavailable native lexer follows the existing literal-text notice behaviour.
 - Retention :: =make test=; dependency doubles only at the existing executable boundary.
 
 ** RT014.7 - Failure and trust boundaries :testdef:
@@ -462,7 +480,8 @@
 :END:
 
 - Covers :: [[#ac-014-8][AC014.8 - Faster uncached Markdown previews]].
-- Procedure :: Build baseline =720e635= and candidate in isolated temporary checkouts.
+- Procedure :: Build =720e635= - pre-migration master baseline, documentation refresh -
+  and the candidate in isolated temporary checkouts.
   Use the same repository README snapshot and deterministic synthetic long document,
   plus a synthetic repeated/multi-paragraph footnote corpus. Record tool versions,
   input bytes, heading/block/note counts and *seven-run medians after one warm-up*.
@@ -544,6 +563,10 @@
   angle-bracket URI/email autolinks, ordered/unordered nested lists, task lists,
   blockquotes, pipe tables, inline code and fenced/indented code. Bare URLs are
   not newly autolinked. Preserve footnotes, definition lists and smart punctuation.
+- Line breaks :: *Keep soft line breaks within paragraphs*. A single source newline
+  is ordinary whitespace; two trailing spaces or a backslash before the newline
+  create a hard break. This matches the bundled reader's =-hard_line_breaks=
+  setting and CommonMark, preserving wrapped prose without a new rendering option.
 - Native selection :: =.md=, =.markdown=, =.mdown=, =.mkd= and =.mkdn=, case-insensitively,
   select =markdown=. Explicit =--from=markdown= and =htmlpreview-format=markdown=
   use the *same native dialect*, regardless of filename or transport.
@@ -562,10 +585,12 @@
   returning the same bounded warning flag; generated transport is added afterwards.
 - Unsupported native constructs :: Percent title blocks, fenced divs, bracketed spans,
   inline/link/code attributes, inline notes, fancy/example lists, grid/simple/multiline
-  tables, captions, line blocks, citations, math and superscript/subscript extensions
+  tables, captions, implicit image figures, line blocks, citations, math and superscript/subscript extensions
   are *not emulated*. Ordinary parsing renders their characters under the native
   grammar; it may interpret ordinary emphasis or links within them. No promise of
   byte-for-byte literal display or semantic equivalence is made for this syntax.
+  An image-only paragraph retains its image and alternative text without synthesizing
+  a =figure= or =figcaption=; image authorization and alternative text are unchanged.
 - Diagnostics :: Warn for parser-recognized omitted HTML and reject unsupported
   explicit qualifiers. *No second parser is introduced to guess every unsupported
   Pandoc construct*. The format guide lists the retired native extensions and the
