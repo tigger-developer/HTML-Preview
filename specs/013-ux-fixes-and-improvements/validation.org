@@ -79,6 +79,14 @@
   interaction coverage. No server limit, request contract, persistence format or
   dependency changed. The earlier block-target regression evidence remains
   applicable: this increment changes the editor, not target generation or writes.
+- Org block boundary probe :: Six authenticated HTTP saves on separate synthetic
+  sources tested =BEGIN_EXAMPLE=, =BEGIN_SRC text= and =BEGIN_QUOTE= containing two
+  internal blank lines. All three first-line openers returned HTTP 409
+  =invalid_footnote=, leaving the source byte-identical; the same bodies with a
+  leading newline returned HTTP 201. This confirms the guard's first-line rule
+  against the current public write boundary. The legacy intermediate serializer
+  wraps literal text, but the final readable serializer and its reparse still
+  enforce the native definition boundary.
 
 ** AMBER UT013.3 - Annotation length input guard :testdef:
 :PROPERTIES:

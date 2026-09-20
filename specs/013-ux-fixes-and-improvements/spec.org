@@ -78,7 +78,8 @@ annotations:
   or replacement at the limit; handle typing, paste and input-method composition
   without silently discarding existing text.
 - Current limit :: *4,000 Unicode code points and 16,384 UTF-8 bytes*, hardcoded in
-  =assets/web/annotation-composer.js= and =internal/annotation/{event,replace}.go=.
+  =assets/web/annotation-input.js= and =internal/annotation/{event,replace}.go=;
+  the composer uses the shared browser limit check.
   These are not YAML configuration keys. Retain server-side enforcement.
 - Verification :: Boundary input, paste, selection replacement, accented
   and supplementary characters, composition, editing existing notes and recovery.
@@ -119,6 +120,9 @@ annotations:
   block recognition; count whitespace-only lines outside those blocks. Normalize
   CRLF for boundary detection. This is an editor guard, not an Org parser or a
   replacement for the server's source-preserving reparse checks.
+  The first text line follows the definition label; an Org block opener must
+  begin on a subsequent line to use the writer's block syntax. The guard does
+  not introduce automatic wrapping or change that persistence contract.
 - Evidence :: Browser typing, selection, clipboard and composition require the
   operator's real browser. Browser automation and CLI JavaScript are excluded;
   there is no approved JavaScript test runner. Do not substitute source-string
