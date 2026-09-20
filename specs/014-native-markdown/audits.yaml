@@ -1,0 +1,270 @@
+version: 1
+audits:
+    - work_item: W014-native-markdown
+      gate: definition
+      session_id: 6a68aff2-d459-4cb1-ba9a-9a8f70825817
+      harness: claude
+      model: claude-opus-5
+      configured:
+        harness: claude
+        model: claude-opus-5
+      external_round: 1
+      status: active
+      updated: "2026-09-20T13:03:22Z"
+      revision: spec.org SHA-256 d03f408d40b269615693266f997407fb738ea12a7fd8dd4104c7175387c1ae (as supplied; 44,017 bytes)
+      verdict: FAIL
+      response: |-
+        GATE: definition
+        REVISION: spec.org SHA-256 d03f408d40b269615693266f997407fb738ea12a7fd8dd4104c7175387c1ae (as supplied; 44,017 bytes)
+        VERDICT: FAIL
+
+        ## Blocking findings
+
+        **F1 — Synopsis omits the required performance outcome**
+
+        - **Evidence:** Context/Problem leads with "External Markdown conversion adds latency"; Context/Outcome requires "reduces measured uncached preview latency against the current master baseline"; AC014.8 - Faster uncached Markdown previews and OT014.1 - End-to-end comparison make it falsifiable. Synopsis Outcome, After and Changes never state it.
+        - **Violation:** `ISSUES.md`, Unified specification — the summary "omits no material change... A mismatch blocks the definition gate."
+        - **Required remediation:** State the measured-latency outcome and its master-baseline boundary in the Synopsis (Outcome or After), consistent with AC014.8.
+
+        **F2 — The native dialect contract leaves line-break rendering undecided**
+
+        - **Evidence:** `assets/pandoc/markdown.txt` (the current bundled Markdown dialect) enables `+hard_line_breaks`, so every newline inside a Markdown paragraph currently renders as a line break. The native contract specifies "CommonMark plus the named Goldmark extensions", under which an intra-paragraph newline is ordinary whitespace. Solution Design / Native dialect enumerates much smaller deltas (one-/two-tilde strikeout, bare URLs not autolinked, smart punctuation) but is silent here; RT014.2's Cases and "independent expectations for each converter delta" define no expectation for it.
+        - **Impact:** Rendered line breaking changes for every wrapped paragraph in existing Markdown, including `README.md`, `docs/*.md` and `testdata/linked-preview/notes.md`. The annotation contract is unaffected (canonical text whitespace-normalizes either way), so nothing else will catch it; the delivery agent must invent the choice.
+        - **Violation:** SDLC `ARCHITECTURE.md`, "Definition must resolve the important decisions"; `ISSUES.md`, "Open questions that can materially change those facts must be resolved in the specification before implementation."
+        - **Required remediation:** State the intended behaviour in the native dialect contract (retain current hard line breaks, or adopt CommonMark soft breaks) with its short rationale, add the matching RT014.2 case, and record it in Synopsis/Changes if the rendering changes. Either choice is acceptable; silence is not.
+
+        **F3 — A superseded W011 regression assertion is not identified**
+
+        - **Evidence:** `internal/preview/native_org_test.go`, `TestRT011_1_ServedOrgAndMarkdown` fails unless `pandoc.Load() != 0` for a served `.md` preview — it asserts that Markdown *does* invoke Pandoc, as the contrast proving Org does not. AC014.1 - Native Markdown routing reverses this, so the assertion must be amended during delivery. Context / Authority supersedes only W008's "mandatory startup discovery and the selected Markdown conversion contract".
+        - **Violation:** `ISSUES.md`, Brownfield context pass ("Make missing, conflicting, stale, or unresolved sources explicit") and Change control ("identify superseded behaviour rather than silently rewriting history"); `TESTING.md`, regression packs as brownfield evidence.
+        - **Required remediation:** Name the superseded assertion with its descriptor in Context/Authority or the handoff, and state that its Org half must be preserved rather than the test deleted.
+
+        **F4 — Bare commit identifier**
+
+        - **Evidence:** OT014.1 Procedure: "Build baseline =720e635= and candidate in isolated temporary checkouts."
+        - **Violation:** `MAIN.md`, universal rules ("Never present a bare identifier to a human... commit ID"); `ISSUES.md`, Identifiers and human communication ("The same rule applies to test IDs, ticket numbers, findings, and commit hashes").
+        - **Required remediation:** Give the hash an adjacent descriptor, for example "=720e635= - last code-bearing master revision before this change".
+
+        ## Advisory only (not grounds for the verdict, no scope expansion implied)
+
+        - Research evidence names "Goldmark v2" and "gomarkdown" as compared candidates without module paths, while the selected v1.8.6 carries two source links. Adding their identifiers would make the comparison reproducible.
+        - The unsupported-construct list omits `implicit_figures` (an image-only paragraph currently becomes `figure`/`figcaption`). It falls under the general no-promise clause, but belongs with the named deltas.
+        - Dependency discovery moves native code/plaintext wrapper language admission from Pandoc's catalogue to Chroma, superseding `docs/FORMATS.md` "Wrapper language admission still uses the installed Pandoc catalogue". AC014.6 covers that native previews work without Pandoc; no expectation records the changed admission set. One RT014.6 case would close it.
+        - The handoff correctly lists `docs/ARCHITECTURE.md`; its existing approval narration ("Taḋg approved…") is not a model for the new text under `DOCUMENTATION.md` voice rules.
+
+        ## Checks that passed (do not "fix" these)
+
+        - **Annotation and audit hygiene:** `spec.org` contains no semantically identified annotation record or block, resolved or empty; the HTML source block and its `<!-- … -->` examples are ordinary content. No audit findings, verdicts, revisions, round numbers or session IDs appear. `OPERATOR_SIGNOFF: PENDING` is correct. No `feedback.yaml` was supplied and nothing indicates processed annotations.
+        - **Schema 8 structure:** all fixed level-one sections present; eight level-two Synopsis categories; every AC tagged `:ac:`, every test tagged `:testdef:`, unique IDs, every AC traced to at least one test and every test to an AC.
+        - **Test classification and TDD fit:** RT014.1–7 exercise the executable, real local HTTP and parsed DOM, not source text; OT014.1 (performance comparison) and OT014.2 (packaging, licence, vulncheck, documentation) are correctly one-off rather than persistent suites; UT014.1–2 correctly reserve layout, legibility and interaction for user validation. No browser automation, Node or test-only framework is introduced.
+        - **Design verified against implementation evidence:** the stated Goldmark→application footnote normalization matches what the code actually requires — `finalizeVirtualNotes` needs `a[role=doc-noteref]` as the marker text node's next sibling, `labelRenderedFootnotes` needs `li` under `ol` under `role=doc-endnotes`, `renderComments` selects `section.footnotes`, and `TestRT011_2_FootnoteHTMLContract` rejects `sup`-wrapped references. `hp-frontmatter` is a real region replaced by `swapRegions` and outside `#hp-document`, so a banner there stays out of canonical text. The Markdown metadata claim matches `fidelity.lua` `display_metadata`. Worker bounds match `internal/orgconvert/worker.go`. RT014.4's selection algorithm matches `annotationBlockFor` in `annotations.js`.
+        - **Proportionality:** one pinned dependency, reuse of the existing native worker, Chroma, YAML library, sanitizer and annotation writer; server-side adaptation instead of a browser or storage rewrite; existing Markdown metadata display retained. No mechanism appears to have been added to fill a template section, and no materially simpler design meets AC014.1–7 with the annotation contract intact.
+      history:
+        - cache_key: sha256:c18a33d751a25412f776406347d6d9338b94665ed98761583c67f50edbbb335e
+          session_id: 6a68aff2-d459-4cb1-ba9a-9a8f70825817
+          harness: claude
+          model: claude-opus-5
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: c08600318790748242a803d2e6cf166f51025e134170701a6b1fb18edf21d0aa
+              bytes: 14809
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/GIT.md
+              sha256: 97bbf89af1c65d159688b452a0434e77d9775f7a98dd1c822ffd264b41012bbb
+              bytes: 7807
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: 66982ab8b25b26ea1bfaf40577bf4955bf0c804cfd035ab582c6d9ff658e2581
+              bytes: 16627
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/MARKDOWN.md
+              sha256: 2fce6c8ecbcb0f9710e22b1b7ff6587542d9fd390f3fa06dff0e53cd6d90cf68
+              bytes: 1342
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: baffdd38fac0c2dd24d2be5389edb2a0b88ea19e8d67e1bc2f6f65d55601b7b3
+              bytes: 2974
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 04a5798f1c77dfd9e0c4690bc43bbc4e7733ac7a18662e17d4f6cd8785f96858
+              bytes: 16237
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/LUA.md
+              sha256: 83386b235c96e1ee1209e854764c41c604196db62c6db729a1641bd61027bae1
+              bytes: 10768
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/sdlc/templates/AGENTS-or-CLAUDE.example.md
+              sha256: d4d5614d8f9d441b7eff45f0e0f2aa1ce5b1a39cda43a55cb7c6e37c956d1087
+              bytes: 4814
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 73f6a85ff6be4d023d90c93ece42a33b4638f263c9a7b70b79630d79c984b686
+              bytes: 19415
+            - path: /Users/tigger/.agents/sdlc/templates/v3/validation.org
+              sha256: 5ad49dd2ddd9fc8e5546e3e4e20a78913a96e0de29ba3edb8a93f2ee4faf70ea
+              bytes: 2164
+            - path: /Users/tigger/.agents/sdlc/templates/v3/work.org
+              sha256: 40788f9bdc1fc2d2901aa4cc13af0b7a40f30564af4445f0ce50bfef0a671148
+              bytes: 3912
+            - path: /Users/tigger/.agents/skills/define-change/SKILL.md
+              sha256: f5de401805ae49a449d13e49d0e742acfda9a4a0c1919f41b9291cf6a11db10f
+              bytes: 4875
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: dbbb5e4b0170c0a9cad53814f314005f4d4a32915830851057dfab767e552ff6
+              bytes: 18120
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: 35a3b25faf81d2820a9bfd080b984342a73080b1cc2af2fa6d7a9410b14fe384
+              bytes: 7181
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/markdown.txt
+              sha256: 377d74d3323f3023360fda4439a90b481a3c229dee8fc03ea5298b349c739312
+              bytes: 1267
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: b3bae22ff2a66123c5b7bab71296d7c1cc7398343a54cf37636082a9a46ddac4
+              bytes: 9113
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: 0cbd8a81a1ec14db99f9f1271647abe68bab91da6b83d99af878d07e5e46029c
+              bytes: 54336
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: f0d041e3ce03329a2fb1a19b6b08e150cfc7701253a461eed1798396724971ca
+              bytes: 20555
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 99507a213646ca5710b9d88c28fff6e23391fab489d27da80b380b28e6521b10
+              bytes: 69383
+            - path: /Users/tigger/code/tigoss/html-preview/docs/FORMATS.md
+              sha256: 83e8b3b353878c00a8565921935880d89dda75536d694459d5683b40edc14e97
+              bytes: 10673
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: 2a8e15a30f38ed63e2686f1ba34b84417fd9640a8edcfcaf54304e833b8b6701
+              bytes: 17856
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 38e5a17257d5ca6d849d08b8a50b133d8a32a300093b976820f91d1a64568873
+              bytes: 21907
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 5cc3030836eb01d04ff56ee9880d76c3206a00ec598af26ad23dee05f40df6cc
+              bytes: 17531
+            - path: /Users/tigger/code/tigoss/html-preview/examples/code.md
+              sha256: f8b96eddc8c2724b531f4c242e75287deff1c99797ccdb50c53d8dae7979853b
+              bytes: 2260
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: 9adc714356282e6cc3f19a5537ad722f986a8109f5b82a4cbc408cfd516c357a
+              bytes: 581
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/worker.go
+              sha256: 458e052eae77b000042d30cb13de8fd5004dc531d9f1b990856ab455fa6175fb
+              bytes: 5333
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks.go
+              sha256: c88b7bba7e8d2d11c3a65379a206eb2603b75319d045f65e9ac49258cdce4380
+              bytes: 7571
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks_test.go
+              sha256: d9be9e09a91c4878536d76e5868b5697ad0a28bed04040eb822c04cf5477bb61
+              bytes: 12867
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_target_contract_test.go
+              sha256: 7dff40c2323306a56f9e270f9bc682029edea0983f0815a62ad8f291e2fb67da
+              bytes: 6830
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/footnote_service_test.go
+              sha256: 725450a4ef919e5e75605c6169a59b484fc8fa3a8eea431e64fd881b747cc5e9
+              bytes: 20824
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats.go
+              sha256: 3154a18d48461d2a5fee934395767ad56422061cf695d12217ed33e729225350
+              bytes: 7853
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/native_org_test.go
+              sha256: 514cbb3d819a1f6160f5631347bb1e0c09c9c805ccbb98501f07d312406cd903
+              bytes: 13633
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 5edc1f83ba7625f1b8806d38f2181eed1e1f1acf485684a341f29cae670c1093
+              bytes: 16302
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
+              sha256: bd91c7a33e4251747715a0aaea9fb603fb0516ce451ccb4f6b2112a98893003f
+              bytes: 6174
+            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+              sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
+              bytes: 62969
+            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+              sha256: 38485b346ab03606ce15a5c81c86bce7694af3068ef8d67758de3e8cdf1159f4
+              bytes: 57348
+            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+              sha256: d03f408d6b40b269615693266f997407fb738ea12a7fd8dd4104c7175387c1ae
+              bytes: 44017
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
+              sha256: 8f069f7cd7330f3b4b73cde29e8fec5bbc45ef8aafa4d572a9be0fc7fe809963
+              bytes: 634
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.org
+              sha256: e6d5b6da9c8f4399630be4e2893e8cb920c414d2c7e9dd4681297627f20bcd86
+              bytes: 1377
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/linked-preview/notes.md
+              sha256: b78dbea23a488b3a8ff2c1093725275e442862f21f01e11fc61513a6b27bd4e1
+              bytes: 647
+          round: 1
+          revision: spec.org SHA-256 d03f408d40b269615693266f997407fb738ea12a7fd8dd4104c7175387c1ae (as supplied; 44,017 bytes)
+          verdict: FAIL
+          response: |-
+            GATE: definition
+            REVISION: spec.org SHA-256 d03f408d40b269615693266f997407fb738ea12a7fd8dd4104c7175387c1ae (as supplied; 44,017 bytes)
+            VERDICT: FAIL
+
+            ## Blocking findings
+
+            **F1 — Synopsis omits the required performance outcome**
+
+            - **Evidence:** Context/Problem leads with "External Markdown conversion adds latency"; Context/Outcome requires "reduces measured uncached preview latency against the current master baseline"; AC014.8 - Faster uncached Markdown previews and OT014.1 - End-to-end comparison make it falsifiable. Synopsis Outcome, After and Changes never state it.
+            - **Violation:** `ISSUES.md`, Unified specification — the summary "omits no material change... A mismatch blocks the definition gate."
+            - **Required remediation:** State the measured-latency outcome and its master-baseline boundary in the Synopsis (Outcome or After), consistent with AC014.8.
+
+            **F2 — The native dialect contract leaves line-break rendering undecided**
+
+            - **Evidence:** `assets/pandoc/markdown.txt` (the current bundled Markdown dialect) enables `+hard_line_breaks`, so every newline inside a Markdown paragraph currently renders as a line break. The native contract specifies "CommonMark plus the named Goldmark extensions", under which an intra-paragraph newline is ordinary whitespace. Solution Design / Native dialect enumerates much smaller deltas (one-/two-tilde strikeout, bare URLs not autolinked, smart punctuation) but is silent here; RT014.2's Cases and "independent expectations for each converter delta" define no expectation for it.
+            - **Impact:** Rendered line breaking changes for every wrapped paragraph in existing Markdown, including `README.md`, `docs/*.md` and `testdata/linked-preview/notes.md`. The annotation contract is unaffected (canonical text whitespace-normalizes either way), so nothing else will catch it; the delivery agent must invent the choice.
+            - **Violation:** SDLC `ARCHITECTURE.md`, "Definition must resolve the important decisions"; `ISSUES.md`, "Open questions that can materially change those facts must be resolved in the specification before implementation."
+            - **Required remediation:** State the intended behaviour in the native dialect contract (retain current hard line breaks, or adopt CommonMark soft breaks) with its short rationale, add the matching RT014.2 case, and record it in Synopsis/Changes if the rendering changes. Either choice is acceptable; silence is not.
+
+            **F3 — A superseded W011 regression assertion is not identified**
+
+            - **Evidence:** `internal/preview/native_org_test.go`, `TestRT011_1_ServedOrgAndMarkdown` fails unless `pandoc.Load() != 0` for a served `.md` preview — it asserts that Markdown *does* invoke Pandoc, as the contrast proving Org does not. AC014.1 - Native Markdown routing reverses this, so the assertion must be amended during delivery. Context / Authority supersedes only W008's "mandatory startup discovery and the selected Markdown conversion contract".
+            - **Violation:** `ISSUES.md`, Brownfield context pass ("Make missing, conflicting, stale, or unresolved sources explicit") and Change control ("identify superseded behaviour rather than silently rewriting history"); `TESTING.md`, regression packs as brownfield evidence.
+            - **Required remediation:** Name the superseded assertion with its descriptor in Context/Authority or the handoff, and state that its Org half must be preserved rather than the test deleted.
+
+            **F4 — Bare commit identifier**
+
+            - **Evidence:** OT014.1 Procedure: "Build baseline =720e635= and candidate in isolated temporary checkouts."
+            - **Violation:** `MAIN.md`, universal rules ("Never present a bare identifier to a human... commit ID"); `ISSUES.md`, Identifiers and human communication ("The same rule applies to test IDs, ticket numbers, findings, and commit hashes").
+            - **Required remediation:** Give the hash an adjacent descriptor, for example "=720e635= - last code-bearing master revision before this change".
+
+            ## Advisory only (not grounds for the verdict, no scope expansion implied)
+
+            - Research evidence names "Goldmark v2" and "gomarkdown" as compared candidates without module paths, while the selected v1.8.6 carries two source links. Adding their identifiers would make the comparison reproducible.
+            - The unsupported-construct list omits `implicit_figures` (an image-only paragraph currently becomes `figure`/`figcaption`). It falls under the general no-promise clause, but belongs with the named deltas.
+            - Dependency discovery moves native code/plaintext wrapper language admission from Pandoc's catalogue to Chroma, superseding `docs/FORMATS.md` "Wrapper language admission still uses the installed Pandoc catalogue". AC014.6 covers that native previews work without Pandoc; no expectation records the changed admission set. One RT014.6 case would close it.
+            - The handoff correctly lists `docs/ARCHITECTURE.md`; its existing approval narration ("Taḋg approved…") is not a model for the new text under `DOCUMENTATION.md` voice rules.
+
+            ## Checks that passed (do not "fix" these)
+
+            - **Annotation and audit hygiene:** `spec.org` contains no semantically identified annotation record or block, resolved or empty; the HTML source block and its `<!-- … -->` examples are ordinary content. No audit findings, verdicts, revisions, round numbers or session IDs appear. `OPERATOR_SIGNOFF: PENDING` is correct. No `feedback.yaml` was supplied and nothing indicates processed annotations.
+            - **Schema 8 structure:** all fixed level-one sections present; eight level-two Synopsis categories; every AC tagged `:ac:`, every test tagged `:testdef:`, unique IDs, every AC traced to at least one test and every test to an AC.
+            - **Test classification and TDD fit:** RT014.1–7 exercise the executable, real local HTTP and parsed DOM, not source text; OT014.1 (performance comparison) and OT014.2 (packaging, licence, vulncheck, documentation) are correctly one-off rather than persistent suites; UT014.1–2 correctly reserve layout, legibility and interaction for user validation. No browser automation, Node or test-only framework is introduced.
+            - **Design verified against implementation evidence:** the stated Goldmark→application footnote normalization matches what the code actually requires — `finalizeVirtualNotes` needs `a[role=doc-noteref]` as the marker text node's next sibling, `labelRenderedFootnotes` needs `li` under `ol` under `role=doc-endnotes`, `renderComments` selects `section.footnotes`, and `TestRT011_2_FootnoteHTMLContract` rejects `sup`-wrapped references. `hp-frontmatter` is a real region replaced by `swapRegions` and outside `#hp-document`, so a banner there stays out of canonical text. The Markdown metadata claim matches `fidelity.lua` `display_metadata`. Worker bounds match `internal/orgconvert/worker.go`. RT014.4's selection algorithm matches `annotationBlockFor` in `annotations.js`.
+            - **Proportionality:** one pinned dependency, reuse of the existing native worker, Chroma, YAML library, sanitizer and annotation writer; server-side adaptation instead of a browser or storage rewrite; existing Markdown metadata display retained. No mechanism appears to have been added to fill a template section, and no materially simpler design meets AC014.1–7 with the annotation contract intact.
+          updated: "2026-09-20T12:54:54Z"
