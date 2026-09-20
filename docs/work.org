@@ -314,13 +314,14 @@ classification; it is provenance, not current state.
 - Working branch :: Continue paired development on =master= following the
   authorized feature-branch integration on 20 September 2026.
 
-** TODO W014 - Native Markdown previews with Goldmark :feature:
+** REVIEW W014 - Native Markdown previews with Goldmark :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-014
 :CREATED: 2026-09-20
 :END:
 
 - Specification :: [[file:../specs/014-native-markdown/spec.org][W014 - Native Markdown previews with Goldmark]].
+- Definition evidence :: [[file:../specs/014-native-markdown/audits.yaml][W014 - Retained definition review]].
 - Scope :: *Pinned native Markdown conversion*, compatibility with the existing
   annotation HTML contract, omitted-HTML warnings and conditional dependencies.
 - Definition boundary :: *The native subset is selected*; fenced divs and other
