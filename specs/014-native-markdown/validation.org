@@ -21,7 +21,7 @@
 - Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
 - Observation :: Native CLI previews reject absent Pandoc with exit 1; served Markdown invokes Pandoc twice. Expected native output without these calls.
 
-- Definition :: [[file:spec.org::#rt014-1][RT014.1 - Public native routing]].
+- Definition :: [[file:spec.org::#rt-014-1][RT014.1 - Public native routing]].
 
 ** GREEN RT014.2 - Semantic render compatibility :testdef:
 :PROPERTIES:
@@ -38,7 +38,7 @@
 - Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
 - Observation :: Fenced divs still become containers; unsupported native qualifiers return CLI 0 and HTTP 200/415 instead of 2/400. Invalid metadata can publish a page. Semantic heading and footnote adaptation preservation checks passed.
 
-- Definition :: [[file:spec.org::#rt014-2][RT014.2 - Semantic render compatibility]].
+- Definition :: [[file:spec.org::#rt-014-2][RT014.2 - Semantic render compatibility]].
 
 ** GREEN RT014.3 - HTML omission and warning delivery :testdef:
 :PROPERTIES:
@@ -55,7 +55,7 @@
 - Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
 - Observation :: Inline/block raw HTML is retained and CLI/page omission notices are absent, including optional Markdown readers, service registration and refreshed pages.
 
-- Definition :: [[file:spec.org::#rt014-3][RT014.3 - HTML omission and warning delivery]].
+- Definition :: [[file:spec.org::#rt-014-3][RT014.3 - HTML omission and warning delivery]].
 
 ** GREEN RT014.4 - Clickable block creation :testdef:
 :PROPERTIES:
@@ -72,7 +72,7 @@
 - Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
 - Observation :: Definition-list bodies and multi-paragraph quotations have no browser-selectable verified target; creation returns HTTP 409. Other isolated/mixed block creation and post-save second insertions pass; forged/stale targets are rejected without changing bytes.
 
-- Definition :: [[file:spec.org::#rt014-4][RT014.4 - Clickable block creation]].
+- Definition :: [[file:spec.org::#rt-014-4][RT014.4 - Clickable block creation]].
 
 ** GREEN RT014.5 - Footnote lifecycle :testdef:
 :PROPERTIES:
@@ -89,7 +89,7 @@
 - Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
 - Observation :: Repeated references including a quote map to one stored note. Multi-paragraph edit, idempotent retry, stale conflict and deletion preserve unrelated source. Existing Org/Markdown ordinary-note, rendered-markup and read-only-sidecar regressions passed. This is preservation coverage: no artificial failure is introduced.
 
-- Definition :: [[file:spec.org::#rt014-5][RT014.5 - Footnote lifecycle]].
+- Definition :: [[file:spec.org::#rt-014-5][RT014.5 - Footnote lifecycle]].
 
 ** GREEN RT014.6 - Conditional dependency behaviour :testdef:
 :PROPERTIES:
@@ -106,7 +106,7 @@
 - Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
 - Observation :: Native formats and input listing reject absent Pandoc; native service cannot start. Removing Go from the optional highlight catalogue incorrectly disables bundled Go highlighting. Failed catalogue reporting remains a passing preservation check.
 
-- Definition :: [[file:spec.org::#rt014-6][RT014.6 - Conditional dependency behaviour]].
+- Definition :: [[file:spec.org::#rt-014-6][RT014.6 - Conditional dependency behaviour]].
 
 ** GREEN RT014.7 - Failure and trust boundaries :testdef:
 :PROPERTIES:
@@ -123,7 +123,7 @@
 - Command :: =go test ./internal/preview -run 'TestRT014_|TestHTTPAnnotationTargetContract|TestCheckboxRendering|TestRT009_7_EditOrdinaryFootnotes|TestRT009_8_ReadOnlySidecar|TestRT009_8_EditableNotes|TestRT007_7_AnnotationHTTPAuthority|TestRT003_1_FormatContentsDefaults|TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown' -count=1 -v=.
 - Observation :: Markdown requests bypass the native-worker fault boundary and return HTTP 200 instead of conversion failure; cancellation/output-flood cases likewise return 200. Raw HTML remains in the passive-content fixture. Existing Org worker cancellation/reaping and annotation authority checks passed.
 
-- Definition :: [[file:spec.org::#rt014-7][RT014.7 - Failure and trust boundaries]].
+- Definition :: [[file:spec.org::#rt-014-7][RT014.7 - Failure and trust boundaries]].
 
 * User tests
 
@@ -133,7 +133,7 @@
 :REASON: Pending user validation after implementation.
 :END:
 
-- Definition :: [[file:spec.org::#ut014-1][UT014.1 - Reading interface]].
+- Definition :: [[file:spec.org::#ut-014-1][UT014.1 - Reading interface]].
 
 ** AMBER UT014.2 - Annotation workflow :testdef:
 :PROPERTIES:
@@ -141,7 +141,7 @@
 :REASON: Pending user validation after implementation.
 :END:
 
-- Definition :: [[file:spec.org::#ut014-2][UT014.2 - Annotation workflow]].
+- Definition :: [[file:spec.org::#ut-014-2][UT014.2 - Annotation workflow]].
 
 * One-off tests
 
@@ -153,7 +153,7 @@
 :EVIDENCE: Seven-run medians after warm-up: every uncached GET and annotation POST median improves; all three corpora preserve heading, verified-target and prior-reference counts. Exact measurements and procedure follow below.
 :END:
 
-- Definition :: [[file:spec.org::#ot014-1][OT014.1 - End-to-end comparison]].
+- Definition :: [[file:spec.org::#ot-014-1][OT014.1 - End-to-end comparison]].
 
 ** GREEN OT014.2 - Packaging and documentation :testdef:
 :PROPERTIES:
@@ -163,7 +163,7 @@
 :EVIDENCE: Temporary native installation and generated plist pass without Pandoc; all four release archives, licence manifests and optional-dependency formula pass. Documentation, help, exact module pin and graph reviewed; vulnerability scan reports no findings.
 :END:
 
-- Definition :: [[file:spec.org::#ot014-2][OT014.2 - Packaging and documentation]].
+- Definition :: [[file:spec.org::#ot-014-2][OT014.2 - Packaging and documentation]].
 
 * Execution context
 
@@ -325,3 +325,34 @@
 - Limits :: Cross-compilation does not establish native Linux/WSL or launchd runtime
   acceptance. No installed user service, global executable or personal configuration
   was replaced. Human browser checks remain AMBER.
+
+** Run 2026-09-20 - Optional reader navigation and reauthorization
+
+- Revision :: =645aaa8= - defer optional suffix discovery until a link is followed.
+- Initial diagnostic :: =GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT007_1_ReaderSelectionSurvivesAnnotationRefresh|TestRT006_12_ContainerMediaOwnership' -count=1 -v=
+  passed unchanged in 2.021 seconds. Explicit specialist Markdown annotation
+  refresh was writable; DOCX, ODT and EPUB media GET/HEAD passed, with stale media
+  refused after a parent change.
+- Independent catalogue :: The served-reader test now obtains its inventory from
+  the public =--list-input-formats= command rather than the service's intentionally
+  native-only startup status. All 51 installed reader links pass. The additional
+  suffix test first failed because an ordinary =.markdown_strict= link was inactive,
+  despite that installed reader being available through explicit selection.
+- Native-only boundary :: A strengthened test counts *every* Pandoc invocation,
+  including discovery, while reading and annotating native Markdown containing an
+  unvisited optional-reader link. Eager link-time discovery failed with three calls;
+  deferring discovery until that link is requested restores zero calls.
+- Current command :: =GORACE=atexit_sleep_ms=0 go test -race ./internal/preview -run 'TestRT006_11_EveryInstalledReaderThroughServedLinks|TestRT014_6_OptionalReaderSuffixLinks|TestRT007_1_ReaderSelectionSurvivesAnnotationRefresh|TestRT006_12_ContainerMediaOwnership|TestRT014_6_NativeServiceWithoutPandoc|TestRT014_1_ServedMarkdownNeverInvokesPandoc|TestRT014_7_OutOfRootMarkdownImage|TestRT006_8_|TestRT006_12_' -count=1 -v=.
+  PASS in 18.044 seconds: all 51 installed readers, both suffix routes, specialist
+  annotation refresh, container media, native no-dependency routes, rooted resources
+  and service limit/cancellation cases.
+- Unsupported input :: The final expanded
+  =TestRT014_6_OptionalReaderSuffixLinks= passed with race detection in 0.999 seconds.
+  An unrecognized local suffix is rejected on request without publishing its raw
+  payload. Existing raster/download authorization remains in its separate path.
+- Static checks :: =make lint= passes after this correction. No parser, worker,
+  annotation-write or browser implementation changes were needed for this increment.
+- Evidence scope :: The earlier candidate's conversion timings, package graph,
+  licences and four-platform archive checks remain the recorded one-off evidence.
+  This increment changes link admission and test inventory, not conversion or build
+  dependencies. Its temporary no-Pandoc installation is refreshed for user validation.
