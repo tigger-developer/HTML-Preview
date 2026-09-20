@@ -14,6 +14,7 @@ import (
 func TestHTTPBlockAnnotations(t *testing.T) {
 	s := startTestService(t, NativeHost())
 	for _, tc := range []struct{ name, ext, text, target, want string }{
+		{"short-definition", "org", "- Source part :: I.\n", "I.", "- Source part :: I.[fn:reviewer-001]"},
 		{"task-checked", "org", "* Tasks\n# Group\n- [X] Checked item.\n", "✓ Checked item.", "- [X] Checked item.[fn:reviewer-001]"},
 		{"task-unchecked", "org", "- [ ] Unchecked item.\n", "Unchecked item.", "- [ ] Unchecked item.[fn:reviewer-001]"},
 		{"task-lowercase", "org", "+ [x] Checked item.\n", "✓ Checked item.", "+ [x] Checked item.[fn:reviewer-001]"},

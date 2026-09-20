@@ -1,0 +1,130 @@
+#+TITLE: W011 - Native Org conversion validation
+#+SCHEMA: 2
+#+STARTUP: content
+#+OPTIONS: toc:2 num:nil
+#+TODO: AMBER RED | GREEN
+
+* Automated regression
+
+** RED RT011.1 - Format routing :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt011-1-result
+:REVISION: 64b4b81 plus W011 test package and worker scaffold
+:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
+:EVIDENCE: Native .org, explicit Org reader and text/code wrappers still invoke Pandoc; guarded CLI/service tests reject them. The built executable rejects the missing private worker entry point.
+:END:
+
+- Criteria :: See [[file:spec.org::#rt-011-1][RT011.1 - Format routing]].
+
+** GREEN RT011.2 - Semantic HTML :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt011-2-result
+:REVISION: 64b4b81 plus W011 test package and worker scaffold
+:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
+:EVIDENCE: Initially GREEN preservation: explicit footnote nesting, roles, ordered definitions, backlinks and multi-paragraph assertions pass against the Pandoc baseline. Existing metadata, navigation and semantic heading checks also passed.
+:END:
+
+- Criteria :: See [[file:spec.org::#rt-011-2][RT011.2 - Semantic HTML]].
+
+** GREEN RT011.3 - Literal code :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt011-3-result
+:REVISION: 64b4b81 plus W011 test package and worker scaffold
+:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
+:EVIDENCE: Initially GREEN preservation: existing exact literal/code-copy and highlighting cases plus JavaScript, Python and Java cases passed against the Pandoc baseline.
+:END:
+
+- Criteria :: See [[file:spec.org::#rt-011-3][RT011.3 - Literal code]].
+
+** GREEN RT011.4 - Block placement :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt011-4-result
+:REVISION: 64b4b81 plus W011 test package and worker scaffold
+:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
+:EVIDENCE: Initially GREEN preservation: whole-block placement pack, newly added short definition, unverified-target rejection and repeated notes passed through real HTTP saves.
+:END:
+
+- Criteria :: See [[file:spec.org::#rt-011-4][RT011.4 - Block placement]].
+
+** GREEN RT011.5 - Footnote lifecycle :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt011-5-result
+:REVISION: 64b4b81 plus W011 test package and worker scaffold
+:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
+:EVIDENCE: Initially GREEN preservation: ordinary-note editing/retries/conflicts, deletion, read-only sidecar endnotes and rendered markup checks passed through existing HTTP helpers.
+:END:
+
+- Criteria :: See [[file:spec.org::#rt-011-5][RT011.5 - Footnote lifecycle]].
+
+** RED RT011.6 - Trust boundaries :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt011-6-result
+:REVISION: 64b4b81 plus W011 test package and worker scaffold
+:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
+:EVIDENCE: Published-page passive-content and no-fetch checks pass on the baseline; the new valid owned-literal-record case fails because the worker scaffold cannot convert it. Invalid and duplicate records must be assessed together with this valid control.
+:END:
+
+- Criteria :: See [[file:spec.org::#rt-011-6][RT011.6 - Trust boundaries]].
+
+** RED RT011.7 - Limits and failure recovery :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt011-7-result
+:REVISION: 64b4b81 plus W011 test package and worker scaffold
+:COMMAND: go test ./internal/orgconvert ./internal/preview ./integration with the focused selectors recorded below, -count=1
+:EVIDENCE: The worker scaffold rejects valid empty, ordinary and long-line requests and subsequent/concurrent valid requests. The native worker failure injection receives HTTP 200 because the baseline never invokes that worker; required existing failure classification is 422.
+:END:
+
+- Criteria :: See [[file:spec.org::#rt-011-7][RT011.7 - Limits and failure recovery]].
+
+* Test-admission execution, 20 September 2026
+
+- New code :: =native_org_test.go= in preview and integration;
+  =internal/orgconvert/worker_test.go=; one additional short-definition row in
+  =annotation_blocks_test.go=; controlled converter rejection in the existing
+  preview test Host.
+- Scaffold :: =internal/orgconvert/worker.go= declares the private request and
+  a worker that always returns failure. TestMain dispatches that worker so the
+  tests compile and exercise behaviour. No production routing or conversion
+  is implemented at this checkpoint.
+- Primary command :: =go test ./internal/orgconvert ./internal/preview -run 'TestRT011|TestHTTPBlockAnnotations|TestHTTPBlockRejectsUnverifiedTargets|TestHTTPRepeatedBlockNotesAndHeadingAnchor|TestRT009_7_EditOrdinaryFootnotes|TestHTTPDeleteFootnote|TestRT009_8_ReadOnlySidecarUsesNativeEndnotes|TestRT009_8_EditableNotesPreserveRenderedMarkup|TestRT002_1_CodeFidelity|TestRT004_3_ConsolidatedFrontmatter|TestFoldingSemanticHeadingClasses|TestRT005_2_NavigationStructure|TestRT006_8_CancelledLastWaiterReleasesWorker' -count=1=.
+- Additional commands :: =go test ./integration ./internal/preview -run 'TestRT011_1_PackagedNativeWorker|TestRT011_7_NativeWorkerFailureAndRecovery' -count=1=;
+  =go test ./internal/orgconvert -run 'TestRT011_6_Owned|TestRT011_7_Concurrent' -count=1=.
+- Classification correction :: The page renderer's existing generic conversion
+  failure is HTTP 422, not 503. The recovery test expectation was corrected and
+  rerun independently with =go test ./internal/preview -run TestRT011_7_NativeWorkerFailureAndRecovery -count=1=;
+  it still fails meaningfully with observed HTTP 200 before native routing exists.
+- Result :: Executed behavioural RED in native routing/worker cases; retained
+  semantics passed on the existing converter. No compilation/setup failure is
+  classified as RED. The invalid-request controls alone do not prove validation
+  while the scaffold rejects everything.
+- Static check :: =golangci-lint run ./internal/orgconvert/... ./internal/preview/... ./integration/...= passed.
+- Environment :: Local macOS; existing Go module/build caches isolated under
+  operating-system temporary directories. No browser or live service was used.
+
+* One-off tests
+
+** AMBER OT011.1 - Full-pipeline benchmark :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-011-1-result
+:REASON: Candidate implementation pending; execute the specified bounded two-build local comparison after regression success.
+:END:
+
+** AMBER OT011.2 - Packaging and dependencies :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-011-2-result
+:REASON: Candidate dependency adoption, release builds, vulnerability scans and staged native trial pending.
+:END:
+
+* User tests
+
+** AMBER UT011.1 - Reader review :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-011-1-result
+:REASON: Human browser review follows implementation and automated validation; no browser automation is authorized.
+:END:
+
+** AMBER UT011.2 - Annotation review :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-011-2-result
+:REASON: Human annotation interaction review follows implementation; HTTP results do not establish presented UX.
+:END:

@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tigger-developer/HTML-Preview/internal/orgconvert"
 	"golang.org/x/net/html"
 )
 
@@ -32,6 +33,9 @@ type handoff struct {
 }
 
 func TestMain(m *testing.M) {
+	if len(os.Args) > 1 && os.Args[1] == "--internal-org-convert" {
+		os.Exit(orgconvert.Worker(os.Stdin, os.Stdout, os.Stderr))
+	}
 	if len(os.Args) > 1 && os.Args[1] == "--process-blocker" {
 		for {
 			time.Sleep(time.Hour)
@@ -105,6 +109,13 @@ func TestMain(m *testing.M) {
 				return []byte("plaintext\n"), nil
 			}
 			if len(cmd.Args) > 0 && strings.HasPrefix(cmd.Args[0], "--defaults=") {
+				if fault == "reject-pandoc-org" {
+					for _, arg := range cmd.Args {
+						if arg == "--from=org" {
+							return nil, fmt.Errorf("Org conversion still invoked Pandoc")
+						}
+					}
+				}
 				if fault == "native-no-conversion" {
 					return nil, fmt.Errorf("native HTML must not use Pandoc conversion")
 				}
