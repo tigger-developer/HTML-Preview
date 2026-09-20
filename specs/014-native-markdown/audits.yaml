@@ -439,12 +439,13 @@ audits:
     - readiness_check: delivery-code
       work_item: W014-native-markdown
       gate: implementation
-      session_id: 01a0bfbf-b71a-7922-b3ae-c67fc648e5fa
-      harness: codex
-      model: gpt-5.6-sol
+      session_id: 20260920_205817_00d312
+      harness: hermes
+      provider: nous
+      model: z-ai/glm-5.3
       configured:
-        harness: codex
-        model: gpt-5.6-sol
+        harness: claude
+        model: claude-opus-5
       previous_sessions:
         - session_id: 26b85102-7fbf-40b7-8b6f-277234e9c3f7
           harness: claude
@@ -457,27 +458,46 @@ audits:
           model: z-ai/glm-5.3
           reason: configuration-changed
           updated: "2026-09-20T16:56:47Z"
-      external_round: 5
-      status: exhausted
-      updated: "2026-09-20T17:30:25Z"
-      revision: c0a4c7aa48e5731f092a1bbfaac61b15ec0dcf9d
-      verdict: FAIL
+        - session_id: 01a0bfbf-b71a-7922-b3ae-c67fc648e5fa
+          harness: codex
+          model: gpt-5.6-sol
+          reason: configuration-changed
+          updated: "2026-09-20T19:58:11Z"
+        - session_id: 335875f3-83bf-416f-87e0-c77647ad2f3b
+          harness: claude
+          model: claude-opus-5
+          reason: start-failed-fallback
+          updated: "2026-09-20T19:58:15Z"
+      external_round: 7
+      budget_resets:
+        - after_round: 5
+          updated: "2026-09-20T19:58:02Z"
+      status: passed
+      updated: "2026-09-20T20:05:52Z"
+      revision: bb3726d
+      verdict: PASS
       response: |-
         GATE: delivery-code
-        REVISION: c0a4c7aa48e5731f092a1bbfaac61b15ec0dcf9d
-        VERDICT: FAIL
+        REVISION: bb3726d
+        VERDICT: PASS
 
-        FINDINGS:
+        Disposition of the complete prior finding (round 5, revision c0a4c7aa):
 
-        1. Optional-reader service compatibility regressed. The approved design requires installed specialist readers to remain available and their annotation eligibility unchanged. However, three reauthorization paths use the native-only `s.base.formats` catalogue:
+        Valid parts remediated with current evidence:
 
-           - `service_render.go`: linked optional documents are marked unsupported.
-           - `service_annotations.go`: specialist Markdown annotation endpoints return unavailable.
-           - `service_assets.go`: media belonging to optional-reader documents returns unavailable.
+        1. Weakened reader inventory: TestRT006_11_EveryInstalledReaderThroughServedLinks now enumerates the public --list-input-formats catalogue independently of the service's intentionally native-only startup status. All 51 installed readers render through authorized served links under the race detector (optional-link-red.log, optional-path-final.log).
 
-           This also weakens `TestRT006_11_EveryInstalledReaderThroughServedLinks`: it enumerates the service’s now-native-only status catalogue, so it no longer exercises installed optional readers. The retained `TestRT007_1_ReaderSelectionSurvivesAnnotationRefresh` should expose the annotation defect, but it has no current GREEN execution evidence after the interrupted full-suite run.
+        2. Missing GREEN for the specialist annotation refresh: TestRT007_1_ReaderSelectionSurvivesAnnotationRefresh passes with race in the final run (optional-path-final.log).
 
-           Required remediation: use the lazily discovered optional catalogue consistently when resolving linked documents, annotation sources and media parents. Add or restore explicit service assertions for an installed optional document link, specialist Markdown annotation refresh, and optional-reader embedded media where applicable. Execute the affected tests with the race detector and record current GREEN evidence.
+        3. The narrower implicit-suffix defect: a .markdown_strict link without a selector was inactive (optional-link-red.log RED); the correction authorizes the destination at link time and resolves the reader only when followed, through the existing serveDocument/catalogueFor boundary (optional-negative-final.log, optional-path-final.log). Unsupported suffixes return non-success without raw bytes. The strengthened TestRT014_1_ServedMarkdownNeverInvokesPandoc counts every Pandoc invocation, including discovery, over a native page containing an unvisited optional-reader link: the eager experiment failed with three calls (deferred-discovery-red.log); the delivered code passes with zero. Deferral is required by AC014.1 and is recorded in the spec's hands-off decision log and documented in FORMATS.md.
+
+        Disputed parts withdrawn as unsupported:
+
+        4. Specialist annotation regression: requestFormat validates explicit selectors against the lazily discovered optional catalogue before identifyFormat runs, and formatCatalogue.resolve returns documentFormat(selected) unconditionally for a non-empty selection, so the native-only base catalogue never gates a selected reader; buildHTTP also embeds the resolved reader in the advertised endpoint and page URLs. TestRT007_1 passed with HTTP 200 and writable=true before the production correction (optional-path-diagnostic.log) and passes after it.
+
+        5. Optional media regression: serveMedia reidentifies with grant.source.input.reader, a non-empty explicit reader following the same unconditional selected-reader path. TestRT006_12_ContainerMediaOwnership passed unchanged for DOCX, ODT and EPUB, including raster GET/HEAD and invalidation after source mutation, before and after the correction.
+
+        Gate checks verified: all RT014.1–014.7 and OT014.1–014.2 GREEN; UT014.1/014.2 remain explicitly AMBER for operator validation as this gate permits. The affected tests were rerun with the race detector and pass; the link-admission increment touches no conversion, annotation-write, worker or browser code, so the earlier full-suite, performance, packaging, release and dependency evidence remains applicable, and make lint passes. Changed documentation (README, FORMS, ARCHITECTURE, VISION, SERVICE, help, notices, examples) is accurate for the delivered behaviour, including deferred optional-reader discovery, and the changed sections follow DOCUMENTATION.md's impersonal factual voice. spec.org and validation.org contain no duplicated audit findings, verdicts, rounds or session identities. No unauthorized scope: the only new dependency is pinned Goldmark 1.8.6 with its MIT licence distributed.
       history:
         - readiness_check: test-code
           cache_key: sha256:07b27b632df643fb33b410de5c05be5fa30eb30f878f21567c783db1eca60c0e
@@ -1690,3 +1710,837 @@ audits:
 
                Required remediation: use the lazily discovered optional catalogue consistently when resolving linked documents, annotation sources and media parents. Add or restore explicit service assertions for an installed optional document link, specialist Markdown annotation refresh, and optional-reader embedded media where applicable. Execute the affected tests with the race detector and record current GREEN evidence.
           updated: "2026-09-20T17:26:54Z"
+        - readiness_check: delivery-code
+          cache_key: sha256:c5e5e590bcb1cd4b113d585e256c4b01029349bc18a350754f709b405dd3c31a
+          session_id: 335875f3-83bf-416f-87e0-c77647ad2f3b
+          harness: claude
+          model: claude-opus-5
+          incident: start-failed
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 17aefd3515d0d1deb97cbbf0f36e05891c581ec686159c40fc4ae0bcd62f76dc
+              bytes: 15497
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/GIT.md
+              sha256: 97bbf89af1c65d159688b452a0434e77d9775f7a98dd1c822ffd264b41012bbb
+              bytes: 7807
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: baffdd38fac0c2dd24d2be5389edb2a0b88ea19e8d67e1bc2f6f65d55601b7b3
+              bytes: 2974
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 04a5798f1c77dfd9e0c4690bc43bbc4e7733ac7a18662e17d4f6cd8785f96858
+              bytes: 16237
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/LUA.md
+              sha256: 83386b235c96e1ee1209e854764c41c604196db62c6db729a1641bd61027bae1
+              bytes: 10768
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/skills/deliver-change/SKILL.md
+              sha256: 8ec56c213667143c0f86561cbdf1d825a81a6d8edc487ed769a0af24ff5e037a
+              bytes: 8593
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: 9d4fcbd0cdec0f0ce57fab68e9f3ffc43fe4be18f97db29ce6efffea76ec178a
+              bytes: 877
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: e6fe3d2e8e107396650b552703bd1d99a978f1a61d7cd3ceb63da9082c6c99d1
+              bytes: 18736
+            - path: /Users/tigger/code/tigoss/html-preview/THIRD_PARTY_NOTICES.md
+              sha256: ca9020d1dfeb9cc5e8d2e3652351c24e05074d7705e5f9a72ccf8a57da2196cf
+              bytes: 4536
+            - path: /Users/tigger/code/tigoss/html-preview/assets/licenses/goldmark-LICENSE
+              sha256: c1d6f653c38c80294dc7994647ba0dcc508ce64a86996303c804efa2f7982bff
+              bytes: 1071
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: f2ce48459116a13da908f5602955b99d8de63e753f2cb41f73e840ddfa07d22e
+              bytes: 7787
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: b3bae22ff2a66123c5b7bab71296d7c1cc7398343a54cf37636082a9a46ddac4
+              bytes: 9113
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: 0cbd8a81a1ec14db99f9f1271647abe68bab91da6b83d99af878d07e5e46029c
+              bytes: 54336
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: 44c9d3e04f33cf05f7cb781c2523c3f9f4328fa2f2899bb3f48ba9f1e5db5668
+              bytes: 2072
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: 38a9acaf9067ea960833b5df8b5b718497b2635e9d85e207b12ac856e6730d08
+              bytes: 25078
+            - path: /Users/tigger/code/tigoss/html-preview/cmd/htmlpreview/main.go
+              sha256: 3ea2c1fd77377c079b5e075cf8e5334b13d0d2a710d5270e6c721343c7103cea
+              bytes: 820
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: f0d041e3ce03329a2fb1a19b6b08e150cfc7701253a461eed1798396724971ca
+              bytes: 20555
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 8583d2b5d7e77b176cb0f3c657d1194522160bb51db9eb42b96799906d9c5894
+              bytes: 71308
+            - path: /Users/tigger/code/tigoss/html-preview/docs/FORMATS.md
+              sha256: 83f5112af39c1f0f3ee63e60b4c98396b1e1750cd1e23d95a2767ecbc1098935
+              bytes: 13060
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: 4197d8d890b0451896010321346617260e3a927e84144a82d4b87d00e60c8909
+              bytes: 18158
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 852c45fe8ba1d525a33a8207efb24d0e86ee5382f8812e4cdc2974043741d35e
+              bytes: 22079
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: 4efef87fb0aa6b09373af79704fb002ff1a87c404a706e51fb04ac35d0170e45
+              bytes: 6151
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: c0f93df2b16a41abccdbba6c189dfce493e415af79c33ec1c6abe4e889c60f9a
+              bytes: 17771
+            - path: /Users/tigger/code/tigoss/html-preview/examples/code.md
+              sha256: 2e3d7c6d09e1518fdc92635a0b1751a908c7786630d6104ee409aa6ebefad673
+              bytes: 2699
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: eea90602fdbf1d232978460a6446510c8804147360f1ed1e08d3092650f71240
+              bytes: 614
+            - path: /Users/tigger/code/tigoss/html-preview/go.sum
+              sha256: 902c9ac27bbbe0ac173c3f4a81ce85847b005996b9f7a48daf59a4bdfe518399
+              bytes: 2565
+            - path: /Users/tigger/code/tigoss/html-preview/integration/cli_test.go
+              sha256: c2bca387bc7d5be8e0da835511c119200cf6b7a08bda2944fbbad2ddcde33233
+              bytes: 5371
+            - path: /Users/tigger/code/tigoss/html-preview/integration/formats_test.go
+              sha256: 53429b9d29554887bf130857fadd4a4e15c339696bffa3e3e167f82b170dff05
+              bytes: 3710
+            - path: /Users/tigger/code/tigoss/html-preview/integration/release_test.go
+              sha256: 7863c63a980cfd4e6e6d794bfaa49b73110027cf01b640f8d4b9778cb3c1c0d7
+              bytes: 3958
+            - path: /Users/tigger/code/tigoss/html-preview/integration/service_navigation_test.go
+              sha256: 51b7270757b397d48e50c9556ba4cca1d40b37f6dd0df2612de143c0796a7279
+              bytes: 6102
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/blocks.go
+              sha256: e47ab033f0b843b17a75ed33a6a1e9c2125668b4e12d9a808f263b9ad0b23a31
+              bytes: 8173
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/launchagent.go
+              sha256: 4439118d32c03a6338c805b7f7edf03c3206861467bb9babee103d5acd772db6
+              bytes: 3582
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/main.go
+              sha256: f35ae3c5ddddfb1d646c3805ad11aca7463e5828eec5651bcf5e9d2896d5ad2d
+              bytes: 8728
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: ef6953047cc68f4156f4344fac923572e93c6c8ae5171ae1964e775a5d17f6ad
+              bytes: 3771
+            - path: /Users/tigger/code/tigoss/html-preview/internal/converthtml/highlight.go
+              sha256: a79093468bbf848eb924e41fa18617e410f2d0fbc52505ddcd54d42cad9c6ac1
+              bytes: 1666
+            - path: /Users/tigger/code/tigoss/html-preview/internal/convertworker/worker.go
+              sha256: 8f4d40f42eac11daf5dcfd135b221adb00a6161fa94d1c90cce08005da32e4c4
+              bytes: 5438
+            - path: /Users/tigger/code/tigoss/html-preview/internal/markdownconvert/convert.go
+              sha256: bb73e296ad90907ed03f65edb3d0aa053efa8c9a6727445467fc428cb75fe80a
+              bytes: 9127
+            - path: /Users/tigger/code/tigoss/html-preview/internal/markdownconvert/metadata.go
+              sha256: 3ab95e78c3536157771deab910a814420b85d318090cdbcae415be8dbb742343
+              bytes: 4225
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/highlight.go
+              sha256: b530cbcc6174f5bdce082a711b60a3bc6feeace1a2cdc4bb813c3537bd92bf26
+              bytes: 324
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/worker.go
+              sha256: fb6b07d2f7d0dc36e25eb0a4e8f10c71f980b3bc210d3e689d1d1b375ca7cf6d
+              bytes: 699
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/adversarial_test.go
+              sha256: 298c32c9cba7c63df3efa7cac1431ca290a603c3e14505aab9c13f12e35298c6
+              bytes: 6458
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks.go
+              sha256: 1c841208665223f525e5399be8f878a82bad520efd103f5fd29f4443f1c349a1
+              bytes: 7859
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks_test.go
+              sha256: d9be9e09a91c4878536d76e5868b5697ad0a28bed04040eb822c04cf5477bb61
+              bytes: 12867
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_security_test.go
+              sha256: cbb32660d4355a4a6067a076b83a72284ed41c67fe679e1599ae70bafc8deb3c
+              bytes: 3981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_service_test.go
+              sha256: fa9ba5eb8bce499885d465e936aaac23e5c5236128a7f18a4b04db1de91c49da
+              bytes: 10791
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_target_contract_test.go
+              sha256: 7dff40c2323306a56f9e270f9bc682029edea0983f0815a62ad8f291e2fb67da
+              bytes: 6830
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/checkboxes_test.go
+              sha256: c0aa2603f1a7cf4252493a55f599499c29f0506ad19d49cba2103db5d106e4cd
+              bytes: 2059
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contents_defaults_test.go
+              sha256: fdb02e348ac9878b115fe049130b47e86170405a7a863b1372d24697d80d6bbe
+              bytes: 2388
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contracts_test.go
+              sha256: 36be3ab04d8b2dabd793ffef75a57d9dc41ada9213e87d313b3321f99c9cc6e5
+              bytes: 7099
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/footnote_service_test.go
+              sha256: b0848e753e9262cab38f91c49e6365ce6f30c49c73729a1d02dc4d30ea64fce0
+              bytes: 21051
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats.go
+              sha256: f6abb7e713fa9110433e3f8903e99f009d22fc6fb5fdb34749534577bf9daaa0
+              bytes: 7973
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats_test.go
+              sha256: 25c7affd502280499f90f78115d891d1585b85ebcac724e70a8ca51f3b904699
+              bytes: 6593
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: b4deebbe2a308688c739337fc67a0086087b3ffee4e6f9c64103e6d5e4aea0a9
+              bytes: 12018
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/lifecycle_test.go
+              sha256: 78ef38d10e180f714a01094e36b8f1973bc336b0e531dc559424e6c3b3be4fc7
+              bytes: 7095
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/main.go
+              sha256: f313ace4d84297b0164e5cc5d45da76ded71afff5b38be6e50585bbcb0e27dd4
+              bytes: 2878
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/mapping_test.go
+              sha256: 31f9d9eef57b4f504b31ecf637e343136552f2446817f3ad73ad86ef33025639
+              bytes: 5017
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/markdown_annotation_contract_test.go
+              sha256: 631ce1fa4f7fb7963740fdf0a8256e477f87579484effeaeacba28cf94f09545
+              bytes: 12961
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/markdown_boundaries_test.go
+              sha256: 9ed9cfb2aa3d309485afb562fef3d26abf0e8fc2bd547489bf4bd3e52b51c610
+              bytes: 5822
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/markdown_semantics_test.go
+              sha256: 82ee6964752b07891d95eb26488278e7739d980f0d980b5b59479e86c7a97800
+              bytes: 8102
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/native_markdown_test.go
+              sha256: 298fc33b85d2adedf9c08bf7a12f8e6ac448dbea177b100364cbdd82614cbb92
+              bytes: 15487
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/native_org_test.go
+              sha256: aa6fb2a5e29949a0a8a4b2b5e0e8eb3907f2da8084b7f0a7954029bf2d75cc97
+              bytes: 13968
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/optional_formats.go
+              sha256: e7f49d4f90e6f03509a112722d1b235db7dbf09c2ff532367d5d40ef61585a28
+              bytes: 3771
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/preview_test.go
+              sha256: 8754527d3ffed819743adbe5d57c20ef4a56694409f67e536e265273f926538c
+              bytes: 21837
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/reader_fixtures_test.go
+              sha256: 51bb60c05707d37972fd931a71359600368cc429467ed95a14cfe58bda4e97aa
+              bytes: 11637
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/references_test.go
+              sha256: a0448d7f3972ebfb1fbdfee78322872442c8d02c997ef76741341b6c51541a09
+              bytes: 5611
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 26c7a5b37fc47cb90eb3fa34df1bb7863f511d559ad559d81c4be96c9c29b850
+              bytes: 16936
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service.go
+              sha256: cc0f4dfb2adb0cc8e001c1b337deadb5238570e3e0b5f89d571bb387dffc4393
+              bytes: 4954
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_annotations.go
+              sha256: 41dcde1ce522d3dd1c43e4dc572cbcfa806081e6c177cabd04b8b14b7977b1d9
+              bytes: 17208
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_assets.go
+              sha256: e8289ba854a083b0fc3c33e9335f9cc3aa6bc1d3c47e73d48643d1a447079b11
+              bytes: 7212
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache.go
+              sha256: f74262b296b61adac996d92e8da285e80eecd9dbe68c9ef8da700a93dc31065c
+              bytes: 5923
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
+              sha256: 2cf684a8c4c3482f09f9b4caf9127d305f06bf7dd140c12278c05ad030ab4fc3
+              bytes: 9957
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_client.go
+              sha256: b0b1b4fafca7c6a278a749aa68091882d389d00f04a1b65b57513d012ecfec9d
+              bytes: 11555
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_control.go
+              sha256: 61a695a0926cbf9819aabea2d296b43b9f78a63707bc84bac7d62580a4bc647f
+              bytes: 10341
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_events_test.go
+              sha256: ef046732654e2bc2180f09aa1b33475e0bb31d995c1adf74593c2e1db3a8ea2c
+              bytes: 3718
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
+              sha256: bd91c7a33e4251747715a0aaea9fb603fb0516ce451ccb4f6b2112a98893003f
+              bytes: 6174
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_formats_test.go
+              sha256: f55b96c62bad4898f5d70f3cc6d0aaf6082294ee9fb046567f5f972df261a8b7
+              bytes: 3271
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_http.go
+              sha256: c39bea154e35f913c1015d20b7ba5b8ecdf4fc47bd97d79e953b290d21c51cf7
+              bytes: 6585
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_limits_test.go
+              sha256: daede568e7610413c691b8c86f95467df0ccfc5ef6e28ac2692c6712bcf4013a
+              bytes: 5090
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_render.go
+              sha256: 30ea5810a8370e5756e603839a2506a4ca73c096f19ebdef0518eeaf79dcfa88
+              bytes: 9198
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 020922a9808f843604f2f74a0cae3f2dea309775efeacc17a6ae5efa42b0ff21
+              bytes: 11237
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/source.go
+              sha256: 1ff1e81cbfac5dcd085d5619b5f53d50d0fad549658eb108c3f0467d2156fa0d
+              bytes: 2798
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/wrapper.go
+              sha256: 3c4327078b41075f2ff9cab8f55a9484a6fe69db02aa0d04c9c4d56b9358c64e
+              bytes: 2498
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: e10e1062b299162f57951d5578436da5ec60c3fc2a283dd38a8c3b4646f1d01e
+              bytes: 1387
+            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+              sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
+              bytes: 49831
+            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+              sha256: 16f16f5a1799bcfc5d89dce5f9a43acae376873cd146ed8167150aa8fec8ff7d
+              bytes: 27254
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
+              sha256: 8f069f7cd7330f3b4b73cde29e8fec5bbc45ef8aafa4d572a9be0fc7fe809963
+              bytes: 634
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.org
+              sha256: e6d5b6da9c8f4399630be4e2893e8cb920c414d2c7e9dd4681297627f20bcd86
+              bytes: 1377
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/linked-preview/README.md
+              sha256: 9c14eded51feb1e272b3b14b435c37d7025dd0a977f2ecf4fb16473c0cbb63f0
+              bytes: 1261
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/native-markdown/semantics.md
+              sha256: e5be8c7f7458740de8c0a16f16bf13f3fa1ac81c7daac8dbc47eeb338ceb2999
+              bytes: 589
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/baseline-safe-timing.json
+              sha256: 754a83f26a609147953e813fbf94167f61467a2ce2b1e98b70e93684be646216
+              bytes: 1006
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/baseline-safe-timing.log
+              sha256: 49d1d12976898bf7adaf6237a0f9f41e9627368f46843b30cf1ac3e21adca598
+              bytes: 394
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/benchmark.go
+              sha256: 34a44e7a9667f66b03eddec72a8db4b729e73a8813c7bb4e217374f8cfbddb2e
+              bytes: 7647
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/candidate-timing.json
+              sha256: 0507272b8bd496e06584fba2b19a71f39c006098b43e36ae49f678d6f3726720
+              bytes: 966
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/candidate-timing.log
+              sha256: a46a51dac7f9fee514f1a97f41f54b5030e640a05ce86689e044e3a5df21e55f
+              bytes: 388
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/coverage.log
+              sha256: eba069b8d27293b0df73891e35d2f5fe1fa14b5f5e8be82f0d4db4d39d8df347
+              bytes: 181
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/css-lint.log
+              sha256: 9b70b1623cb2d1d552963201c8c44458ad905099ee9cef5265bc694b59c5c475
+              bytes: 42
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/deferred-discovery-red.log
+              sha256: 677579a8f8b57c09fe9f515ba76b155123740a80c22af8de715c27727e08a04c
+              bytes: 208
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/delivery-readiness.yaml
+              sha256: 63070bfc94164bf15460ab2ba2c89f92b07b4d8ca3068d15c3265e7eddf0e199
+              bytes: 3302
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/final-adjustments.log
+              sha256: 34b4ad1ce5d5b81cd61b5fa1bf3dde278071c7db1f69d9aea0704cc559b7a3ff
+              bytes: 136
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/final-test-additions.log
+              sha256: 222a4a2e5b3a4b2f953d36634a70f716490feaa52289f2821cd888735439dc29
+              bytes: 787
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/lint-final.log
+              sha256: 0ff7f82593e16093998b83651f5c826f64d1ac2c1c5500f693ac61884ab323e3
+              bytes: 33
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/lint-remediation.log
+              sha256: 0ff7f82593e16093998b83651f5c826f64d1ac2c1c5500f693ac61884ab323e3
+              bytes: 33
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/module-graph.txt
+              sha256: 12e73a0d25e97d68c17cb98e17697683ccf5f454a0aa2d2a7ccd565ba4488b88
+              bytes: 695
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/native.cover
+              sha256: 8e398067bec5d87050de3258a5705fa94c24c691ed445a0fc37de831aa3c26d9
+              bytes: 24118
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/optional-link-red.log
+              sha256: 723c7b9c4fdd27adfe0f37ac46790ca65dfac56de0a4f55746d17c305ae65668
+              bytes: 8018
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/optional-negative-final.log
+              sha256: 7463cfbacdb5fc3534f9c67f7d90dc17f98011a03eaa3af0050e860d382142b9
+              bytes: 179
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/optional-path-diagnostic.log
+              sha256: c2aaed28219202f83096a18aa861f82740e9bac516ad3c23723b7685c7cb7fa4
+              bytes: 657
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/optional-path-final.log
+              sha256: d5eaced84c3f4f357d94175f23c6ba5caf68dfe6424903b22e6921755786ebe2
+              bytes: 10317
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/packaging-checks.txt
+              sha256: bda05af6a3ae583f9c754756c03ffd26159d17d49d23b287f3b6957f8ab408d2
+              bytes: 209
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/preservation-and-additions.log
+              sha256: e790af8fe0aac55cf3e9562ae8e01a1092d25e7d14767171fd28e3add3249d78
+              bytes: 14698
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/regression-current.log
+              sha256: c7e67de630ad38eaa8a282651ed30e0708522f0caa5882134e08d2ea2b6a2a50
+              bytes: 4116
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/regression-final-focused.log
+              sha256: aebade0d1b9b249e297cf53cd9ffecfbfc9f1aa4f02da3abe866ecbfd4a18a70
+              bytes: 71
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/release-final.log
+              sha256: e63edbc393fc55cbef4f60e6cd6b72d4c69d189fde446b4a6ebf79c26610b535
+              bytes: 66
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/remediation-followup.log
+              sha256: 76163f0fcced916262e50e49f1ba7f907b34a93f6f7232852f18f317fe910386
+              bytes: 3553
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/remediation-readiness.yaml
+              sha256: 63070bfc94164bf15460ab2ba2c89f92b07b4d8ca3068d15c3265e7eddf0e199
+              bytes: 3302
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/remediation-red.log
+              sha256: 250821de617a24fb1e0069335f4f97572f88556f4ab6371be0f70d452d670cf3
+              bytes: 3338
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/rt-package-red.log
+              sha256: d60714d2f12facbc18e4ca8c475e7dab2bcbe0b8566e82e2018e72ff5d1dd548
+              bytes: 8449
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/source-oracle-red.log
+              sha256: 4a59ca91797f9d3923dd1e6282784a80cfc84ca4e962a8901159dc11799ae46b
+              bytes: 5274
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/superseded-routing.log
+              sha256: b27467322e7cd14a497fffc8a9aebc44eb33ea9f449bf1338e8a2e5fdbcfcee1
+              bytes: 244
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/test-package-final-red.log
+              sha256: ea8ef056065eaf332b87d4714cf330723b88b8304ef9453ae28f4370ad526f2d
+              bytes: 18925
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/vulncheck.log
+              sha256: 7aa773d24f701e9ac5859bc3c38eb4d903e87df0bf446b914f9d75bfa14cdba4
+              bytes: 90
+          round: 6
+          updated: "2026-09-20T19:58:11Z"
+        - readiness_check: delivery-code
+          cache_key: sha256:c5e5e590bcb1cd4b113d585e256c4b01029349bc18a350754f709b405dd3c31a
+          session_id: 20260920_205817_00d312
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 17aefd3515d0d1deb97cbbf0f36e05891c581ec686159c40fc4ae0bcd62f76dc
+              bytes: 15497
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/GIT.md
+              sha256: 97bbf89af1c65d159688b452a0434e77d9775f7a98dd1c822ffd264b41012bbb
+              bytes: 7807
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: baffdd38fac0c2dd24d2be5389edb2a0b88ea19e8d67e1bc2f6f65d55601b7b3
+              bytes: 2974
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 04a5798f1c77dfd9e0c4690bc43bbc4e7733ac7a18662e17d4f6cd8785f96858
+              bytes: 16237
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/LUA.md
+              sha256: 83386b235c96e1ee1209e854764c41c604196db62c6db729a1641bd61027bae1
+              bytes: 10768
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/skills/deliver-change/SKILL.md
+              sha256: 8ec56c213667143c0f86561cbdf1d825a81a6d8edc487ed769a0af24ff5e037a
+              bytes: 8593
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: 9d4fcbd0cdec0f0ce57fab68e9f3ffc43fe4be18f97db29ce6efffea76ec178a
+              bytes: 877
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: e6fe3d2e8e107396650b552703bd1d99a978f1a61d7cd3ceb63da9082c6c99d1
+              bytes: 18736
+            - path: /Users/tigger/code/tigoss/html-preview/THIRD_PARTY_NOTICES.md
+              sha256: ca9020d1dfeb9cc5e8d2e3652351c24e05074d7705e5f9a72ccf8a57da2196cf
+              bytes: 4536
+            - path: /Users/tigger/code/tigoss/html-preview/assets/licenses/goldmark-LICENSE
+              sha256: c1d6f653c38c80294dc7994647ba0dcc508ce64a86996303c804efa2f7982bff
+              bytes: 1071
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: f2ce48459116a13da908f5602955b99d8de63e753f2cb41f73e840ddfa07d22e
+              bytes: 7787
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: b3bae22ff2a66123c5b7bab71296d7c1cc7398343a54cf37636082a9a46ddac4
+              bytes: 9113
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: 0cbd8a81a1ec14db99f9f1271647abe68bab91da6b83d99af878d07e5e46029c
+              bytes: 54336
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: 44c9d3e04f33cf05f7cb781c2523c3f9f4328fa2f2899bb3f48ba9f1e5db5668
+              bytes: 2072
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: 38a9acaf9067ea960833b5df8b5b718497b2635e9d85e207b12ac856e6730d08
+              bytes: 25078
+            - path: /Users/tigger/code/tigoss/html-preview/cmd/htmlpreview/main.go
+              sha256: 3ea2c1fd77377c079b5e075cf8e5334b13d0d2a710d5270e6c721343c7103cea
+              bytes: 820
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: f0d041e3ce03329a2fb1a19b6b08e150cfc7701253a461eed1798396724971ca
+              bytes: 20555
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 8583d2b5d7e77b176cb0f3c657d1194522160bb51db9eb42b96799906d9c5894
+              bytes: 71308
+            - path: /Users/tigger/code/tigoss/html-preview/docs/FORMATS.md
+              sha256: 83f5112af39c1f0f3ee63e60b4c98396b1e1750cd1e23d95a2767ecbc1098935
+              bytes: 13060
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: 4197d8d890b0451896010321346617260e3a927e84144a82d4b87d00e60c8909
+              bytes: 18158
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 852c45fe8ba1d525a33a8207efb24d0e86ee5382f8812e4cdc2974043741d35e
+              bytes: 22079
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: 4efef87fb0aa6b09373af79704fb002ff1a87c404a706e51fb04ac35d0170e45
+              bytes: 6151
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: c0f93df2b16a41abccdbba6c189dfce493e415af79c33ec1c6abe4e889c60f9a
+              bytes: 17771
+            - path: /Users/tigger/code/tigoss/html-preview/examples/code.md
+              sha256: 2e3d7c6d09e1518fdc92635a0b1751a908c7786630d6104ee409aa6ebefad673
+              bytes: 2699
+            - path: /Users/tigger/code/tigoss/html-preview/go.mod
+              sha256: eea90602fdbf1d232978460a6446510c8804147360f1ed1e08d3092650f71240
+              bytes: 614
+            - path: /Users/tigger/code/tigoss/html-preview/go.sum
+              sha256: 902c9ac27bbbe0ac173c3f4a81ce85847b005996b9f7a48daf59a4bdfe518399
+              bytes: 2565
+            - path: /Users/tigger/code/tigoss/html-preview/integration/cli_test.go
+              sha256: c2bca387bc7d5be8e0da835511c119200cf6b7a08bda2944fbbad2ddcde33233
+              bytes: 5371
+            - path: /Users/tigger/code/tigoss/html-preview/integration/formats_test.go
+              sha256: 53429b9d29554887bf130857fadd4a4e15c339696bffa3e3e167f82b170dff05
+              bytes: 3710
+            - path: /Users/tigger/code/tigoss/html-preview/integration/release_test.go
+              sha256: 7863c63a980cfd4e6e6d794bfaa49b73110027cf01b640f8d4b9778cb3c1c0d7
+              bytes: 3958
+            - path: /Users/tigger/code/tigoss/html-preview/integration/service_navigation_test.go
+              sha256: 51b7270757b397d48e50c9556ba4cca1d40b37f6dd0df2612de143c0796a7279
+              bytes: 6102
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/blocks.go
+              sha256: e47ab033f0b843b17a75ed33a6a1e9c2125668b4e12d9a808f263b9ad0b23a31
+              bytes: 8173
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/launchagent.go
+              sha256: 4439118d32c03a6338c805b7f7edf03c3206861467bb9babee103d5acd772db6
+              bytes: 3582
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/main.go
+              sha256: f35ae3c5ddddfb1d646c3805ad11aca7463e5828eec5651bcf5e9d2896d5ad2d
+              bytes: 8728
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: ef6953047cc68f4156f4344fac923572e93c6c8ae5171ae1964e775a5d17f6ad
+              bytes: 3771
+            - path: /Users/tigger/code/tigoss/html-preview/internal/converthtml/highlight.go
+              sha256: a79093468bbf848eb924e41fa18617e410f2d0fbc52505ddcd54d42cad9c6ac1
+              bytes: 1666
+            - path: /Users/tigger/code/tigoss/html-preview/internal/convertworker/worker.go
+              sha256: 8f4d40f42eac11daf5dcfd135b221adb00a6161fa94d1c90cce08005da32e4c4
+              bytes: 5438
+            - path: /Users/tigger/code/tigoss/html-preview/internal/markdownconvert/convert.go
+              sha256: bb73e296ad90907ed03f65edb3d0aa053efa8c9a6727445467fc428cb75fe80a
+              bytes: 9127
+            - path: /Users/tigger/code/tigoss/html-preview/internal/markdownconvert/metadata.go
+              sha256: 3ab95e78c3536157771deab910a814420b85d318090cdbcae415be8dbb742343
+              bytes: 4225
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/highlight.go
+              sha256: b530cbcc6174f5bdce082a711b60a3bc6feeace1a2cdc4bb813c3537bd92bf26
+              bytes: 324
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/worker.go
+              sha256: fb6b07d2f7d0dc36e25eb0a4e8f10c71f980b3bc210d3e689d1d1b375ca7cf6d
+              bytes: 699
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/adversarial_test.go
+              sha256: 298c32c9cba7c63df3efa7cac1431ca290a603c3e14505aab9c13f12e35298c6
+              bytes: 6458
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks.go
+              sha256: 1c841208665223f525e5399be8f878a82bad520efd103f5fd29f4443f1c349a1
+              bytes: 7859
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_blocks_test.go
+              sha256: d9be9e09a91c4878536d76e5868b5697ad0a28bed04040eb822c04cf5477bb61
+              bytes: 12867
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_security_test.go
+              sha256: cbb32660d4355a4a6067a076b83a72284ed41c67fe679e1599ae70bafc8deb3c
+              bytes: 3981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_service_test.go
+              sha256: fa9ba5eb8bce499885d465e936aaac23e5c5236128a7f18a4b04db1de91c49da
+              bytes: 10791
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_target_contract_test.go
+              sha256: 7dff40c2323306a56f9e270f9bc682029edea0983f0815a62ad8f291e2fb67da
+              bytes: 6830
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/checkboxes_test.go
+              sha256: c0aa2603f1a7cf4252493a55f599499c29f0506ad19d49cba2103db5d106e4cd
+              bytes: 2059
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contents_defaults_test.go
+              sha256: fdb02e348ac9878b115fe049130b47e86170405a7a863b1372d24697d80d6bbe
+              bytes: 2388
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/contracts_test.go
+              sha256: 36be3ab04d8b2dabd793ffef75a57d9dc41ada9213e87d313b3321f99c9cc6e5
+              bytes: 7099
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/footnote_service_test.go
+              sha256: b0848e753e9262cab38f91c49e6365ce6f30c49c73729a1d02dc4d30ea64fce0
+              bytes: 21051
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats.go
+              sha256: f6abb7e713fa9110433e3f8903e99f009d22fc6fb5fdb34749534577bf9daaa0
+              bytes: 7973
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/formats_test.go
+              sha256: 25c7affd502280499f90f78115d891d1585b85ebcac724e70a8ca51f3b904699
+              bytes: 6593
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: b4deebbe2a308688c739337fc67a0086087b3ffee4e6f9c64103e6d5e4aea0a9
+              bytes: 12018
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/lifecycle_test.go
+              sha256: 78ef38d10e180f714a01094e36b8f1973bc336b0e531dc559424e6c3b3be4fc7
+              bytes: 7095
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/main.go
+              sha256: f313ace4d84297b0164e5cc5d45da76ded71afff5b38be6e50585bbcb0e27dd4
+              bytes: 2878
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/mapping_test.go
+              sha256: 31f9d9eef57b4f504b31ecf637e343136552f2446817f3ad73ad86ef33025639
+              bytes: 5017
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/markdown_annotation_contract_test.go
+              sha256: 631ce1fa4f7fb7963740fdf0a8256e477f87579484effeaeacba28cf94f09545
+              bytes: 12961
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/markdown_boundaries_test.go
+              sha256: 9ed9cfb2aa3d309485afb562fef3d26abf0e8fc2bd547489bf4bd3e52b51c610
+              bytes: 5822
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/markdown_semantics_test.go
+              sha256: 82ee6964752b07891d95eb26488278e7739d980f0d980b5b59479e86c7a97800
+              bytes: 8102
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/native_markdown_test.go
+              sha256: 298fc33b85d2adedf9c08bf7a12f8e6ac448dbea177b100364cbdd82614cbb92
+              bytes: 15487
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/native_org_test.go
+              sha256: aa6fb2a5e29949a0a8a4b2b5e0e8eb3907f2da8084b7f0a7954029bf2d75cc97
+              bytes: 13968
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/optional_formats.go
+              sha256: e7f49d4f90e6f03509a112722d1b235db7dbf09c2ff532367d5d40ef61585a28
+              bytes: 3771
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/preview_test.go
+              sha256: 8754527d3ffed819743adbe5d57c20ef4a56694409f67e536e265273f926538c
+              bytes: 21837
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/reader_fixtures_test.go
+              sha256: 51bb60c05707d37972fd931a71359600368cc429467ed95a14cfe58bda4e97aa
+              bytes: 11637
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/references_test.go
+              sha256: a0448d7f3972ebfb1fbdfee78322872442c8d02c997ef76741341b6c51541a09
+              bytes: 5611
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: 26c7a5b37fc47cb90eb3fa34df1bb7863f511d559ad559d81c4be96c9c29b850
+              bytes: 16936
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service.go
+              sha256: cc0f4dfb2adb0cc8e001c1b337deadb5238570e3e0b5f89d571bb387dffc4393
+              bytes: 4954
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_annotations.go
+              sha256: 41dcde1ce522d3dd1c43e4dc572cbcfa806081e6c177cabd04b8b14b7977b1d9
+              bytes: 17208
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_assets.go
+              sha256: e8289ba854a083b0fc3c33e9335f9cc3aa6bc1d3c47e73d48643d1a447079b11
+              bytes: 7212
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache.go
+              sha256: f74262b296b61adac996d92e8da285e80eecd9dbe68c9ef8da700a93dc31065c
+              bytes: 5923
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
+              sha256: 2cf684a8c4c3482f09f9b4caf9127d305f06bf7dd140c12278c05ad030ab4fc3
+              bytes: 9957
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_client.go
+              sha256: b0b1b4fafca7c6a278a749aa68091882d389d00f04a1b65b57513d012ecfec9d
+              bytes: 11555
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_control.go
+              sha256: 61a695a0926cbf9819aabea2d296b43b9f78a63707bc84bac7d62580a4bc647f
+              bytes: 10341
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_events_test.go
+              sha256: ef046732654e2bc2180f09aa1b33475e0bb31d995c1adf74593c2e1db3a8ea2c
+              bytes: 3718
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
+              sha256: bd91c7a33e4251747715a0aaea9fb603fb0516ce451ccb4f6b2112a98893003f
+              bytes: 6174
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_formats_test.go
+              sha256: f55b96c62bad4898f5d70f3cc6d0aaf6082294ee9fb046567f5f972df261a8b7
+              bytes: 3271
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_http.go
+              sha256: c39bea154e35f913c1015d20b7ba5b8ecdf4fc47bd97d79e953b290d21c51cf7
+              bytes: 6585
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_limits_test.go
+              sha256: daede568e7610413c691b8c86f95467df0ccfc5ef6e28ac2692c6712bcf4013a
+              bytes: 5090
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_render.go
+              sha256: 30ea5810a8370e5756e603839a2506a4ca73c096f19ebdef0518eeaf79dcfa88
+              bytes: 9198
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 020922a9808f843604f2f74a0cae3f2dea309775efeacc17a6ae5efa42b0ff21
+              bytes: 11237
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/source.go
+              sha256: 1ff1e81cbfac5dcd085d5619b5f53d50d0fad549658eb108c3f0467d2156fa0d
+              bytes: 2798
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/wrapper.go
+              sha256: 3c4327078b41075f2ff9cab8f55a9484a6fe69db02aa0d04c9c4d56b9358c64e
+              bytes: 2498
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: e10e1062b299162f57951d5578436da5ec60c3fc2a283dd38a8c3b4646f1d01e
+              bytes: 1387
+            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+              sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
+              bytes: 49831
+            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+              sha256: 16f16f5a1799bcfc5d89dce5f9a43acae376873cd146ed8167150aa8fec8ff7d
+              bytes: 27254
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
+              sha256: 8f069f7cd7330f3b4b73cde29e8fec5bbc45ef8aafa4d572a9be0fc7fe809963
+              bytes: 634
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.org
+              sha256: e6d5b6da9c8f4399630be4e2893e8cb920c414d2c7e9dd4681297627f20bcd86
+              bytes: 1377
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/linked-preview/README.md
+              sha256: 9c14eded51feb1e272b3b14b435c37d7025dd0a977f2ecf4fb16473c0cbb63f0
+              bytes: 1261
+            - path: /Users/tigger/code/tigoss/html-preview/testdata/native-markdown/semantics.md
+              sha256: e5be8c7f7458740de8c0a16f16bf13f3fa1ac81c7daac8dbc47eeb338ceb2999
+              bytes: 589
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/baseline-safe-timing.json
+              sha256: 754a83f26a609147953e813fbf94167f61467a2ce2b1e98b70e93684be646216
+              bytes: 1006
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/baseline-safe-timing.log
+              sha256: 49d1d12976898bf7adaf6237a0f9f41e9627368f46843b30cf1ac3e21adca598
+              bytes: 394
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/benchmark.go
+              sha256: 34a44e7a9667f66b03eddec72a8db4b729e73a8813c7bb4e217374f8cfbddb2e
+              bytes: 7647
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/candidate-timing.json
+              sha256: 0507272b8bd496e06584fba2b19a71f39c006098b43e36ae49f678d6f3726720
+              bytes: 966
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/candidate-timing.log
+              sha256: a46a51dac7f9fee514f1a97f41f54b5030e640a05ce86689e044e3a5df21e55f
+              bytes: 388
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/coverage.log
+              sha256: eba069b8d27293b0df73891e35d2f5fe1fa14b5f5e8be82f0d4db4d39d8df347
+              bytes: 181
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/css-lint.log
+              sha256: 9b70b1623cb2d1d552963201c8c44458ad905099ee9cef5265bc694b59c5c475
+              bytes: 42
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/deferred-discovery-red.log
+              sha256: 677579a8f8b57c09fe9f515ba76b155123740a80c22af8de715c27727e08a04c
+              bytes: 208
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/delivery-readiness.yaml
+              sha256: 63070bfc94164bf15460ab2ba2c89f92b07b4d8ca3068d15c3265e7eddf0e199
+              bytes: 3302
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/final-adjustments.log
+              sha256: 34b4ad1ce5d5b81cd61b5fa1bf3dde278071c7db1f69d9aea0704cc559b7a3ff
+              bytes: 136
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/final-test-additions.log
+              sha256: 222a4a2e5b3a4b2f953d36634a70f716490feaa52289f2821cd888735439dc29
+              bytes: 787
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/lint-final.log
+              sha256: 0ff7f82593e16093998b83651f5c826f64d1ac2c1c5500f693ac61884ab323e3
+              bytes: 33
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/lint-remediation.log
+              sha256: 0ff7f82593e16093998b83651f5c826f64d1ac2c1c5500f693ac61884ab323e3
+              bytes: 33
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/module-graph.txt
+              sha256: 12e73a0d25e97d68c17cb98e17697683ccf5f454a0aa2d2a7ccd565ba4488b88
+              bytes: 695
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/native.cover
+              sha256: 8e398067bec5d87050de3258a5705fa94c24c691ed445a0fc37de831aa3c26d9
+              bytes: 24118
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/optional-link-red.log
+              sha256: 723c7b9c4fdd27adfe0f37ac46790ca65dfac56de0a4f55746d17c305ae65668
+              bytes: 8018
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/optional-negative-final.log
+              sha256: 7463cfbacdb5fc3534f9c67f7d90dc17f98011a03eaa3af0050e860d382142b9
+              bytes: 179
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/optional-path-diagnostic.log
+              sha256: c2aaed28219202f83096a18aa861f82740e9bac516ad3c23723b7685c7cb7fa4
+              bytes: 657
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/optional-path-final.log
+              sha256: d5eaced84c3f4f357d94175f23c6ba5caf68dfe6424903b22e6921755786ebe2
+              bytes: 10317
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/packaging-checks.txt
+              sha256: bda05af6a3ae583f9c754756c03ffd26159d17d49d23b287f3b6957f8ab408d2
+              bytes: 209
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/preservation-and-additions.log
+              sha256: e790af8fe0aac55cf3e9562ae8e01a1092d25e7d14767171fd28e3add3249d78
+              bytes: 14698
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/regression-current.log
+              sha256: c7e67de630ad38eaa8a282651ed30e0708522f0caa5882134e08d2ea2b6a2a50
+              bytes: 4116
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/regression-final-focused.log
+              sha256: aebade0d1b9b249e297cf53cd9ffecfbfc9f1aa4f02da3abe866ecbfd4a18a70
+              bytes: 71
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/release-final.log
+              sha256: e63edbc393fc55cbef4f60e6cd6b72d4c69d189fde446b4a6ebf79c26610b535
+              bytes: 66
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/remediation-followup.log
+              sha256: 76163f0fcced916262e50e49f1ba7f907b34a93f6f7232852f18f317fe910386
+              bytes: 3553
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/remediation-readiness.yaml
+              sha256: 63070bfc94164bf15460ab2ba2c89f92b07b4d8ca3068d15c3265e7eddf0e199
+              bytes: 3302
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/remediation-red.log
+              sha256: 250821de617a24fb1e0069335f4f97572f88556f4ab6371be0f70d452d670cf3
+              bytes: 3338
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/rt-package-red.log
+              sha256: d60714d2f12facbc18e4ca8c475e7dab2bcbe0b8566e82e2018e72ff5d1dd548
+              bytes: 8449
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/source-oracle-red.log
+              sha256: 4a59ca91797f9d3923dd1e6282784a80cfc84ca4e962a8901159dc11799ae46b
+              bytes: 5274
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/superseded-routing.log
+              sha256: b27467322e7cd14a497fffc8a9aebc44eb33ea9f449bf1338e8a2e5fdbcfcee1
+              bytes: 244
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/test-package-final-red.log
+              sha256: ea8ef056065eaf332b87d4714cf330723b88b8304ef9453ae28f4370ad526f2d
+              bytes: 18925
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w014-delivery.oo7xhtCC3H/vulncheck.log
+              sha256: 7aa773d24f701e9ac5859bc3c38eb4d903e87df0bf446b914f9d75bfa14cdba4
+              bytes: 90
+          round: 7
+          revision: bb3726d
+          verdict: PASS
+          response: |-
+            GATE: delivery-code
+            REVISION: bb3726d
+            VERDICT: PASS
+
+            Disposition of the complete prior finding (round 5, revision c0a4c7aa):
+
+            Valid parts remediated with current evidence:
+
+            1. Weakened reader inventory: TestRT006_11_EveryInstalledReaderThroughServedLinks now enumerates the public --list-input-formats catalogue independently of the service's intentionally native-only startup status. All 51 installed readers render through authorized served links under the race detector (optional-link-red.log, optional-path-final.log).
+
+            2. Missing GREEN for the specialist annotation refresh: TestRT007_1_ReaderSelectionSurvivesAnnotationRefresh passes with race in the final run (optional-path-final.log).
+
+            3. The narrower implicit-suffix defect: a .markdown_strict link without a selector was inactive (optional-link-red.log RED); the correction authorizes the destination at link time and resolves the reader only when followed, through the existing serveDocument/catalogueFor boundary (optional-negative-final.log, optional-path-final.log). Unsupported suffixes return non-success without raw bytes. The strengthened TestRT014_1_ServedMarkdownNeverInvokesPandoc counts every Pandoc invocation, including discovery, over a native page containing an unvisited optional-reader link: the eager experiment failed with three calls (deferred-discovery-red.log); the delivered code passes with zero. Deferral is required by AC014.1 and is recorded in the spec's hands-off decision log and documented in FORMATS.md.
+
+            Disputed parts withdrawn as unsupported:
+
+            4. Specialist annotation regression: requestFormat validates explicit selectors against the lazily discovered optional catalogue before identifyFormat runs, and formatCatalogue.resolve returns documentFormat(selected) unconditionally for a non-empty selection, so the native-only base catalogue never gates a selected reader; buildHTTP also embeds the resolved reader in the advertised endpoint and page URLs. TestRT007_1 passed with HTTP 200 and writable=true before the production correction (optional-path-diagnostic.log) and passes after it.
+
+            5. Optional media regression: serveMedia reidentifies with grant.source.input.reader, a non-empty explicit reader following the same unconditional selected-reader path. TestRT006_12_ContainerMediaOwnership passed unchanged for DOCX, ODT and EPUB, including raster GET/HEAD and invalidation after source mutation, before and after the correction.
+
+            Gate checks verified: all RT014.1–014.7 and OT014.1–014.2 GREEN; UT014.1/014.2 remain explicitly AMBER for operator validation as this gate permits. The affected tests were rerun with the race detector and pass; the link-admission increment touches no conversion, annotation-write, worker or browser code, so the earlier full-suite, performance, packaging, release and dependency evidence remains applicable, and make lint passes. Changed documentation (README, FORMS, ARCHITECTURE, VISION, SERVICE, help, notices, examples) is accurate for the delivered behaviour, including deferred optional-reader discovery, and the changed sections follow DOCUMENTATION.md's impersonal factual voice. spec.org and validation.org contain no duplicated audit findings, verdicts, rounds or session identities. No unauthorized scope: the only new dependency is pinned Goldmark 1.8.6 with its MIT licence distributed.
+          updated: "2026-09-20T19:58:15Z"
