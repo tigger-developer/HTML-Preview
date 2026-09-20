@@ -172,6 +172,9 @@ func (service *previewService) resolveHTTP(ctx context.Context, s *session, p *p
 			s.inactive(p, n, "href", "Unsupported reference")
 			continue
 		}
+		if s.sameDocumentSearch(p, n, r) {
+			continue
+		}
 		if !r.local {
 			if r.id != "" {
 				p.catalogueSensitive = true

@@ -167,7 +167,7 @@
 ** AMBER OT011.1 - Full-pipeline benchmark :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ot-011-1-result
-:REASON: Candidate implementation pending; execute the specified bounded two-build local comparison after regression success.
+:REASON: Preliminary corpus comparison identified list and local-link differences; synthetic regressions and corrections are recorded below. Final corrected-build measurement is pending.
 :END:
 
 ** GREEN OT011.2 - Packaging and dependencies :testdef:
@@ -260,3 +260,20 @@ those platforms.
   cover the added dependencies. CLI help and format mappings are unaffected:
   public invocation, Pandoc installation and admitted readers remain unchanged.
   Technical prose passed =sanitize oed=.
+
+* Corpus compatibility verification, 20 September 2026
+
+- Preliminary comparison :: The frozen large document exposed wrapped =p. 32=
+  losing its prefix, ordinary list items acquiring invented definition terms,
+  and same-document Org heading links being treated as file URLs. These
+  candidate timings are retained separately and do not qualify performance.
+- Focused RED :: =TestRT011_2_CorpusListSemantics= and
+  =TestRT011_2_LocalHeadingSearches= reproduced those failures before correction.
+- Affected GREEN :: =go test -race ./internal/preview -run 'TestRT011_2|TestRT001_7|TestHTTPBlockAnnotations|TestCheckboxRendering|TestRT009_8_EditableNotesPreserveRenderedMarkup' -count=1=
+  passed in 89.474 seconds. This includes whole-block placement and existing
+  footnote markup cases, with unchanged source-write proof.
+- Patch provenance :: The final local upstream diff now includes =list.go= as
+  well as the previously documented =document.go= scanner allowance. The two
+  list corrections and synthetic reproducer are documented in the local-module
+  README; the earlier scanner-only comparison above records its earlier build.
+- Static checks :: =make lint= passed after these corrections.

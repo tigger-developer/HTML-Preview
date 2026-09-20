@@ -95,6 +95,9 @@ func (s *session) resolve(ctx context.Context, p *page) error {
 			s.inactive(p, n, key, "unsupported or malformed reference")
 			continue
 		}
+		if s.sameDocumentSearch(p, n, r) {
+			continue
+		}
 		if !r.local && r.id == "" {
 			if r.url != nil && r.url.Scheme == "data" {
 				s.inactive(p, n, key, "data anchors are unsupported")
@@ -141,6 +144,20 @@ func (s *session) resolve(ctx context.Context, p *page) error {
 		setAttribute(n, key, u.String())
 	}
 	return nil
+}
+
+// Resolve native Org's path-free heading searches after final IDs are allocated.
+// The same catalogue rejects missing and ambiguous matches in file and HTTP mode.
+func (s *session) sameDocumentSearch(p *page, n *html.Node, r reference) bool {
+	if r.search == "" || r.url == nil || r.url.Path != "" || r.url.Scheme != "" {
+		return false
+	}
+	if id := catalogueAnchor(p.ids, p.headings, r.search); id != "" {
+		setAttribute(n, "href", "#"+id)
+	} else {
+		s.inactive(p, n, "href", "Org search not resolved: "+r.search)
+	}
+	return true
 }
 
 func (s *session) target(p *page, r reference) (*page, string) {

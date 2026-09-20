@@ -32,15 +32,16 @@ session allowance, and worker output is limited to 50 MiB or the smaller remaini
 allowance. Conversion errors publish no partial page and do not fall back to
 Pandoc for Org.
 
-The pinned go-org parser has one local scanner-allowance patch for long admitted
-lines. Its writer hooks produce the established heading/code/contents transport
+The pinned go-org parser has narrow local corrections for long admitted lines,
+Org's default numeric-list grammar and mixed descriptive/ordinary list boundaries.
+Its writer hooks produce the established heading/code/contents transport
 and footnote HTML contract. Chroma supplies escaped literal spans using the
 existing highlight classes. The application then applies the same sanitization,
 resource authorization, heading catalogue and browser controllers. Parser file
 reads are denied; includes cannot fetch local or remote resources.
 
 The adapter handles repeated reference/backlink associations, declared task
-partitions, checkbox variants and the short `I.` definition-list case without
+partitions, checkbox variants and same-document heading searches without
 weakening block proof. Only current generated block-reference labels receive an
 invisible conversion-only predecessor; authored footnote definitions do not.
 Generated preservation fragments avoid introducing an extra blank line that
@@ -51,7 +52,7 @@ The distribution retains parser, highlighter and transitive licences. The
 vulnerability gate checks the linked application and a locked unreplaced
 upstream module, preserving advisory coverage despite the local replacement.
 See [parser provenance](../third_party/go-org/README.md) and
-[validation](../specs/011-conversion-performance/validation.org) for the patch,
+[validation](../specs/011-conversion-performance/validation.org) for the patches,
 execution evidence and pending human review.
 
 The accepted compatibility layer adds some formatting work. Future optimization

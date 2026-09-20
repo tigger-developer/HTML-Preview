@@ -27,7 +27,10 @@ type DescriptiveListItem struct {
 }
 
 var unorderedListRegexp = regexp.MustCompile(`^(\s*)([+*-])(\s+(.*)|$)`)
-var orderedListRegexp = regexp.MustCompile(`^(\s*)(([0-9]+|[a-zA-Z])[.)])(\s+(.*)|$)`)
+
+// Org's default grammar uses numeric markers. Alphabetic markers require an
+// editor setting and would otherwise consume prose such as wrapped "p. 32".
+var orderedListRegexp = regexp.MustCompile(`^(\s*)(([0-9]+)[.)])(\s+(.*)|$)`)
 var descriptiveListItemRegexp = regexp.MustCompile(`\s::(\s|$)`)
 var listItemValueRegexp = regexp.MustCompile(`\[@(\d+)\]\s`)
 var listItemStatusRegexp = regexp.MustCompile(`\[( |X|-)\]\s`)
@@ -69,8 +72,8 @@ func (d *Document) parseList(i int, parentStop stopFn) (int, Node) {
 		if parentStop(d, i) || d.tokens[i].lvl != lvl || !isListToken(d.tokens[i]) {
 			return true
 		}
-		itemMainKind, _ := listKind(d.tokens[i])
-		return itemMainKind != listMainKind
+		itemMainKind, itemKind := listKind(d.tokens[i])
+		return itemMainKind != listMainKind || itemKind != kind
 	}
 	for !stop(d, i) {
 		consumed, node := d.parseListItem(list, i, parentStop)

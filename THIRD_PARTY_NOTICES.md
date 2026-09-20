@@ -52,7 +52,7 @@ They accompany prefix installations and release archives. Font licences also acc
 
 | Module | Version | Purpose | Licence |
 | --- | --- | --- | --- |
-| `github.com/niklasfasching/go-org` | 1.9.1, local scanner allowance patch | Native Org parsing and HTML writer | [MIT](assets/licenses/go-org-LICENSE) |
+| `github.com/niklasfasching/go-org` | 1.9.1, local scanner and list corrections | Native Org parsing and HTML writer | [MIT](assets/licenses/go-org-LICENSE) |
 | `github.com/alecthomas/chroma/v2` | 2.27.0 | Native Org source highlighting | [MIT](assets/licenses/chroma-COPYING) |
 | `github.com/dlclark/regexp2/v2` | 2.2.1 | Chroma lexer expressions | [MIT](assets/licenses/regexp2-LICENSE) |
 | `github.com/fsnotify/fsnotify` | 1.10.1 | Native filesystem change notifications | [BSD 3-Clause](assets/licenses/fsnotify-LICENSE) |
@@ -67,7 +67,7 @@ They accompany prefix installations and release archives. Font licences also acc
 Go 1.26.8 is the reviewed delivery toolchain. Pandoc is separately installed
 and is not bundled or relicensed by this project.
 
-The go-org copy and its sole scanner correction are documented in
+The go-org copy and its scanner and list corrections are documented in
 [the local module provenance](third_party/go-org/README.md). Chroma's upstream
 notice also contains the SIL font licence for its SVG formatter; that formatter
 and its font are not linked into htmlpreview.

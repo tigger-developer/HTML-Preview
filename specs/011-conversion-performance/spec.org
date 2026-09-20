@@ -968,6 +968,20 @@ verification or maintaining divergent server/browser interpretations.
 - The adapter trims an initial UTF-8 byte-order mark for conversion and leaves
   unresolved native footnote references literal, preserving existing reader
   behaviour. The source snapshot and write proof remain unchanged.
-- Native short definition descriptions and preservation-fragment spacing are
-  normalized in the application adapter, without additional parser grammar
-  patches. Only the bounded scanner-allowance patch differs from upstream.
+- Initial implementation normalized short definition descriptions and
+  preservation-fragment spacing in the adapter. Corpus verification subsequently
+  replaced the short-description workaround with the bounded list corrections
+  below; preservation-fragment spacing remains in the application.
+
+*** Corpus compatibility corrections
+
+- Synthetic regressions reproduce wrapped =p. 32= losing its alphabetic prefix
+  and ordinary bullets becoming empty-term definitions with invented =?= labels.
+  The local parser now follows Org's default numeric-list grammar and ends a
+  list when its descriptive/ordinary kind changes. Numeric lists remain intact.
+  Exact patch locations and rationale are in =third_party/go-org/README.md=.
+  These corrections follow the approved narrow-patch boundary; no source
+  offsets, proof relaxation or input rewriting are introduced.
+- Same-document heading searches are emitted as path-free Org searches and
+  resolved by the existing final heading catalogue in both delivery modes.
+  Missing or ambiguous targets stay inactive; explicit custom IDs are retained.

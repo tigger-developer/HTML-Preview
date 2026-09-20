@@ -248,12 +248,16 @@ func (w *writer) WriteEmphasis(e org.Emphasis) {
 // Relative document names stay intact for the application's authorized resolver.
 func (w *writer) WriteRegularLink(l org.RegularLink) {
 	url := strings.TrimPrefix(l.URL, "file:")
+	if strings.HasPrefix(url, "*") {
+		// An empty path carries a same-document search to the shared catalogue.
+		url = "::" + url
+	}
 	escaped := html.EscapeString(url)
 	if l.Kind() == "image" && l.Description == nil {
 		w.write(`<img src="` + escaped + `" alt="` + escaped + `">`)
 		return
 	}
-	text := escaped
+	text := html.EscapeString(l.URL)
 	if l.Description != nil {
 		text = w.WriteNodesAsString(l.Description...)
 	}
@@ -379,30 +383,6 @@ func doneKeywords(text string) map[string]bool {
 				}
 			}
 		}
-	}
-	return result
-}
-
-// go-org retokenizes the description "I." as an empty ordered list. Preserve
-// that literal item label so the normal and footnote-probed blocks agree.
-func (w *writer) WriteDescriptiveListItem(item org.DescriptiveListItem) {
-	details := nonemptyParagraphs(item.Details)
-	if len(details) == 1 {
-		if list, ok := details[0].(org.List); ok && list.Kind == "ordered" && len(list.Items) == 1 {
-			if li, ok := list.Items[0].(org.ListItem); ok && len(nonemptyParagraphs(li.Children)) == 0 {
-				item.Details = []org.Node{org.Paragraph{Children: []org.Node{org.Text{Content: li.Bullet}}}}
-			}
-		}
-	}
-	w.HTMLWriter.WriteDescriptiveListItem(item)
-}
-func nonemptyParagraphs(nodes []org.Node) []org.Node {
-	var result []org.Node
-	for _, n := range nodes {
-		if p, ok := n.(org.Paragraph); ok && len(p.Children) == 0 {
-			continue
-		}
-		result = append(result, n)
 	}
 	return result
 }

@@ -328,6 +328,12 @@ func catalogue(p *page, log *console) {
 			}
 		}
 		p.headings[d.title] = append(p.headings[d.title], target)
+		// Org heading searches may retain the source's inline markup. Keep that
+		// spelling alongside rendered text; both retain normal ambiguity checks.
+		rawTitle := strings.Join(strings.Fields(attribute(d.section, "data-hp-title")), " ")
+		if rawTitle != "" && rawTitle != d.title {
+			p.headings[rawTitle] = append(p.headings[rawTitle], target)
+		}
 		if d.custom != "" && (!validID(d.custom) || len(p.ids[d.custom]) != 1) {
 			p.ids[d.custom] = nil
 			log.notice("%q: invalid or ambiguous source identifier", p.source.logical)
