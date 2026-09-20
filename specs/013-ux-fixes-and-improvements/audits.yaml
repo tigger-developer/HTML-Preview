@@ -16,27 +16,19 @@ audits:
           model: claude-opus-5
           reason: start-failed-fallback
           updated: "2026-09-20T11:19:43Z"
-      external_round: 3
+      external_round: 4
       status: passed
-      updated: "2026-09-20T22:39:46Z"
+      updated: "2026-09-20T22:42:16Z"
       revision: 62a219cc15d5af5bad6bd3da7e90104835a3e92b
-      verdict: PROVISIONAL PASS
+      verdict: PASS
       response: |-
         GATE: delivery-code
         REVISION: 62a219cc15d5af5bad6bd3da7e90104835a3e92b
-        VERDICT: PROVISIONAL PASS
+        VERDICT: PASS
 
-        Scope confirmed: this envelope covers the AC013.3/AC013.4 input-guard increment at the candidate revision, with the unchanged AC013.2 block-target correction and its retained GREEN RT013.2 evidence carried in the delivered state (its prior attempts were incidents without verdicts; I reviewed that code from the supplied evidence rather than rerunning it).
+        Finding 1 is withdrawn. My claim rested on encodeFootnote's leading-newline insertion in footnote_patch.go, but that is the legacy intermediate serializer: replace.go runs updateFootnote and then readableFootnotes, and encodeReadableFootnote (native_attribution.go) emits `definition + " " + lines[0]` with no leading-newline wrap, then reparses through EditableFootnotes/ordinaryNoteEnd, which starts literal tracking only after the definition line. The supplied authenticated HTTP probes against the isolated candidate confirm the resulting public boundary: first-line #+BEGIN_EXAMPLE / #+BEGIN_SRC text / #+BEGIN_QUOTE openers each containing two internal blank lines all return 409 invalid_footnote with source bytes unchanged, while the same bodies with a leading newline return 201. The writer therefore refuses exactly the form I claimed it accepted; the browser guard's first-line exemption matches the observed writer contract, and my proposed change would have bypassed the guard for text the writer rejects, recreating the recovery failure. The original finding was unsupported against the actual boundary.
 
-        Verified in this increment:
-        - Tests and evidence: OT013.1 GREEN with revision, command-level evidence and honest limits (including the recorded no-match test selection followed by the full writer-package rerun); UT013.3/UT013.4 AMBER with reasons, which delivery-code permits since the operator excludes browser automation and no JS test runner exists. Server-side enforcement retains real RT coverage (TestRT007_7_10 4001-character and 4097-emoji 413 rejections with unchanged source bytes; writer breakout rejection "Paragraph\n\n\n* New heading" → invalid_footnote). No-RT for the input-event layer is justified and recorded, not a coverage evasion.
-        - Guard design: beforeinput cancellation for insert/paste, input-event fallback commit that restores text, selection, direction and scroll on rejection, composition deferred to compositionend with whole-commit validation, drop/undo covered by the fallback, rejected text never reaches composer.input, pre-existing oversized notes open with a notice and permit progressive shortening while composer.valid() suspends autosave. Fixed limits (4,000 code points / 16 KiB) match the server contract; no YAML surface added. Org versus Markdown versus Org-sidecar destination flag is correct, including read-only Markdown sources writing to an Org sidecar. Feedback uses the existing reserved status space, aria-live and existing amber pending styling; no new layout row, modal, dependency, endpoint or widened access. Docs (ANNOTATIONS.md v6, work.org, spec ledger) are accurate, impersonal and current; validation.org carries no duplicated audit state.
-        - The blank-line scan's slice(1, -1) off-by-one is correct for blank semantics: the first textarea line becomes the definition's own line and the final unterminated line is the typing line, so "first\n\n" stays typable and the third Enter is refused.
-
-        Finding (bounded follow-up; does not invalidate implementation sign-off):
-        1. annotation-input.js annotationOrgBoundary skips the first textarea line entirely, including block-delimiter recognition. A #+BEGIN_... block opened as the note's first line is therefore untracked, so two consecutive blank lines inside it are falsely rejected by both the input guard and AnnotationComposer.valid(), although the writer accepts exactly this form (encodeFootnote/encodeReadableFootnote add the leading newline for a first-line literal body and the definition reparse validates). The adjacent comment's claim that the first line "cannot itself be a blank line or block delimiter" is inaccurate for delimiters. Required correction: apply the case-insensitive #+BEGIN_ opener recognition to the first line as well, while keeping the first line exempt from blank-line counting. Rejected input retains text and selection, so there is no data loss; the deviation is over-rejection of valid Org content in a narrow case against the increment's own rule to "match the writer's block recognition".
-
-        The AMBER browser UTs (UT013.2, UT013.3, UT013.4) remain the operator's pending validation under the paired contract and are not verdict conditions.
+        Reassessed changed evidence: the spec's corrected limit path (annotation-input.js) and the documented first-line rule are accurate against delivered behaviour; the added OT013.1 probe record in validation.org is dated execution evidence without duplicated audit verdicts or session identity; footnote_patch.go as supplied is consistent with the challenge's source analysis. No new findings. RT/OT evidence is current (RT013.2 GREEN retained; OT013.1 GREEN with the added probe), and UT013.2/UT013.3/UT013.4 remain explicitly AMBER for operator browser validation, which delivery-code permits. Implementation sign-off for this increment is not conditional on further code work.
       history:
         - readiness_check: delivery-code
           cache_key: sha256:a75b297105cc5901b7544a9d42b584652c894a761340abe86f3006ad5e392493
@@ -435,3 +427,127 @@ audits:
 
             The AMBER browser UTs (UT013.2, UT013.3, UT013.4) remain the operator's pending validation under the paired contract and are not verdict conditions.
           updated: "2026-09-20T22:34:16Z"
+        - readiness_check: delivery-code
+          cache_key: sha256:6beff4646145e62117e5fc2a896301fb499defaa14de2138eb0403ec224f5022
+          session_id: 20260920_121945_c5a815
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 17aefd3515d0d1deb97cbbf0f36e05891c581ec686159c40fc4ae0bcd62f76dc
+              bytes: 15497
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/PAIRING.md
+              sha256: 6143ccad299a5cd89cb8b73fbb4082caa7a9826d065d78b1a41cdcaba9fed854
+              bytes: 6035
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 04a5798f1c77dfd9e0c4690bc43bbc4e7733ac7a18662e17d4f6cd8785f96858
+              bytes: 16237
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-composer.js
+              sha256: 8ed4615055a038b56865c4c9d95bb022c2516c0a9624cf0074d8b83c6ac10dd6
+              bytes: 12119
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-input.js
+              sha256: 92595df3699cbc1ca82c55cd8fe1e9d5c7892ab60739acd0d9abee4c2c55e78f
+              bytes: 4236
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: f42ad46d0fb4649b92e267e54914f344c79d7e8a8541fbc211016c14e57bcd6f
+              bytes: 54658
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: 44c9d3e04f33cf05f7cb781c2523c3f9f4328fa2f2899bb3f48ba9f1e5db5668
+              bytes: 2072
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: 38a9acaf9067ea960833b5df8b5b718497b2635e9d85e207b12ac856e6730d08
+              bytes: 25078
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: d47d6aa36e8a7a5a8e5af8d513ab840e948e093534016a5618a8e4bdb0c73985
+              bytes: 22475
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 78e26f21ef17caebcfa18c3697eb1eb7e8933ad67dcab3dc108d85e4927e85f5
+              bytes: 71831
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 6ad308d71239585b0df2ea7215281e56691d83fb1b732bd2644fcd247937ca7d
+              bytes: 22403
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 5d67796757a032caa4dc86023f530e9d00864b2bfc048d28b7535b19b95da713
+              bytes: 18579
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/codec.go
+              sha256: 96f15d80c8c65f2a5d2bbaf7b39f5fb51e5cacde9d8daa6a3e89e78cd04c1abf
+              bytes: 8672
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/event.go
+              sha256: af74d08798078ce011a6a5f8c05a50e904533ae2ea8ff3d5964d13cd7d65de06
+              bytes: 8603
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_edit.go
+              sha256: be3f4fb805f06da596918a43c25992f74aa5a34389e9d26e972447e6769d3947
+              bytes: 11517
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_edit_test.go
+              sha256: 4d5c97d36d1676d05f07ea58a6742a5654b5446204b7f5e74b4d69e022b204cb
+              bytes: 9170
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/footnote_patch.go
+              sha256: 5061b07184a8cc51fd856bae99e9495deac539f74a9b1eacd36eb7395bb6b482
+              bytes: 7788
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/native_attribution.go
+              sha256: 8ad67293a21623a66d25ef0b106581ded1e6977f87f07837442cbde2e1a64109
+              bytes: 6896
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/native_attribution_test.go
+              sha256: 26f15fd1d8a8ebb66a95bedee3d99753ea55221552543865fd3a001b9a7c13b0
+              bytes: 13948
+            - path: /Users/tigger/code/tigoss/html-preview/internal/annotation/replace.go
+              sha256: 6914e9d7b057836dbb5d2fe4bdae64a8336b0c313ab22aa4a5c7560ec5429d26
+              bytes: 16141
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_limits_test.go
+              sha256: 45575146b68783cee0a38d2ae3c682e002191b8272460ecfd99b0ec1f826b6c2
+              bytes: 3123
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 3d7bf111ad2ccc143b2da910ccd18bc611bbe2e6e881423c0813d417ae59ce80
+              bytes: 12041
+            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/spec.org
+              sha256: 3879ab999acdd8560c6904e975b4910b4f4c3d151076ba6954855df9069da5e9
+              bytes: 14847
+            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/validation.org
+              sha256: c4119714b4aaafb03a23dcd017da454f5ea8a1633fa2e8f1a6dcf257dca70695
+              bytes: 7756
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w013-input.ydzNuWzRCf/block-boundary-probe.txt
+              sha256: 12b1a7ad6e42537063d8cfbd8a02d14fde146aa08e415d8a51a3723e0e36e893
+              bytes: 697
+            - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w013-input.ydzNuWzRCf/increment.diff
+              sha256: e21b315e3c9dfa0f72c9108c9f9c6759f88471db45eb87ed91241940e285c913
+              bytes: 20328
+          round: 4
+          revision: 62a219cc15d5af5bad6bd3da7e90104835a3e92b
+          verdict: PASS
+          response: |-
+            GATE: delivery-code
+            REVISION: 62a219cc15d5af5bad6bd3da7e90104835a3e92b
+            VERDICT: PASS
+
+            Finding 1 is withdrawn. My claim rested on encodeFootnote's leading-newline insertion in footnote_patch.go, but that is the legacy intermediate serializer: replace.go runs updateFootnote and then readableFootnotes, and encodeReadableFootnote (native_attribution.go) emits `definition + " " + lines[0]` with no leading-newline wrap, then reparses through EditableFootnotes/ordinaryNoteEnd, which starts literal tracking only after the definition line. The supplied authenticated HTTP probes against the isolated candidate confirm the resulting public boundary: first-line #+BEGIN_EXAMPLE / #+BEGIN_SRC text / #+BEGIN_QUOTE openers each containing two internal blank lines all return 409 invalid_footnote with source bytes unchanged, while the same bodies with a leading newline return 201. The writer therefore refuses exactly the form I claimed it accepted; the browser guard's first-line exemption matches the observed writer contract, and my proposed change would have bypassed the guard for text the writer rejects, recreating the recovery failure. The original finding was unsupported against the actual boundary.
+
+            Reassessed changed evidence: the spec's corrected limit path (annotation-input.js) and the documented first-line rule are accurate against delivered behaviour; the added OT013.1 probe record in validation.org is dated execution evidence without duplicated audit verdicts or session identity; footnote_patch.go as supplied is consistent with the challenge's source analysis. No new findings. RT/OT evidence is current (RT013.2 GREEN retained; OT013.1 GREEN with the added probe), and UT013.2/UT013.3/UT013.4 remain explicitly AMBER for operator browser validation, which delivery-code permits. Implementation sign-off for this increment is not conditional on further code work.
+          updated: "2026-09-20T22:41:23Z"
