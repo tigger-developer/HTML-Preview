@@ -145,14 +145,22 @@
 - Isolation :: Review services use separate OS-temporary roots, configurations,
   runtime sockets and ports. The installed daily-driver and global YAML are unchanged.
 
-** AMBER UT013.5 - Read long lines in plaintext view :testdef:
+** GREEN UT013.5 - Read long lines in plaintext view :testdef:
 :PROPERTIES:
-:REASON: Awaiting human review of wrapping, long tokens, copying and formatted-code preservation in the new isolated build.
+:REVISION: a4728c4 configurable length and plaintext wrapping build
+:METHOD: user validation
+:DATE: 2026-09-21
+:EVIDENCE: PASS for the presented plaintext wrapping user test.
+:PRIOR_REASON: Awaiting human review of wrapping, long tokens, copying and formatted-code preservation in the new isolated build.
 :END:
 
-** AMBER UT013.6 - Configured editor feedback :testdef:
+** GREEN UT013.6 - Configured editor feedback :testdef:
 :PROPERTIES:
-:REASON: Awaiting human input/paste/replacement checks with a 20-character service and byte-limit feedback with a 5,000-character service; HTTP enforcement is already checked.
+:REVISION: a4728c4 configurable length and plaintext wrapping build
+:METHOD: user validation
+:DATE: 2026-09-21
+:EVIDENCE: PASS for the presented configured annotation-limit user test; individual unreported interaction steps are not inferred.
+:PRIOR_REASON: Awaiting human input/paste/replacement checks with a 20-character service and byte-limit feedback with a 5,000-character service; HTTP enforcement is already checked.
 :END:
 
 * Pending section-heading increment
