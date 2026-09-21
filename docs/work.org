@@ -78,9 +78,17 @@ classification; it is provenance, not current state.
 
 * Work items
 
-** REVIEW W001 - Installable Markdown and Org previews with linked browsing :feature:
+The original preview, metadata, navigation, service, format, annotation and
+folding work (W001–W010) is *accepted for closure on 21 September 2026*, including
+requirements superseded by later changes. Earlier pending validation entries,
+audit incidents and handoff statements remain historical evidence; this
+acceptance does not turn unexecuted tests into passes or establish Linux/WSL
+validation. Current contracts take precedence over superseded requirements.
+
+** DONE W001 - Installable Markdown and Org previews with linked browsing :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-001
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator
 :CREATED: 2026-09-07
@@ -90,9 +98,10 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/001-local-document-preview/audits.org][W001 - Definition and implementation audit evidence]].
 - User validation :: [[file:../specs/001-local-document-preview/validation.org][W001 - Pending browser validation]].
 
-** REVIEW W002 - Code highlighting, copying and document navigation :feature:
+** DONE W002 - Code highlighting, copying and document navigation :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-002
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator
 :CREATED: 2026-09-08
@@ -102,9 +111,10 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/002-code-and-outline/audits.org][W002 - Definition and implementation audit evidence]].
 - User validation :: [[file:../specs/002-code-and-outline/validation.org][W002 - Browser validation]].
 
-** REVIEW W003 - Format-specific contents defaults :feature:
+** DONE W003 - Format-specific contents defaults :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-003
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator BYPASS-GATE-7
 :CREATED: 2026-09-08
@@ -114,9 +124,10 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/003-format-contents-defaults/audits.org][W003 - Implementation audit]].
 - Validation :: [[file:../specs/003-format-contents-defaults/validation.org][W003 - Defaults and documentation evidence]].
 
-** ACTIVE W004 - Org metadata and preview controls :defect:
+** DONE W004 - Org metadata and preview controls :defect:
 :PROPERTIES:
 :CUSTOM_ID: w-004
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator
 :CREATED: 2026-09-10
@@ -126,9 +137,10 @@ classification; it is provenance, not current state.
 - Audit evidence :: [[file:../specs/004-fold-initial-property-drawers/audits.yaml][W004 - Definition and implementation audit record]].
 - User validation :: [[file:../specs/004-fold-initial-property-drawers/validation.org][W004 - Generated Org drawer validation]].
 
-** BLOCKED W005 - Responsive navigation and quieter Org metadata :feature:
+** DONE W005 - Responsive navigation and quieter Org metadata :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-005
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator BYPASS-GATE-7
 :CREATED: 2026-09-10
@@ -137,14 +149,15 @@ classification; it is provenance, not current state.
 - Specification :: [[file:../specs/005-navigation-and-metadata/spec.org][W005 - Responsive navigation and quieter Org metadata]].
 - Audit evidence :: [[file:../specs/005-navigation-and-metadata/audits.yaml][W005 - Implementation audit record]].
 - Validation :: [[file:../specs/005-navigation-and-metadata/validation.org][W005 - Navigation and metadata validation]].
-- Delivery blocker :: The installed audit runner timed out before persisting
+- Historical delivery blocker :: The installed audit runner timed out before persisting
   its session mapping. Its resume command refuses the absent mapping. The
   supported recovery requires runner repair or an operator-authorized fresh
   session; the application changes and verification checkpoints are retained.
 
-** ACTIVE W006 - Local preview service and automatic fallback :feature:
+** DONE W006 - Local preview service and automatic fallback :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-006
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator define-change
 :CREATED: 2026-09-11
@@ -177,9 +190,10 @@ classification; it is provenance, not current state.
   and requested a running browser preview. The current specification owns the
   amended discovery and grant rules.
 
-** REVIEW W007 - Attributed autosaved annotations in service previews :feature:
+** DONE W007 - Attributed autosaved annotations in service previews :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-007
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator define-change
 :CREATED: 2026-09-12
@@ -206,9 +220,10 @@ classification; it is provenance, not current state.
   linked fixture are available for operator review. Human browser/accessibility
   acceptance and the remaining platform matrix are pending; no closure is inferred.
 
-** REVIEW W008 - Preview Pandoc documents, source code and plain text :feature:defect:
+** DONE W008 - Preview Pandoc documents, source code and plain text :feature:defect:
 :PROPERTIES:
 :CUSTOM_ID: w-008
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator define-change
 :CREATED: 2026-09-12
@@ -225,9 +240,10 @@ classification; it is provenance, not current state.
 - Instruction :: Taḋg *approved the full design and authorized delivery* on
   12 September 2026, before W006 local service and W007 annotations.
 
-** ACTIVE W009 - Persistent reader controls and native footnote annotations :feature:defect:
+** DONE W009 - Persistent reader controls and native footnote annotations :feature:defect:
 :PROPERTIES:
 :CUSTOM_ID: w-009
+:CLOSED: 2026-09-21
 :PRIORITY: P1
 :SOURCE: operator annotation review
 :CREATED: 2026-09-13
@@ -249,9 +265,10 @@ classification; it is provenance, not current state.
 - Presentation :: *Pandoc endnotes remain the normal view*; the annotation toggle
   moves the same footnote section into the sidebar and restores it on exit.
 
-** ACTIVE W010 - Folding overrides and source-checkout service commands :feature:defect:
+** DONE W010 - Folding overrides and source-checkout service commands :feature:defect:
 :PROPERTIES:
 :CUSTOM_ID: w-010
+:CLOSED: 2026-09-21
 :CREATED: 2026-09-15
 :END:
 
