@@ -1,7 +1,7 @@
 ---
 title: Vision
-version: 4
-last-updated: 2026-09-20
+version: 5
+last-updated: 2026-09-22
 ---
 
 # Vision
@@ -28,8 +28,9 @@ service and a consistent, self-contained reading presentation.
 - Folding uses bars and explicit controls, never heading text. Initial heading
   states can differ for semantic TODO and DONE categories; drawers have a separate
   setting. Navigation branches fold and initially fit the available sidebar height.
-- The native Org migration remains in user testing. Linux/WSL user validation
-  remains pending; implementation and automated checks do not establish those results.
+- Native Org reader and annotation reviews passed on 22 September 2026.
+  Linux/WSL user validation remains pending; macOS and automated checks do not
+  establish those results.
 - The native Markdown migration was accepted and merged on 20 September 2026,
   with reading and annotation user validation recorded in
   [W014 validation](../specs/014-native-markdown/validation.org).
@@ -43,6 +44,10 @@ The dated proposals below preserve the evolution of the design. Their references
 to implementation holds, graph generation, event-history annotations, polling,
 point selection and deletion exclusions are historical, superseded by the current
 direction above. They are not current usage instructions or release status.
+The original preview work through folding and service controls was accepted on
+21 September 2026, including superseded requirements. The
+[work ledger](work.org) owns current lifecycle status; historical unexecuted
+tests remain unexecuted.
 
 ## Native Org previews
 
@@ -381,6 +386,8 @@ or capability URLs. These decisions are recorded in W010's paired amendments.
 
 ## Document changes
 
+- Version 5: record native Org reader and annotation acceptance and clarify the
+  historical status of the original preview proposals.
 - Version 4: record acceptance of the native Markdown migration separately from
   continuing Org and platform validation.
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,

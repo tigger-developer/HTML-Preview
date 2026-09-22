@@ -1,7 +1,7 @@
 ---
 title: Architecture
-version: 7
-last-updated: 2026-09-20
+version: 8
+last-updated: 2026-09-22
 ---
 
 # Architecture
@@ -18,8 +18,8 @@ insertion boundaries. Directory notifications drive server-sent events; the
 browser defers display updates during typing while saves continue independently.
 The [annotation guide](ANNOTATIONS.md) defines the current interaction and limits.
 
-**Status:** The native Org migration is implemented and remains in paired user
-testing on master. See [migration validation](../specs/011-conversion-performance/validation.org).
+**Validation:** Native Org reader and annotation reviews passed on
+22 September 2026. See [migration validation](../specs/011-conversion-performance/validation.org).
 The native Markdown migration was accepted and merged on 20 September 2026;
 its [validation record](../specs/014-native-markdown/validation.org) includes
 the reading and annotation user tests. Native Linux/WSL execution remains
@@ -98,7 +98,7 @@ vulnerability gate checks the linked application and a locked unreplaced
 upstream module, preserving advisory coverage despite the local replacement.
 See [parser provenance](../third_party/go-org/README.md) and
 [validation](../specs/011-conversion-performance/validation.org) for the patches,
-execution evidence and pending human review.
+execution evidence and accepted human reader and annotation reviews.
 
 The accepted compatibility layer adds some formatting work. Future optimization
 may reduce converter passes, use native source offsets or avoid redundant HTML
@@ -1136,6 +1136,8 @@ including a submodule, without changing rendering or source authorization.
 
 ## Document changes
 
+- Version 8: reconcile native Org user acceptance with the retained implementation
+  evidence and separate platform-validation limits.
 - Version 7: reconcile accepted native Markdown routing, shared endnote handling
   and the raw-HTML boundary; retain superseded converter decisions as history.
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,

@@ -25,8 +25,10 @@
 - *go-org replaces Org conversion* within the same intermediary workflow.
 - The release benchmark requires *at least fivefold faster* uncached rendering
   of the large corpus, with *unchanged annotation safeguards*.
-- The experiment achieved *0.74 seconds*, but production compatibility and
-  browser validation remain delivery work.
+- The experiment achieved *0.74 seconds*. The production benchmark subsequently
+  measured *0.665 seconds* against *7.951 seconds* for the large-document GET;
+  [[file:validation.org][validation evidence]] records the full comparison and passing reader and
+  annotation user reviews of 22 September 2026.
 
 ** Changes
 
@@ -42,8 +44,10 @@
 
 ** Unchanged
 
-- *Markdown and other readers retain Pandoc*; native HTML retains its passive
-  authored presentation. Pandoc remains a required installed dependency.
+- This increment left *Markdown and other readers on Pandoc*; the later
+  [[file:../014-native-markdown/spec.org][W014 native Markdown migration]] supersedes that Markdown path.
+  Pandoc is now optional for other readers. Native HTML retains its passive
+  authored presentation.
 - *Block-level annotation*, native source edits, source identity checks, autosave,
   SSE refresh, cache ownership and the *15-second annotation deadline* remain.
 - *No file-mode writes*, network exposure, new public settings or data migration.
@@ -68,8 +72,10 @@
 
 ** Next step
 
-- The *migration is implemented*. Continue *user testing and paired corrections
-  on master*; keep the ticket open until explicit closure.
+- Reader and annotation user reviews passed on 22 September 2026. The
+  [[file:validation.org][validation record]] retains the tested scope, revisions and earlier observations.
+  The [[file:../../docs/work.org::#w-011][work ledger]] owns lifecycle status; native Linux/WSL execution remains
+  an explicit validation limitation.
 
 -----
 
@@ -159,7 +165,8 @@ Its timings are *feasibility evidence*, not release-test results.
 - Initial delivery used the *separate W011 feature branch* to preserve the
   usable master baseline. Following the authorized integration on 20 September
   2026, the migration is accepted as implemented and *paired development
-  continues on master*. User testing and ticket closure remain outstanding.
+  continued on master*. Reader and annotation user validation subsequently
+  passed on 22 September 2026; lifecycle status belongs to the linked work ledger.
 - *No private source text* is committed as a fixture or uploaded. Synthetic
   fixtures provide repeatability; authorized real documents are copied to OS
   temporary storage for bounded local comparison only.
@@ -180,7 +187,8 @@ Its timings are *feasibility evidence*, not release-test results.
 
 ** Unresolved blockers
 
-- None. Remaining work is implementation and verification of the contracts below.
+- No unresolved product-design decisions. The linked validation and audit records
+  retain execution evidence and closure-gate status separately.
 
 * Acceptance Criteria
 :PROPERTIES:
@@ -194,8 +202,9 @@ Its timings are *feasibility evidence*, not release-test results.
 
 - Criterion :: Org inputs and internal Org wrappers use the *packaged native
   converter* in file and service mode, including explicitly selected readers and
-  followed links. Markdown, other Pandoc readers and passive native HTML retain
-  their current behaviour; Pandoc remains required for the application.
+  followed links. This migration preserves other reader paths. Its original
+  required-Pandoc dependency was subsequently narrowed by W014 native Markdown:
+  Pandoc is optional for other readers. Passive native HTML retains its behaviour.
 - Proven by :: [[#rt-011-1][RT011.1 - Format routing]] and [[#ut-011-1][UT011.1 - Reader review]].
 
 ** AC011.2 - Org reading semantics survive the converter change :ac:

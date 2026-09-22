@@ -12,7 +12,8 @@ authoritative representation:
 - *Classification* :: One or more tags on that headline.
 - *Stable metadata* :: The work item's property drawer.
 - *Current definition* :: The linked =spec.org= file.
-- *Evidence* :: The linked =audits.org= and =validation.org= files.
+- *Evidence* :: The linked harness-owned =audits.yaml= (or historical =audits.org=)
+  and =validation.org= files.
 - *History* :: Git history and explicitly linked archived sources.
 
 Do not repeat lifecycle state in a property, section, specification, or evidence
@@ -147,7 +148,8 @@ validation. Current contracts take precedence over superseded requirements.
 :END:
 
 - Specification :: [[file:../specs/005-navigation-and-metadata/spec.org][W005 - Responsive navigation and quieter Org metadata]].
-- Audit evidence :: [[file:../specs/005-navigation-and-metadata/audits.yaml][W005 - Implementation audit record]].
+- Historical audit reference :: =specs/005-navigation-and-metadata/audits.yaml=;
+  the previously linked file is absent. The validation record below remains available.
 - Validation :: [[file:../specs/005-navigation-and-metadata/validation.org][W005 - Navigation and metadata validation]].
 - Historical delivery blocker :: The installed audit runner timed out before persisting
   its session mapping. Its resume command refuses the absent mapping. The
@@ -285,7 +287,9 @@ validation. Current contracts take precedence over superseded requirements.
 
 - Specification :: [[file:../specs/011-conversion-performance/spec.org][W011 - Fast Org previews with go-org]].
 - Scope :: Replace Org conversion with go-org while retaining the existing
-  intermediary annotation workflow. Markdown and other readers retain Pandoc.
+  intermediary annotation workflow. The later W014 native Markdown migration
+  supersedes this increment's retained Pandoc path for Markdown; other readers
+  use optional Pandoc.
 - Evidence :: [[file:../specs/011-conversion-performance/assessment.org][Converter comparison and effort assessment]].
 - Earlier boundary :: Definition and feature-branch isolation governed the
   migration implementation. The 20 September integration decision supersedes

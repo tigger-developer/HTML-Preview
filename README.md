@@ -1,7 +1,7 @@
 ---
 title: htmlpreview
-version: 4
-last-updated: 2026-09-20
+version: 5
+last-updated: 2026-09-22
 ---
 
 # htmlpreview
@@ -16,7 +16,8 @@ Org and Markdown are first-class native Go formats. Code/plaintext wrappers
 and passive HTML also work without Pandoc. Install optional Pandoc only for other
 readers, such as DOCX, ODT, EPUB and specialist Markdown dialects. The
 [native Org validation record](specs/011-conversion-performance/validation.org) tracks
-its compatibility checks, performance measurements and continuing human review.
+its compatibility checks, performance measurements and passing reader and
+annotation user reviews of 22 September 2026.
 The [native Markdown migration](specs/014-native-markdown/spec.org) was accepted
 and merged into master on 20 September 2026; its
 [validation record](specs/014-native-markdown/validation.org) includes passing
@@ -41,19 +42,25 @@ footnotes. Existing native notes remain editable after close, with their IDs
 preserved and attribution labelled Created or Edited. Source changes refresh without
 discarding an active draft; read-only sources use an adjacent Org sidecar.
 The persistent info bar also offers literal Org/Markdown source inspection.
-[Reader validation](specs/009-reader-annotation-ux/validation.org) records the
-remaining paired browser checks.
+[Reader validation](specs/009-reader-annotation-ux/validation.org) retains the
+earlier paired evidence; the native Org validation above records the later
+reader and annotation acceptance.
 
-**Evidence:** See [the specification](specs/001-local-document-preview/spec.org)
-and its [audit record](specs/001-local-document-preview/audits.org).
-Browser qualification and the Homebrew installation trial remain pending in
-[the validation record](specs/001-local-document-preview/validation.org).
+**Acceptance and evidence:** The original preview, navigation, service, format,
+annotation and folding work was accepted on 21 September 2026, including
+superseded requirements. [The work ledger](docs/work.org) owns closure status.
+Historical validation records retain unexecuted checks; acceptance does not
+turn those into test passes or establish Linux/WSL runtime validation.
+The [original specification](specs/001-local-document-preview/spec.org),
+[audit record](specs/001-local-document-preview/audits.org) and
+[validation record](specs/001-local-document-preview/validation.org) preserve
+the initial delivery evidence, including the unperformed Homebrew trial.
 
 [The approved code and navigation change](specs/002-code-and-outline/spec.org)
 adds highlighting, code copying, margin bars and configurable contents.
 Its [audit record](specs/002-code-and-outline/audits.org) retains the delivery
-review; browser qualification remains pending in the
-[change evidence](specs/002-code-and-outline/validation.org).
+review; the [change evidence](specs/002-code-and-outline/validation.org)
+retains that increment's historical validation scope.
 
 ```sh
 htmlpreview README.md examples/work.org
@@ -352,6 +359,8 @@ are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Document changes
 
+- Version 5: reconcile accepted preview work and native Org user validation;
+  preserve historical test gaps and separate Linux/WSL runtime validation.
 - Version 4: record Markdown migration acceptance and clarify installed-reader
   suffix selection.
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,

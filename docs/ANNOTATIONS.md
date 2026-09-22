@@ -1,7 +1,7 @@
 ---
 title: Document annotations
-version: 7
-last-updated: 2026-09-21
+version: 8
+last-updated: 2026-09-22
 ---
 
 # Document annotations
@@ -13,8 +13,12 @@ creates annotations; file previews, code, plain text, binary documents and nativ
 HTML remain reading-only.
 
 The [native-footnote specification](../specs/009-reader-annotation-ux/spec.org) records this interface.
-Its [validation record](../specs/009-reader-annotation-ux/validation.org) separates
-Go/HTTP checks from pending browser, accessibility and platform qualification.
+Its [validation record](../specs/009-reader-annotation-ux/validation.org) retains
+the earlier Go/HTTP checks and human-test history. Later
+[Org](../specs/011-conversion-performance/validation.org) and
+[Markdown](../specs/014-native-markdown/validation.org) reader and annotation
+reviews passed. These results do not establish unperformed accessibility or
+Linux/WSL runtime checks.
 
 **Superseded contract:** W007 originally stored successive JSON draft events
 and attached comments to selections or whole documents. On 14 September 2026,
@@ -353,6 +357,8 @@ confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
+- Version 8: link accepted native Org and Markdown annotation reviews while
+  retaining the distinction from unperformed accessibility and platform checks.
 - Version 7: wrap long lines visually in plaintext source view and document the
   configurable character limit with server-owned editor policy.
 - Version 6: describe immediate length and Org paragraph input guards, selection

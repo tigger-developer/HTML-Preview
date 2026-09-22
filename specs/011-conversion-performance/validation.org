@@ -4,6 +4,26 @@
 #+OPTIONS: toc:2 num:nil
 #+TODO: AMBER RED | GREEN
 
+* Documentation reconciliation, 22 September 2026
+
+- Updated :: README, Vision, Architecture and the annotation guide now link the
+  accepted native Org reader and annotation reviews. Historical unexecuted checks
+  remain explicit, including Linux/WSL runtime validation.
+- Updated :: The specification and work ledger distinguish this migration's
+  original retained Markdown/Pandoc route from W014's later native Markdown
+  implementation. The ledger retains the acceptance of W001–W010, including
+  superseded requirements; an absent historical W005 audit file is no longer
+  presented as a working link.
+- Not affected :: The current format guide, service guide, YAML configuration
+  example and executable help retain their existing interfaces. Closure changes
+  no converter, command, setting, installation or runtime behaviour.
+- Checks :: OED sanitization and scoped Git whitespace checks passed. Local
+  file-link targets exist in the current guides, work ledger and this specification;
+  example-only paths were excluded. External URLs and fragment semantics were not
+  checked by that file-existence check.
+- Evidence reuse :: No code changed in this reconciliation. Existing regression,
+  one-off and user-test evidence is retained without rerunning behavioural tests.
+
 * Automated regression
 
 ** GREEN RT011.1 - Format routing :testdef:
