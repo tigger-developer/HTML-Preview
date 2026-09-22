@@ -180,22 +180,32 @@
 
 * User tests
 
-- Current stage, 20 September 2026 :: *Migration implemented and integrated into
+- Historical stage, 20 September 2026 :: *Migration implemented and integrated into
   master*. The ticket remains open in user test, with further corrections under
   paired development on =master=. This milestone acceptance does not change the
   outstanding user-test results below or claim ticket closure.
 
-** AMBER UT011.1 - Reader review :testdef:
+** GREEN UT011.1 - Reader review :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ut-011-1-result
-:REASON: Human browser review follows implementation and automated validation; no browser automation is authorized.
+:REVISION: Post-correction native Org build reviewed in paired delivery; exact installed executable revision not supplied.
+:METHOD: user validation
+:DATE: 2026-09-22
+:EVIDENCE: All presented reader checks PASS: headings, metadata, drawers, TODO/DONE, checkboxes, highlighted code/copy, navigation and folding, light/dark and narrow/wide layouts.
+:PRIOR_REASON: Human browser review follows implementation and automated validation; no browser automation is authorized.
 :END:
 
-** AMBER UT011.2 - Annotation review :testdef:
+** GREEN UT011.2 - Annotation review :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ut-011-2-result
-:REASON: Browser review found unavailable creation targets while existing notes remained editable; the correction requires renewed user validation.
+:REVISION: Post-correction native Org build reviewed in paired delivery; exact installed executable revision not supplied.
+:METHOD: user validation
+:DATE: 2026-09-22
+:EVIDENCE: All presented annotation checks PASS: add/edit/delete across paragraphs, headings, lists and code/table/quote blocks; repeated notes, long accented multi-paragraph text, plaintext and backlinks.
+:PRIOR_REASON: Browser review found unavailable creation targets while existing notes remained editable; the correction requires renewed user validation.
 :END:
+
+*** Earlier observations, 20 September 2026
 
 - Method :: User validation, 20 September 2026, feature candidate =342fa00=.
 - Observation :: The displayed document contained 953 marked blocks with annotation
@@ -206,7 +216,7 @@
 - Later observation :: Two native footnotes referenced inside indented quote blocks
   each appeared twice, including an unplaced duplicate. Deleting one duplicate
   deleted its real reference and definition. The source was restored before the
-  quoted-reference correction; browser confirmation of that correction is pending.
+  quoted-reference correction; browser confirmation was pending at that checkpoint.
 
 * Quoted footnote reference correction, 20 September 2026
 
