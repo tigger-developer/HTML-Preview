@@ -10,7 +10,7 @@
 </head>
 <body data-hp-format="{{.Format}}"{{if .TOC}} class="hp-has-nav"{{end}}>
 <header id="hp-header">
-  <div id="hp-header-row">{{if .Title}}<div id="hp-source" data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></div>{{else}}<h1 id="hp-source" data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1>{{end}}</div>
+  <div id="hp-header-row"><button id="hp-theme-toggle" type="button" aria-label="Dark mode" aria-pressed="false" hidden><span aria-hidden="true">☾</span></button>{{if .Title}}<div id="hp-source" data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></div>{{else}}<h1 id="hp-source" data-hp-source="{{.Source}}">{{.Directory}}<strong>{{.Name}}</strong></h1>{{end}}</div>
 </header>
 <div id="hp-reader">
   {{if .Frontmatter}}<details id="hp-frontmatter" open>

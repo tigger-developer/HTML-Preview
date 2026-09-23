@@ -1,7 +1,7 @@
 ---
 title: htmlpreview
-version: 5
-last-updated: 2026-09-22
+version: 6
+last-updated: 2026-09-24
 ---
 
 # htmlpreview
@@ -69,6 +69,12 @@ htmlpreview README.md examples/work.org
 Each distinct source context receives a separate preview. The header identifies
 the original source; activating the filename text copies its full logical path. When browser
 clipboard access is unavailable, the header offers manual copying.
+
+The sun/moon button immediately before the filename switches light and dark
+appearance. New pages follow the system theme until the button is used. A manual
+choice lasts for the current page, including annotation refreshes and plaintext
+view; reloading or opening another page returns to automatic detection. The
+button supports keyboard activation and is hidden when printing or without JavaScript.
 
 Code uses local syntax highlighting and the embedded Iosevka Custom font.
 In reading mode, click inline code, Org verbatim or a code block to copy its literal text, or
@@ -359,6 +365,7 @@ are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Document changes
 
+- Version 6: document the theme toggle and its page-local override.
 - Version 5: reconcile accepted preview work and native Org user validation;
   preserve historical test gaps and separate Linux/WSL runtime validation.
 - Version 4: record Markdown migration acceptance and clarify installed-reader

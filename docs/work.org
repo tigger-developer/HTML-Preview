@@ -371,6 +371,16 @@ validation. Current contracts take precedence over superseded requirements.
   [[file:../specs/013-ux-fixes-and-improvements/spec.org][W013 - UX fixes and improvements]].
   Native Linux/WSL execution remains a separately disclosed platform limitation.
 
+** ACTIVE W015 - Light and dark theme toggle :feature:
+:PROPERTIES:
+:CUSTOM_ID: w-015
+:CREATED: 2026-09-24
+:END:
+- Specification :: [[file:../specs/015-theme-toggle/spec.org][W015 - Theme toggle]].
+- Scope :: Emergency-authorized button immediately before the filename, preserving
+  initial system detection and using a page-local manual override.
+- Evidence :: [[file:../specs/015-theme-toggle/validation.org][Published control and browser validation]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

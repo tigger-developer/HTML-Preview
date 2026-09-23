@@ -1,0 +1,120 @@
+#+TITLE: W015 - Light and dark theme toggle
+#+SCHEMA: 8
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: APPROVED 2026-09-24 emergency scope
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+** Outcome
+- A *theme button before the filename* switches the preview between light and dark.
+** Before
+- Previews *follow the system theme* with no manual control.
+** After
+- New pages still *follow the system*. Clicking the button *overrides the current page*.
+** Changes
+- The info bar gains a compact, keyboard-operable *sun/moon button* at its far left.
+** Unchanged
+- *No stored preference*, configuration change, source write or native-HTML controls.
+** Edge cases
+- *Annotation refreshes preserve* the override; reloading or opening another page
+  *returns to system detection*. Without JavaScript the button stays hidden.
+** Decisions
+- Reuse the *existing palettes and reader lifecycle*; no library or new runtime.
+** Next step
+- Validate switching and layout through the human test, then obtain closure.
+
+* Context
+- Temporary authority :: The 24 September 2026 emergency request, authorized by
+  =BYPASS-GATE-7=, specifies a light/dark switch immediately before the filename
+  while retaining automatic system detection.
+- Baseline :: [[file:../../docs/ARCHITECTURE.md][Architecture]], [[file:../../docs/VISION.md][Vision]],
+  [[file:../../.sdlc/project.yaml][project profile]] and the shared converted-page info bar.
+- Scope :: Converted file and service previews, including Org and Markdown.
+  Native HTML retains authored presentation. W013's separate unfinished UX scope
+  and its existing source edits remain untouched.
+- Interpretation :: The manual override is page-local. There is no durable or
+  cross-document preference and no third selector state. This keeps automatic
+  system detection as the initial behaviour without adding persistence.
+
+* Acceptance Criteria
+** AC015.1 - Theme control precedes the filename :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-015-1
+:END:
+- Criterion :: The converted preview has a *native button immediately before the
+  original filename*, separate from path copying, with an accessible name and
+  keyboard activation.
+- Proven by :: [[#rt-015-1][RT015.1 - Published control]] and [[#ut-015-1][UT015.1 - Theme interaction]].
+** AC015.2 - Automatic and manual themes coexist :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-015-2
+:END:
+- Criterion :: A new preview *uses system light/dark detection*, including changes
+  while open. Each button activation *switches to the opposite theme*, including
+  code, metadata, toolbar and annotation colours. The override survives in-page
+  refreshes. New loads return to automatic detection. Printing remains light.
+- Proven by :: [[#ut-015-1][UT015.1 - Theme interaction]].
+
+* Test Definitions
+** RT015.1 - Published control :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-015-1
+:END:
+- Covers :: [[#ac-015-1][AC015.1 - Control placement]].
+- Boundary :: Real CLI file previews and HTTP service responses, parsed as HTML.
+- Cases :: Org and Markdown. The first info-bar element is a named button, the
+  next is the source filename; only the latter owns the source path. Initial
+  HTML declares no manual theme override.
+- Retention :: =TestRT015_1_ThemeControl= in the normal Go regression suite.
+** UT015.1 - Theme interaction :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-015-1
+:END:
+- Covers :: [[#ac-015-1][AC015.1 - Control placement]], [[#ac-015-2][AC015.2 - Theme behaviour]].
+- Method :: User validation in the existing browser; no browser automation.
+- Procedure :: Open Org and Markdown in each system appearance. Before toggling,
+  change the system appearance and observe matching colours. Toggle twice with
+  mouse and keyboard. Check filename copying, code, drawers and annotation colours.
+  Keep a manual choice through annotation refresh and plaintext switching, then
+  reload and confirm system detection. Check a narrow window and print preview.
+- Expected :: One compact button before the filename; coherent colours and
+  legible focus. The Dark mode pressed state matches appearance. Print hides the
+  control and remains light; script-disabled reading follows the system.
+- Record :: Dated result, browser/viewport and tested revision in =validation.org=.
+- Automation boundary :: HTTP tests establish delivered markup, not computed
+  styles, media-query changes or JavaScript interaction. Those remain human tests.
+
+* Edge Cases
+- No JavaScript :: *Static reading remains automatic*, with the inert control hidden.
+- Lifecycle :: *Abort-scoped listeners* are removed on reader teardown; rebuilding
+  controls restores the root's page-local choice without duplicating handlers.
+- Print :: Print palette rules override both manual and automatic dark appearance.
+
+* Solution Design
+- Markup :: =page.html= places a hidden native button outside the source-copy node.
+- State :: =enhanceTheme= in =preview.js= reads =prefers-color-scheme= until
+  =document.documentElement.dataset.hpTheme= is set to =light= or =dark= by a
+  click. The attribute survives reader-region replacement; it is never stored.
+- Interaction :: The button has the fixed accessible name =Dark mode= and an
+  =aria-pressed= state; a decorative sun/moon and tooltip describe the next action.
+  The existing reader lifecycle owns its listeners and teardown.
+- Styling :: Existing CSS palette values support explicit dark selection and
+  automatic dark selection when light has not been forced. Explicit =color-scheme=
+  also updates browser-native controls. The compact button consumes fixed flex
+  space before the existing flexible filename. Print overrides retain precedence.
+- Security :: No network, storage, source-content interpolation, permission or
+  source-writing change. The existing generated script/style hashes continue to
+  govern publication. No new dependency or execution boundary.
+- Verification :: Published HTML regression plus human interaction; native JS/CSS
+  lint and a production build. No browser or JavaScript CLI test framework added.
+
+* Delivery Handoff
+- Implementation :: [[file:../../assets/web/page.html][Page template]], [[file:../../assets/web/preview.js][reader controls]],
+  [[file:../../assets/web/preview.css][styles]] and [[file:../../internal/preview/theme_test.go][published-page regression]].
+- Documentation :: README and Architecture describe the control and page-local
+  override. CLI, configuration, deployment and format guides have unchanged interfaces.
+- Evidence :: [[file:validation.org][Validation]] and [[file:audits.yaml][audit record]].
+- Closure :: Human interaction validation and explicit operator closure remain required.

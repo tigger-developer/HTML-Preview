@@ -1,10 +1,14 @@
 /* ABOUTME: Styles local Markdown and Org with embedded, accessible typography.
    ABOUTME: Static pages remain readable without browser enhancement. */
 :root { color-scheme: light dark; --bg:#fdfdfb; --fg:#23262b; --muted:#555e69; --rule:#c6cbd2; --panel:#f1f3f5; --link:#20599b; --accent:#6a4598; --mono:"Iosevka Custom",monospace; }
-@media (prefers-color-scheme:dark) { :root { --bg:#16181c; --fg:#e0e3e9; --muted:#b2bac6; --rule:#4b5260; --panel:#23272f; --link:#94c4fc; --accent:#c8b1f5; } }
+:root[data-hp-theme=dark] { --bg:#16181c; --fg:#e0e3e9; --muted:#b2bac6; --rule:#4b5260; --panel:#23272f; --link:#94c4fc; --accent:#c8b1f5; }
+@media (prefers-color-scheme:dark) { :root:where(:not([data-hp-theme=light])) { --bg:#16181c; --fg:#e0e3e9; --muted:#b2bac6; --rule:#4b5260; --panel:#23272f; --link:#94c4fc; --accent:#c8b1f5; } }
+:root[data-hp-theme=light] { color-scheme:light; }
+:root[data-hp-theme=dark] { color-scheme:dark; }
 * { box-sizing:border-box; }
 :root { --metadata-bg:#f8f8f6; --metadata-fg:#68717a; --metadata-key-bg:#e8ebeb; --metadata-key-fg:#606972; --tag:#966477; }
-@media (prefers-color-scheme:dark) { :root { --metadata-bg:#1b1d21; --metadata-fg:#959daa; --metadata-key-bg:#14161a; --metadata-key-fg:#959daa; --tag:#c691a5; } }
+:root[data-hp-theme=dark] { --metadata-bg:#1b1d21; --metadata-fg:#959daa; --metadata-key-bg:#14161a; --metadata-key-fg:#959daa; --tag:#c691a5; }
+@media (prefers-color-scheme:dark) { :root:where(:not([data-hp-theme=light])) { --metadata-bg:#1b1d21; --metadata-fg:#959daa; --metadata-key-bg:#14161a; --metadata-key-fg:#959daa; --tag:#c691a5; } }
 body { max-width:54rem; margin:0 auto; padding:2rem 1.5rem 5rem; background:var(--bg); color:var(--fg); font-family:"Asap",sans-serif; font-size:1.08rem; font-weight:400; font-stretch:100%; line-height:1.65; }
 main { overflow-wrap:anywhere; }
 #hp-header { border-bottom:1px solid var(--rule); margin-bottom:2rem; padding-bottom:.75rem; }
@@ -57,10 +61,13 @@ button { font:inherit; color:var(--fg); background:var(--panel); border:1px soli
 .hp-toolbar button[data-hp-mode=overview] { color:#414d91; background:#e4e7fa; }
 .hp-toolbar button[data-hp-mode=content] { color:#256352; background:#dcefe7; }
 .hp-toolbar button[data-hp-mode=showall] { color:#80551e; background:#f4e9d5; }
+:root[data-hp-theme=dark] .hp-toolbar button[data-hp-mode=overview] { color:#c3caf9; background:#30384f; }
+:root[data-hp-theme=dark] .hp-toolbar button[data-hp-mode=content] { color:#b2deca; background:#293e38; }
+:root[data-hp-theme=dark] .hp-toolbar button[data-hp-mode=showall] { color:#ecd2a7; background:#433b2d; }
 @media (prefers-color-scheme:dark) {
-  .hp-toolbar button[data-hp-mode=overview] { color:#c3caf9; background:#30384f; }
-  .hp-toolbar button[data-hp-mode=content] { color:#b2deca; background:#293e38; }
-  .hp-toolbar button[data-hp-mode=showall] { color:#ecd2a7; background:#433b2d; }
+  :root:where(:not([data-hp-theme=light])) .hp-toolbar button[data-hp-mode=overview] { color:#c3caf9; background:#30384f; }
+  :root:where(:not([data-hp-theme=light])) .hp-toolbar button[data-hp-mode=content] { color:#b2deca; background:#293e38; }
+  :root:where(:not([data-hp-theme=light])) .hp-toolbar button[data-hp-mode=showall] { color:#ecd2a7; background:#433b2d; }
 }
 .hp-code-copy { font-family:var(--mono); min-width:1.5rem; min-height:1.5rem; padding:0 .2rem; margin-left:.15rem; font-size:.95rem; vertical-align:baseline; color:var(--muted); }
 .hp-code-block { position:relative; }
@@ -98,7 +105,8 @@ section[data-hp-level]:not(.hp-outline-section) section[data-hp-level]:not(.hp-o
 .hp-outline-section[hidden],section[data-hp-level] .hp-outline-section[hidden] { display:none; }
 /* Built-in Pandoc token classes use an owned palette; no writer CSS is loaded. */
 :root { --syntax-keyword:#65369a; --syntax-string:#176438; --syntax-number:#924318; --syntax-comment:#535c69; --syntax-function:#20599b; --syntax-error:#a52132; }
-@media (prefers-color-scheme:dark) { :root { --syntax-keyword:#d3b4ff; --syntax-string:#96d8a6; --syntax-number:#f6b785; --syntax-comment:#b2bac6; --syntax-function:#94c4fc; --syntax-error:#ffadb5; } }
+:root[data-hp-theme=dark] { --syntax-keyword:#d3b4ff; --syntax-string:#96d8a6; --syntax-number:#f6b785; --syntax-comment:#b2bac6; --syntax-function:#94c4fc; --syntax-error:#ffadb5; }
+@media (prefers-color-scheme:dark) { :root:where(:not([data-hp-theme=light])) { --syntax-keyword:#d3b4ff; --syntax-string:#96d8a6; --syntax-number:#f6b785; --syntax-comment:#b2bac6; --syntax-function:#94c4fc; --syntax-error:#ffadb5; } }
 #hp-document code :is(.kw,.cf,.dt,.bu,.ex) { color:var(--syntax-keyword); font-weight:700; }
 #hp-document code :is(.st,.vs,.ch,.sc,.ss,.im) { color:var(--syntax-string); }
 #hp-document code :is(.dv,.bn,.fl,.cn) { color:var(--syntax-number); }
@@ -114,6 +122,7 @@ body { display:grid; grid-template-columns:minmax(0,1fr); align-items:start; max
 /* A taller spanning sidebar must not enlarge rows above the document body. */
 body { grid-template-rows:repeat(5,max-content) minmax(0,1fr); }
 #hp-header { grid-column:1 / -1; grid-row:1; position:sticky; top:0; z-index:20; margin:0 -1rem 1rem; padding:.45rem 1rem; background:var(--bg); border-bottom:1px solid var(--rule); }
+#hp-theme-toggle { flex:0 0 2rem; width:2rem; height:2rem; padding:0; font-size:1.2rem; line-height:1; color:var(--muted); background:transparent; border:0; }
 #hp-header-row { flex-wrap:nowrap; align-items:center; gap:.5rem; }
 #hp-header-row > [data-hp-source] { flex:1 1 auto; min-width:0; text-align:left; font-size:clamp(.875rem,.6rem + .35vw,1rem); }
 #hp-header .hp-toolbar { flex:0 1 auto; justify-content:flex-end; }
@@ -139,7 +148,8 @@ body.hp-plaintext #hp-reader > :is(#hp-frontmatter,#hp-content-rule,#hp-toc,#hp-
 .hp-annotation-recovery textarea { width:100%; color:var(--fg); background:var(--panel); font:inherit; border:1px solid var(--rule); padding:.5rem; resize:vertical; }
 .hp-annotations textarea { display:block; width:100%; margin:.4rem 0; padding:.5rem; font:inherit; color:var(--fg); background:var(--panel); border:1px solid var(--rule); border-radius:.25rem; resize:vertical; }
 :root { --hp-save-color:#327649; --hp-save-glow:#91cba4; }
-@media (prefers-color-scheme:dark) { :root { --hp-save-color:#93e3af; --hp-save-glow:#407653; } }
+:root[data-hp-theme=dark] { --hp-save-color:#93e3af; --hp-save-glow:#407653; }
+@media (prefers-color-scheme:dark) { :root:where(:not([data-hp-theme=light])) { --hp-save-color:#93e3af; --hp-save-glow:#407653; } }
 .hp-annotations [data-save-state=saved] textarea { animation:hp-save-border 2.3s ease-out forwards; }
 @keyframes hp-save-border {
   0%,87% { border-color:var(--hp-save-color); box-shadow:0 0 0 1px var(--hp-save-color),0 0 .45rem var(--hp-save-glow); }
@@ -215,8 +225,8 @@ body[data-hp-format=org] #hp-toc { display:none; }
 @media print {
   body .hp-annotations { display:none; }
 
-  :root { --bg:#fff; --fg:#000; --muted:#333; --rule:#aaa; --panel:#fff; --link:#000; --accent:#333; }
-  :root { --metadata-bg:#fff; --metadata-fg:#333; --metadata-key-bg:#eee; --metadata-key-fg:#333; --tag:#555; }
+  :root,:root[data-hp-theme] { color-scheme:light; --bg:#fff; --fg:#000; --muted:#333; --rule:#aaa; --panel:#fff; --link:#000; --accent:#333; }
+  :root,:root[data-hp-theme] { --metadata-bg:#fff; --metadata-fg:#333; --metadata-key-bg:#eee; --metadata-key-fg:#333; --tag:#555; }
   body,body.hp-annotating { display:block; height:auto; overflow:visible; max-width:none; padding:0; font-size:11pt; }
   #hp-header { position:static; margin:0 0 1rem; padding:0; }
   #hp-reader,.hp-annotating #hp-reader { display:block; overflow:visible; }
@@ -225,7 +235,7 @@ body[data-hp-format=org] #hp-toc { display:none; }
   #hp-toc ul[hidden] { display:block; }
   #hp-toc .hp-nav-toggle { display:none; }
   #hp-toc li > a { padding-left:0; }
-  #hp-header .hp-toolbar,#hp-document .hp-toggle,#hp-document .hp-show-more,#hp-document .hp-code-copy,body .hp-feedback,body .hp-status,body .hp-manual { display:none; }
+  #hp-theme-toggle,#hp-header .hp-toolbar,#hp-document .hp-toggle,#hp-document .hp-show-more,#hp-document .hp-code-copy,body .hp-feedback,body .hp-status,body .hp-manual { display:none; }
   .hp-copy-confirmed::after { display:none; }
   .hp-outline-section,section[data-hp-level] .hp-outline-section { padding-left:.5rem; }
   #hp-document code span[class] { color:var(--fg); }

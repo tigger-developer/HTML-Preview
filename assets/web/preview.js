@@ -66,6 +66,30 @@ function clipboardService(controller, dispose) {
   };
 }
 
+function enhanceTheme(header, events, dispose) {
+  const button = header.querySelector('#hp-theme-toggle');
+  const root = document.documentElement;
+  const system = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  const isDark = () => root.dataset.hpTheme
+    ? root.dataset.hpTheme === 'dark' : Boolean(system?.matches);
+  function update() {
+    const dark = isDark();
+    button.setAttribute('aria-pressed', String(dark));
+    button.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    button.firstElementChild.textContent = dark ? '☀' : '☾';
+  }
+  button.addEventListener('click', () => {
+    // The root survives annotation refreshes; no preference is stored on disk.
+    root.dataset.hpTheme = isDark() ? 'light' : 'dark';
+    update();
+  }, events);
+  system?.addEventListener('change', update, events);
+  update();
+  button.hidden = false;
+  dispose(() => { button.hidden = true; });
+}
+
 function enhanceHeader(header, copyValue, events, dispose) {
   const heading = header.querySelector('[data-hp-source]');
   const sourcePath = heading.getAttribute('data-hp-source');
@@ -497,6 +521,7 @@ function enhancePreview() {
   }
   window.addEventListener('pagehide', teardown, { once: true, signal: controller.signal });
   const copyValue = clipboardService(controller, dispose);
+  enhanceTheme(header, { signal: controller.signal }, dispose);
   enhanceHeader(header, copyValue, { signal: controller.signal }, dispose);
   const measureHeader = () => document.documentElement.style.setProperty('--hp-bar-height', header.getBoundingClientRect().height + 'px');
   if (typeof ResizeObserver === 'function') {

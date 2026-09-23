@@ -1,7 +1,7 @@
 ---
 title: Architecture
-version: 8
-last-updated: 2026-09-22
+version: 9
+last-updated: 2026-09-24
 ---
 
 # Architecture
@@ -17,6 +17,14 @@ confirmed-delete operations. Source-bound block probes establish eligible
 insertion boundaries. Directory notifications drive server-sent events; the
 browser defers display updates during typing while saves continue independently.
 The [annotation guide](ANNOTATIONS.md) defines the current interaction and limits.
+
+The converted-page info bar includes a theme toggle before the filename.
+System colour-scheme detection remains the default; an explicit choice lives
+only on the current document root and survives reader-region refreshes.
+The existing reader lifecycle owns the button and media-query listeners. CSS
+applies the existing light/dark palettes and retains light print output.
+No preference is stored or sent to the service. See
+[W015 theme controls](../specs/015-theme-toggle/spec.org).
 
 **Validation:** Native Org reader and annotation reviews passed on
 22 September 2026. See [migration validation](../specs/011-conversion-performance/validation.org).
@@ -1136,6 +1144,7 @@ including a submodule, without changing rendering or source authorization.
 
 ## Document changes
 
+- Version 9: describe page-local theme selection and unchanged system defaults.
 - Version 8: reconcile native Org user acceptance with the retained implementation
   evidence and separate platform-validation limits.
 - Version 7: reconcile accepted native Markdown routing, shared endnote handling
