@@ -279,10 +279,11 @@ validation. Current contracts take precedence over superseded requirements.
 - Authority :: Taḋg authorized *BYPASS-GATE-7*, prioritized =make serve= and the
   working config, and required *removal of browser automation*.
 
-** BLOCKED W011 - Fast Org previews with go-org :feature:
+** DONE W011 - Fast Org previews with go-org :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-011
 :CREATED: 2026-09-19
+:CLOSED: 2026-09-24
 :END:
 
 - Specification :: [[file:../specs/011-conversion-performance/spec.org][W011 - Fast Org previews with go-org]].
@@ -299,15 +300,16 @@ validation. Current contracts take precedence over superseded requirements.
   assessment history.
 - Delivery :: Native worker, HTML adapter and compatibility regressions were
   developed on =011-conversion-performance= and integrated into =master= on
-  20 September 2026 under explicit merge authority. Further paired development
-  continues on =master=; integration does not close the work item.
+  20 September 2026 under explicit merge authority. Subsequent paired corrections
+  remained on =master=; integration preceded the closure recorded above.
   [[file:../specs/011-conversion-performance/validation.org][Validation evidence]] records regression,
   packaging and complete benchmark results, with human reader/annotation results.
 - User validation :: *Reader and annotation reviews PASS*, 22 September 2026.
   The linked validation record retains the accepted scope and earlier failures.
 - Closure authorization :: Approved 22 September 2026, subject to the SDLC
   closure checks. Product documentation and specification references are reconciled.
-- Closure dependency :: External harness recovery requires operator authorization.
+- Historical closure dependency :: External harness recovery was authorized on
+  24 September 2026.
   [[file:../specs/011-conversion-performance/audits.yaml][W011 retained audit evidence]] remains the sole audit authority.
 
 ** ACTIVE W012 - Replace stale installation links and launchd services :defect:

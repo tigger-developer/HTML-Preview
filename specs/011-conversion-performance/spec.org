@@ -313,10 +313,15 @@ Its timings are *feasibility evidence*, not release-test results.
   Org page, Markdown with native footnotes, DOCX and native HTML.
 - Action :: Render each case; repeat native cases through a symlink from a
   different working directory. A controlled Pandoc boundary allows discovery
-  but rejects Org conversion while real non-Org cases continue through Pandoc.
-- Expected :: Native cases publish readable pages without an Org Pandoc call;
+  but rejects Org and Markdown conversion; optional-reader cases use real Pandoc.
+- Expected :: Native cases publish readable pages without an Org or Markdown Pandoc call;
   other cases retain their content, policy and link behaviour. Wrapper previews
-  remain non-editable. Missing Pandoc still gives the established dependency error.
+  remain non-editable. Missing Pandoc gives the established dependency error only
+  for optional-reader cases such as DOCX.
+- Superseded expectation :: This test originally required real non-Org cases,
+  including Markdown, to continue through Pandoc, with a missing-Pandoc error.
+  [[file:../014-native-markdown/spec.org][W014 native Markdown]] replaces that Markdown assertion; the native Org
+  assertions and optional-reader error behaviour remain.
 - Retention :: Persistent under =make test=. Native routing is new RED;
   unchanged format expectations may be initially GREEN preservation checks.
 
