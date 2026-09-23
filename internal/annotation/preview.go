@@ -16,7 +16,7 @@ type VirtualNote struct {
 }
 
 // PreviewFootnotes constructs conversion input only; callers retain the original
-// source payload and revision. Pandoc renders ordinary and virtual notes together.
+// source payload and revision. The selected converter renders ordinary and virtual notes together.
 func PreviewFootnotes(ctx context.Context, snap Snapshot, format, body string, headings map[string]Span, prefix string) ([]byte, []VirtualNote, error) {
 	if snap.Reason != "" {
 		return nil, nil, nil
@@ -91,7 +91,7 @@ func PreviewFootnotes(ctx context.Context, snap Snapshot, format, body string, h
 		if at >= 0 {
 			patches = append(patches, sourcePatch{byteRange{at, at}, []byte(reference)})
 		} else {
-			// This temporary reference makes Pandoc emit an otherwise unreferenced
+			// This temporary reference makes the converter emit an otherwise unreferenced
 			// definition. The caller removes it and marks that endnote unplaced.
 			tail = append(tail, []byte(store.Ending+store.Ending+reference+store.Ending)...)
 		}

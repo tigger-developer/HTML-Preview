@@ -1,5 +1,5 @@
 // ABOUTME: Marks potential native annotation boundaries in a temporary source copy.
-// ABOUTME: Pandoc output must verify each candidate before it becomes an interactive block.
+// ABOUTME: Converted output must verify each candidate before it becomes an interactive block.
 package annotation
 
 import (

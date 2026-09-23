@@ -1,4 +1,4 @@
-// ABOUTME: Preserves Org values that the Pandoc reader discards.
+// ABOUTME: Preserves Org metadata and literal values across conversion.
 // ABOUTME: Tracks literal blocks and drawers before producing collision-free markers.
 package preview
 

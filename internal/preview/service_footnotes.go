@@ -1,4 +1,4 @@
-// ABOUTME: Renders sidecar and legacy notes through the existing Pandoc pipeline.
+// ABOUTME: Renders sidecar and legacy notes through the shared conversion pipeline.
 // ABOUTME: Verifies virtual positions and keeps unplaced notes in the native endnotes list.
 package preview
 
@@ -161,7 +161,7 @@ func labelRenderedFootnotes(root *html.Node, labels map[string]string, prefix st
 		for previous != nil && previous.Type == html.TextNode && strings.TrimSpace(previous.Data) == "" {
 			previous = previous.PrevSibling
 		}
-		// Restore Pandoc's usual backlink at the end of the preceding paragraph.
+		// Restore the converter's backlink at the end of the preceding paragraph.
 		// Block-only notes retain their separate backlink paragraph.
 		if previous != nil && previous.Data == "p" {
 			for child := paragraph.FirstChild; child != nil; {
