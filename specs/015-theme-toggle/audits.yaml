@@ -480,3 +480,193 @@ audits:
 
             - UT015.1 - Theme interaction remains AMBER for operator browser validation, as permitted at this stage; it blocks closure, not delivery-code.
           updated: "2026-09-24T00:07:23Z"
+    - work_item: W015
+      gate: definition
+      session_id: 20260924_010937_db4f27
+      harness: hermes
+      provider: nous
+      model: z-ai/glm-5.3
+      configured:
+        harness: claude
+        model: claude-opus-5
+      external_round: 1
+      status: passed
+      updated: "2026-09-24T00:09:59Z"
+      revision: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (specs/015-theme-toggle/spec.org, W015 retrospective emergency review)
+      verdict: PASS
+      response: |-
+        GATE: definition
+        REVISION: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (specs/015-theme-toggle/spec.org, W015 retrospective emergency review)
+
+        VERDICT: PASS
+
+        Assessment summary:
+
+        - Annotation state: spec.org contains no semantically identified annotation record or block, resolved or empty. No feedback.yaml exists; no processed feedback is claimed, so no disposition evidence is missing.
+        - Audit-state duplication: none. spec.org, validation.org and work.org link audits.yaml without copying verdicts, rounds, revisions or session identity. Execution states live only in validation.org.
+        - Retrospective fidelity: the spec records the 24 September BYPASS-GATE-7 emergency request as temporary authority and the actually delivered bounded change, without inventing an advance plan (EMERGENCY.md, AUDITS.md retrospective rules). Operator intent — button immediately before the filename, system auto detection retained, page-local manual choice — matches the implementation evidence in page.html, preview.js (enhanceTheme), preview.css and theme_test.go.
+        - Requirements and traceability: AC015.1/AC015.2 are observable and falsifiable; RT015.1 (rendered markup via CLI and HTTP, tier 2, not source grep) covers placement/semantics/initial state; UT015.1 honestly owns computed styles, media-query changes, refresh retention, keyboard use and print. The automation-boundary note justifies no artificial RTs given the operator's browser-automation prohibition; AC015.2 being UT-proven is appropriate for WEB.md tier-3 behaviour.
+        - Architecture fit and proportionality: reuses existing palettes, reader lifecycle and print rules; no new dependency, framework, storage, third selector state, server or source-write change. Scope does not exceed the authorized change; no template inflation — omitted design subsections are appropriate at this size and security impact is recorded (no-change rationale).
+        - Design resolution: state mechanism (data-hp-theme on the root, surviving reader-region refresh, never persisted), toggle semantics, accessible name/aria-pressed, CSS override selectors including :not([data-hp-theme=light]) auto-dark handling, and print precedence are all concrete; no significant decision left for a delivery agent to invent. Verified against preview.css/preview.js: the delivered selectors and lifecycle handling conform.
+        - Verification evidence: RT015.1 GREEN with prior RED for the intended reason; targeted race runs green; the full-package race timeout is explicitly disclosed rather than claimed PASS, alongside a passing non-race full package — honest reporting, not a definition defect.
+        - Documentation: the handoff identifies README and Architecture as affected; both are updated (theme paragraphs, versions 6/9) and remaining guides correctly noted unchanged. Consistent with DOCUMENTATION.md voice; approval metadata is concise and impersonal.
+
+        Non-blocking notes (no remediation required at this gate):
+        - UT015.1 - Theme interaction remains AMBER; completion plus explicit operator closure are required before work-item closure, not before definition sign-off.
+        - The RT015.1 "Covers" link text ("Control placement") differs cosmetically from the AC heading title; the anchor resolves correctly and no meaning is lost.
+
+        No blocking findings. The specification package is coherent, proportionate, traceable and faithful to the authorized emergency scope.
+      history:
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-4262942333.log
+          cache_key: sha256:93f1c67b810c1ab85c0d8431ecd3c9d20dee7270d3e074b7c366b833e35791d8
+          session_id: 20260924_010937_db4f27
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: a8b064c2fa966566476c8773adc25e90721ae14e520635a8c6c1169505fea2ef
+              bytes: 14215
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: 66982ab8b25b26ea1bfaf40577bf4955bf0c804cfd035ab582c6d9ff658e2581
+              bytes: 16627
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: baffdd38fac0c2dd24d2be5389edb2a0b88ea19e8d67e1bc2f6f65d55601b7b3
+              bytes: 2974
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 73f6a85ff6be4d023d90c93ece42a33b4638f263c9a7b70b79630d79c984b686
+              bytes: 19415
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: 9d4fcbd0cdec0f0ce57fab68e9f3ffc43fe4be18f97db29ce6efffea76ec178a
+              bytes: 877
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: b86de443460e29c09b00b80e0c844151c5c2df473439764eb06752f0a03405a4
+              bytes: 20400
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-composer.js
+              sha256: 1f8cc58acd2dcac95df0ee132a4e5092b952a0d6b2ac1bf2c506b5d9aeb9cf04
+              bytes: 12301
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-input.js
+              sha256: 8d80948fe5ea158ecf8ce905629871c4d55fc33231f86df3ccb5a637178489bb
+              bytes: 4530
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: b3bae22ff2a66123c5b7bab71296d7c1cc7398343a54cf37636082a9a46ddac4
+              bytes: 9113
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: b9bc49a53057726a67dd02ec2f2784402d818ffe497695defc8411a2b44ab323
+              bytes: 54883
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: d3a93192fcc1f8ed0a2b4ef6e7d37662de981c5b1627bbfce348b9c4aae093e3
+              bytes: 2210
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: 13ff6bf24d0cbf5d4355e0df22607bfef2870d9d7e734748fd342d550ab8e63d
+              bytes: 26576
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: 2d841b653fcd7763b17f33976728d2709342ed7c0900ef23bc83e39c3e90256e
+              bytes: 27674
+            - path: /Users/tigger/code/tigoss/html-preview/bundle.go
+              sha256: 28d77adbdd855cf514861e934e4db3c173fc53e58f7f7cd5771db0ee7754a85d
+              bytes: 521
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ANNOTATIONS.md
+              sha256: 4aef76da6d8df8b5b5a0ab4be10aaf1ab6c7f2cab754f4d43cbd0a59c271b6d2
+              bytes: 23419
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 4ef1c5650a7c1a25add16be342fe7227c16d38807c99dcbecda92614420644f7
+              bytes: 72579
+            - path: /Users/tigger/code/tigoss/html-preview/docs/FORMATS.md
+              sha256: 83f5112af39c1f0f3ee63e60b4c98396b1e1750cd1e23d95a2767ecbc1098935
+              bytes: 13060
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: ab2d6bc909e397add8a835e9774d26ed2605068c0eed94d5de236f6aae843fcb
+              bytes: 19371
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 699ff41ce80c647b963c4edb0298b9d551eaaae333111b069050bc84a530f6c8
+              bytes: 22790
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 873cb6b1f0ee1aa4ccf60839054324fddb166e3dda716ecadfde31de6476b3cb
+              bytes: 20430
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/annotation_service_test.go
+              sha256: fa9ba5eb8bce499885d465e936aaac23e5c5236128a7f18a4b04db1de91c49da
+              bytes: 10791
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/code_outline_test.go
+              sha256: 667d669cb0ede02503a69253f4ded400135f971250536580c3e4c274c53cbb94
+              bytes: 14264
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 3d7bf111ad2ccc143b2da910ccd18bc611bbe2e6e881423c0813d417ae59ce80
+              bytes: 12041
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/preview_test.go
+              sha256: 8754527d3ffed819743adbe5d57c20ef4a56694409f67e536e265273f926538c
+              bytes: 21837
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_assets_test.go
+              sha256: fe71bb47114ce085426d9a2c5393a03a68b3dd1d4ac2859a243ee3dd289995a5
+              bytes: 7493
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
+              sha256: 0ea88898e1377f2863ebabcd02b11d43a6b94883f7574712f7c80e38ef6a1870
+              bytes: 10556
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/theme_test.go
+              sha256: f733344d8cead887a6a1bccc0452399c9a5eb0a8fbca93eca215a71ec32fc271
+              bytes: 2114
+            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/spec.org
+              sha256: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77
+              bytes: 6691
+            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+              sha256: e842d81cfa286c0ffa2aebb981506cba15576ef8b65a7145b39ea25c0e02d2b7
+              bytes: 2409
+          round: 1
+          revision: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (specs/015-theme-toggle/spec.org, W015 retrospective emergency review)
+          verdict: PASS
+          response: |-
+            GATE: definition
+            REVISION: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (specs/015-theme-toggle/spec.org, W015 retrospective emergency review)
+
+            VERDICT: PASS
+
+            Assessment summary:
+
+            - Annotation state: spec.org contains no semantically identified annotation record or block, resolved or empty. No feedback.yaml exists; no processed feedback is claimed, so no disposition evidence is missing.
+            - Audit-state duplication: none. spec.org, validation.org and work.org link audits.yaml without copying verdicts, rounds, revisions or session identity. Execution states live only in validation.org.
+            - Retrospective fidelity: the spec records the 24 September BYPASS-GATE-7 emergency request as temporary authority and the actually delivered bounded change, without inventing an advance plan (EMERGENCY.md, AUDITS.md retrospective rules). Operator intent — button immediately before the filename, system auto detection retained, page-local manual choice — matches the implementation evidence in page.html, preview.js (enhanceTheme), preview.css and theme_test.go.
+            - Requirements and traceability: AC015.1/AC015.2 are observable and falsifiable; RT015.1 (rendered markup via CLI and HTTP, tier 2, not source grep) covers placement/semantics/initial state; UT015.1 honestly owns computed styles, media-query changes, refresh retention, keyboard use and print. The automation-boundary note justifies no artificial RTs given the operator's browser-automation prohibition; AC015.2 being UT-proven is appropriate for WEB.md tier-3 behaviour.
+            - Architecture fit and proportionality: reuses existing palettes, reader lifecycle and print rules; no new dependency, framework, storage, third selector state, server or source-write change. Scope does not exceed the authorized change; no template inflation — omitted design subsections are appropriate at this size and security impact is recorded (no-change rationale).
+            - Design resolution: state mechanism (data-hp-theme on the root, surviving reader-region refresh, never persisted), toggle semantics, accessible name/aria-pressed, CSS override selectors including :not([data-hp-theme=light]) auto-dark handling, and print precedence are all concrete; no significant decision left for a delivery agent to invent. Verified against preview.css/preview.js: the delivered selectors and lifecycle handling conform.
+            - Verification evidence: RT015.1 GREEN with prior RED for the intended reason; targeted race runs green; the full-package race timeout is explicitly disclosed rather than claimed PASS, alongside a passing non-race full package — honest reporting, not a definition defect.
+            - Documentation: the handoff identifies README and Architecture as affected; both are updated (theme paragraphs, versions 6/9) and remaining guides correctly noted unchanged. Consistent with DOCUMENTATION.md voice; approval metadata is concise and impersonal.
+
+            Non-blocking notes (no remediation required at this gate):
+            - UT015.1 - Theme interaction remains AMBER; completion plus explicit operator closure are required before work-item closure, not before definition sign-off.
+            - The RT015.1 "Covers" link text ("Control placement") differs cosmetically from the AC heading title; the anchor resolves correctly and no meaning is lost.
+
+            No blocking findings. The specification package is coherent, proportionate, traceable and faithful to the authorized emergency scope.
+          updated: "2026-09-24T00:09:36Z"
