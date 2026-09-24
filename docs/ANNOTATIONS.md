@@ -1,7 +1,7 @@
 ---
 title: Document annotations
-version: 8
-last-updated: 2026-09-22
+version: 9
+last-updated: 2026-09-24
 ---
 
 # Document annotations
@@ -162,7 +162,8 @@ mode moves that same section into the comment pane; switching it off returns
 it to the document end. Native reference links and backlinks remain available.
 Printing uses the normal endnotes, without a duplicate annotation appendix.
 
-The info bar keeps the source filename left and controls right while scrolling.
+The info bar keeps the theme toggle before the source filename on the left and
+reading controls on the right while scrolling.
 The displayed home directory is abbreviated as `~`; copying retains the absolute
 source path. Wide viewports show navigation, the article and the annotation pane.
 Phone annotation mode keeps document text above a larger comment pane.
@@ -357,6 +358,7 @@ confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
+- Version 9: place the theme toggle before the filename in the info-bar description.
 - Version 8: link accepted native Org and Markdown annotation reviews while
   retaining the distinction from unperformed accessibility and platform checks.
 - Version 7: wrap long lines visually in plaintext source view and document the
