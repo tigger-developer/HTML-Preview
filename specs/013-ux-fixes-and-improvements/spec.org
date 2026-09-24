@@ -354,3 +354,7 @@ annotations:
   otherwise unverified probe markers do not become client-writeable offsets.
 - Evidence :: [[file:validation.org][Increment validation]]. Configurable-section
   work and retrospective design review remain pending; the ticket stays open.
+
+
+
+
