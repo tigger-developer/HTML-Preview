@@ -1,0 +1,186 @@
+version: 1
+audits:
+    - readiness_check: delivery-code
+      work_item: W015
+      gate: implementation
+      session_id: 3f03c989-9a85-48dd-8f2b-3aab6354cc93
+      harness: claude
+      model: claude-opus-5
+      configured:
+        harness: claude
+        model: claude-opus-5
+      external_round: 1
+      status: passed
+      updated: "2026-09-23T23:42:29Z"
+      revision: ab2f25f
+      verdict: PROVISIONAL PASS
+      response: |-
+        GATE: delivery-code
+        REVISION: ab2f25f
+        VERDICT: PROVISIONAL PASS
+
+        ## Conformance verified
+
+        - **Placement and copy separation** — `assets/web/page.html:13` emits the button as the first element of `#hp-header-row`, immediately before `#hp-source`, with `data-hp-source` only on the filename node. `enhanceHeader` (`assets/web/preview.js:94`) still resolves `[data-hp-source]`, so the copy target is unchanged and the control sits outside it. Matches AC015.1.
+        - **State model** — `enhanceTheme` (`preview.js:69-91`) reads `prefers-color-scheme` until `documentElement.dataset.hpTheme` is set; nothing is stored or sent. Click and media-query listeners share the existing `controller.signal`, and the disposer re-hides the button on teardown. Matches the recorded design.
+        - **Refresh survival** — `swapRegions` (`assets/web/annotations.js:892`) replaces `hp-header` and the other region nodes but never `documentElement`, so the page-local override survives annotation refresh, and `enhancePreview` re-enhances the fresh header's button. The spec's claim is supported by code, not assumed.
+        - **CSS coherence** — every `@media (prefers-color-scheme:dark)` block (`preview.css:5,11,67-71,109,152`) has a matching explicit `:root[data-hp-theme=dark]` block (`4,10,64-66,108,151`), each media form guarded by `:root:where(:not([data-hp-theme=light]))`. The `:where()` guard keeps automatic detection at base specificity while the explicit selector outranks it. Print (`preview.css:228-229`) re-declares on `:root,:root[data-hp-theme]` later in the sheet, so it outranks both automatic and explicit dark; `:238` hides the control and `:241` forces code spans to `--fg`.
+        - **Security and scope** — no network, storage, dependency, permission or source-writing change; CSP script/style hashes (`internal/preview/html.go:205`) recompute over the changed assets. The delta contains no persistence, configuration or W013 work.
+        - **Records** — `spec.org` and `validation.org` contain no audit findings, verdicts, revisions, round numbers or session identifiers. Schema matches `ORG-SCHEMA.md`: AC015.1/AC015.2 tagged `:ac:`, RT015.1/UT015.1 tagged `:testdef:`, `#+TODO: AMBER RED | GREEN` declared, GREEN RT with REVISION/COMMAND/EVIDENCE, AMBER UT with REASON. UT015.1 remaining AMBER is correct for this gate, and the HTTP evidence does not overclaim computed styles.
+
+        ## Required follow-up (bounded, reversible)
+
+        1. **Rerun the affected regression pack.** `page.html`, `preview.css` and `preview.js` are the single shared presentation assets for every converted preview, so the affected set is the whole `internal/preview` package, not one pack. `validation.org` records only `TestRT015_1_ThemeControl` and the `TestRT002_` pack, and states plainly that the full suite was not rerun — honest reporting, but incomplete against `TESTING.md` ("rerun the affected automated tests ... before the delivery-code audit"). Run `make test` (`go test -race -timeout=20m ./...`) or at minimum `go test -race ./internal/preview`, and record the result against `ab2f25f`. The RT015.1 `REVISION` property currently names `4340b9e plus W015 ... changes`; name the audited revision when recording the rerun.
+
+        2. **Assert the no-JavaScript edge case.** `spec.org` Edge Cases require the inert control to stay hidden without JavaScript, and Solution Design states `page.html` "places a hidden native button". `page.html:13` does emit `hidden`, but `internal/preview/theme_test.go:22-31` asserts placement, `type`, `aria-label`, copy-target separation and the absent root override without asserting `hidden` — at the same rendered-HTML boundary it already inspects. Add that assertion; no new framework or boundary is needed.
+
+        3. **Correct two stale placement sentences.** `README.md:94` ("The filename is left-aligned in the sticky info bar, with controls to the right") and `docs/ARCHITECTURE.md:547` ("places the directory and emphasized filename on the left, controls on the right") no longer describe the delivered bar, which now carries a control at the far left before the filename. Both documents state the correct placement elsewhere (`README.md:73-77`, `docs/ARCHITECTURE.md:21-27`), so this is an internal inconsistency introduced by the delta rather than missing documentation. `DOCUMENTATION.md` requires updating documentation affected by behaviour changes; amend both clauses. Voice, purpose fit, version bumps (README 6, Architecture 9) and changelog entries in the new passages are otherwise compliant.
+
+        ## Review limitation
+
+        `annotationRegistrationURL`, used by `theme_test.go:45`, is defined outside the supplied evidence and was not read; its behaviour is taken from the recorded GREEN run, not verified here. `docs/SERVICE.md`, `docs/FORMATS.md` and `docs/ANNOTATIONS.md` were not supplied; the spec records their interfaces as unchanged, which is consistent with the delta I reviewed but not independently confirmed.
+      history:
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-2597016660.log
+          readiness_check: delivery-code
+          cache_key: sha256:c6df9e23e547718049a778a4b468200b6b838eddd229cb42d3b8dffa4f344a3f
+          session_id: 3f03c989-9a85-48dd-8f2b-3aab6354cc93
+          harness: claude
+          model: claude-opus-5
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: a8b064c2fa966566476c8773adc25e90721ae14e520635a8c6c1169505fea2ef
+              bytes: 14215
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: 66982ab8b25b26ea1bfaf40577bf4955bf0c804cfd035ab582c6d9ff658e2581
+              bytes: 16627
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: baffdd38fac0c2dd24d2be5389edb2a0b88ea19e8d67e1bc2f6f65d55601b7b3
+              bytes: 2974
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/JAVASCRIPT.md
+              sha256: bdd055c0f688a752dd6e452da385a583c2c875be7249ece0bfd8200f33809acb
+              bytes: 7508
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/.agents/sdlc/templates/v3/spec.org
+              sha256: 73f6a85ff6be4d023d90c93ece42a33b4638f263c9a7b70b79630d79c984b686
+              bytes: 19415
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: 9d4fcbd0cdec0f0ce57fab68e9f3ffc43fe4be18f97db29ce6efffea76ec178a
+              bytes: 877
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 6d28f591aa7026210dc472666b73747e275169ea5ed915afffc88b5647fd80c4
+              bytes: 20369
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-composer.js
+              sha256: 1f8cc58acd2dcac95df0ee132a4e5092b952a0d6b2ac1bf2c506b5d9aeb9cf04
+              bytes: 12301
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-input.js
+              sha256: 8d80948fe5ea158ecf8ce905629871c4d55fc33231f86df3ccb5a637178489bb
+              bytes: 4530
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotation-text.js
+              sha256: b3bae22ff2a66123c5b7bab71296d7c1cc7398343a54cf37636082a9a46ddac4
+              bytes: 9113
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/annotations.js
+              sha256: b9bc49a53057726a67dd02ec2f2784402d818ffe497695defc8411a2b44ab323
+              bytes: 54883
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/page.html
+              sha256: d3a93192fcc1f8ed0a2b4ef6e7d37662de981c5b1627bbfce348b9c4aae093e3
+              bytes: 2210
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: 13ff6bf24d0cbf5d4355e0df22607bfef2870d9d7e734748fd342d550ab8e63d
+              bytes: 26576
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.js
+              sha256: 2d841b653fcd7763b17f33976728d2709342ed7c0900ef23bc83e39c3e90256e
+              bytes: 27674
+            - path: /Users/tigger/code/tigoss/html-preview/bundle.go
+              sha256: 28d77adbdd855cf514861e934e4db3c173fc53e58f7f7cd5771db0ee7754a85d
+              bytes: 521
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 2a1495bf04306a1e8987a05df9fc493a09eb298a70bf0ccfa079c58634c5155f
+              bytes: 72542
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 699ff41ce80c647b963c4edb0298b9d551eaaae333111b069050bc84a530f6c8
+              bytes: 22790
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: 873cb6b1f0ee1aa4ccf60839054324fddb166e3dda716ecadfde31de6476b3cb
+              bytes: 20430
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/code_outline_test.go
+              sha256: 667d669cb0ede02503a69253f4ded400135f971250536580c3e4c274c53cbb94
+              bytes: 14264
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
+              sha256: 3d7bf111ad2ccc143b2da910ccd18bc611bbe2e6e881423c0813d417ae59ce80
+              bytes: 12041
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/preview_test.go
+              sha256: 8754527d3ffed819743adbe5d57c20ef4a56694409f67e536e265273f926538c
+              bytes: 21837
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_assets_test.go
+              sha256: fe71bb47114ce085426d9a2c5393a03a68b3dd1d4ac2859a243ee3dd289995a5
+              bytes: 7493
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
+              sha256: 0ea88898e1377f2863ebabcd02b11d43a6b94883f7574712f7c80e38ef6a1870
+              bytes: 10556
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/theme_test.go
+              sha256: e2fa866ad2846c5116391093924bcce8ab1b13d8e2936054c5210bd23e9b8c03
+              bytes: 1901
+            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/spec.org
+              sha256: 3a39d6f7fb8ca1f7aeaf6ab32f0d168d297ba4a5401b6fc7509d3872e24f158c
+              bytes: 6633
+            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+              sha256: c91133b785e21ec185f5cdb79eafaec172bdf10e5aeeeb76f5442fc329cd935a
+              bytes: 1804
+          round: 1
+          revision: ab2f25f
+          verdict: PROVISIONAL PASS
+          response: |-
+            GATE: delivery-code
+            REVISION: ab2f25f
+            VERDICT: PROVISIONAL PASS
+
+            ## Conformance verified
+
+            - **Placement and copy separation** — `assets/web/page.html:13` emits the button as the first element of `#hp-header-row`, immediately before `#hp-source`, with `data-hp-source` only on the filename node. `enhanceHeader` (`assets/web/preview.js:94`) still resolves `[data-hp-source]`, so the copy target is unchanged and the control sits outside it. Matches AC015.1.
+            - **State model** — `enhanceTheme` (`preview.js:69-91`) reads `prefers-color-scheme` until `documentElement.dataset.hpTheme` is set; nothing is stored or sent. Click and media-query listeners share the existing `controller.signal`, and the disposer re-hides the button on teardown. Matches the recorded design.
+            - **Refresh survival** — `swapRegions` (`assets/web/annotations.js:892`) replaces `hp-header` and the other region nodes but never `documentElement`, so the page-local override survives annotation refresh, and `enhancePreview` re-enhances the fresh header's button. The spec's claim is supported by code, not assumed.
+            - **CSS coherence** — every `@media (prefers-color-scheme:dark)` block (`preview.css:5,11,67-71,109,152`) has a matching explicit `:root[data-hp-theme=dark]` block (`4,10,64-66,108,151`), each media form guarded by `:root:where(:not([data-hp-theme=light]))`. The `:where()` guard keeps automatic detection at base specificity while the explicit selector outranks it. Print (`preview.css:228-229`) re-declares on `:root,:root[data-hp-theme]` later in the sheet, so it outranks both automatic and explicit dark; `:238` hides the control and `:241` forces code spans to `--fg`.
+            - **Security and scope** — no network, storage, dependency, permission or source-writing change; CSP script/style hashes (`internal/preview/html.go:205`) recompute over the changed assets. The delta contains no persistence, configuration or W013 work.
+            - **Records** — `spec.org` and `validation.org` contain no audit findings, verdicts, revisions, round numbers or session identifiers. Schema matches `ORG-SCHEMA.md`: AC015.1/AC015.2 tagged `:ac:`, RT015.1/UT015.1 tagged `:testdef:`, `#+TODO: AMBER RED | GREEN` declared, GREEN RT with REVISION/COMMAND/EVIDENCE, AMBER UT with REASON. UT015.1 remaining AMBER is correct for this gate, and the HTTP evidence does not overclaim computed styles.
+
+            ## Required follow-up (bounded, reversible)
+
+            1. **Rerun the affected regression pack.** `page.html`, `preview.css` and `preview.js` are the single shared presentation assets for every converted preview, so the affected set is the whole `internal/preview` package, not one pack. `validation.org` records only `TestRT015_1_ThemeControl` and the `TestRT002_` pack, and states plainly that the full suite was not rerun — honest reporting, but incomplete against `TESTING.md` ("rerun the affected automated tests ... before the delivery-code audit"). Run `make test` (`go test -race -timeout=20m ./...`) or at minimum `go test -race ./internal/preview`, and record the result against `ab2f25f`. The RT015.1 `REVISION` property currently names `4340b9e plus W015 ... changes`; name the audited revision when recording the rerun.
+
+            2. **Assert the no-JavaScript edge case.** `spec.org` Edge Cases require the inert control to stay hidden without JavaScript, and Solution Design states `page.html` "places a hidden native button". `page.html:13` does emit `hidden`, but `internal/preview/theme_test.go:22-31` asserts placement, `type`, `aria-label`, copy-target separation and the absent root override without asserting `hidden` — at the same rendered-HTML boundary it already inspects. Add that assertion; no new framework or boundary is needed.
+
+            3. **Correct two stale placement sentences.** `README.md:94` ("The filename is left-aligned in the sticky info bar, with controls to the right") and `docs/ARCHITECTURE.md:547` ("places the directory and emphasized filename on the left, controls on the right") no longer describe the delivered bar, which now carries a control at the far left before the filename. Both documents state the correct placement elsewhere (`README.md:73-77`, `docs/ARCHITECTURE.md:21-27`), so this is an internal inconsistency introduced by the delta rather than missing documentation. `DOCUMENTATION.md` requires updating documentation affected by behaviour changes; amend both clauses. Voice, purpose fit, version bumps (README 6, Architecture 9) and changelog entries in the new passages are otherwise compliant.
+
+            ## Review limitation
+
+            `annotationRegistrationURL`, used by `theme_test.go:45`, is defined outside the supplied evidence and was not read; its behaviour is taken from the recorded GREEN run, not verified here. `docs/SERVICE.md`, `docs/FORMATS.md` and `docs/ANNOTATIONS.md` were not supplied; the spec records their interfaces as unchanged, which is consistent with the delta I reviewed but not independently confirmed.
+          updated: "2026-09-23T23:37:49Z"

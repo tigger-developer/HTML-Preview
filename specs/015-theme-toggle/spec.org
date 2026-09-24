@@ -67,7 +67,8 @@
 - Boundary :: Real CLI file previews and HTTP service responses, parsed as HTML.
 - Cases :: Org and Markdown. The first info-bar element is a named button, the
   next is the source filename; only the latter owns the source path. Initial
-  HTML declares no manual theme override.
+  HTML declares no manual theme override and keeps the button hidden until
+  JavaScript enables it.
 - Retention :: =TestRT015_1_ThemeControl= in the normal Go regression suite.
 ** UT015.1 - Theme interaction :testdef:
 :PROPERTIES:

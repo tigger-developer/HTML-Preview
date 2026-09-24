@@ -543,8 +543,9 @@ keys have darker backgrounds, values use the normal foreground, and tags use
 plain muted pink without the TODO badge's border or background.
 
 The original filename header is required, including copying its full source
-path. The sticky info bar places the directory and emphasized filename on the
-left, controls on the right, and a separator above the document body.
+path. The sticky info bar places the theme toggle first, then the directory and
+emphasized filename on the left, reading controls on the right, and a separator
+above the document body.
 Use Iosevka Custom at 400 for the directory and 700 for the filename, with
 accessible contrast and wrapping for long paths. The browser tab title uses
 the Org document title when supplied, falling back to the original filename.

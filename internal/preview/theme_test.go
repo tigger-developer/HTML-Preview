@@ -23,6 +23,15 @@ func TestRT015_1_ThemeControl(t *testing.T) {
 			t.Fatal("theme button must immediately precede the original filename")
 		}
 		button := children[0]
+		hidden := false
+		for _, attribute := range button.Attr {
+			if attribute.Key == "hidden" {
+				hidden = true
+			}
+		}
+		if !hidden {
+			t.Fatal("theme control must stay hidden until JavaScript enables it")
+		}
 		if attr(button, "type") != "button" || attr(button, "aria-label") != "Dark mode" {
 			t.Fatal("theme control needs native button semantics and an accessible name")
 		}

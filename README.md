@@ -91,7 +91,8 @@ Org previews render `#+TITLE` and `#+SUBTITLE` as leading document headings.
 When present, `#+AUTHOR` and `#+DATE` follow them as document metadata.
 Leading Org fields share one left-aligned, initially open frontmatter panel
 above the separator, using compact Iosevka text and a settings glyph. The
-filename is left-aligned in the sticky info bar, with controls to the right. Frontmatter never activates path copying.
+filename is left-aligned after the theme toggle in the sticky info bar, with
+reading controls to the right. Frontmatter never activates path copying.
 The title also supplies the browser tab title, with the filename as fallback.
 Successful path and code copying briefly overlays the copied text with a fading
 confirmation; refused clipboard writes retain the manual-copy fallback.

@@ -6,9 +6,9 @@
 * Regression
 ** GREEN RT015.1 - Published control :testdef:
 :PROPERTIES:
-:REVISION: 4340b9e plus W015 theme template, CSS, reader and regression changes
+:REVISION: ab2f25f plus the initial-hidden-control regression assertion
 :COMMAND: go test -race ./internal/preview -run '^TestRT015_1_ThemeControl$' -count=1
-:EVIDENCE: Org and Markdown file/HTTP responses have the correctly placed accessible control and separate original-filename copy target. PASS in 10.942 seconds.
+:EVIDENCE: Org and Markdown file/HTTP responses have the correctly placed accessible control, initial hidden state and separate original-filename copy target. PASS in 10.987 seconds.
 :END:
 - Environment :: macOS arm64, Go 1.26.8; isolated temporary Go caches and fixtures.
 - Date :: 24 September 2026.
@@ -30,5 +30,13 @@
 - Preservation :: =go test -race ./internal/preview -run '^TestRT002_' -count=1=
   passed in 78.471 seconds, covering existing code fidelity, passive highlighting
   and navigation settings/destinations. The full repository suite was not rerun.
+- Full-package race attempt :: =go test -race -timeout=20m ./internal/preview=
+  reached the package timeout after 1200.122 seconds. The active test was
+  =TestRT014_4_ClickableMarkdownCreation= (54 seconds), with its
+  =mixed=false/table= subtest running for 5 seconds. This is not a passing
+  full-package race result and does not establish a defect in that subtest.
+- Full-package regression :: =go test -timeout=10m ./internal/preview= passed
+  in 146.383 seconds on the same code and assertions. This run does not use
+  race instrumentation; the targeted theme and RT002 runs above do.
 - Formatting :: Go formatting and scoped Git whitespace checks passed.
 - Source preservation :: The change touches no annotation writer or document data.
