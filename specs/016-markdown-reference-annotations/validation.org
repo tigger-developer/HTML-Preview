@@ -29,7 +29,12 @@
 * Checks
 - Build :: =make build= passed and rebuilt =bin/htmlpreview=. The running service
   was not restarted by the agent; =make service= was provided to the user.
+- Targeted race checks :: =go test -race ./internal/annotation ./internal/preview -run 'TestRT016_1_|Test.*Block' -count=1=
+  passed; the preview package took 185.160 seconds. No annotation-package test
+  names matched this selector.
 - Static analysis :: =go vet ./internal/annotation ./internal/preview= passed.
+- Lint :: =golangci-lint run ./internal/annotation/... ./internal/preview/...= passed.
+- Vulnerability check :: =make vulncheck= passed: no vulnerabilities found.
 - Scope :: No JavaScript, CSS, configuration, storage format or dependency change.
 - Privacy :: Repository fixtures are synthetic. The reported personal Markdown
   document was inspected read-only and was not copied into the repository.
