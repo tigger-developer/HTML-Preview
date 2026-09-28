@@ -381,7 +381,7 @@ validation. Current contracts take precedence over superseded requirements.
   initial system detection and using a page-local manual override.
 - Evidence :: [[file:../specs/015-theme-toggle/validation.org][Published control and browser validation]].
 
-** ACTIVE W016 - Annotations beside Markdown reference definitions :defect:
+** REVIEW W016 - Annotations beside Markdown reference definitions :defect:
 :PROPERTIES:
 :CUSTOM_ID: w-016
 :CREATED: 2026-09-28
