@@ -381,6 +381,16 @@ validation. Current contracts take precedence over superseded requirements.
   initial system detection and using a page-local manual override.
 - Evidence :: [[file:../specs/015-theme-toggle/validation.org][Published control and browser validation]].
 
+** ACTIVE W016 - Annotations beside Markdown reference definitions :defect:
+:PROPERTIES:
+:CUSTOM_ID: w-016
+:CREATED: 2026-09-28
+:END:
+- Specification :: [[file:../specs/016-markdown-reference-annotations/spec.org][W016 - Reference-adjacent annotations]].
+- Scope :: Preserve hidden reference definitions during block mapping so that
+  served Markdown text remains annotatable.
+- Evidence :: [[file:../specs/016-markdown-reference-annotations/validation.org][Annotation lifecycle validation]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

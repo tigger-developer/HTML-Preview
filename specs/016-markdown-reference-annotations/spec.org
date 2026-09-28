@@ -1,0 +1,122 @@
+#+TITLE: W016 - Annotations beside Markdown reference definitions
+#+SCHEMA: 8
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: APPROVED 2026-09-28 emergency scope
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+** Outcome
+- *Markdown text remains annotatable* when the source contains hidden reference definitions.
+** Before
+- A temporary annotation probe can make a *hidden definition visible*, disabling
+  annotation targets throughout the page.
+** After
+- *Definitions remain untouched* during probing; ordinary blocks retain their targets.
+** Changes
+- Annotation mapping recognizes *reference-definition source spans* before probing.
+** Unchanged
+- *No browser, configuration or storage-format change*. Existing write checks remain.
+** Edge cases
+- *Multiline definitions and titles* remain hidden; ordinary bracket text and code remain visible.
+** Decisions
+- Reuse *Goldmark's reference transformer*, rather than implement Markdown syntax again.
+** Next step
+- Validate the corrected preview in the browser and record closure separately.
+
+* Context
+** Problem and scope
+- Defect :: A writable served Markdown page can have *zero annotation targets*
+  because adding a probe to a reference definition changes the rendered structure.
+- Authority :: Approved 2026-09-28 under =BYPASS-GATE-7=. This record reconciles
+  the emergency correction after the temporary specification and failing regression.
+- Baseline :: [[file:../../.sdlc/project.yaml][Project profile]],
+  [[file:../../docs/ARCHITECTURE.md][Architecture]],
+  [[file:../../docs/VISION.md][Vision]] and
+  [[file:../014-native-markdown/spec.org][W014 - Native Markdown conversion]].
+- Scope :: Preserve hidden Markdown definitions during source-bound block mapping.
+  Org mapping, the DOM contract, grants, atomic writes and application limits remain.
+- Privacy :: *Synthetic fixtures only* in the repository; personal documents remain unchanged.
+
+* Acceptance Criteria
+** AC016.1 - Blocks remain annotatable :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-016-1
+:END:
+- Criterion :: With hidden reference definitions, served Markdown paragraphs,
+  headings and list items *retain browser-selectable annotation targets*, including
+  after a save and refresh.
+- Proven by :: [[#rt-016-1][RT016.1 - Reference-adjacent annotation lifecycle]] and
+  [[#ut-016-1][UT016.1 - Annotation entry]].
+** AC016.2 - Reference semantics and source bytes are preserved :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-016-2
+:END:
+- Criterion :: Definitions *remain hidden and unchanged on save*, reference links
+  retain their destination/title, and successive annotations attach at paragraph
+  ends. Ordinary bracket prose and fenced code remain visible and annotatable.
+- Proven by :: [[#rt-016-1][RT016.1 - Reference-adjacent annotation lifecycle]].
+
+* Test Definitions
+** RT016.1 - Reference-adjacent annotation lifecycle :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-016-1
+:END:
+- Covers :: [[#ac-016-1][AC016.1 - Annotation targets]] and
+  [[#ac-016-2][AC016.2 - Reference preservation]].
+- Boundary :: Real local service registration, delivered HTML, annotation HTTP
+  writes, refreshed HTML and resulting synthetic source bytes.
+- Cases :: Parenthesized hidden metadata; ordinary link destination/title;
+  multiline destination/title; three-space indentation with CRLF; adjacent definitions.
+- Procedure :: Read each page, verify paragraphs/heading/list/code targets and
+  reference-link attributes, save on the first paragraph, refresh, then save on
+  the last paragraph using advertised state and verified block IDs.
+- Expected :: *Both saves succeed* at the paragraph boundary; reference bytes
+  are preserved, hidden definitions stay invisible and remaining targets persist.
+- Retention :: =TestRT016_1_AnnotationsWithReferenceDefinitions= in =make test=.
+** UT016.1 - Annotation entry :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-016-1
+:END:
+- Covers :: [[#ac-016-1][AC016.1 - Annotation targets]].
+- Method :: User validation in the existing browser; no browser automation.
+- Procedure :: Rebuild/restart the service, reopen the affected Markdown preview,
+  enable Annotations, click prose, enter a note and wait for autosave.
+- Expected :: *Pencil cursor and composer are available*; the saved footnote
+  appears and another paragraph remains annotatable.
+- Record :: Date, revision and observed outcome in =validation.org=.
+
+* Edge Cases
+- *Literal code and ordinary bracket prose* must not be mistaken for hidden definitions.
+- *Multiline titles and adjacent definitions* must be excluded in their entirety.
+- Unsupported insertion locations still require the existing DOM-shape proof.
+
+* Solution Design
+- Ownership :: =internal/annotation/blocks.go= owns candidate source boundaries.
+  It asks the existing Goldmark reference paragraph transformer for definition
+  spans before adding temporary footnotes to Markdown lines.
+- Mechanism :: At a bracket-led line outside existing literal exclusions, form
+  a paragraph from source segments through its next blank line. Transform reference
+  definitions only, then skip candidate offsets through the final definition's
+  source end. Ordinary text after that span continues through the existing mapper.
+- Reuse :: Goldmark 1.8.6 is already pinned. Its reference transformer handles
+  indentation, destinations and multiline titles. No full second document
+  conversion or new parser implementation is introduced.
+- Compatibility :: Org bypasses this check. Existing native rendering, DOM pairing,
+  browser selectors and storage writer remain unchanged. Definition bytes are
+  read only; the existing annotation patch writer owns actual footnote insertion.
+- Security :: No access, privilege, networking or persistence expansion. The
+  existing source limits bound the input; no authored source executes. Only
+  verified DOM targets reach the unchanged authenticated write endpoint.
+- Verification :: The HTTP lifecycle regression observes delivered targets and
+  actual writes; implementation review checks parser reuse and unchanged safety checks.
+
+* Delivery Handoff
+- Implementation :: [[file:../../internal/annotation/blocks.go][Source-bound candidate mapper]] and
+  [[file:../../internal/preview/markdown_reference_annotation_test.go][HTTP regression]].
+- Evidence :: [[file:validation.org][Validation]] and [[file:audits.yaml][Audit record]].
+- Documentation :: Update the annotation guide's reference-definition behaviour.
+  CLI, configuration, installation, rendering interfaces and Vision are unchanged.
+- Closure :: Browser validation and explicit closure remain separate from automated checks.

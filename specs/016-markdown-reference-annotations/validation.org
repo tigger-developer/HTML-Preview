@@ -1,0 +1,35 @@
+#+TITLE: W016 - Reference-adjacent annotation validation
+#+SCHEMA: 2
+#+TODO: AMBER RED | GREEN
+#+STARTUP: content
+
+* Regression
+** GREEN RT016.1 - Reference-adjacent annotation lifecycle :testdef:
+:PROPERTIES:
+:REVISION: 43ac238 plus W016 mapper and HTTP regression changes
+:COMMAND: go test -timeout=10m ./...
+:EVIDENCE: All packages passed; internal/preview passed in 146.983 seconds. The five synthetic definition cases verify browser-selectable blocks, reference attributes, two HTTP saves, refreshed targets and preserved source bytes.
+:END:
+- Date :: 28 September 2026.
+- Environment :: macOS arm64, Go 1.26.8, isolated temporary Go caches and fixtures.
+- RED :: Before the mapper correction, all three initial definition cases failed
+  because first/last paragraphs, headings and list items lacked annotation targets.
+  The command was =go test ./internal/preview -run '^TestRT016_1_' -count=1=;
+  the package failed in 0.141 seconds.
+- Initial GREEN :: The same command passed in 0.371 seconds after the correction.
+  The final regression adds indentation/CRLF, adjacent definitions, link-attribute
+  preservation and bracket/code assertions; the full-suite result above covers it.
+
+* Human review
+** AMBER UT016.1 - Annotation entry :testdef:
+:PROPERTIES:
+:REASON: Requires the user to restart the service and review annotation entry/autosave in the existing browser. No browser automation was launched.
+:END:
+
+* Checks
+- Build :: =make build= passed and rebuilt =bin/htmlpreview=. The running service
+  was not restarted by the agent; =make service= was provided to the user.
+- Static analysis :: =go vet ./internal/annotation ./internal/preview= passed.
+- Scope :: No JavaScript, CSS, configuration, storage format or dependency change.
+- Privacy :: Repository fixtures are synthetic. The reported personal Markdown
+  document was inspected read-only and was not copied into the repository.

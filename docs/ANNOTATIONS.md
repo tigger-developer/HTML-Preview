@@ -1,7 +1,7 @@
 ---
 title: Document annotations
-version: 9
-last-updated: 2026-09-24
+version: 10
+last-updated: 2026-09-28
 ---
 
 # Document annotations
@@ -193,6 +193,11 @@ rendered punctuation do not require source-text searches. The conversion checks
 that native references parse at proposed boundaries before making blocks
 interactive. Temporary markers and block IDs are never written into the source.
 
+Markdown link-reference definitions, including hidden metadata written as
+`[label]: # (text)`, remain hidden and are excluded from annotation probes.
+They do not prevent surrounding paragraphs, headings or list items from accepting
+annotations. Multiline destinations and titles retain their source bytes.
+
 The previous clicked-text path considered at most eight matching source
 fragments. That limit remains only for compatibility with older point requests;
 it does not govern block creation in newly opened previews. Reload an older
@@ -358,6 +363,7 @@ confirmed save failures retain the recovery dialog.
 
 ## Document changes
 
+- Version 10: preserve hidden Markdown reference definitions during annotation mapping.
 - Version 9: place the theme toggle before the filename in the info-bar description.
 - Version 8: link accepted native Org and Markdown annotation reviews while
   retaining the distinction from unperformed accessibility and platform checks.

@@ -7,6 +7,10 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/text"
 )
 
 var emptyOrgDescription = regexp.MustCompile(`^[ \t]*(?:[-+*]|[0-9]+[.)])[ \t]+.*[ \t]::[ \t]*$`)
@@ -56,9 +60,10 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 	var orgBlocks []string
 	tables := tableBoundaries(lines, format)
 	drawer, frontmatter := false, false
+	referenceEnd := 0
 	for i, line := range lines {
 		trim := strings.TrimSpace(line.text)
-		if inRanges(line.offset, excluded) {
+		if line.offset < referenceEnd || inRanges(line.offset, excluded) {
 			continue
 		}
 		if format != "org" && i == 0 && trim == "---" {
@@ -106,6 +111,12 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 		}
 		if literal.active() {
 			continue
+		}
+		if format != "org" && strings.HasPrefix(trim, "[") {
+			referenceEnd = markdownReferenceEnd(data, lines, i)
+			if referenceEnd > line.offset {
+				continue
+			}
 		}
 		if format != "org" && strings.HasPrefix(trim, ">") {
 			if i+1 == len(lines) || !strings.HasPrefix(strings.TrimSpace(lines[i+1].text), ">") {
@@ -170,6 +181,30 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 		return nil, nil, err
 	}
 	return marked, candidates, nil
+}
+
+// Ask the existing Markdown parser which lines form hidden reference definitions.
+// Only its reference transformer runs here, not a second document conversion.
+// Appending a probe to a definition would make it visible and break DOM pairing.
+func markdownReferenceEnd(data []byte, lines []sourceLine, start int) int {
+	paragraph := ast.NewParagraph()
+	document := ast.NewDocument()
+	document.AppendChild(document, paragraph)
+	for _, line := range lines[start:] {
+		if strings.TrimSpace(line.text) == "" {
+			break
+		}
+		paragraph.Lines().Append(text.NewSegment(line.offset, line.end))
+	}
+	parser.LinkReferenceParagraphTransformer.Transform(paragraph, text.NewReader(data), parser.NewContext())
+	end := 0
+	for node := document.FirstChild(); node != nil; node = node.NextSibling() {
+		if node.Kind() == ast.KindLinkReferenceDefinition {
+			segments := node.Lines()
+			end = segments.At(segments.Len() - 1).Stop
+		}
+	}
+	return end
 }
 
 func orgBlockStart(upper string) string {
