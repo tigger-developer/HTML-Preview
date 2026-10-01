@@ -21,7 +21,8 @@ service preview, a reviewer can place an annotation beside the relevant
 passage; the feedback stays with the document as a native footnote, giving an
 author or coding agent the context needed for a precise revision.
 
-HTML-Preview began as a quick Markdown preview script for SDLC reviews. Org
+HTML-Preview began as a quick Markdown preview script for reviews in the
+[Lean SDLC for Coding Agents](https://github.com/tigger-developer/sdlc). Org
 support and browser annotations made it useful for more kinds of documents and
 beyond that original project.
 
