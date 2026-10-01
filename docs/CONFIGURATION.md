@@ -64,4 +64,3 @@ formats. Depth controls the displayed source levels. Application defaults
 and explicit settings override source TOC metadata; depth is validated even
 when the TOC is disabled. A document with no eligible
 headings has no empty contents navigation.
-

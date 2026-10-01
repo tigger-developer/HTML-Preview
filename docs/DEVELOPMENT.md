@@ -54,4 +54,3 @@ not publish assets, create a tap, or install a formula automatically.
 `make sync` stages the whole working tree, commits when needed, then pulls and
 pushes. `COMMIT_MESSAGE` defaults to `chore: sync`. Invoke it only when you intend
 to include all current changes.
-

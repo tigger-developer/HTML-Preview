@@ -65,4 +65,3 @@ default symlink still points to the checkout; use explicit prefix installation
 for packaging. Neither mode invokes sudo or downloads Pandoc. The former
 `/usr/local` default is superseded by the user-local symlink; an earlier
 installation there is not removed automatically.
-

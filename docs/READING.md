@@ -128,4 +128,3 @@ footnote definitions and new-note references in service mode. Source scripts, ev
 and automatic remote resources are removed or made passive. Org includes remain
 visible without expansion. Literal source/example blocks remain literal.
 This is a local preview, not a portable export or a whole-process sandbox.
-
