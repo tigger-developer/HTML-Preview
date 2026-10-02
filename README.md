@@ -1,7 +1,7 @@
 ---
 title: htmlpreview
-version: 6
-last-updated: 2026-09-24
+version: 7
+last-updated: 2026-10-02
 ---
 
 # htmlpreview
@@ -35,6 +35,9 @@ normal invocations then use its loopback HTTP URLs. Absent service or an input
 outside its roots selects a single-document file preview. Installation never
 starts the service. [Service validation](specs/006-local-preview-service/validation.org)
 distinguishes regression evidence from pending native qualification.
+For an already registered launchd or systemd user service,
+`make service-restart` performs an ordered manager stop and start; it does not
+launch a detached server process.
 
 Service previews of genuine Org and Markdown sources also offer
 [attributed annotations](docs/ANNOTATIONS.md). The composer autosaves current native
@@ -366,6 +369,8 @@ are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Document changes
 
+- Version 7: document manager-backed `make service-restart` behaviour on macOS
+  and Linux.
 - Version 6: document the theme toggle and its page-local override.
 - Version 5: reconcile accepted preview work and native Org user validation;
   preserve historical test gaps and separate Linux/WSL runtime validation.

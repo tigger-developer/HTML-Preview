@@ -1,0 +1,47 @@
+#+TITLE: W017 - Manager-backed service restart validation
+#+SCHEMA: 1
+#+TODO: AMBER RED | GREEN
+#+STARTUP: overview
+
+* GREEN RT017.1 - Native manager restart sequence :testdef:
+:PROPERTIES:
+:REVISION: Working tree based on ff046c4 with W017 implementation and regression
+:COMMAND: go test -race ./internal/buildtool -count=1
+:EVIDENCE: The build-tool package passed. Captured launchd and systemd boundaries showed ordered stop then start; stop and start errors and unsupported platforms remained failures.
+:END:
+
+** RED execution 2026-10-02
+
+- Command :: =go test ./internal/buildtool -run TestRT017_1_ServiceRestartUsesNativeManager -count=1=
+- Observation :: The test failed because the public build-tool task rejected
+  =service-restart= as unknown.
+
+** GREEN execution 2026-10-02
+
+- Command :: =go test -race ./internal/buildtool -count=1=
+- Environment :: macOS host; synthetic manager executables and injected calls
+  covered both supported platform contracts without changing a live service.
+- Observation :: The package passed with ordered manager calls and explicit
+  failure-path assertions.
+
+** Additional verification 2026-10-02
+
+- Build plan :: =make -n service-restart= emitted one synchronous
+  =go run ./internal/buildtool service-restart= command.
+- Lint :: =make lint= passed after provisioning the documented StyLua 2.5.2
+  binary in an operating-system temporary directory. The temporary tool was
+  removed afterwards; no global installation changed.
+- Vulnerabilities :: =make vulncheck= passed both scans with no vulnerabilities
+  found.
+- Repository suite :: =make test= passed the root, command, integration,
+  annotation, build-tool, conversion and Org packages, then
+  =internal/preview= exceeded its 20-minute package timeout in
+  =TestRT014_4_ClickableMarkdownCreation=. The isolated test passed in 144.215
+  seconds. A second =internal/preview= run with a 30-minute bound exceeded that
+  bound later in =TestRT006_11_EveryInstalledReaderThroughServedLinks=. No W017
+  test failed, but the canonical repository-wide suite is not GREEN.
+
+* AMBER UT017.1 - Installed service restart :testdef:
+:PROPERTIES:
+:REASON: Requires user validation against an installed native user service; automated tests deliberately do not mutate live launchd or systemd state.
+:END:

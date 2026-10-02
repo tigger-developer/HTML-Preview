@@ -391,6 +391,16 @@ validation. Current contracts take precedence over superseded requirements.
   served Markdown text remains annotatable.
 - Evidence :: [[file:../specs/016-markdown-reference-annotations/validation.org][Annotation lifecycle validation]].
 
+** REVIEW W017 - Manager-backed service restart :defect:
+:PROPERTIES:
+:CUSTOM_ID: w-017
+:CREATED: 2026-10-02
+:END:
+- Specification :: [[file:../specs/017-manager-service-restart/spec.org][W017 - Manager-backed service restart]].
+- Scope :: Replace Make prerequisite scheduling with an ordered launchd or
+  systemd user-service stop and start.
+- Evidence :: [[file:../specs/017-manager-service-restart/validation.org][Manager restart validation]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

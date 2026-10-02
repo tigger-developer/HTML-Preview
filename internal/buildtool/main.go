@@ -26,7 +26,7 @@ func main() {
 }
 func task(args []string) error {
 	if len(args) != 1 {
-		return errors.New("expected build, install, release, lint, sync, service, or service-stop")
+		return errors.New("expected build, install, release, lint, sync, service, service-stop, or service-restart")
 	}
 	switch args[0] {
 	case "build":
@@ -35,6 +35,8 @@ func task(args []string) error {
 		return launchAgent(false)
 	case "service-stop":
 		return launchAgent(true)
+	case "service-restart":
+		return restartService(runtime.GOOS, serviceManagerCommand)
 	case "install":
 		return install()
 	case "release":

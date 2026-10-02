@@ -1,7 +1,7 @@
 ---
 title: Architecture
-version: 9
-last-updated: 2026-09-24
+version: 10
+last-updated: 2026-10-02
 ---
 
 # Architecture
@@ -1143,8 +1143,16 @@ recovery files where needed. Configuration, service logs and other jobs remain
 untouched. This supports moving the stable installation between checkouts,
 including a submodule, without changing rendering or source authorization.
 
+`make service-restart` is a separate manager-only lifecycle operation. The Go
+build tool serializes stop before start and selects the registered user service
+by its stable launchd label on macOS or systemd unit name on Linux. It neither
+builds a replacement definition nor launches the server directly. Manager
+failures stop the sequence and remain visible to the caller.
+
 ## Document changes
 
+- Version 10: make service restart an ordered launchd or systemd user-service
+  operation rather than a pair of Make prerequisites.
 - Version 9: describe page-local theme selection and unchanged system defaults.
 - Version 8: reconcile native Org user acceptance with the retained implementation
   evidence and separate platform-validation limits.

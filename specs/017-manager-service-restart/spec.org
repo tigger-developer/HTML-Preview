@@ -1,0 +1,266 @@
+#+TITLE: W017 - Manager-backed service restart
+#+SCHEMA: 8
+#+SUBTITLE: Emergency lifecycle correction
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: PENDING
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+** Outcome
+
+- =make service-restart= *restarts the registered user service* through launchd
+  on macOS or systemd on Linux.
+
+** Before
+
+- The target expressed stop and start as *independent Make prerequisites*, so
+  parallel Make could schedule them concurrently.
+- Linux inherited a *macOS-only activation path* instead of systemd lifecycle
+  control.
+
+** After
+
+- The native manager *completes stop before start*.
+- The target *does not launch the preview server directly* or replace a service
+  definition.
+
+** Changes
+
+- The Go build tool owns one portable restart action selected by operating
+  system.
+
+** Unchanged
+
+- Service installation, registration, configuration, logs and rendering
+  behaviour *remain unchanged*.
+
+** Edge cases
+:PROPERTIES:
+:CUSTOM_ID: synopsis-edge-cases
+:END:
+
+- A manager failure *stops the sequence and remains visible*; unsupported
+  platforms are rejected.
+
+** Decisions
+
+- Use the existing stable launchd label and systemd unit name with *separate
+  manager arguments and a bounded command deadline*.
+
+** Next step
+
+- Retrospective definition review, native user validation and operator closure.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+The restart target does not own an ordered service-manager lifecycle and cannot
+provide the same interface on macOS and Linux.
+
+** Outcome
+
+An invocation restarts the existing registered user service through the native
+manager without creating an unmanaged background server.
+
+** Scope
+
+*** In scope
+
+- =make service-restart=, build-tool dispatch, launchd and systemd user-service
+  commands, manager errors, regression evidence and operational documentation.
+
+*** Out of scope
+
+- Installing or replacing service definitions, enabling Linux services,
+  foreground service mode, Homebrew service control and Windows.
+
+*** Unchanged
+
+- Existing =make service= and =make service-stop= launchd installation and
+  replacement behaviour remains intact.
+
+** Authority and starting point
+
+- Project profile :: [[file:../../.sdlc/project.yaml][=.sdlc/project.yaml=]]
+- Product authority :: [[file:../../docs/SERVICE.md][Service guide]]
+- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture]]
+- Historical requirement :: [[file:../012-install-service-replacement/spec.org][W012 - Service replacement]]
+- Current implementation :: [[file:../../Makefile][Make interface]] and
+  [[file:../../internal/buildtool/main.go][build-tool dispatch]]
+
+** Constraints and dependencies
+:PROPERTIES:
+:CUSTOM_ID: constraints-and-dependencies
+:END:
+
+- The platform service must already be installed and registered.
+- Manager commands receive literal argument vectors, preserve the inherited
+  environment and complete within 30 seconds.
+
+** Decisions
+
+- macOS uses =launchctl stop= followed by =launchctl start= for
+  =gui/<uid>/org.htmlpreview.agent=.
+- Linux uses =systemctl --user stop= followed by =systemctl --user start= for
+  =htmlpreview.service=.
+
+** Unresolved blockers
+
+- None for implementation and automated review. Native manager validation
+  requires an installed user service.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC017.1 - Restart uses the native user service manager in order :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-017-1
+:END:
+
+- Criterion :: On macOS or Linux, =make service-restart= *completes a manager
+  stop before a manager start* for the stable HTMLPreview user service and
+  *does not launch the server directly*.
+- Proven by :: [[#rt-017-1][RT017.1 - Native manager restart sequence]] and
+  [[#ut-017-1][UT017.1 - Installed service restart]].
+
+** AC017.2 - Restart failures remain explicit :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-017-2
+:END:
+
+- Criterion :: A failed stop *prevents start*, a failed start returns failure,
+  and an unsupported platform is rejected.
+- Proven by :: [[#rt-017-1][RT017.1 - Native manager restart sequence]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT017.1 - Native manager restart sequence :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-017-1
+:END:
+
+- Covers :: [[#ac-017-1][AC017.1 - Native ordered restart]] and
+  [[#ac-017-2][AC017.2 - Explicit restart failures]].
+- Boundary :: Public build-tool task with captured native manager executables;
+  direct restart logic with an injected manager boundary.
+- Action :: Invoke =service-restart= on the host platform and exercise Darwin,
+  Linux, stop failure, start failure and unsupported-platform cases.
+- Expected :: Exact ordered launchctl or systemctl arguments; no start after a
+  stop failure; contextual manager errors; unsupported platforms rejected.
+- Retention :: =internal/buildtool/service_restart_test.go= under =make test=.
+
+** UT017.1 - Installed service restart :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-017-1
+:END:
+
+- Covers :: [[#ac-017-1][AC017.1 - Native ordered restart]].
+- Validation method :: User validation on a host with an installed HTMLPreview
+  user service.
+- Procedure :: Run =make service-restart=, inspect the native manager status and
+  open a preview through the restarted service.
+- Expected :: One registered service is running after the command; its manager
+  reports a stop followed by a start, and preview use succeeds.
+- Record :: Write the dated result and platform to =validation.org=.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** Manager or platform failure
+
+- Condition :: Stop, start or platform selection fails.
+- Required behaviour :: Return the specific failure without launching a direct
+  replacement process or continuing after failed stop.
+- Covered by :: [[#ac-017-2][AC017.2 - Explicit restart failures]] and
+  [[#rt-017-1][RT017.1 - Native manager restart sequence]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Relevant components :: Make exposes the operator command; the Go build tool
+  owns bounded native process execution; launchd or systemd owns service state.
+- Ownership boundary :: The project selects its stable user-service identifier;
+  the native manager owns service installation state and lifecycle results.
+- Existing pattern :: Reuse the build tool's explicit argument execution and
+  the launchd label already owned by service replacement.
+
+** High-level design
+
+- Shared operation :: One function selects literal stop and start argument
+  vectors, then executes them sequentially through one manager runner.
+- Variation :: Darwin selects launchctl and the registered label; Linux selects
+  systemctl user mode and the installed unit.
+- Flow :: Make invokes the build-tool task; the task waits for stop; successful
+  stop permits start; the final manager result becomes the command result.
+- Failure behaviour :: Each manager call has a 30-second deadline. Stop or start
+  output is retained in a contextual error; no retry or detached fallback occurs.
+- Simplicity :: No new dependency, daemon, configuration, shell command string
+  or replacement transaction is introduced.
+
+** Design decisions and verification
+
+*** Manager lifecycle is the only restart path
+
+- Decision :: The target performs only native manager stop and start operations.
+- Verification :: [[#rt-017-1][RT017.1 - Native manager restart sequence]]
+  captures every external call and failure transition.
+
+** Routine details left to implementation
+
+- Internal function names and error wording may follow established build-tool
+  conventions while retaining the defined context.
+
+** Architecture impact
+
+*** Security impact
+
+- Threat boundary :: The existing per-user manager boundary is unchanged.
+- Data and secrets :: No document data, configuration contents or service logs
+  are read or emitted.
+- Access :: No privilege escalation, system service or service enablement is
+  added.
+- Conclusion :: Existing least-privilege ownership remains sufficient.
+
+*** Other relevant qualities
+
+- Portability :: One operator target now has defined macOS and Linux behaviour.
+- Reliability :: Ordered execution removes concurrent prerequisite scheduling.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: [[file:../../docs/SERVICE.md][Service guide]],
+  [[file:../../docs/ARCHITECTURE.md][Architecture]] and
+  [[file:../012-install-service-replacement/spec.org][W012 - Service replacement]].
+- Entry conditions :: The emergency route is authorized; this record documents
+  the verified result retrospectively.
+- First implementation step :: Already performed under the emergency route:
+  write [[#rt-017-1][RT017.1 - Native manager restart sequence]], observe its
+  unknown-task failure, then implement the manager action.
+- Definition evidence :: [[file:audits.yaml][=audits.yaml=]]
+- Validation evidence :: [[file:validation.org][=validation.org=]]
+- Documentation impact :: =README.md=, =docs/SERVICE.md= and
+  =docs/ARCHITECTURE.md= describe the manager-backed restart contract.

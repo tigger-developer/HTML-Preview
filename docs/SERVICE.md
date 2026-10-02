@@ -1,7 +1,7 @@
 ---
 title: Local preview service
-version: 4
-last-updated: 2026-09-21
+version: 5
+last-updated: 2026-10-02
 ---
 
 # Local preview service
@@ -253,6 +253,19 @@ and service logs are preserved. These convenience targets are macOS-only; Linux 
 use the foreground command or the user service instructions below. They do not
 open a browser. The following manual procedure remains an alternative for
 prefix installations or inspecting a plist before activation.
+
+To restart an already registered service without replacing its definition, run:
+
+```sh
+make service-restart
+```
+
+On macOS, this stops and starts `gui/<uid>/org.htmlpreview.agent` through
+`launchctl`. On Linux, it stops and starts the existing user
+`htmlpreview.service` through `systemctl --user`. The operations are ordered;
+the target does not start `htmlpreview --serve` as a detached process. A missing,
+unregistered or failed service remains a manager error. Install and register the
+platform service first by following the applicable instructions in this guide.
 
 Check for an existing `org.htmlpreview.agent` job before copying a plist:
 

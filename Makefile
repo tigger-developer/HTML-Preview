@@ -4,7 +4,7 @@
 COMMIT_MESSAGE ?= chore: sync
 export PREFIX DESTDIR VERSION RELEASE_BASE_URL COMMIT_MESSAGE
 
-.PHONY: build lint test install sync vulncheck release service service-stop serve
+.PHONY: build lint test install sync vulncheck release service service-stop service-restart serve
 build:
 	go run ./internal/buildtool build
 install:
@@ -14,7 +14,8 @@ service: build
 	go run ./internal/buildtool service
 service-stop:
 	go run ./internal/buildtool service-stop
-service-restart: service-stop service
+service-restart:
+	go run ./internal/buildtool service-restart
 release:
 	go run ./internal/buildtool release
 sync:
