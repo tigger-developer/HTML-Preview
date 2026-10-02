@@ -27,28 +27,36 @@ func launchAgent(stop bool) error {
 	if stop {
 		return stopLaunchAgent(home, run)
 	}
-	executable, err := filepath.Abs("bin/htmlpreview")
+	executable, config, pandoc, err := serviceInputs(home)
 	if err != nil {
 		return err
 	}
+	return startLaunchAgent(home, executable, config, pandoc, run)
+}
+
+func serviceInputs(home string) (string, string, string, error) {
+	executable, err := filepath.Abs("bin/htmlpreview")
+	if err != nil {
+		return "", "", "", err
+	}
 	executable, err = filepath.EvalSymlinks(executable)
 	if err != nil {
-		return err
+		return "", "", "", err
 	}
 	pandoc := installedPandoc()
 	config := os.Getenv("HTMLPREVIEW_CONFIG")
 	if config == "" {
 		config, err = filepath.Abs("config.yaml")
 		if err != nil {
-			return err
+			return "", "", "", err
 		}
 		if _, err = os.Lstat(config); os.IsNotExist(err) {
 			config = filepath.Join(home, ".config/htmlpreview/config.yaml")
 		} else if err != nil {
-			return err
+			return "", "", "", err
 		}
 	}
-	return startLaunchAgent(home, executable, config, pandoc, run)
+	return executable, config, pandoc, nil
 }
 
 func launchctlCommand(args ...string) error {

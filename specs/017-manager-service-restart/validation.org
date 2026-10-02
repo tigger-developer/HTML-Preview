@@ -5,7 +5,7 @@
 
 * GREEN RT017.1 - Native manager restart sequence :testdef:
 :PROPERTIES:
-:REVISION: Working tree based on ff046c4 with W017 implementation and regression
+:REVISION: 53c4f1d plus expanded W017 lifecycle implementation and regressions
 :COMMAND: go test -race ./internal/buildtool -count=1
 :EVIDENCE: The build-tool package passed. Captured launchd and systemd boundaries showed ordered stop then start; stop and start errors and unsupported platforms remained failures.
 :END:
@@ -41,7 +41,39 @@
   bound later in =TestRT006_11_EveryInstalledReaderThroughServedLinks=. No W017
   test failed, but the canonical repository-wide suite is not GREEN.
 
-* AMBER UT017.1 - Installed service restart :testdef:
+* GREEN RT017.2 - Systemd source-checkout lifecycle :testdef:
 :PROPERTIES:
-:REASON: Requires user validation against an installed native user service; automated tests deliberately do not mutate live launchd or systemd state.
+:REVISION: 53c4f1d plus expanded W017 lifecycle implementation and regressions
+:COMMAND: go test -race ./internal/buildtool -count=1
+:EVIDENCE: The build-tool package passed. Temporary-home tests verified literal systemd unit generation, ordered reload/enable/restart, retained stop definition, safe symlink replacement, platform routing and explicit failures.
+:END:
+
+** RED execution 2026-10-02
+
+- Command :: =go test ./internal/buildtool -run 'TestRT017_2_SystemdServiceLifecycle|TestSystemdService' -count=1=
+- Observation :: All three new tests failed at the explicit
+  =systemd user-service lifecycle is not implemented= boundary.
+
+** GREEN execution 2026-10-02
+
+- Command :: =go test -race ./internal/buildtool -count=1=
+- Environment :: macOS host with temporary Linux-style homes, real generated
+  unit files and captured manager calls; no live user service changed.
+- Observation :: The package passed after portable dispatch and systemd
+  lifecycle implementation, including failure and symlink cases.
+
+** Expanded lifecycle verification 2026-10-02
+
+- Focused regressions :: =go test -race ./internal/buildtool ./integration -count=1=
+  passed; build-tool completed in 1.917 seconds and integration in 35.790 seconds.
+- Lint :: =make lint= passed with the documented StyLua 2.5.2 provisioned in
+  an operating-system temporary directory and removed afterwards.
+- Vulnerabilities :: =make vulncheck= passed both scans with no vulnerabilities
+  found.
+- Live boundary :: No launchd or systemd user service was changed by automated
+  validation; native lifecycle evidence remains UT017.1.
+
+* AMBER UT017.1 - Native service lifecycle :testdef:
+:PROPERTIES:
+:REASON: Requires user validation against native launchd and systemd user managers; automated tests deliberately do not mutate live service state.
 :END:

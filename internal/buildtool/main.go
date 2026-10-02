@@ -32,9 +32,9 @@ func task(args []string) error {
 	case "build":
 		return build("bin/htmlpreview", runtime.GOOS, runtime.GOARCH, version())
 	case "service":
-		return launchAgent(false)
+		return managedService(false)
 	case "service-stop":
-		return launchAgent(true)
+		return managedService(true)
 	case "service-restart":
 		return restartService(runtime.GOOS, serviceManagerCommand)
 	case "install":

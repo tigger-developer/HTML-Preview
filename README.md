@@ -1,6 +1,6 @@
 ---
 title: htmlpreview
-version: 7
+version: 8
 last-updated: 2026-10-02
 ---
 
@@ -35,9 +35,11 @@ normal invocations then use its loopback HTTP URLs. Absent service or an input
 outside its roots selects a single-document file preview. Installation never
 starts the service. [Service validation](specs/006-local-preview-service/validation.org)
 distinguishes regression evidence from pending native qualification.
-For an already registered launchd or systemd user service,
-`make service-restart` performs an ordered manager stop and start; it does not
-launch a detached server process.
+The source-checkout lifecycle targets use the native user manager on both
+supported platforms. `make service` builds and activates the launchd or systemd
+definition, `make service-stop` stops it without deleting the definition, and
+`make service-restart` performs an ordered manager stop and start. None launches
+a detached server process.
 
 Service previews of genuine Org and Markdown sources also offer
 [attributed annotations](docs/ANNOTATIONS.md). The composer autosaves current native
@@ -369,6 +371,8 @@ are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Document changes
 
+- Version 8: make source-checkout service start and stop portable across launchd
+  and systemd user services.
 - Version 7: document manager-backed `make service-restart` behaviour on macOS
   and Linux.
 - Version 6: document the theme toggle and its page-local override.

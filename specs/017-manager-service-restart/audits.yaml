@@ -1,0 +1,449 @@
+version: 1
+audits:
+    - readiness_check: delivery-code
+      work_item: W017
+      gate: implementation
+      session_id: 20261002_232446_9cc6d4
+      harness: hermes
+      provider: nous
+      model: z-ai/glm-5.3
+      configured:
+        harness: claude
+        model: claude-sonnet-5.5
+      previous_sessions:
+        - session_id: 5c8d58a2-82c6-4091-8368-cd893ae90871
+          harness: claude
+          model: claude-sonnet-5.5
+          reason: start-failed-fallback
+          updated: "2026-10-02T22:24:46Z"
+      external_round: 2
+      status: passed
+      updated: "2026-10-02T22:26:19Z"
+      revision: 53c4f1d plus expanded W017 lifecycle implementation and regressions
+      verdict: PASS
+      response: |-
+        Canary: SDLC AUDIT ARCH CODE DOC EMERGENCY TEST GO SHELL
+        I have read the relevant SDLC documents in full. I pledge to uphold their rules, the spirit of these same rules, and that I will not attempt to game these same rules.
+
+        GATE: delivery-code
+        REVISION: 53c4f1d plus expanded W017 lifecycle implementation and regressions
+        VERDICT: PASS
+
+        Verified against the recorded operator-authorized scope (Workflow: emergency, W017):
+
+        Tests and evidence
+        - RT017.1 and RT017.2 are GREEN with recorded RED-for-the-intended-reason executions (unknown task; explicit unimplemented boundary), current revision, commands and observations. UT017.1 is legitimately AMBER with a recorded reason. Both regression packages, the affected integration package, lint and vulnerability checks are GREEN.
+        - Tests exercise the user boundary, not implementation greps: the public task dispatch with captured native manager executables (exact ordered stop/start arguments), generated real unit data with literal values, ordered daemon-reload/enable/restart, retained stop definition, symlink-target preservation, invalid-config rejection before manager calls, failed-stop-prevents-start, and unsupported-platform rejection. All trace to AC017.1–AC017.3.
+
+        Production delta
+        - The delta matches the authorized scope and recorded decisions: one synchronous `service-restart` build-tool task serializes stop before start; `managedServiceFor` routes start/stop by platform; Linux start atomically replaces `~/.config/systemd/user/htmlpreview.service` (symlink entry replaced without touching its target, temp-file chmod 0644 then rename), then reloads, enables and restarts in order; stop retains definition and enabled state; restart never regenerates or builds. No lifecycle target launches an unmanaged server process. Manager calls use literal argument vectors, a 30-second deadline and contextual errors. C-style systemd quoting doubles `%` (and `$` in ExecStart), matching the documented template contract. No new dependency, shell string, daemon or unauthorized behaviour; the systemd unit replacement reuses established staging patterns rather than duplicating the launchd rollback transaction, which the spec deliberately does not require on Linux.
+
+        Documentation
+        - README.md (v8), docs/SERVICE.md (v6) and docs/ARCHITECTURE.md (v11) describe the delivered manager-backed lifecycle accurately, including ordered restart, retained definitions, manager-error handling and the no-unmanaged-process guarantee. Changed passages are impersonal and factual under DOCUMENTATION.md.
+        - spec.org, validation.org, work.org and the ticket contain no duplicated audit findings, status, revisions, round numbers or session IDs; audit state is linked, not copied.
+
+        Non-blocking observations (do not condition this verdict)
+        - The canonical `make test` cannot currently complete because pre-existing `internal/preview` tests (RT014_4, RT006_11) exceed the 20-minute package timeout; an isolated run passed and a 30-minute bound was also exceeded. This predates W017, is untouched by this delta, affects no W017, build-tool or integration evidence, and is transparently recorded in validation.org. It warrants separate operator-authorized work, not remediation of this delivery.
+        - The `task()` usage message lists accepted tasks but omits `vulncheck`; a one-word diagnostic inaccuracy with no behavioural effect.
+      history:
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-4102924490.log
+          readiness_check: delivery-code
+          cache_key: sha256:207fce84ab3c5c768d820af5fe1c1a2cce7b94c616ccb98c43b3b4ed70da4cf3
+          session_id: 5c8d58a2-82c6-4091-8368-cd893ae90871
+          harness: claude
+          model: claude-sonnet-5.5
+          incident: start-failed
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: 0614117db121c355c270a14a4710847c0106a31e0a0551dc93fbc094dae9e2aa
+              bytes: 917
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 9b2658268e1b9733e09b6f19d55722e97eda2648548c1cd94110b68da6049d77
+              bytes: 20942
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 7402373562fc7f56a34eca62810dd070a2aac07b2f0152509274bb7fe414c4e6
+              bytes: 73670
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: 0e88aa89aabf9d5b7a4bf339c0ce03e590caa06ef4816d6706182d948a946667
+              bytes: 20609
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: ea6ea2ec1e387ab9fc1d12e70e81db45e63b58d221b72e454ae80c1b7feb75f3
+              bytes: 21385
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/launchagent.go
+              sha256: a7a6aa759d17067e025be9de1e89f8de811c88acd4ff3d0874f5f875fdbfc790
+              bytes: 3828
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/launchagent_test.go
+              sha256: eff9cf0d2461791a9dd98c6a1b8b7d29cbda88bfb3599e799fc7b3e2e417e6ec
+              bytes: 3264
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/main.go
+              sha256: 5246b916281676686bdab03e94340d021b6d0345b8748604d1baef6454c53f03
+              bytes: 8837
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/replacement_test.go
+              sha256: 9a10a656660176e2644c3d75fd88529f91b02d3c4baa0bb754d19901597d86b5
+              bytes: 5385
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: ef6953047cc68f4156f4344fac923572e93c6c8ae5171ae1964e775a5d17f6ad
+              bytes: 3771
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_replace.go
+              sha256: 4ea2c8e807b47a065b4bd3a8035f58920f0a18f0fb1a40092fb65fd3ccaea30b
+              bytes: 3299
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_restart.go
+              sha256: f3f06ac4034785bd1b814a4be361e38208e64ee430a93a44142daa1f8c4e5e81
+              bytes: 1568
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_restart_test.go
+              sha256: d94519a3b4e3a2a80c8fcda002bf9edcd8c332a8d96a0c40fa23361a656317fd
+              bytes: 3244
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/systemd.go
+              sha256: 24c43f68a880ab13ee777273ad8ef532039e00b180ae4cf197c06b1774be2070
+              bytes: 3667
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/systemd_test.go
+              sha256: 6ce6f344c5171c54b69b2dac369a2408fbd46ba2d9327164b3b0df1acc436bbe
+              bytes: 4946
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/service/htmlpreview.service.tmpl
+              sha256: 9729e2ec223a3fcdef295f6fbf7ee14c57c12e02636fb8c9a6b3c945fc3461a5
+              bytes: 388
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/service/org.htmlpreview.agent.plist.tmpl
+              sha256: feaef5a1391c6b8cee96a041be58d03210317160bec1904b63be27e749244c4d
+              bytes: 769
+            - path: /Users/tigger/code/tigoss/html-preview/specs/012-install-service-replacement/spec.org
+              sha256: 107b5f51fc923beb013d1041e760fe86d65f002896ea3750e73cf70e291b4ef4
+              bytes: 12872
+            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/spec.org
+              sha256: 4ee1a4db19962e5c85d06910b91bd5634e434aebb4f4c66eb5024fcf5e5d5b4d
+              bytes: 12376
+            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/validation.org
+              sha256: 337919e4b34d4f841bc8cef558b703173eeaeb2c4555ba4b663927aa39bf9202
+              bytes: 3954
+          round: 1
+          updated: "2026-10-02T22:24:44Z"
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-4102924490.log
+          readiness_check: delivery-code
+          cache_key: sha256:207fce84ab3c5c768d820af5fe1c1a2cce7b94c616ccb98c43b3b4ed70da4cf3
+          session_id: 20261002_232446_9cc6d4
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: 0614117db121c355c270a14a4710847c0106a31e0a0551dc93fbc094dae9e2aa
+              bytes: 917
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 9b2658268e1b9733e09b6f19d55722e97eda2648548c1cd94110b68da6049d77
+              bytes: 20942
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 7402373562fc7f56a34eca62810dd070a2aac07b2f0152509274bb7fe414c4e6
+              bytes: 73670
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: 0e88aa89aabf9d5b7a4bf339c0ce03e590caa06ef4816d6706182d948a946667
+              bytes: 20609
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: ea6ea2ec1e387ab9fc1d12e70e81db45e63b58d221b72e454ae80c1b7feb75f3
+              bytes: 21385
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/launchagent.go
+              sha256: a7a6aa759d17067e025be9de1e89f8de811c88acd4ff3d0874f5f875fdbfc790
+              bytes: 3828
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/launchagent_test.go
+              sha256: eff9cf0d2461791a9dd98c6a1b8b7d29cbda88bfb3599e799fc7b3e2e417e6ec
+              bytes: 3264
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/main.go
+              sha256: 5246b916281676686bdab03e94340d021b6d0345b8748604d1baef6454c53f03
+              bytes: 8837
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/replacement_test.go
+              sha256: 9a10a656660176e2644c3d75fd88529f91b02d3c4baa0bb754d19901597d86b5
+              bytes: 5385
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: ef6953047cc68f4156f4344fac923572e93c6c8ae5171ae1964e775a5d17f6ad
+              bytes: 3771
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_replace.go
+              sha256: 4ea2c8e807b47a065b4bd3a8035f58920f0a18f0fb1a40092fb65fd3ccaea30b
+              bytes: 3299
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_restart.go
+              sha256: f3f06ac4034785bd1b814a4be361e38208e64ee430a93a44142daa1f8c4e5e81
+              bytes: 1568
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_restart_test.go
+              sha256: d94519a3b4e3a2a80c8fcda002bf9edcd8c332a8d96a0c40fa23361a656317fd
+              bytes: 3244
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/systemd.go
+              sha256: 24c43f68a880ab13ee777273ad8ef532039e00b180ae4cf197c06b1774be2070
+              bytes: 3667
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/systemd_test.go
+              sha256: 6ce6f344c5171c54b69b2dac369a2408fbd46ba2d9327164b3b0df1acc436bbe
+              bytes: 4946
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/service/htmlpreview.service.tmpl
+              sha256: 9729e2ec223a3fcdef295f6fbf7ee14c57c12e02636fb8c9a6b3c945fc3461a5
+              bytes: 388
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/service/org.htmlpreview.agent.plist.tmpl
+              sha256: feaef5a1391c6b8cee96a041be58d03210317160bec1904b63be27e749244c4d
+              bytes: 769
+            - path: /Users/tigger/code/tigoss/html-preview/specs/012-install-service-replacement/spec.org
+              sha256: 107b5f51fc923beb013d1041e760fe86d65f002896ea3750e73cf70e291b4ef4
+              bytes: 12872
+            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/spec.org
+              sha256: 4ee1a4db19962e5c85d06910b91bd5634e434aebb4f4c66eb5024fcf5e5d5b4d
+              bytes: 12376
+            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/validation.org
+              sha256: 337919e4b34d4f841bc8cef558b703173eeaeb2c4555ba4b663927aa39bf9202
+              bytes: 3954
+          round: 2
+          revision: 53c4f1d plus expanded W017 lifecycle implementation and regressions
+          verdict: PASS
+          response: |-
+            Canary: SDLC AUDIT ARCH CODE DOC EMERGENCY TEST GO SHELL
+            I have read the relevant SDLC documents in full. I pledge to uphold their rules, the spirit of these same rules, and that I will not attempt to game these same rules.
+
+            GATE: delivery-code
+            REVISION: 53c4f1d plus expanded W017 lifecycle implementation and regressions
+            VERDICT: PASS
+
+            Verified against the recorded operator-authorized scope (Workflow: emergency, W017):
+
+            Tests and evidence
+            - RT017.1 and RT017.2 are GREEN with recorded RED-for-the-intended-reason executions (unknown task; explicit unimplemented boundary), current revision, commands and observations. UT017.1 is legitimately AMBER with a recorded reason. Both regression packages, the affected integration package, lint and vulnerability checks are GREEN.
+            - Tests exercise the user boundary, not implementation greps: the public task dispatch with captured native manager executables (exact ordered stop/start arguments), generated real unit data with literal values, ordered daemon-reload/enable/restart, retained stop definition, symlink-target preservation, invalid-config rejection before manager calls, failed-stop-prevents-start, and unsupported-platform rejection. All trace to AC017.1–AC017.3.
+
+            Production delta
+            - The delta matches the authorized scope and recorded decisions: one synchronous `service-restart` build-tool task serializes stop before start; `managedServiceFor` routes start/stop by platform; Linux start atomically replaces `~/.config/systemd/user/htmlpreview.service` (symlink entry replaced without touching its target, temp-file chmod 0644 then rename), then reloads, enables and restarts in order; stop retains definition and enabled state; restart never regenerates or builds. No lifecycle target launches an unmanaged server process. Manager calls use literal argument vectors, a 30-second deadline and contextual errors. C-style systemd quoting doubles `%` (and `$` in ExecStart), matching the documented template contract. No new dependency, shell string, daemon or unauthorized behaviour; the systemd unit replacement reuses established staging patterns rather than duplicating the launchd rollback transaction, which the spec deliberately does not require on Linux.
+
+            Documentation
+            - README.md (v8), docs/SERVICE.md (v6) and docs/ARCHITECTURE.md (v11) describe the delivered manager-backed lifecycle accurately, including ordered restart, retained definitions, manager-error handling and the no-unmanaged-process guarantee. Changed passages are impersonal and factual under DOCUMENTATION.md.
+            - spec.org, validation.org, work.org and the ticket contain no duplicated audit findings, status, revisions, round numbers or session IDs; audit state is linked, not copied.
+
+            Non-blocking observations (do not condition this verdict)
+            - The canonical `make test` cannot currently complete because pre-existing `internal/preview` tests (RT014_4, RT006_11) exceed the 20-minute package timeout; an isolated run passed and a 30-minute bound was also exceeded. This predates W017, is untouched by this delta, affects no W017, build-tool or integration evidence, and is transparently recorded in validation.org. It warrants separate operator-authorized work, not remediation of this delivery.
+            - The `task()` usage message lists accepted tasks but omits `vulncheck`; a one-word diagnostic inaccuracy with no behavioural effect.
+          updated: "2026-10-02T22:24:46Z"
+    - work_item: W017
+      gate: definition
+      session_id: 20261002_232630_d9bfc0
+      harness: hermes
+      provider: nous
+      model: z-ai/glm-5.3
+      configured:
+        harness: claude
+        model: claude-sonnet-5.5
+      external_round: 1
+      status: passed
+      updated: "2026-10-02T22:27:03Z"
+      revision: 53c4f1d working tree (W017 spec 4ee1a4db1996...)
+      verdict: PASS
+      response: |-
+        GATE: definition
+        REVISION: 53c4f1d working tree (W017 spec 4ee1a4db1996...)
+
+        VERDICT: PASS
+
+        Findings and assessment:
+
+        Retrospective definition review of W017 under the emergency route, authorized scope "coherent launchd or systemd user-service lifecycle for service, service-stop and service-restart without launching an unmanaged background process".
+
+        1. Scope fidelity: The spec covers exactly the three named Make targets, platform dispatch, manager errors and documentation. No behaviour, infrastructure or obligations beyond the authorized change. The recorded "emergency expansion" superseding W017's earlier restart-only boundary matches the caller-supplied scope; it is disclosed as retrospective, not presented as pre-existing.
+
+        2. Requirements and traceability: AC017.1–017.3 are observable and falsifiable; RT017.1, RT017.2 and UT017.1 each trace to named ACs and back. No RT on live managers is demanded; the RTs use captured manager executables and an injected boundary, which is the appropriate control of the volatile dependency. Live launchd/systemd behaviour is correctly classified as UT017.1 (bounded, human), not simulated. No OT is specified and none is needed — the observable consequences are covered by RTs plus native UT.
+
+        3. Design and architecture fit: Reuses the existing build tool, template renderer, launchd replacement boundary and explicit-argument execution. Linux unit installation mirrors the established W012 replacement pattern (atomic rename, symlink-target preservation, validation before manager calls). No new dependency, daemon or shell string. The cross-platform stop semantic difference (macOS bootout unregisters; Linux stop retains the unit) follows each manager's native semantics already established by W012 and documented in SERVICE.md; not a defect.
+
+        4. Over-engineering / template inflation: The managedServiceFor dispatcher and its small function-injection seam are proportionate test scaffolding, not filler. No mechanisms were added merely to populate template sections. Omitted design subsections are appropriately absent; security impact is present and concludes no change to the per-user boundary.
+
+        5. TDD suitability: validation.org records RED for both RTs at the intended unimplemented boundary, then GREEN with revision, command and evidence; UT017.1 is AMBER with a valid reason. The unrelated internal/preview suite timeouts are disclosed, not hidden, and no W017 test failed.
+
+        6. Specification hygiene: No annotation records or blocks in spec.org; no feedback.yaml exists (none processed). No duplicated audit state, verdicts, revisions, round numbers or session IDs; audits.yaml is linked only. Org schema conformance holds (tagged AC/test records, unique IDs, no execution states in spec.org, change-specific title, Synopsis consistent with body).
+
+        7. Documentation: Handoff correctly identifies README.md, docs/SERVICE.md and docs/ARCHITECTURE.md; those documents are already updated with the manager-backed lifecycle contract and versioned 2026-10-02. Documentary voice is factual and impersonal.
+
+        No blocking findings. Optional, non-blocking observation only: the cross-platform stop semantics (bootout vs systemctl stop) could be stated as an explicit edge-case entry in a future revision; current documentation already records both behaviours, so this is not a defect.
+      history:
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-1642854443.log
+          cache_key: sha256:2976e4e02c9b402f9cbd0ed0aab8beb78473a82920b4ee58e30abb179b1d0b08
+          session_id: 20261002_232630_d9bfc0
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/ISSUES.md
+              sha256: 66982ab8b25b26ea1bfaf40577bf4955bf0c804cfd035ab582c6d9ff658e2581
+              bytes: 16627
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/ORGMODE.md
+              sha256: baffdd38fac0c2dd24d2be5389edb2a0b88ea19e8d67e1bc2f6f65d55601b7b3
+              bytes: 2974
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/SHELL.md
+              sha256: c1a56e020ef7b66c166ef80346bc2df67a039c6145bbca38961a127cefad1fed
+              bytes: 11225
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/Makefile
+              sha256: 0614117db121c355c270a14a4710847c0106a31e0a0551dc93fbc094dae9e2aa
+              bytes: 917
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: 9b2658268e1b9733e09b6f19d55722e97eda2648548c1cd94110b68da6049d77
+              bytes: 20942
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 7402373562fc7f56a34eca62810dd070a2aac07b2f0152509274bb7fe414c4e6
+              bytes: 73670
+            - path: /Users/tigger/code/tigoss/html-preview/docs/SERVICE.md
+              sha256: 0e88aa89aabf9d5b7a4bf339c0ce03e590caa06ef4816d6706182d948a946667
+              bytes: 20609
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 699ff41ce80c647b963c4edb0298b9d551eaaae333111b069050bc84a530f6c8
+              bytes: 22790
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: ea6ea2ec1e387ab9fc1d12e70e81db45e63b58d221b72e454ae80c1b7feb75f3
+              bytes: 21385
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/launchagent.go
+              sha256: a7a6aa759d17067e025be9de1e89f8de811c88acd4ff3d0874f5f875fdbfc790
+              bytes: 3828
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/main.go
+              sha256: 5246b916281676686bdab03e94340d021b6d0345b8748604d1baef6454c53f03
+              bytes: 8837
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_replace.go
+              sha256: 4ea2c8e807b47a065b4bd3a8035f58920f0a18f0fb1a40092fb65fd3ccaea30b
+              bytes: 3299
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_restart.go
+              sha256: f3f06ac4034785bd1b814a4be361e38208e64ee430a93a44142daa1f8c4e5e81
+              bytes: 1568
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_restart_test.go
+              sha256: d94519a3b4e3a2a80c8fcda002bf9edcd8c332a8d96a0c40fa23361a656317fd
+              bytes: 3244
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/systemd.go
+              sha256: 24c43f68a880ab13ee777273ad8ef532039e00b180ae4cf197c06b1774be2070
+              bytes: 3667
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/systemd_test.go
+              sha256: 6ce6f344c5171c54b69b2dac369a2408fbd46ba2d9327164b3b0df1acc436bbe
+              bytes: 4946
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/service/htmlpreview.service.tmpl
+              sha256: 9729e2ec223a3fcdef295f6fbf7ee14c57c12e02636fb8c9a6b3c945fc3461a5
+              bytes: 388
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/service/org.htmlpreview.agent.plist.tmpl
+              sha256: feaef5a1391c6b8cee96a041be58d03210317160bec1904b63be27e749244c4d
+              bytes: 769
+            - path: /Users/tigger/code/tigoss/html-preview/specs/012-install-service-replacement/spec.org
+              sha256: 107b5f51fc923beb013d1041e760fe86d65f002896ea3750e73cf70e291b4ef4
+              bytes: 12872
+            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/spec.org
+              sha256: 4ee1a4db19962e5c85d06910b91bd5634e434aebb4f4c66eb5024fcf5e5d5b4d
+              bytes: 12376
+            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/validation.org
+              sha256: 337919e4b34d4f841bc8cef558b703173eeaeb2c4555ba4b663927aa39bf9202
+              bytes: 3954
+          round: 1
+          revision: 53c4f1d working tree (W017 spec 4ee1a4db1996...)
+          verdict: PASS
+          response: |-
+            GATE: definition
+            REVISION: 53c4f1d working tree (W017 spec 4ee1a4db1996...)
+
+            VERDICT: PASS
+
+            Findings and assessment:
+
+            Retrospective definition review of W017 under the emergency route, authorized scope "coherent launchd or systemd user-service lifecycle for service, service-stop and service-restart without launching an unmanaged background process".
+
+            1. Scope fidelity: The spec covers exactly the three named Make targets, platform dispatch, manager errors and documentation. No behaviour, infrastructure or obligations beyond the authorized change. The recorded "emergency expansion" superseding W017's earlier restart-only boundary matches the caller-supplied scope; it is disclosed as retrospective, not presented as pre-existing.
+
+            2. Requirements and traceability: AC017.1–017.3 are observable and falsifiable; RT017.1, RT017.2 and UT017.1 each trace to named ACs and back. No RT on live managers is demanded; the RTs use captured manager executables and an injected boundary, which is the appropriate control of the volatile dependency. Live launchd/systemd behaviour is correctly classified as UT017.1 (bounded, human), not simulated. No OT is specified and none is needed — the observable consequences are covered by RTs plus native UT.
+
+            3. Design and architecture fit: Reuses the existing build tool, template renderer, launchd replacement boundary and explicit-argument execution. Linux unit installation mirrors the established W012 replacement pattern (atomic rename, symlink-target preservation, validation before manager calls). No new dependency, daemon or shell string. The cross-platform stop semantic difference (macOS bootout unregisters; Linux stop retains the unit) follows each manager's native semantics already established by W012 and documented in SERVICE.md; not a defect.
+
+            4. Over-engineering / template inflation: The managedServiceFor dispatcher and its small function-injection seam are proportionate test scaffolding, not filler. No mechanisms were added merely to populate template sections. Omitted design subsections are appropriately absent; security impact is present and concludes no change to the per-user boundary.
+
+            5. TDD suitability: validation.org records RED for both RTs at the intended unimplemented boundary, then GREEN with revision, command and evidence; UT017.1 is AMBER with a valid reason. The unrelated internal/preview suite timeouts are disclosed, not hidden, and no W017 test failed.
+
+            6. Specification hygiene: No annotation records or blocks in spec.org; no feedback.yaml exists (none processed). No duplicated audit state, verdicts, revisions, round numbers or session IDs; audits.yaml is linked only. Org schema conformance holds (tagged AC/test records, unique IDs, no execution states in spec.org, change-specific title, Synopsis consistent with body).
+
+            7. Documentation: Handoff correctly identifies README.md, docs/SERVICE.md and docs/ARCHITECTURE.md; those documents are already updated with the manager-backed lifecycle contract and versioned 2026-10-02. Documentary voice is factual and impersonal.
+
+            No blocking findings. Optional, non-blocking observation only: the cross-platform stop semantics (bootout vs systemctl stop) could be stated as an explicit edge-case entry in a future revision; current documentation already records both behaviours, so this is not a defect.
+          updated: "2026-10-02T22:26:29Z"

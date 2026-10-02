@@ -1,6 +1,6 @@
 ---
 title: Local preview service
-version: 5
+version: 6
 last-updated: 2026-10-02
 ---
 
@@ -249,10 +249,9 @@ so a separate stop is optional. If replacement activation fails, the installer
 restores the previous plist and attempts to restart a previously registered job;
 it reports both activation and recovery errors. If recovery cannot restore the
 plist, its diagnostic identifies retained recovery files. Existing configuration
-and service logs are preserved. These convenience targets are macOS-only; Linux and WSL
-use the foreground command or the user service instructions below. They do not
-open a browser. The following manual procedure remains an alternative for
-prefix installations or inspecting a plist before activation.
+and service logs are preserved. These targets do not open a browser. The
+following manual procedure remains an alternative for prefix installations or
+inspecting a plist before activation.
 
 To restart an already registered service without replacing its definition, run:
 
@@ -297,6 +296,20 @@ The LaunchAgent starts on load, restarts after unsuccessful exits, and throttles
 restarts by five seconds. It is a user LaunchAgent, with no root LaunchDaemon.
 
 ## Linux and WSL with a user service manager
+
+From a source checkout, `make service` builds the executable, atomically writes
+`~/.config/systemd/user/htmlpreview.service`, reloads the user manager, enables
+the unit and restarts it so the current checkout takes effect. It applies the
+same configuration selection and existing-file requirement as the macOS target.
+An existing unit symlink is replaced without changing its target.
+
+`make service-stop` stops the unit while retaining its definition and enabled
+state. `make service-restart` stops and starts that existing unit without
+regenerating it. Manager failures remain errors; none of these targets falls
+back to an unmanaged background process.
+
+The manual procedure below remains available for prefix installations or for
+inspecting the generated unit before activation.
 
 Preserve an existing conflicting `htmlpreview.service`. Copy the expanded
 `service/htmlpreview.service` to `~/.config/systemd/user/htmlpreview.service`

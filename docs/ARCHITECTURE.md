@@ -1,6 +1,6 @@
 ---
 title: Architecture
-version: 10
+version: 11
 last-updated: 2026-10-02
 ---
 
@@ -1149,8 +1149,17 @@ by its stable launchd label on macOS or systemd unit name on Linux. It neither
 builds a replacement definition nor launches the server directly. Manager
 failures stop the sequence and remain visible to the caller.
 
+The same build-tool boundary routes `make service` and `make service-stop` by
+platform. Darwin retains the established LaunchAgent replacement transaction.
+Linux atomically replaces the current user's `htmlpreview.service`, reloads the
+user manager, enables the unit and restarts it. Stop retains the unit and enabled
+state. Both platforms keep manager arguments literal and reject unsupported
+platforms without launching a fallback process.
+
 ## Document changes
 
+- Version 11: extend source-checkout service activation and stopping to systemd
+  user services while retaining the launchd replacement path.
 - Version 10: make service restart an ordered launchd or systemd user-service
   operation rather than a pair of Make prerequisites.
 - Version 9: describe page-local theme selection and unchanged system defaults.
