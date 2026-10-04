@@ -1,0 +1,27 @@
+#+TITLE: W019 - Diagram rendering validation
+#+SCHEMA: 1
+#+TODO: AMBER RED | GREEN
+#+STARTUP: overview
+
+* GREEN RT019.1 - Diagram rendering boundary :testdef:
+:PROPERTIES:
+:REVISION: a547bd8 plus W019 emergency candidate working tree
+:COMMAND: go test -race ./internal/preview ./internal/markdownconvert ./internal/orgconvert ./internal/buildtool ./integration -run 'RT019_1|RT018_1|RT014_2|RT011_2|RT001_14_ReleaseArchives|ServiceSearchPath' -count=1
+:EVIDENCE: Selected packages passed; preview 69.283s, Org 1.598s, build-tool 2.618s and integration 48.907s.
+:END:
+** RED execution 2026-10-04
+- Command :: =go test ./internal/preview -run '^TestRT019_1_' -count=1=
+- Observation :: Public preview produced zero diagram images instead of two.
+** GREEN execution 2026-10-04
+- Observation :: Both PNGs and both literal sources appeared; bounds and the
+  PlantUML =SANDBOX= environment passed with shared regressions.
+- Service follow-up :: =go test -race ./internal/preview -run '^TestRT019_1_' -count=1=
+  passed in 5.487 seconds. One served page published two distinct generated-media
+  URLs returning distinct verified PNG bytes while retaining both sources.
+  The same run verified that the extracted owned Mermaid configuration contains
+  =securityLevel: strict= and its exact path reaches the renderer invocation.
+
+* AMBER UT019.1 - Browser diagram presentation :testdef:
+:PROPERTIES:
+:REASON: Requires operator review after installation; no deployment or browser automation was authorized.
+:END:

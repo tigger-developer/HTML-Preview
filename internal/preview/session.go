@@ -17,19 +17,19 @@ import (
 )
 
 type session struct {
-	imageResolver    func(*page, string, string, []byte) (string, error)
-	assetSource      func(string) (sourceContext, error)
-	path, pandoc     string
-	svg              string
-	svgChecked       bool
-	host             Host
-	desktop          *desktop
-	cfg              config
-	log              *console
-	pages            []*page
-	byKey            map[string]*page
-	used, sourceUsed int64
-	status           int
+	imageResolver                            func(*page, string, string, []byte) (string, error)
+	assetSource                              func(string) (sourceContext, error)
+	path, pandoc                             string
+	svg, mermaid, plantuml                   string
+	svgChecked, mermaidChecked, plantChecked bool
+	host                                     Host
+	desktop                                  *desktop
+	cfg                                      config
+	log                                      *console
+	pages                                    []*page
+	byKey                                    map[string]*page
+	used, sourceUsed                         int64
+	status                                   int
 }
 
 func execute(ctx context.Context, files, env []string, cfg config, host Host, log *console) (code int) {
@@ -314,7 +314,7 @@ func (s *session) write(name string, data []byte) error {
 }
 
 func (s *session) extract() error {
-	for _, name := range []string{"defaults.yaml", "fidelity.lua", "page.html5"} {
+	for _, name := range []string{"defaults.yaml", "fidelity.lua", "page.html5", "mermaid.json"} {
 		data, err := bundle.Assets.ReadFile("assets/pandoc/" + name)
 		if err != nil {
 			return err

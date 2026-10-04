@@ -1,6 +1,6 @@
 ---
 title: HTML-Preview
-version: 9
+version: 10
 last-updated: 2026-10-04
 ---
 
@@ -12,6 +12,7 @@ HTML-Preview opens local documents in the system's default browser with a
 readable layout, navigation, and the source document's structure intact. It
 handles Org and Markdown directly, along with code, plain text, and passive
 HTML. Local SVG image references are rasterized to PNG with `rsvg-convert`;
+explicit Mermaid and PlantUML blocks become bounded PNGs with retained source;
 other document formats can use an optional Pandoc installation.
 
 ## Why use it
@@ -139,6 +140,8 @@ Font and dependency provenance is recorded in `THIRD_PARTY_NOTICES.md`.
 
 ## Document changes
 
+- Version 10: render explicit Mermaid and PlantUML blocks as bounded PNGs with
+  literal-source fallback.
 - Version 9: rasterize bounded local SVG image references to PNG during preview
   rendering and declare librsvg as the packaged runtime dependency.
 - Version 8: make source-checkout service start and stop portable across launchd

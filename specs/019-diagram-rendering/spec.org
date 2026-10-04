@@ -1,0 +1,84 @@
+#+TITLE: W019 - Render Mermaid and PlantUML diagrams
+#+SCHEMA: 8
+#+SUBTITLE: Emergency diagram preview extension
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: PENDING
+
+* Synopsis
+** Outcome
+- Explicit =mermaid= and =plantuml= blocks *render as bounded PNGs* above retained source.
+** Before
+- Diagram blocks appeared only as literal code.
+** After
+- Installed local renderers generate inert PNG assets; failure retains source.
+** Changes
+- Preserve code language through the owned transport and add two renderer boundaries.
+** Unchanged
+- Source files, ordinary code blocks and browser script policy remain unchanged.
+** Edge cases
+- Missing tools, invalid syntax and resource limits fall back to literal source.
+** Decisions
+- Mermaid uses strict configuration; PlantUML uses =SANDBOX=; no generated SVG enters the browser.
+** Next step
+- Delivery and retrospective definition review, operator browser validation and closure.
+
+* Context
+- Scope :: Markdown fences and Org source blocks labelled =mermaid= or
+  =plantuml=; file/service PNG publication; packaging and service PATH.
+- Out of scope :: Remote services, implicit detection, includes, interactive
+  links, browser-side Mermaid and deployment.
+- Authority :: Operator invoked =BYPASS-GATE-7= on 4 October 2026.
+
+* Acceptance Criteria
+** AC019.1 - Explicit blocks render and retain source :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-019-1
+:END:
+- Criterion :: Both labels produce PNG presentation and retain exact literal source.
+- Proven by :: [[#rt-019-1][RT019.1]] and [[#ut-019-1][UT019.1]].
+** AC019.2 - Rendering stays passive and bounded :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-019-2
+:END:
+- Criterion :: Mermaid receives owned strict configuration, PlantUML has no file
+  or URL access, and both renderers share request
+  limits, accept at most 256 KiB and 32 diagrams, and publish only verified PNG.
+- Proven by :: [[#rt-019-1][RT019.1]].
+** AC019.3 - Failure preserves readability :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-019-3
+:END:
+- Criterion :: Packages/services expose both tools; failure retains literal source.
+- Proven by :: [[#rt-019-1][RT019.1]].
+
+* Test Definitions
+** RT019.1 - Diagram rendering boundary :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-019-1
+:END:
+- Covers :: [[#ac-019-1][AC019.1]], [[#ac-019-2][AC019.2]] and [[#ac-019-3][AC019.3]].
+- Boundary :: Public preview with captured renderers, PNG DOM, literal source,
+  process environment, service PATH and package formula.
+- Expected :: Two PNGs, both sources, PlantUML =SANDBOX= and explicit bounds.
+- Retention :: =internal/preview/diagram_test.go= and packaging regressions.
+** UT019.1 - Browser diagram presentation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-019-1
+:END:
+- Procedure :: Install the candidate and open a document containing both labels.
+- Expected :: Both diagrams are readable and each source remains available.
+- Record :: Add the dated observation to =validation.org=.
+
+* Solution Design
+- Flow :: Owned transport carries language/source; literal executables run under
+  the existing context/byte limiter; verified PNG reuses existing media routes.
+- Security :: Mermaid is =strict=; PlantUML uses =SANDBOX= and a 256 MiB heap.
+- Failure :: Log a bounded notice, keep source and make failed service pages retryable.
+
+* Delivery Handoff
+- Implementation :: =internal/preview/diagram.go= and owned code transport.
+- Evidence :: [[file:validation.org][Validation]] and [[file:audits.yaml][Audit record]].
+- Documentation :: =README.md=, =docs/INSTALLATION.md=, =docs/READING.md=,
+  =docs/ARCHITECTURE.md=, =docs/htmlpreview-help.txt= and
+  =packaging/htmlpreview.rb.tmpl= describe the runtime and packaging boundary.

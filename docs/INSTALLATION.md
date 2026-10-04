@@ -1,6 +1,6 @@
 ---
 title: Installation and prerequisites
-version: 2
+version: 3
 last-updated: 2026-10-04
 ---
 
@@ -14,6 +14,10 @@ shown instead. Other readers require optional **Pandoc 3.9.0.2 through the 3.9 p
 including its bundled Lua 5.4. Compatibility and reader discovery run only when
 an optional reader or the full installed-reader listing is requested. Installation
 and native service startup work without Pandoc; installation never downloads it.
+
+Mermaid blocks require **mermaid-cli 12** (`mmdc`); PlantUML blocks require
+**PlantUML 1.2020.11 or later**. The Homebrew formula installs both. Missing
+diagram tools leave the original source block readable.
 
 | Platform | Default-browser handoff |
 | --- | --- |
@@ -71,5 +75,6 @@ installation there is not removed automatically.
 
 ## Document changes
 
+- Version 3: document the Mermaid CLI and PlantUML diagram renderers.
 - Version 2: document the librsvg prerequisite for on-the-fly local SVG image
   rasterization and its readable fallback.

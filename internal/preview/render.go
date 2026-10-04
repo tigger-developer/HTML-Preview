@@ -52,6 +52,7 @@ type page struct {
 	ids, headings                 map[string][]string
 	orgIDs                        map[string][]string
 	resourceLinks                 map[*html.Node]bool
+	diagrams                      int
 }
 
 func (s *session) render(ctx context.Context, p *page, data []byte) error {
@@ -169,7 +170,7 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 			break
 		}
 	}
-	headings, err := s.restoreTransport(doc, p, token)
+	headings, err := s.restoreTransport(ctx, doc, p, token)
 	if err != nil {
 		return err
 	}

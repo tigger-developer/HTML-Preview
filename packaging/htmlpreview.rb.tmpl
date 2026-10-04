@@ -6,6 +6,8 @@ class Htmlpreview < Formula
   version {{.Version}}
   license "Apache-2.0"
   depends_on "librsvg"
+  depends_on "mermaid-cli"
+  depends_on "plantuml"
   depends_on :macos
   # Librsvg rasterizes bounded local SVG image references to PNG.
   # Pandoc is optional for specialist formats such as DOCX.

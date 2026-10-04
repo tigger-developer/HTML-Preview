@@ -33,6 +33,8 @@ type handoff struct {
 	CompletedAt             int64
 }
 
+func rasterFixtureForChild() []byte { return []byte{137, 80, 78, 71, 13, 10, 26, 10} }
+
 func TestMain(m *testing.M) {
 	if len(os.Args) == 2 && os.Args[1] == "--internal-markdown-convert" {
 		os.Exit(markdownconvert.Worker(os.Stdin, os.Stdout, os.Stderr))
@@ -71,6 +73,15 @@ func TestMain(m *testing.M) {
 		}
 	}
 	fault := os.Getenv("PREVIEW_TEST_FAULT")
+	if fault == "diagram-renderers" {
+		look := host.LookPath
+		host.LookPath = func(name string) (string, error) {
+			if name == "mmdc" || name == "plantuml" {
+				return "/tools/" + name, nil
+			}
+			return look(name)
+		}
+	}
 	remove := host.Remove
 	host.Remove = func(path string) error {
 		if err := os.WriteFile(filepath.Join(os.Getenv("PREVIEW_TEST_CAPTURE"), "cleanup-time"), []byte(strconv.FormatInt(time.Now().UnixNano(), 10)), 0600); err != nil {
@@ -98,6 +109,9 @@ func TestMain(m *testing.M) {
 	}
 	actual := host.Execute
 	host.Execute = func(ctx context.Context, cmd Command) ([]byte, error) {
+		if fault == "diagram-renderers" && (filepath.Base(cmd.Path) == "mmdc" || filepath.Base(cmd.Path) == "plantuml") {
+			return rasterFixtureForChild(), nil
+		}
 		if len(cmd.Args) > 0 && (cmd.Args[0] == "--internal-org-convert" || cmd.Args[0] == "--internal-markdown-convert") && (fault == "converter-stall" || fault == "converter-flood" || fault == "converter-signal") {
 			cmd.Input = nil
 			cmd.Args = []string{"--process-blocker"}

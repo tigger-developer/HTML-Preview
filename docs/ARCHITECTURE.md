@@ -1,6 +1,6 @@
 ---
 title: Architecture
-version: 12
+version: 13
 last-updated: 2026-10-04
 ---
 
@@ -18,6 +18,11 @@ and passes the bytes to compatible `rsvg-convert` through standard input without
 a source path or base URL. It accepts only a bounded PNG result. File previews
 embed that PNG; service previews publish it through a parent-owned media route.
 Raw inline SVG remains blocked and SVG anchors retain download-only behaviour.
+
+Explicit Mermaid and PlantUML blocks use a generated-raster boundary. Mermaid
+CLI receives strict configuration; PlantUML receives standard-input source under
+its `SANDBOX` profile. Each page permits 32 diagrams of at most 256 KiB, sharing
+the request deadline and output budget. Only verified PNG reaches the browser.
 
 Service annotations use current native footnotes with guarded create, edit and
 confirmed-delete operations. Source-bound block probes establish eligible
@@ -1165,6 +1170,7 @@ platforms without launching a fallback process.
 
 ## Document changes
 
+- Version 13: define bounded PNG rendering for Mermaid and PlantUML blocks.
 - Version 12: define bounded SVG-to-PNG image rendering without publishing source
   SVG or expanding the passive-content boundary.
 - Version 11: extend source-checkout service activation and stopping to systemd

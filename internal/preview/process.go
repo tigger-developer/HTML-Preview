@@ -33,6 +33,7 @@ type Command struct {
 	Input []byte
 	Dir   string
 	Limit int64
+	Env   []string
 }
 
 // NativeHost binds the command to the running system.
@@ -97,6 +98,9 @@ func runProcess(ctx context.Context, request Command) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, request.Path, request.Args...)
 	cmd.Dir = request.Dir
 	cmd.Stdin = bytes.NewReader(request.Input)
+	if request.Env != nil {
+		cmd.Env = append(os.Environ(), request.Env...)
+	}
 	cmd.Stdout = outputWriter{&output, true}
 	cmd.Stderr = outputWriter{&output, false}
 	cmd.WaitDelay = 100 * time.Millisecond

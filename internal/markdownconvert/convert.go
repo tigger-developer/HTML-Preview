@@ -47,7 +47,7 @@ func (c *codeRenderer) render(w util.BufWriter, source []byte, n ast.Node, enter
 	literal := strings.TrimSuffix(string(n.Lines().Value(source)), "\n")
 	c.ordinal++
 	id := fmt.Sprintf("htmlpreview-code-%s-%d", c.token, c.ordinal)
-	record, err := json.Marshal(map[string]string{"id": id, "text": literal})
+	record, err := json.Marshal(map[string]string{"id": id, "text": literal, "language": language})
 	if err != nil {
 		return ast.WalkStop, err
 	}

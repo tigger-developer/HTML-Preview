@@ -224,7 +224,7 @@ local function preserve_values(doc)
       end
       local id = code_prefix .. codes
       return pandoc.Div(
-        { block, record("code", codes, { id = id, text = block.text }) },
+        { block, record("code", codes, { id = id, text = block.text, language = block.classes[1] or "" }) },
         pandoc.Attr(id)
       )
     end,

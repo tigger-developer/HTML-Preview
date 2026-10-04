@@ -1,6 +1,6 @@
 ---
 title: Reading and navigation
-version: 2
+version: 3
 last-updated: 2026-10-04
 ---
 
@@ -25,6 +25,9 @@ view; reloading or opening another page returns to automatic detection. The
 button supports keyboard activation and is hidden when printing or without JavaScript.
 
 Code uses local syntax highlighting and the embedded Iosevka Custom font.
+Fenced Markdown and Org source blocks labelled `mermaid` or `plantuml` render a
+PNG above retained literal source. Rendering is limited to 32 diagrams per
+document and 256 KiB per diagram; unavailable rendering leaves source unchanged.
 In reading mode, click inline code, Org verbatim or a code block to copy its literal text, or
 activate its copy glyph with the keyboard. Existing selections and dragging
 retain normal selection behaviour. Code inside a link uses a separate copy
@@ -134,5 +137,6 @@ This is a local preview, not a portable export or a whole-process sandbox.
 
 ## Document changes
 
+- Version 3: describe bounded Mermaid and PlantUML block rendering.
 - Version 2: describe bounded local SVG-to-PNG rendering and its inactive-image
   fallback.

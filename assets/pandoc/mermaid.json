@@ -1,0 +1,7 @@
+{
+  "securityLevel": "strict",
+  "startOnLoad": false,
+  "maxTextSize": 262144,
+  "maxEdges": 1000,
+  "htmlLabels": false
+}

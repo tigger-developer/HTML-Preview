@@ -347,7 +347,7 @@ func (w *writer) literalRecord(text string) {
 	w.write(`<div id="` + record.ID + `"><pre><code class="sourceCode">`)
 	w.write(highlight(record.Text, record.Language))
 	w.write("</code></pre>")
-	w.record("code", record.ID, map[string]string{"id": record.ID, "text": record.Text})
+	w.record("code", record.ID, map[string]string{"id": record.ID, "text": record.Text, "language": record.Language})
 	w.write("</div>\n")
 }
 

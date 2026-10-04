@@ -264,3 +264,6 @@ body[data-hp-format=org] #hp-toc { display:none; }
 .hp-editing-footnote { outline: 2px solid var(--accent); outline-offset: .2rem; border-radius: .2rem; }
 
 .hp-render-warning { margin:.6rem 0; padding:.5rem .75rem; border-left:3px solid var(--accent); background:var(--metadata-bg); color:var(--muted); font-size:.9rem; }
+.hp-diagram { margin:1rem 0; padding:.75rem; overflow:auto; text-align:center; background:var(--panel); border:1px solid var(--rule); border-radius:.35rem; }
+.hp-diagram img { display:block; max-width:100%; height:auto; margin:auto; }
+.hp-diagram figcaption { margin-top:.4rem; color:var(--muted); font-size:.85rem; }

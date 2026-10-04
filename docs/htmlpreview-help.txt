@@ -30,6 +30,8 @@ Embedded HTML in Markdown is omitted with a CLI notice and preview banner. --fro
 
 Code and .txt use private Org wrappers. Code has one Source code heading;
 plain text has none. Copying preserves original UTF-8 text. Sources never execute.
+Explicit mermaid and plantuml blocks may invoke installed local renderers; a
+bounded PNG appears above retained source. PlantUML runs in SANDBOX mode.
 Native HTML keeps its authored structure and permitted CSS without application
 chrome. Scripts, forms, remote fonts and automatic remote resources are blocked.
 Admitted rasters are embedded in file previews or authorized HTTP assets in

@@ -3,6 +3,7 @@
 package preview
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -54,7 +55,7 @@ func transportRecord(text string, keys ...string) (map[string]string, error) {
 	return values, nil
 }
 
-func (s *session) restoreTransport(doc *html.Node, p *page, token string) (map[string]*html.Node, error) {
+func (s *session) restoreTransport(ctx context.Context, doc *html.Node, p *page, token string) (map[string]*html.Node, error) {
 	prefix := "htmlpreview-"
 	owned := map[string]string{
 		prefix + "code-" + token + "-":           "code",
@@ -125,7 +126,11 @@ func (s *session) restoreTransport(doc *html.Node, p *page, token string) (map[s
 		if kind == "heading" {
 			field = "originalID"
 		}
-		values, err := transportRecord(contentText(record), "id", field)
+		keys := []string{"id", field}
+		if kind == "code" {
+			keys = append(keys, "language")
+		}
+		values, err := transportRecord(contentText(record), keys...)
 		if err != nil {
 			return nil, fmt.Errorf("Pandoc transport: %w", err)
 		}
@@ -136,7 +141,7 @@ func (s *session) restoreTransport(doc *html.Node, p *page, token string) (map[s
 			if owner.Data != "div" || record.Parent != owner {
 				return nil, errors.New("invalid code association")
 			}
-			if err := s.restoreCode(owner, values["text"], p); err != nil {
+			if err := s.restoreCode(ctx, owner, values["text"], values["language"], p); err != nil {
 				return nil, err
 			}
 		} else {
@@ -178,7 +183,7 @@ func positiveOrdinal(value string) bool {
 	return true
 }
 
-func (s *session) restoreCode(owner *html.Node, original string, p *page) error {
+func (s *session) restoreCode(ctx context.Context, owner *html.Node, original, language string, p *page) error {
 	var code *html.Node
 	for n := range owner.Descendants() {
 		if n.Data == "code" && n.Parent.Data == "pre" {
@@ -214,6 +219,23 @@ func (s *session) restoreCode(owner *html.Node, original string, p *page) error 
 		}
 		code.AppendChild(nodeText(original))
 		s.log.notice("%q: code writer changed literal text; retained plain code", p.source.logical)
+	}
+	if language == "mermaid" || language == "plantuml" {
+		imageURL, err := s.renderDiagram(ctx, p, language, original)
+		if err != nil {
+			s.log.notice("%q: %s diagram retained as source: %v", p.source.logical, language, err)
+			if s.cfg.httpOrigin != "" {
+				p.uncacheable = true
+			}
+			return nil
+		}
+		label := map[string]string{"mermaid": "Mermaid", "plantuml": "PlantUML"}[language]
+		figure := &html.Node{Type: html.ElementNode, Data: "figure", Attr: []html.Attribute{{Key: "class", Val: "hp-diagram"}}}
+		figure.AppendChild(&html.Node{Type: html.ElementNode, Data: "img", Attr: []html.Attribute{{Key: "src", Val: imageURL}, {Key: "alt", Val: label + " diagram"}}})
+		caption := &html.Node{Type: html.ElementNode, Data: "figcaption"}
+		caption.AppendChild(nodeText(label + " diagram; source follows"))
+		figure.AppendChild(caption)
+		owner.InsertBefore(figure, code.Parent)
 	}
 	return nil
 }

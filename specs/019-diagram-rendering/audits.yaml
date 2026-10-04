@@ -1,0 +1,752 @@
+version: 1
+audits:
+    - readiness_check: delivery-code
+      work_item: W019
+      gate: implementation
+      session_id: 20261004_225134_39ca5b
+      harness: hermes
+      provider: nous
+      model: z-ai/glm-5.3
+      configured:
+        harness: claude
+        model: claude-sonnet-5.5
+      previous_sessions:
+        - session_id: 9d4e8598-bac2-4c05-b7b0-64aed94d6bbf
+          harness: claude
+          model: claude-sonnet-5.5
+          reason: start-failed-fallback
+          updated: "2026-10-04T21:51:32Z"
+      external_round: 4
+      status: passed
+      updated: "2026-10-04T22:22:47Z"
+      revision: a547bd8 plus W019 emergency candidate working tree
+      verdict: PASS
+      response: |-
+        GATE: delivery-code
+        REVISION: a547bd8 plus W019 emergency candidate working tree
+        VERDICT: PASS
+
+        Reassessment of this round's delta (all other evidence unchanged and previously reviewed)
+        - internal/preview/diagram_test.go (RT019.1) extended: the security-and-bounds test now calls s.extract() and asserts that the extracted owned Mermaid configuration contains securityLevel strict and that its exact session path reaches the renderer invocation. This closes the previous gap where the strict-configuration decision was verified only against the shipped asset rather than the bytes actually supplied to mmdc. The test needs s.extract() for the config file to exist under the faked host; that setup dependency is handled correctly.
+        - spec.org AC019.2 criterion updated to record that Mermaid receives owned strict configuration, matching the existing Decisions and Solution Design entries — a within-scope retrospective amendment, not new behaviour. The added Documentation handoff entry correctly enumerates the affected product documents; this does not duplicate audit state.
+        - validation.org follow-up execution updated (2026-10-04, go test -race ./internal/preview -run '^TestRT019_1_', 5.487s) and now records the strict-configuration verification, so the current GREEN evidence covers the changed test file.
+        - Production code, packaging and documentation are unchanged this round; the RT rerun is confined to the affected package, which is appropriate since only the test file's own assertions changed.
+
+        All prior findings and provisional conditions are resolved. No new blocking findings: the delta is within the authorized scope, evidence is current for the candidate, records follow ORG-SCHEMA without duplicating audit state, and the amended specification remains consistent with the delivered behaviour.
+
+        Non-blocking notes for the wrap-up (unchanged, carried for the operator)
+        - UT019.1 (browser diagram presentation) remains AMBER; permitted by this gate, blocks closure only. The operator pass can also cover an Org-labelled source block alongside the Markdown fences already exercised end-to-end.
+        - Minor: readGeneratedPNG discards the deferred Close error on a read-only descriptor; failed diagram attempts consume the per-page count budget before renderer/budget checks (bounded reading of the recorded limit).
+      history:
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-3618135277.log
+          readiness_check: delivery-code
+          cache_key: sha256:70874fb08ffb4ad9c88d69ecc5ad8eb6a74592955d528a88a436db547f5749c3
+          session_id: 9d4e8598-bac2-4c05-b7b0-64aed94d6bbf
+          harness: claude
+          model: claude-sonnet-5.5
+          incident: start-failed
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: eeee47f8770d0200f1780c41d187f95786322aaf6a43a5cb3c10bfb957e5d81c
+              bytes: 6549
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: 68b50b5f6b109a425e6a19ccea16b9ca6766be0f188179bfd3bdde18787d3874
+              bytes: 7822
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/mermaid.json
+              sha256: bbfa59efb13c86e787f4159d210bab5db8e8bf9394609839d1c977fb0379953c
+              bytes: 124
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: d7d5d47bd21aa774070a9ac7b0b56c174106b54850684a04de419b1b6104fdbf
+              bytes: 26894
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 153895a87e0ac344fdd935093b98c49ad1b0c18d1ee2741800b7960d96ddac5a
+              bytes: 74683
+            - path: /Users/tigger/code/tigoss/html-preview/docs/INSTALLATION.md
+              sha256: 2f5d96ce3e8c9b1983f482b9cd7b194257a7cfb7ce34d443fb2c587995772f9b
+              bytes: 3730
+            - path: /Users/tigger/code/tigoss/html-preview/docs/READING.md
+              sha256: 43384b014a87a8027d84648c0cecaefc7e41a4ee6b9e2782db3584a4c44a88ba
+              bytes: 7319
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: 2908ebcd052dfaa8490dcf19029f53e1c3a8e4f06bdca7f726690145883fdaaa
+              bytes: 6665
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: a19169e90d1ded213dacd843e88e7920c8c1f7b5326b4f8df8423a71c4c810dd
+              bytes: 22334
+            - path: /Users/tigger/code/tigoss/html-preview/integration/release_test.go
+              sha256: a82421b78fc0fcf4d13361aa7f2cc051da5614de495f68e9307252bb737b3807
+              bytes: 4041
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: 78365f829192321ed4f3187dcff6801c00e99637f1a429cf7c122474e4d72f54
+              bytes: 4436
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_path_test.go
+              sha256: d5ef396af2f9fa3f3f88d21e3a6b7b9aee09d5bf86abd59a6c70350e036fd78a
+              bytes: 558
+            - path: /Users/tigger/code/tigoss/html-preview/internal/markdownconvert/convert.go
+              sha256: 77d16a94efa4074de50eb70ae8c50e18c423e7653381edeb09f1fb501e197718
+              bytes: 9149
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/convert.go
+              sha256: b3bdec2b327ca603ad0d2c5f863031007fd507a9a7cbf572052db54e6351add1
+              bytes: 11555
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram.go
+              sha256: b1aee0e08c088d7d0f6f89c96d2299bf1c8a7ed5a5fce1deca2e2e8418639abc
+              bytes: 2948
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram_test.go
+              sha256: 927c3fb40c8b57a1dae71014c345af36d9bfb0d43227315c37cf3fce76b146cf
+              bytes: 1809
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/process.go
+              sha256: 380fbce7839079b967f6e98f94564a3deea8d62795e51f84a5b6cb4072b40db0
+              bytes: 3379
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: a5892026bbba2c4298d43b1fcd1fff57109ac111f548a981ce70810add48f7cb
+              bytes: 16981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 6f540ffddea3b2bcc6cb07e0fd587feebbd4b0c4ee31ed170d8d2c1ffa4c4fc8
+              bytes: 11613
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
+              sha256: df2c7d57540801581c5a62ca3a3c74164b95fe544896ec0616b87970e2284464
+              bytes: 8486
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
+              bytes: 1527
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+              sha256: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5
+              bytes: 3397
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+              sha256: df144e2d90abf6f25b08f8932bae2b102a4dcda1ec4bd93e2071045b4ded8d59
+              bytes: 1099
+          round: 1
+          updated: "2026-10-04T21:51:29Z"
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-3618135277.log
+          readiness_check: delivery-code
+          cache_key: sha256:70874fb08ffb4ad9c88d69ecc5ad8eb6a74592955d528a88a436db547f5749c3
+          session_id: 20261004_225134_39ca5b
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: eeee47f8770d0200f1780c41d187f95786322aaf6a43a5cb3c10bfb957e5d81c
+              bytes: 6549
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: 68b50b5f6b109a425e6a19ccea16b9ca6766be0f188179bfd3bdde18787d3874
+              bytes: 7822
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/mermaid.json
+              sha256: bbfa59efb13c86e787f4159d210bab5db8e8bf9394609839d1c977fb0379953c
+              bytes: 124
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: d7d5d47bd21aa774070a9ac7b0b56c174106b54850684a04de419b1b6104fdbf
+              bytes: 26894
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 153895a87e0ac344fdd935093b98c49ad1b0c18d1ee2741800b7960d96ddac5a
+              bytes: 74683
+            - path: /Users/tigger/code/tigoss/html-preview/docs/INSTALLATION.md
+              sha256: 2f5d96ce3e8c9b1983f482b9cd7b194257a7cfb7ce34d443fb2c587995772f9b
+              bytes: 3730
+            - path: /Users/tigger/code/tigoss/html-preview/docs/READING.md
+              sha256: 43384b014a87a8027d84648c0cecaefc7e41a4ee6b9e2782db3584a4c44a88ba
+              bytes: 7319
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: 2908ebcd052dfaa8490dcf19029f53e1c3a8e4f06bdca7f726690145883fdaaa
+              bytes: 6665
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: a19169e90d1ded213dacd843e88e7920c8c1f7b5326b4f8df8423a71c4c810dd
+              bytes: 22334
+            - path: /Users/tigger/code/tigoss/html-preview/integration/release_test.go
+              sha256: a82421b78fc0fcf4d13361aa7f2cc051da5614de495f68e9307252bb737b3807
+              bytes: 4041
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: 78365f829192321ed4f3187dcff6801c00e99637f1a429cf7c122474e4d72f54
+              bytes: 4436
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_path_test.go
+              sha256: d5ef396af2f9fa3f3f88d21e3a6b7b9aee09d5bf86abd59a6c70350e036fd78a
+              bytes: 558
+            - path: /Users/tigger/code/tigoss/html-preview/internal/markdownconvert/convert.go
+              sha256: 77d16a94efa4074de50eb70ae8c50e18c423e7653381edeb09f1fb501e197718
+              bytes: 9149
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/convert.go
+              sha256: b3bdec2b327ca603ad0d2c5f863031007fd507a9a7cbf572052db54e6351add1
+              bytes: 11555
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram.go
+              sha256: b1aee0e08c088d7d0f6f89c96d2299bf1c8a7ed5a5fce1deca2e2e8418639abc
+              bytes: 2948
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram_test.go
+              sha256: 927c3fb40c8b57a1dae71014c345af36d9bfb0d43227315c37cf3fce76b146cf
+              bytes: 1809
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/process.go
+              sha256: 380fbce7839079b967f6e98f94564a3deea8d62795e51f84a5b6cb4072b40db0
+              bytes: 3379
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: a5892026bbba2c4298d43b1fcd1fff57109ac111f548a981ce70810add48f7cb
+              bytes: 16981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 6f540ffddea3b2bcc6cb07e0fd587feebbd4b0c4ee31ed170d8d2c1ffa4c4fc8
+              bytes: 11613
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
+              sha256: df2c7d57540801581c5a62ca3a3c74164b95fe544896ec0616b87970e2284464
+              bytes: 8486
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
+              bytes: 1527
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+              sha256: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5
+              bytes: 3397
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+              sha256: df144e2d90abf6f25b08f8932bae2b102a4dcda1ec4bd93e2071045b4ded8d59
+              bytes: 1099
+          round: 2
+          revision: a547bd8 plus W019 emergency candidate working tree
+          verdict: PROVISIONAL PASS
+          response: |-
+            GATE: delivery-code
+            REVISION: a547bd8 plus W019 emergency candidate working tree
+            VERDICT: PROVISIONAL PASS
+
+            Verified
+            - RT019.1 (diagram rendering boundary, internal/preview/diagram_test.go) is GREEN with a valid intended-reason RED (2026-10-04: zero diagram images rendered); UT019.1 is AMBER with a recorded reason, which this gate permits.
+            - Implemented tests match the recorded RT019.1 boundary: public preview with captured renderers, two PNG img nodes with both literal sources retained, PlantUML SANDBOX environment and private session directory, 256 KiB source-bound rejection, service PATH including mmdc/plantuml (RT018_1 amendment), and the package formula (RT001_14: mermaid-cli and plantuml depends_on).
+            - Production delta conforms to the operator-authorized scope and recorded design: strict Mermaid config (securityLevel strict, htmlLabels false, startOnLoad false, maxTextSize matching the 256 KiB bound), PlantUML -pipe with stdin source, SANDBOX profile and 256 MiB heap, direct argv execution with no shell, per-page limit of 32 diagrams, output-byte budget accounting, shared request deadline, PNG magic verification before publication, and failure fallback to retained source with a bounded notice and retryable (uncacheable) service pages. Figure/figcaption presentation uses the owned stylesheet with meaningful alt text.
+            - No unauthorized scope or unjustified complexity: the packaging, service PATH and formula changes are required by AC019.3; no new Go dependencies; browser script and passive-content policy untouched.
+            - Affected product documentation is current and accurate: README v10, INSTALLATION v3, READING v3, ARCHITECTURE v13 and htmlpreview-help.txt describe the delivered limits, prerequisites and fallback consistently with the code; changed passages are impersonal and factual.
+            - No duplicated audit state: spec.org and work.org only link to audits.yaml; validation.org carries execution states and the tested revision, which are permitted test evidence.
+
+            Provisional condition (bounded, reversible; does not invalidate implementation sign-off)
+            1. Service-mode diagram publication is unverified. The authorized scope includes file/service PNG publication, but the supplied evidence exercises only the file transport, and the delta calls imageResolver(p, "", "image/png", output) with an empty media name for every diagram; the W018 resolver implementation was not supplied, so distinct-URL keying for two diagrams on one served page could not be confirmed. Required: verify one service-rendered page containing at least two distinct diagram blocks publishes two distinct, correct PNGs (a focused service check, or fold it into the pending operator UT019.1), and record the observation in validation.org.
+
+            Limitations and notes (not conditions)
+            - SDLC ARCHITECTURE.md, DOCUMENTATION.md, ORG-SCHEMA.md and CODING.md were not in the supplied manifest; documentation-voice and structural checks were made against the supplied standards and project architecture only.
+            - No lint/vet execution for this candidate appears in the supplied record (GO.md lists golangci-lint as required); it may exist outside the supplied set, so this is not raised as a finding.
+            - Minor code-quality note for wrap-up: readGeneratedPNG defers f.Close() without checking the error; inconsequential for a read-only descriptor.
+            - Failed diagram attempts consume the per-page count budget before renderer/budget checks; a bounded reading of "32 diagrams", recorded here as a routine detail.
+            - Only Markdown fences were exercised end-to-end; Org source blocks ride the same shared transport and language-record contract (RT011_2 GREEN), and the operator UT can cover an Org-labelled example in the same pass as condition 1.
+          updated: "2026-10-04T21:51:32Z"
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-2089296191.log
+          readiness_check: delivery-code
+          cache_key: sha256:10293967b7b7ebf9b0f3f432b1ee0fbfd4fe46296b3a110a000ac3cffbd21fc3
+          session_id: 20261004_225134_39ca5b
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: eeee47f8770d0200f1780c41d187f95786322aaf6a43a5cb3c10bfb957e5d81c
+              bytes: 6549
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: 68b50b5f6b109a425e6a19ccea16b9ca6766be0f188179bfd3bdde18787d3874
+              bytes: 7822
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/mermaid.json
+              sha256: bbfa59efb13c86e787f4159d210bab5db8e8bf9394609839d1c977fb0379953c
+              bytes: 124
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: d7d5d47bd21aa774070a9ac7b0b56c174106b54850684a04de419b1b6104fdbf
+              bytes: 26894
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 153895a87e0ac344fdd935093b98c49ad1b0c18d1ee2741800b7960d96ddac5a
+              bytes: 74683
+            - path: /Users/tigger/code/tigoss/html-preview/docs/INSTALLATION.md
+              sha256: 2f5d96ce3e8c9b1983f482b9cd7b194257a7cfb7ce34d443fb2c587995772f9b
+              bytes: 3730
+            - path: /Users/tigger/code/tigoss/html-preview/docs/READING.md
+              sha256: 43384b014a87a8027d84648c0cecaefc7e41a4ee6b9e2782db3584a4c44a88ba
+              bytes: 7319
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: 2908ebcd052dfaa8490dcf19029f53e1c3a8e4f06bdca7f726690145883fdaaa
+              bytes: 6665
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: a19169e90d1ded213dacd843e88e7920c8c1f7b5326b4f8df8423a71c4c810dd
+              bytes: 22334
+            - path: /Users/tigger/code/tigoss/html-preview/integration/release_test.go
+              sha256: a82421b78fc0fcf4d13361aa7f2cc051da5614de495f68e9307252bb737b3807
+              bytes: 4041
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: 78365f829192321ed4f3187dcff6801c00e99637f1a429cf7c122474e4d72f54
+              bytes: 4436
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_path_test.go
+              sha256: d5ef396af2f9fa3f3f88d21e3a6b7b9aee09d5bf86abd59a6c70350e036fd78a
+              bytes: 558
+            - path: /Users/tigger/code/tigoss/html-preview/internal/markdownconvert/convert.go
+              sha256: 77d16a94efa4074de50eb70ae8c50e18c423e7653381edeb09f1fb501e197718
+              bytes: 9149
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/convert.go
+              sha256: b3bdec2b327ca603ad0d2c5f863031007fd507a9a7cbf572052db54e6351add1
+              bytes: 11555
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram.go
+              sha256: 3c7eaf47a183972d9af7f662ea47f9af82001ad4643c63692188b0528d2f39ef
+              bytes: 3134
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram_test.go
+              sha256: 51c299de6622278b2effe3d10ec47e068b76c6bcd702da6514293fb8e2df1606
+              bytes: 3588
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/process.go
+              sha256: 380fbce7839079b967f6e98f94564a3deea8d62795e51f84a5b6cb4072b40db0
+              bytes: 3379
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: a5892026bbba2c4298d43b1fcd1fff57109ac111f548a981ce70810add48f7cb
+              bytes: 16981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 6f540ffddea3b2bcc6cb07e0fd587feebbd4b0c4ee31ed170d8d2c1ffa4c4fc8
+              bytes: 11613
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
+              sha256: df2c7d57540801581c5a62ca3a3c74164b95fe544896ec0616b87970e2284464
+              bytes: 8486
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
+              bytes: 1527
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+              sha256: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5
+              bytes: 3397
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+              sha256: 03577c91c535d26e4d382719d3a2126ec81bef468bd994075a13bec1fb90008a
+              bytes: 1344
+          round: 3
+          revision: a547bd8 plus W019 emergency candidate working tree
+          verdict: PASS
+          response: |-
+            GATE: delivery-code
+            REVISION: a547bd8 plus W019 emergency candidate working tree
+            VERDICT: PASS
+
+            Resolution of prior provisional condition
+            - The sole condition from the previous round (unverified service-mode diagram publication) is resolved. The new RT019.1 service test exercises the real HTTP service boundary: one served page with two diagram blocks publishes two distinct media URLs returning distinct verified PNG bytes with the correct content type, while both literal sources are retained. The follow-up GREEN execution (2026-10-04, go test -race ./internal/preview -run '^TestRT019_1_') is recorded in validation.org under the same test node, so the evidence is current for this candidate.
+
+            Reassessment of the changed delta
+            - internal/preview/diagram.go now registers each rendered diagram in the page's image map (empty-name and source-directory-keyed entries) so the existing media/asset routes treat diagram PNGs as page-owned served media. This is within the authorized service-publication scope, introduces no new dependency or endpoint, and the synthetic keys cannot collide with authored references (HTML5 parsing replaces NUL in attribute values). The change is verified by the new test through the public service boundary, not just internally.
+            - Test quality: the added test fakes only the external renderer executables, keeps the real service, and asserts on served responses — an appropriate user-boundary double. The prior tests (file-mode rendering, PlantUML SANDBOX and private session, 256 KiB source bound, service PATH, package formula) are unchanged and remain valid.
+            - Evidence records: validation.org follows ORG-SCHEMA (GREEN RT with REVISION/COMMAND/EVIDENCE, history under subordinate run headings, AMBER UT with recorded reason); execution states are test evidence, not duplicated audit verdicts. Spec and work ledger only link to audits.yaml.
+            - Standards newly supplied this round (SDLC ARCHITECTURE, CODING, DOCUMENTATION, ORG-SCHEMA) were reviewed; no violations. Structural conformance holds: the delta reuses the existing process executor, limiter, media routes and stylesheet; no over-engineering or unauthorized scope. Changed product documentation was rechecked and remains accurate and impersonal for the delivered behaviour.
+
+            Remaining non-blocking notes (carry to wrap-up, no action required for this gate)
+            - UT019.1 (browser diagram presentation) remains AMBER for operator validation, as this gate permits; it blocks closure only.
+            - Minor code quality: readGeneratedPNG discards the deferred Close error on a read-only descriptor; harmless.
+            - Failed diagram attempts consume the per-page count budget before renderer/budget checks; a bounded reading of the recorded limit.
+            - The operator's UT pass can also cover an Org-labelled source block (Markdown fences are exercised end-to-end; Org blocks ride the same shared transport).
+          updated: "2026-10-04T22:07:48Z"
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-3449864064.log
+          readiness_check: delivery-code
+          cache_key: sha256:f4d720f19693778f103e058c52433a270a50613196d2c74420e1ea88f95fe7d7
+          session_id: 20261004_225134_39ca5b
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/CODING.md
+              sha256: a69a5d3b7ce3604b093703d72ab0de1bb6d607f140baab17292d209054fe902f
+              bytes: 13502
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/.agents/sdlc/technologies/GO.md
+              sha256: 63a41c24322b2c4144367b69777528b023a30222593c462b0696df98b1967917
+              bytes: 7301
+            - path: /Users/tigger/.agents/sdlc/technologies/WEB.md
+              sha256: c474f4646fae1e318c78c18b68cfe75d7100b2b7dd85d8ad264326fa375bc000
+              bytes: 10423
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/README.md
+              sha256: eeee47f8770d0200f1780c41d187f95786322aaf6a43a5cb3c10bfb957e5d81c
+              bytes: 6549
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/fidelity.lua
+              sha256: 68b50b5f6b109a425e6a19ccea16b9ca6766be0f188179bfd3bdde18787d3874
+              bytes: 7822
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/mermaid.json
+              sha256: bbfa59efb13c86e787f4159d210bab5db8e8bf9394609839d1c977fb0379953c
+              bytes: 124
+            - path: /Users/tigger/code/tigoss/html-preview/assets/web/preview.css
+              sha256: d7d5d47bd21aa774070a9ac7b0b56c174106b54850684a04de419b1b6104fdbf
+              bytes: 26894
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 153895a87e0ac344fdd935093b98c49ad1b0c18d1ee2741800b7960d96ddac5a
+              bytes: 74683
+            - path: /Users/tigger/code/tigoss/html-preview/docs/INSTALLATION.md
+              sha256: 2f5d96ce3e8c9b1983f482b9cd7b194257a7cfb7ce34d443fb2c587995772f9b
+              bytes: 3730
+            - path: /Users/tigger/code/tigoss/html-preview/docs/READING.md
+              sha256: 43384b014a87a8027d84648c0cecaefc7e41a4ee6b9e2782db3584a4c44a88ba
+              bytes: 7319
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: 2908ebcd052dfaa8490dcf19029f53e1c3a8e4f06bdca7f726690145883fdaaa
+              bytes: 6665
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: a19169e90d1ded213dacd843e88e7920c8c1f7b5326b4f8df8423a71c4c810dd
+              bytes: 22334
+            - path: /Users/tigger/code/tigoss/html-preview/integration/release_test.go
+              sha256: a82421b78fc0fcf4d13361aa7f2cc051da5614de495f68e9307252bb737b3807
+              bytes: 4041
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service.go
+              sha256: 78365f829192321ed4f3187dcff6801c00e99637f1a429cf7c122474e4d72f54
+              bytes: 4436
+            - path: /Users/tigger/code/tigoss/html-preview/internal/buildtool/service_path_test.go
+              sha256: d5ef396af2f9fa3f3f88d21e3a6b7b9aee09d5bf86abd59a6c70350e036fd78a
+              bytes: 558
+            - path: /Users/tigger/code/tigoss/html-preview/internal/markdownconvert/convert.go
+              sha256: 77d16a94efa4074de50eb70ae8c50e18c423e7653381edeb09f1fb501e197718
+              bytes: 9149
+            - path: /Users/tigger/code/tigoss/html-preview/internal/orgconvert/convert.go
+              sha256: b3bdec2b327ca603ad0d2c5f863031007fd507a9a7cbf572052db54e6351add1
+              bytes: 11555
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram.go
+              sha256: 3c7eaf47a183972d9af7f662ea47f9af82001ad4643c63692188b0528d2f39ef
+              bytes: 3134
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram_test.go
+              sha256: 9783e3c21be7b54591924bb342b4766bbe31e76de5e7ae65ebf52769aaec5822
+              bytes: 4078
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/process.go
+              sha256: 380fbce7839079b967f6e98f94564a3deea8d62795e51f84a5b6cb4072b40db0
+              bytes: 3379
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
+              sha256: a5892026bbba2c4298d43b1fcd1fff57109ac111f548a981ce70810add48f7cb
+              bytes: 16981
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 6f540ffddea3b2bcc6cb07e0fd587feebbd4b0c4ee31ed170d8d2c1ffa4c4fc8
+              bytes: 11613
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
+              sha256: df2c7d57540801581c5a62ca3a3c74164b95fe544896ec0616b87970e2284464
+              bytes: 8486
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
+              bytes: 1527
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+              sha256: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8
+              bytes: 3660
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+              sha256: 973f8dc8606b5f9970135f902e8c3b6a11c2ad81041c7e4d620f986621e22bf0
+              bytes: 1502
+          round: 4
+          revision: a547bd8 plus W019 emergency candidate working tree
+          verdict: PASS
+          response: |-
+            GATE: delivery-code
+            REVISION: a547bd8 plus W019 emergency candidate working tree
+            VERDICT: PASS
+
+            Reassessment of this round's delta (all other evidence unchanged and previously reviewed)
+            - internal/preview/diagram_test.go (RT019.1) extended: the security-and-bounds test now calls s.extract() and asserts that the extracted owned Mermaid configuration contains securityLevel strict and that its exact session path reaches the renderer invocation. This closes the previous gap where the strict-configuration decision was verified only against the shipped asset rather than the bytes actually supplied to mmdc. The test needs s.extract() for the config file to exist under the faked host; that setup dependency is handled correctly.
+            - spec.org AC019.2 criterion updated to record that Mermaid receives owned strict configuration, matching the existing Decisions and Solution Design entries — a within-scope retrospective amendment, not new behaviour. The added Documentation handoff entry correctly enumerates the affected product documents; this does not duplicate audit state.
+            - validation.org follow-up execution updated (2026-10-04, go test -race ./internal/preview -run '^TestRT019_1_', 5.487s) and now records the strict-configuration verification, so the current GREEN evidence covers the changed test file.
+            - Production code, packaging and documentation are unchanged this round; the RT rerun is confined to the affected package, which is appropriate since only the test file's own assertions changed.
+
+            All prior findings and provisional conditions are resolved. No new blocking findings: the delta is within the authorized scope, evidence is current for the candidate, records follow ORG-SCHEMA without duplicating audit state, and the amended specification remains consistent with the delivered behaviour.
+
+            Non-blocking notes for the wrap-up (unchanged, carried for the operator)
+            - UT019.1 (browser diagram presentation) remains AMBER; permitted by this gate, blocks closure only. The operator pass can also cover an Org-labelled source block alongside the Markdown fences already exercised end-to-end.
+            - Minor: readGeneratedPNG discards the deferred Close error on a read-only descriptor; failed diagram attempts consume the per-page count budget before renderer/budget checks (bounded reading of the recorded limit).
+          updated: "2026-10-04T22:22:26Z"
+    - work_item: W019
+      gate: definition
+      session_id: 20261004_231837_74dc72
+      harness: hermes
+      provider: nous
+      model: z-ai/glm-5.3
+      configured:
+        harness: claude
+        model: claude-sonnet-5.5
+      external_round: 2
+      status: passed
+      updated: "2026-10-04T22:23:10Z"
+      revision: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (specs/019-diagram-rendering/spec.org)
+      verdict: PASS
+      response: |-
+        GATE: definition
+        REVISION: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (specs/019-diagram-rendering/spec.org)
+        VERDICT: PASS
+
+        Resolution of prior findings:
+
+        F1 (Mermaid strict configuration unenforced and unverified) - RESOLVED. The owned configuration now exists and is enforced: assets/pandoc/mermaid.json sets securityLevel strict with startOnLoad disabled, bounded text/edge limits and htmlLabels off; internal/preview/session.go extracts it into the private session through the owner-private write path; internal/preview/diagram.go passes that exact session path to the renderer invocation. Verification is traced: the captured-renderer RT now asserts both that the extracted file in the live session contains securityLevel strict and that its path reaches the actual mmdc invocation - mirroring the PlantUML SANDBOX environment check and observable at the same boundary, not a source-text grep. AC019.2 now explicitly requires Mermaid strict configuration, closing the coverage gap. validation.org GREEN evidence records the same observation in the service-path run. The design decision is now both implemented and verified.
+
+        F2 (affected documentation not identified in the handoff) - RESOLVED. The Delivery Handoff now lists README.md, docs/INSTALLATION.md, docs/READING.md, docs/ARCHITECTURE.md, docs/htmlpreview-help.txt and packaging/htmlpreview.rb.tmpl, matching the documentation actually updated in delivery. DOCUMENTATION.md's handoff requirement is met.
+
+        Re-checked against the full package: no annotation records or blocks in spec.org; no feedback.yaml supplied; no duplicated audit state in spec.org, work.org or validation.org (test colours are execution evidence). Scope fidelity, proportionality and template inflation remain clean - the added session extract step reuses the existing write/permission boundary rather than adding a mechanism. The omitted process.go and transport.go inputs are unchanged files already understood; nothing in the new evidence changes their interpretation. TDD traceability, bounds, failure-retention behaviour and UT classification remain as previously assessed and are now fully covered by the strengthened RT and updated evidence. No open findings.
+      history:
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-1243263352.log
+          cache_key: sha256:c0a1d441f65b7b9f98a5f4acf6a0dd22625bd57ee7b514260a8063a89fcd0d8f
+          session_id: 20261004_231837_74dc72
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 153895a87e0ac344fdd935093b98c49ad1b0c18d1ee2741800b7960d96ddac5a
+              bytes: 74683
+            - path: /Users/tigger/code/tigoss/html-preview/docs/INSTALLATION.md
+              sha256: 2f5d96ce3e8c9b1983f482b9cd7b194257a7cfb7ce34d443fb2c587995772f9b
+              bytes: 3730
+            - path: /Users/tigger/code/tigoss/html-preview/docs/READING.md
+              sha256: 43384b014a87a8027d84648c0cecaefc7e41a4ee6b9e2782db3584a4c44a88ba
+              bytes: 7319
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 699ff41ce80c647b963c4edb0298b9d551eaaae333111b069050bc84a530f6c8
+              bytes: 22790
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: 2908ebcd052dfaa8490dcf19029f53e1c3a8e4f06bdca7f726690145883fdaaa
+              bytes: 6665
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: a19169e90d1ded213dacd843e88e7920c8c1f7b5326b4f8df8423a71c4c810dd
+              bytes: 22334
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram.go
+              sha256: 3c7eaf47a183972d9af7f662ea47f9af82001ad4643c63692188b0528d2f39ef
+              bytes: 3134
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram_test.go
+              sha256: 51c299de6622278b2effe3d10ec47e068b76c6bcd702da6514293fb8e2df1606
+              bytes: 3588
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/process.go
+              sha256: 380fbce7839079b967f6e98f94564a3deea8d62795e51f84a5b6cb4072b40db0
+              bytes: 3379
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
+              sha256: df2c7d57540801581c5a62ca3a3c74164b95fe544896ec0616b87970e2284464
+              bytes: 8486
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
+              bytes: 1527
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+              sha256: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5
+              bytes: 3397
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+              sha256: 03577c91c535d26e4d382719d3a2126ec81bef468bd994075a13bec1fb90008a
+              bytes: 1344
+          round: 1
+          revision: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5 (specs/019-diagram-rendering/spec.org)
+          verdict: FAIL
+          response: |-
+            GATE: definition
+            REVISION: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5 (specs/019-diagram-rendering/spec.org)
+            VERDICT: FAIL
+
+            Retrospective review (Workflow: emergency, Review: retrospective, BYPASS-GATE-7, scope: render explicit Mermaid and PlantUML blocks as bounded PNG while retaining source). No annotation records or blocks in spec.org; no feedback.yaml supplied; no duplicated audit state in spec.org, work.org or validation.org (validation states are test evidence). TDD evidence is present and RED was observed for the intended reason. Scope fidelity, proportionality and template inflation were explicitly assessed and are clean: the design stays inside the authorized change (packaging/service PATH exposure is a necessary delivery consequence, consistent with the W018 librsvg precedent), reuses the existing Host executor, limiter and media routes, and adds no mechanism to fill template sections.
+
+            FINDINGS
+
+            F1 (blocking) - Mermaid strict-configuration decision is unenforced and unverified in the supplied evidence.
+            The spec (Decisions; Solution Design/Security) and docs/ARCHITECTURE.md v13 record that Mermaid runs with strict configuration. In the supplied implementation the only carrier of that decision is `--configFile <session>/mermaid.json` in internal/preview/diagram.go, and no supplied code creates or writes that file. If the file is absent, either real mmdc invocations fail and every Mermaid block silently falls back to literal source (the authorized outcome is unmet for Mermaid), or mmdc tolerates the missing file and runs without strict configuration (the recorded security decision is not enforced). Either branch is a concrete correctness or security defect. Compounding this: AC019.2 covers only the PlantUML sandbox, RT019.1 observes the PlantUML `SANDBOX` environment but never the Mermaid invocation's configuration, and the automated GREEN evidence uses captured renderers that ignore the config file, so the real invocation path is unobserved while UT019.1 remains AMBER. This violates the spec's own approved decision and the ARCHITECTURE.md requirement that each important decision have a traced behavioural test or an explicit implementation-review check.
+            Required remediation: enforce strict configuration in the delivered code (write the strict config into the owned session, or apply equivalent strict settings to the invocation); trace the decision by extending RT019.1's captured-renderer assertion to the Mermaid invocation's configuration, mirroring the existing PlantUML SANDBOX check; and either extend AC019.2 (or add an AC) to cover Mermaid strictness, or record the implementation-review check in the design. If the config file is written in code outside the supplied manifest, supply that evidence as a challenge; the missing verification trace remains and still requires remediation. Re-run the affected RT afterwards.
+
+            F2 (documentary, required remediation) - Affected documentation is not identified in the handoff.
+            DOCUMENTATION.md requires definition to identify affected documentation in the handoff. The spec's Delivery Handoff names only implementation files and evidence links. The documents actually affected and updated in delivery - docs/INSTALLATION.md, docs/READING.md, docs/ARCHITECTURE.md, the executable help text, and packaging/htmlpreview.rb.tmpl - are not named there.
+            Required remediation: add the affected-documentation list to the Delivery Handoff section of spec.org. Bounded documentary correction within the existing allowance.
+
+            NOTES (non-blocking)
+            - The missing-tools/oversized-source failure path is exercised at the renderDiagram error boundary (oversized Mermaid source rejected) but page-level source retention on renderer failure is asserted only indirectly; the shared error branch in restoreCode covers it. Optional improvement only; not a requirement at this gate.
+            - The updated product documentation (INSTALLATION.md v3, READING.md v3, help text, ARCHITECTURE.md v13) is factually accurate, impersonal and consistent with the delivered behaviour, including the 32-diagram/256 KiB bounds and PlantUML SANDBOX claims. No action required beyond F2's handoff listing.
+          updated: "2026-10-04T22:18:37Z"
+        - diagnostic: /Users/tigger/code/tigoss/html-preview/.sdlc/audit-diagnostics/audit-615767817.log
+          cache_key: sha256:8cfe7c807498f9a6324265604f4519a1a981ea1702172748be33b3b1f552f2df
+          session_id: 20261004_231837_74dc72
+          harness: hermes
+          provider: nous
+          model: z-ai/glm-5.3
+          evidence:
+            - path: /Users/tigger/.agents/sdlc/ARCHITECTURE.md
+              sha256: bd7a66ffd967010eefb8dc7abe64b059994c7b0f44ed5f5c30ec73e354f5b7f7
+              bytes: 8154
+            - path: /Users/tigger/.agents/sdlc/AUDITS.md
+              sha256: 82c7c3103e24525ddc89b08b7fb8294f6eb896f8b6f2d2726fd2585bbde7229b
+              bytes: 15524
+            - path: /Users/tigger/.agents/sdlc/DOCUMENTATION.md
+              sha256: d8696dca9f4ed75cc8487e064a8c6756a418bbe623e55bcde0bc58996b011c9c
+              bytes: 7652
+            - path: /Users/tigger/.agents/sdlc/EMERGENCY.md
+              sha256: 5539a827b058a41c761593f329bef9ae539f1565d0c75a6e0938a5021014a662
+              bytes: 4831
+            - path: /Users/tigger/.agents/sdlc/MAIN.md
+              sha256: 6560e15ae577d79ba0fa565eaba53f1a94c57f00e9b1c3b3278291e19bf22dd8
+              bytes: 11718
+            - path: /Users/tigger/.agents/sdlc/ORG-SCHEMA.md
+              sha256: 4c93e9ebfd051a1caa3a3a456ef20228c4403f3ca00726ed1ac4c93676ac26cc
+              bytes: 4915
+            - path: /Users/tigger/.agents/sdlc/SECURITY.md
+              sha256: fbceb4dffd2ab69a3edcd1dd924873bdbe5298cffa4c2e65548e04541fb78f73
+              bytes: 5027
+            - path: /Users/tigger/.agents/sdlc/TESTING.md
+              sha256: 1a0d1296b6ec080c7c86b24713c4976a7eb6f9fab7071e2369ce2038baaad4f9
+              bytes: 16346
+            - path: /Users/tigger/code/tigoss/html-preview/.sdlc/project.yaml
+              sha256: 3be2d7adda69e47bba26bdf9dc2d06e7328eefd63fd13d3764bf21791b0adbaa
+              bytes: 496
+            - path: /Users/tigger/code/tigoss/html-preview/assets/pandoc/mermaid.json
+              sha256: bbfa59efb13c86e787f4159d210bab5db8e8bf9394609839d1c977fb0379953c
+              bytes: 124
+            - path: /Users/tigger/code/tigoss/html-preview/docs/ARCHITECTURE.md
+              sha256: 153895a87e0ac344fdd935093b98c49ad1b0c18d1ee2741800b7960d96ddac5a
+              bytes: 74683
+            - path: /Users/tigger/code/tigoss/html-preview/docs/INSTALLATION.md
+              sha256: 2f5d96ce3e8c9b1983f482b9cd7b194257a7cfb7ce34d443fb2c587995772f9b
+              bytes: 3730
+            - path: /Users/tigger/code/tigoss/html-preview/docs/READING.md
+              sha256: 43384b014a87a8027d84648c0cecaefc7e41a4ee6b9e2782db3584a4c44a88ba
+              bytes: 7319
+            - path: /Users/tigger/code/tigoss/html-preview/docs/VISION.md
+              sha256: 699ff41ce80c647b963c4edb0298b9d551eaaae333111b069050bc84a530f6c8
+              bytes: 22790
+            - path: /Users/tigger/code/tigoss/html-preview/docs/htmlpreview-help.txt
+              sha256: 2908ebcd052dfaa8490dcf19029f53e1c3a8e4f06bdca7f726690145883fdaaa
+              bytes: 6665
+            - path: /Users/tigger/code/tigoss/html-preview/docs/work.org
+              sha256: a19169e90d1ded213dacd843e88e7920c8c1f7b5326b4f8df8423a71c4c810dd
+              bytes: 22334
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram.go
+              sha256: 3c7eaf47a183972d9af7f662ea47f9af82001ad4643c63692188b0528d2f39ef
+              bytes: 3134
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/diagram_test.go
+              sha256: 9783e3c21be7b54591924bb342b4766bbe31e76de5e7ae65ebf52769aaec5822
+              bytes: 4078
+            - path: /Users/tigger/code/tigoss/html-preview/internal/preview/session.go
+              sha256: 6f540ffddea3b2bcc6cb07e0fd587feebbd4b0c4ee31ed170d8d2c1ffa4c4fc8
+              bytes: 11613
+            - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
+              sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
+              bytes: 1527
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+              sha256: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8
+              bytes: 3660
+            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+              sha256: 973f8dc8606b5f9970135f902e8c3b6a11c2ad81041c7e4d620f986621e22bf0
+              bytes: 1502
+          round: 2
+          revision: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (specs/019-diagram-rendering/spec.org)
+          verdict: PASS
+          response: |-
+            GATE: definition
+            REVISION: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (specs/019-diagram-rendering/spec.org)
+            VERDICT: PASS
+
+            Resolution of prior findings:
+
+            F1 (Mermaid strict configuration unenforced and unverified) - RESOLVED. The owned configuration now exists and is enforced: assets/pandoc/mermaid.json sets securityLevel strict with startOnLoad disabled, bounded text/edge limits and htmlLabels off; internal/preview/session.go extracts it into the private session through the owner-private write path; internal/preview/diagram.go passes that exact session path to the renderer invocation. Verification is traced: the captured-renderer RT now asserts both that the extracted file in the live session contains securityLevel strict and that its path reaches the actual mmdc invocation - mirroring the PlantUML SANDBOX environment check and observable at the same boundary, not a source-text grep. AC019.2 now explicitly requires Mermaid strict configuration, closing the coverage gap. validation.org GREEN evidence records the same observation in the service-path run. The design decision is now both implemented and verified.
+
+            F2 (affected documentation not identified in the handoff) - RESOLVED. The Delivery Handoff now lists README.md, docs/INSTALLATION.md, docs/READING.md, docs/ARCHITECTURE.md, docs/htmlpreview-help.txt and packaging/htmlpreview.rb.tmpl, matching the documentation actually updated in delivery. DOCUMENTATION.md's handoff requirement is met.
+
+            Re-checked against the full package: no annotation records or blocks in spec.org; no feedback.yaml supplied; no duplicated audit state in spec.org, work.org or validation.org (test colours are execution evidence). Scope fidelity, proportionality and template inflation remain clean - the added session extract step reuses the existing write/permission boundary rather than adding a mechanism. The omitted process.go and transport.go inputs are unchanged files already understood; nothing in the new evidence changes their interpretation. TDD traceability, bounds, failure-retention behaviour and UT classification remain as previously assessed and are now fully covered by the strengthened RT and updated evidence. No open findings.
+          updated: "2026-10-04T22:22:54Z"

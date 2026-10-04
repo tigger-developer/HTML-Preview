@@ -131,7 +131,7 @@ func installedExecutable(name string) string {
 func installedPandoc() string { return installedExecutable("pandoc") }
 
 func serviceSearchPath(pandoc string) string {
-	return serviceSearchPathFor(pandoc, installedExecutable("rsvg-convert"))
+	return serviceSearchPathFor(pandoc, installedExecutable("rsvg-convert"), installedExecutable("mmdc"), installedExecutable("plantuml"))
 }
 
 func serviceSearchPathFor(executables ...string) string {
