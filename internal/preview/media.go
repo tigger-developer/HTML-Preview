@@ -4,6 +4,7 @@ package preview
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
@@ -166,7 +167,7 @@ func (s *session) localAsset(p *page, name string) (data []byte, err error) {
 	return data, nil
 }
 
-func (s *session) imageURL(p *page, value, parent string) (string, error) {
+func (s *session) imageURL(ctx context.Context, p *page, value, parent string) (string, error) {
 	if p.images == nil {
 		p.images = make(map[string]string)
 	}
@@ -196,6 +197,7 @@ func (s *session) imageURL(p *page, value, parent string) (string, error) {
 	}
 	var data []byte
 	var name, mime string
+	var err error
 	if strings.HasPrefix(value, "data:") {
 		header, payload, ok := strings.Cut(strings.TrimPrefix(value, "data:"), ",")
 		if !ok {
@@ -223,12 +225,27 @@ func (s *session) imageURL(p *page, value, parent string) (string, error) {
 			return "", fmt.Errorf("image omitted: %w", err)
 		}
 	}
+	generated := false
+	if strings.EqualFold(filepath.Ext(name), ".svg") {
+		data, err = s.rasterizeSVG(ctx, data)
+		if err != nil {
+			if s.cfg.httpOrigin != "" {
+				p.uncacheable = true
+			}
+			return "", err
+		}
+		name, mime, generated = "", "image/png", true
+	}
 	result, err := rasterURL(data, name, mime)
 	if err != nil {
 		return "", err
 	}
 	if s.imageResolver != nil {
-		result, err = s.imageResolver(p, name, rasterMIME(data), data)
+		resolverName := name
+		if generated {
+			resolverName = ""
+		}
+		result, err = s.imageResolver(p, resolverName, rasterMIME(data), data)
 		if err != nil {
 			return "", err
 		}

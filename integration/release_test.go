@@ -107,7 +107,7 @@ func TestRT001_14_ReleaseArchives(t *testing.T) {
 	if strings.Contains(string(formula), "depends_on \"pandoc\"") {
 		t.Fatal("native installation still requires Pandoc")
 	}
-	for _, part := range []string{"class Htmlpreview < Formula", "goldmark-LICENSE", "depends_on :macos", "Hardware::CPU.arm?", "darwin-arm64.tar.gz", "darwin-amd64.tar.gz", "file://", "bin.install \"htmlpreview\""} {
+	for _, part := range []string{"class Htmlpreview < Formula", "goldmark-LICENSE", "depends_on \"librsvg\"", "depends_on :macos", "Hardware::CPU.arm?", "darwin-arm64.tar.gz", "darwin-amd64.tar.gz", "file://", "bin.install \"htmlpreview\""} {
 		if !strings.Contains(string(formula), part) {
 			t.Errorf("formula lacks %s", part)
 		}

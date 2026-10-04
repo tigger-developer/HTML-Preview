@@ -1,7 +1,7 @@
 ---
 title: Licensing and third-party notices
-version: 2
-last-updated: 2026-09-20
+version: 3
+last-updated: 2026-10-04
 ---
 
 # Licensing and third-party notices
@@ -65,8 +65,10 @@ They accompany prefix installations and release archives. Font licences also acc
 | `github.com/tdewolff/parse/v2` | 2.8.16 | Native HTML CSS grammar and tokens | [MIT](assets/licenses/tdewolff-parse-LICENSE.md) |
 | `go.yaml.in/yaml/v3` | 3.0.5 | Service configuration and Markdown YAML metadata parsing | [MIT and Apache 2.0](assets/licenses/go-yaml-LICENSE) |
 
-Go 1.26.8 is the reviewed delivery toolchain. Optional Pandoc is separately installed
-and is not bundled or relicensed by this project.
+Go 1.26.8 is the reviewed delivery toolchain. Librsvg 2.57 or later is a
+separately installed runtime used to rasterize local SVG image references.
+Optional Pandoc is also separately installed. Neither tool is bundled or
+relicensed by this project.
 
 The go-org copy and its scanner and list corrections are documented in
 [the local module provenance](third_party/go-org/README.md). Chroma's upstream
@@ -75,6 +77,7 @@ and its font are not linked into htmlpreview.
 
 ## Document changes
 
+- Version 3: record librsvg as the separately installed SVG rasterization runtime.
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,
   with HTML omission notices and unchanged shared annotation boundaries.
 

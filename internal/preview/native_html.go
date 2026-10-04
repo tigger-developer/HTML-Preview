@@ -4,6 +4,7 @@ package preview
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"net/url"
 	"path/filepath"
@@ -29,7 +30,7 @@ func resolveHTMLReference(base, value string) string {
 	return b.ResolveReference(u).String()
 }
 
-func (s *session) renderNativeHTML(p *page, data []byte) error {
+func (s *session) renderNativeHTML(ctx context.Context, p *page, data []byte) error {
 	if int64(len(data)) > s.cfg.outputBytes-s.used {
 		return errors.New("native HTML exceeds remaining byte budget")
 	}
@@ -49,7 +50,7 @@ func (s *session) renderNativeHTML(p *page, data []byte) error {
 		}
 	}
 	p.dom = doc
-	s.cleanNativeChildren(p, doc, base)
+	s.cleanNativeChildren(ctx, p, doc, base)
 	head := element(doc, "head")
 	contentPolicy := nativePolicy
 	if s.cfg.httpOrigin != "" {
@@ -74,25 +75,25 @@ func (s *session) renderNativeHTML(p *page, data []byte) error {
 	return nil
 }
 
-func (s *session) cleanNativeChildren(p *page, parent *html.Node, base string) {
+func (s *session) cleanNativeChildren(ctx context.Context, p *page, parent *html.Node, base string) {
 	for n := parent.FirstChild; n != nil; {
 		next := n.NextSibling
 		if n.Type == html.CommentNode {
 			parent.RemoveChild(n)
 		} else if n.Type == html.ElementNode {
-			s.cleanNativeNode(p, n, base)
+			s.cleanNativeNode(ctx, p, n, base)
 		}
 		n = next
 	}
 }
 
-func (s *session) cleanNativeNode(p *page, n *html.Node, base string) {
+func (s *session) cleanNativeNode(ctx context.Context, p *page, n *html.Node, base string) {
 	if n.Namespace != "" || strings.Contains(" script iframe frame frameset object embed svg math base audio video canvas source track template noscript ", " "+n.Data+" ") {
 		s.omitNative(p, n, "unsupported "+n.Data+" content")
 		return
 	}
 	if n.Data == "link" {
-		s.nativeStylesheet(p, n, base)
+		s.nativeStylesheet(ctx, p, n, base)
 		return
 	}
 	if n.Data == "meta" {
@@ -122,7 +123,7 @@ func (s *session) cleanNativeNode(p *page, n *html.Node, base string) {
 		setAttribute(n, "disabled", "")
 	}
 	if n.Data == "style" {
-		clean := s.passiveCSS(p, contentText(n), false, base)
+		clean := s.passiveCSS(ctx, p, contentText(n), false, base)
 		for n.FirstChild != nil {
 			n.RemoveChild(n.FirstChild)
 		}
@@ -138,7 +139,7 @@ func (s *session) cleanNativeNode(p *page, n *html.Node, base string) {
 	}
 	n.Attr = attrs
 	if style != "" {
-		setAttribute(n, "style", s.passiveCSS(p, style, true, base))
+		setAttribute(n, "style", s.passiveCSS(ctx, p, style, true, base))
 	}
 	if n.Data == "a" {
 		value := attribute(n, "href")
@@ -153,9 +154,9 @@ func (s *session) cleanNativeNode(p *page, n *html.Node, base string) {
 		setAttribute(n, "rel", "noopener noreferrer")
 	}
 	if n.Data == "img" {
-		s.nativeImage(p, n, base, srcset)
+		s.nativeImage(ctx, p, n, base, srcset)
 	}
-	s.cleanNativeChildren(p, n, base)
+	s.cleanNativeChildren(ctx, p, n, base)
 }
 
 func (s *session) omitNative(p *page, n *html.Node, reason string) {
@@ -170,7 +171,7 @@ func (s *session) omitNative(p *page, n *html.Node, reason string) {
 	s.log.notice("%q: %s omitted", p.source.logical, reason)
 }
 
-func (s *session) nativeStylesheet(p *page, n *html.Node, base string) {
+func (s *session) nativeStylesheet(ctx context.Context, p *page, n *html.Node, base string) {
 	if strings.ToLower(attribute(n, "rel")) != "stylesheet" {
 		s.omitNative(p, n, "unsupported resource link")
 		return
@@ -190,17 +191,17 @@ func (s *session) nativeStylesheet(p *page, n *html.Node, base string) {
 		s.omitNative(p, n, "invalid stylesheet encoding")
 		return
 	}
-	clean := s.passiveCSS(p, string(data), false, fileReference(r.path))
+	clean := s.passiveCSS(ctx, p, string(data), false, fileReference(r.path))
 	n.Data, n.DataAtom = "style", 0
 	n.Attr = nil
 	n.AppendChild(nodeText(clean))
 }
 
-func (s *session) nativeImage(p *page, n *html.Node, base, srcset string) {
+func (s *session) nativeImage(ctx context.Context, p *page, n *html.Node, base, srcset string) {
 	if srcset != "" {
 		var candidates []string
 		for _, candidate := range parseSourceSet(srcset) {
-			resolved, err := s.imageURL(p, resolveHTMLReference(base, candidate.url), "")
+			resolved, err := s.imageURL(ctx, p, resolveHTMLReference(base, candidate.url), "")
 			if err != nil {
 				s.log.notice("%q: srcset image omitted", p.source.logical)
 				continue
@@ -215,7 +216,7 @@ func (s *session) nativeImage(p *page, n *html.Node, base, srcset string) {
 	if value == "" && attribute(n, "srcset") != "" {
 		return
 	}
-	resolved, err := s.imageURL(p, resolveHTMLReference(base, value), "")
+	resolved, err := s.imageURL(ctx, p, resolveHTMLReference(base, value), "")
 	if err != nil {
 		if attribute(n, "srcset") != "" {
 			removeAttribute(n, "src")

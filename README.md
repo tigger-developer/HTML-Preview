@@ -1,7 +1,7 @@
 ---
 title: HTML-Preview
-version: 8
-last-updated: 2026-10-02
+version: 9
+last-updated: 2026-10-04
 ---
 
 # HTML-Preview
@@ -11,7 +11,8 @@ last-updated: 2026-10-02
 HTML-Preview opens local documents in the system's default browser with a
 readable layout, navigation, and the source document's structure intact. It
 handles Org and Markdown directly, along with code, plain text, and passive
-HTML. Other document formats can use an optional Pandoc installation.
+HTML. Local SVG image references are rasterized to PNG with `rsvg-convert`;
+other document formats can use an optional Pandoc installation.
 
 ## Why use it
 
@@ -138,6 +139,8 @@ Font and dependency provenance is recorded in `THIRD_PARTY_NOTICES.md`.
 
 ## Document changes
 
+- Version 9: rasterize bounded local SVG image references to PNG during preview
+  rendering and declare librsvg as the packaged runtime dependency.
 - Version 8: make source-checkout service start and stop portable across launchd
   and systemd user services, retaining manager-backed restart behaviour on macOS
   and Linux.

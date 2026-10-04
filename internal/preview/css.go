@@ -3,6 +3,7 @@
 package preview
 
 import (
+	"context"
 	"errors"
 	"io"
 	"strconv"
@@ -13,7 +14,7 @@ import (
 	"github.com/tdewolff/parse/v2/css"
 )
 
-func (s *session) passiveCSS(p *page, input string, inline bool, base string) string {
+func (s *session) passiveCSS(ctx context.Context, p *page, input string, inline bool, base string) string {
 	parser := css.NewParser(parse.NewInputString(input), inline)
 	var out strings.Builder
 	var allowed []bool
@@ -39,7 +40,7 @@ func (s *session) passiveCSS(p *page, input string, inline bool, base string) st
 				name := strings.ToLower(decodeCSS(string(data)))
 				accept = accept && (name == "@media" || name == "@supports" || name == "@layer")
 				if accept {
-					cleanPrelude, accept = s.cssValue(p, cleanPrelude, base)
+					cleanPrelude, accept = s.cssValue(ctx, p, cleanPrelude, base)
 					if !accept {
 						s.log.notice("%q: unsupported conditional CSS resource omitted", p.source.logical)
 					}
@@ -79,7 +80,7 @@ func (s *session) passiveCSS(p *page, input string, inline bool, base string) st
 			for _, token := range parser.Values() {
 				value.Write(token.Data)
 			}
-			clean, ok := s.cssValue(p, value.String(), base)
+			clean, ok := s.cssValue(ctx, p, value.String(), base)
 			if !ok {
 				s.log.notice("%q: unsupported CSS resource or function omitted", p.source.logical)
 				continue
@@ -104,7 +105,7 @@ func (s *session) passiveCSS(p *page, input string, inline bool, base string) st
 // #nosec G101 -- These are CSS function names, not credentials.
 const passiveCSSFunctions = "rgb rgba hsl hsla hwb lab lch oklab oklch color color-mix light-dark calc min max clamp round mod rem abs sign pow sqrt hypot log exp sin cos tan asin acos atan atan2 var env linear-gradient radial-gradient conic-gradient repeating-linear-gradient repeating-radial-gradient repeating-conic-gradient translate translatex translatey translatez translate3d scale scalex scaley scalez scale3d rotate rotatex rotatey rotatez rotate3d skew skewx skewy matrix matrix3d perspective cubic-bezier steps fit-content minmax repeat counter counters attr"
 
-func (s *session) cssValue(p *page, value, base string) (string, bool) {
+func (s *session) cssValue(ctx context.Context, p *page, value, base string) (string, bool) {
 	lexer := css.NewLexer(parse.NewInputString(value))
 	var out strings.Builder
 	for {
@@ -131,7 +132,7 @@ func (s *session) cssValue(p *page, value, base string) (string, bool) {
 			}
 			value = decodeCSS(value)
 			resolved := resolveHTMLReference(base, value)
-			image, err := s.imageURL(p, resolved, "")
+			image, err := s.imageURL(ctx, p, resolved, "")
 			if err != nil {
 				return "", false
 			}
@@ -146,7 +147,7 @@ func (s *session) cssValue(p *page, value, base string) (string, bool) {
 				if !ok {
 					return "", false
 				}
-				image, err := s.imageURL(p, resolveHTMLReference(base, value), "")
+				image, err := s.imageURL(ctx, p, resolveHTMLReference(base, value), "")
 				if err != nil {
 					return "", false
 				}

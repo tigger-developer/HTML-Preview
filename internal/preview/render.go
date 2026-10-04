@@ -78,7 +78,7 @@ func (s *session) render(ctx context.Context, p *page, data []byte) error {
 		}
 	}
 	if p.source.input.kind == "html" {
-		return s.renderNativeHTML(p, data)
+		return s.renderNativeHTML(ctx, p, data)
 	}
 	token, err := transportToken(data)
 	if err != nil {

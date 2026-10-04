@@ -1,0 +1,266 @@
+#+TITLE: W018 - Rasterize local SVG image references
+#+SCHEMA: 8
+#+SUBTITLE: Emergency preview correction
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: PENDING
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+
+** Outcome
+
+- Eligible local SVG image references *render as PNG* in file and service previews.
+
+** Before
+
+- SVG image references were treated as unsupported media and *did not render*.
+
+** After
+
+- A bounded conversion runs during rendering; the source document and SVG remain
+  unchanged, and *only verified PNG bytes reach the preview*.
+
+** Changes
+
+- Add an `rsvg-convert` boundary, generated-media publication and packaged librsvg
+  dependency.
+
+** Unchanged
+
+- *Raw inline SVG remains blocked* and SVG anchors remain download-only.
+
+** Edge cases
+
+- Missing or incompatible conversion, invalid dimensions and excessive output
+  preserve readable alternative text without publishing partial image content.
+
+** Decisions
+
+- Supply SVG through standard input without a base URL, cap dimensions at
+  4096 by 4096 pixels, and accept only a signature-verified PNG result.
+
+** Next step
+
+- Complete delivery-code review, retrospective definition review, user validation
+  of the reported document and operator closure.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+
+** Problem
+
+Markdown and Org can refer to local SVG diagrams, but the passive-media policy
+admits only raster bytes and therefore omits those images from the preview.
+
+** Outcome
+
+The renderer converts an eligible rooted local SVG reference to a bounded PNG at
+request time and publishes the generated raster through the existing transport.
+
+** Scope
+
+*** In scope
+
+- Local SVG references used as images in native or passive document output; file
+  and service transports; converter discovery; generated service PATH; Homebrew
+  dependency; fallback notices; regression and user evidence.
+
+*** Out of scope
+
+- Rendering raw inline SVG, changing SVG link/download behaviour, remote SVG,
+  animated SVG, conversion of arbitrary files, source modification and deployment.
+
+*** Unchanged
+
+- Existing rooted-file authorization, browser passive-content policy, image
+  alternatives, output budgets and source ownership remain authoritative.
+
+** Authority and starting point
+
+- Operator authority :: =BYPASS-GATE-7= on 4 October 2026 for the corrected
+  HTML Preview code change.
+- Project profile :: [[file:../../.sdlc/project.yaml][=.sdlc/project.yaml=]]
+- Product authority :: [[file:../../docs/READING.md][Reading guide]]
+- Architecture authority :: [[file:../../docs/ARCHITECTURE.md][Architecture]]
+- Reported source :: =/Users/tigger/notes/accessibility/talon-cheat-sheet.md=
+  was inspected read-only; no content was copied into the repository.
+
+** Constraints and dependencies
+
+- The converter must be `rsvg-convert` 2.57.0 or later and execute under the
+  request context and existing output budget.
+- SVG dimensions must be explicit finite positive numbers, pixel lengths or a
+  finite viewBox-derived size, no greater than 4096 pixels per side or area.
+
+** Decisions
+
+- Resolve the executable directly and use literal arguments, standard input and
+  the existing bounded child-process runner.
+- Do not pass the source path or a base URL. Reject document type declarations
+  before conversion and rely on the converter's passive SVG processing in
+  addition to the application's own source, dimension and output bounds.
+
+** Unresolved blockers
+
+- Browser presentation of the reported document requires operator validation
+  after installing or running the candidate executable.
+
+* Acceptance Criteria
+:PROPERTIES:
+:CUSTOM_ID: acceptance-criteria
+:END:
+
+** AC018.1 - Local SVG images render through generated PNG :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-018-1
+:END:
+
+- Criterion :: An eligible rooted local SVG image reference *renders as a PNG*
+  in file mode and through a parent-owned media route in service mode, without
+  modifying either source file.
+- Proven by :: [[#rt-018-1][RT018.1 - SVG rendering and passive bounds]] and
+  [[#ut-018-1][UT018.1 - Reported cheat-sheet preview]].
+
+** AC018.2 - Conversion does not expand active-content access :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-018-2
+:END:
+
+- Criterion :: The conversion has no source base URL, performs no source-directed
+  network retrieval, enforces dimension, time and byte bounds, and accepts only
+  PNG output. Raw inline SVG and SVG links retain their existing policies.
+- Proven by :: [[#rt-018-1][RT018.1 - SVG rendering and passive bounds]].
+
+** AC018.3 - Dependency and failure behaviour are explicit :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-018-3
+:END:
+
+- Criterion :: The package declares librsvg, generated services can resolve the
+  discovered executable, and a missing, incompatible or invalid conversion leaves
+  the document readable with its image alternative and no generated asset.
+- Proven by :: [[#rt-018-1][RT018.1 - SVG rendering and passive bounds]].
+
+* Test Definitions
+:PROPERTIES:
+:CUSTOM_ID: test-definitions
+:END:
+
+** RT018.1 - SVG rendering and passive bounds :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-018-1
+:END:
+
+- Covers :: [[#ac-018-1][AC018.1]], [[#ac-018-2][AC018.2]] and
+  [[#ac-018-3][AC018.3]].
+- Boundary :: Public file preview and registered loopback service with real
+  `rsvg-convert`; captured unavailable/version boundaries; generated service PATH
+  and release formula.
+- Action :: Render a synthetic SVG image in both transports; inspect delivered
+  PNG dimensions and media routing; include a source-directed HTTP reference;
+  exercise dimension, namespace, document-type, version and absence failures.
+- Expected :: Both transports expose a 12 by 7 PNG, no source-directed request
+  occurs, unsafe inputs are rejected, missing conversion preserves alternative
+  text, and package/service metadata names the dependency.
+- Retention :: =internal/preview/svg_test.go=,
+  =internal/buildtool/service_path_test.go= and =integration/release_test.go=.
+
+** UT018.1 - Reported cheat-sheet preview :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-018-1
+:END:
+
+- Covers :: [[#ac-018-1][AC018.1]].
+- Validation method :: Operator review in the existing browser; no browser
+  automation.
+- Procedure :: Build or install the candidate, open
+  =/Users/tigger/notes/accessibility/talon-cheat-sheet.md= and inspect the keyboard
+  diagram in the preview.
+- Expected :: The keyboard graphic is visible and readable; the Markdown and SVG
+  source files are unchanged.
+- Record :: Write the dated revision and observation to =validation.org=.
+
+* Edge Cases
+:PROPERTIES:
+:CUSTOM_ID: edge-cases
+:END:
+
+** Unsafe or unavailable conversion
+
+- Condition :: The SVG lacks bounded dimensions, declares a document type,
+  exceeds bounds, the executable is absent or too old, conversion fails, or its
+  output is not PNG.
+- Required behaviour :: Omit the generated image, retain readable alternative
+  content, log a bounded notice and publish no partial asset.
+- Covered by :: [[#ac-018-2][AC018.2]], [[#ac-018-3][AC018.3]] and
+  [[#rt-018-1][RT018.1]].
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+
+** Architecture context
+
+- Relevant components :: The existing reference resolver owns rooted snapshots;
+  the session owns limits and executable discovery; the image resolver owns file
+  embedding or service media publication.
+- Ownership boundary :: HTML Preview authorizes and bounds bytes. Librsvg parses
+  and rasterizes the supplied SVG without receiving its filesystem identity.
+
+** High-level design
+
+- Detect `.svg` after the existing rooted local-asset read. Parse only the root
+  dimensions, enforce limits, discover and version-check `rsvg-convert`, then run
+  it through the existing context-bound process interface.
+- Count source and generated bytes against the session budget. Verify the PNG
+  signature before embedding or registration. Generated assets have no source
+  filename and therefore cannot be reopened as the original SVG.
+- Cache executable compatibility per session. Mark failed service conversions
+  uncacheable so a corrected runtime or file can be retried.
+
+** Architecture impact
+
+*** Security impact
+
+- Threat boundary :: Untrusted SVG reaches a native parser, so input dimensions,
+  execution time and output bytes are bounded before any browser publication.
+- Network and files :: No source path or base URL is supplied. The child receives
+  only standard-input bytes; the existing request context owns cancellation.
+- Browser boundary :: Only verified PNG bytes cross the generated-media boundary.
+  No SVG scripting, events, animation or external reference capability is added
+  to the preview page.
+- Conclusion :: The change adds a narrow native conversion dependency without
+  widening browser execution or filesystem authorization.
+
+*** Other relevant qualities
+
+- Portability :: Source installs require librsvg on PATH; the macOS Homebrew
+  formula declares it, and generated services retain its discovered directory.
+- Reliability :: Failure degrades one image to its alternative without failing
+  or partially publishing the containing document.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+
+- Required reading :: [[file:../../docs/ARCHITECTURE.md][Architecture]],
+  [[file:../../docs/READING.md][Reading guide]] and
+  [[file:../../docs/INSTALLATION.md][Installation guide]].
+- Entry conditions :: The operator invoked the emergency route and corrected the
+  scope to an on-the-fly HTML Preview code change.
+- First implementation step :: Already performed under the emergency route:
+  retain RT018.1, observe SVG omission in file and service modes, then introduce
+  the bounded converter and generated-media path.
+- Definition evidence :: [[file:audits.yaml][=audits.yaml=]]
+- Validation evidence :: [[file:validation.org][=validation.org=]]
+- Documentation impact :: README, installation, reading, service, architecture,
+  help and third-party notices describe the runtime boundary and dependency.

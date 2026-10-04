@@ -1,7 +1,7 @@
 ---
 title: Reading and navigation
-version: 1
-last-updated: 2026-10-01
+version: 2
+last-updated: 2026-10-04
 ---
 
 # Reading and navigation
@@ -121,10 +121,18 @@ or retention effect. File fallback keeps original-file link destinations.
 
 Validated local/container rasters are embedded in file previews and served
 through authorized asset routes in HTTP previews, replacing original-file image
-URLs. Original source context remains the basis for relative references.
+URLs. Local SVG image references are converted to bounded PNGs during rendering;
+the source SVG is not embedded or served to the browser. An unavailable or
+incompatible converter leaves the image alternative readable. Original source
+context remains the basis for relative references.
 
 Reading leaves sources unchanged; annotation composition updates selected native
 footnote definitions and new-note references in service mode. Source scripts, event handlers, executable embeds,
 and automatic remote resources are removed or made passive. Org includes remain
 visible without expansion. Literal source/example blocks remain literal.
 This is a local preview, not a portable export or a whole-process sandbox.
+
+## Document changes
+
+- Version 2: describe bounded local SVG-to-PNG rendering and its inactive-image
+  fallback.

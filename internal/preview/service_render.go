@@ -163,7 +163,7 @@ func (service *previewService) resolveHTTP(ctx context.Context, s *session, p *p
 			return err
 		}
 		if n.Data == "img" {
-			value, err := s.imageURL(p, attribute(n, "src"), filepath.Dir(p.source.logical))
+			value, err := s.imageURL(ctx, p, attribute(n, "src"), filepath.Dir(p.source.logical))
 			if err != nil {
 				s.inactive(p, n, "src", "Image unavailable within authorized roots")
 			} else {

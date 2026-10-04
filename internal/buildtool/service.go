@@ -115,9 +115,8 @@ func renderServiceLog(goos, executable, config, path, logPath string) ([]byte, e
 // systemd accepts C-style quoting; percent specifiers must stay literal.
 func unitQuote(value string) string { return strconv.Quote(strings.ReplaceAll(value, "%", "%%")) }
 
-// Pandoc is optional; retain its discovered directory for specialist readers.
-func installedPandoc() string {
-	path, err := exec.LookPath("pandoc")
+func installedExecutable(name string) string {
+	path, err := exec.LookPath(name)
 	if err != nil {
 		return ""
 	}
@@ -127,10 +126,32 @@ func installedPandoc() string {
 	}
 	return path
 }
+
+// Pandoc is optional; retain its discovered directory for specialist readers.
+func installedPandoc() string { return installedExecutable("pandoc") }
+
 func serviceSearchPath(pandoc string) string {
-	path := "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-	if pandoc != "" {
-		path = filepath.Dir(pandoc) + ":" + path
+	return serviceSearchPathFor(pandoc, installedExecutable("rsvg-convert"))
+}
+
+func serviceSearchPathFor(executables ...string) string {
+	paths := make([]string, 0, len(executables)+5)
+	seen := make(map[string]bool)
+	for _, executable := range executables {
+		if executable == "" {
+			continue
+		}
+		directory := filepath.Dir(executable)
+		if !seen[directory] {
+			paths = append(paths, directory)
+			seen[directory] = true
+		}
 	}
-	return path
+	for _, directory := range []string{"/usr/local/bin", "/usr/bin", "/bin", "/usr/sbin", "/sbin"} {
+		if !seen[directory] {
+			paths = append(paths, directory)
+			seen[directory] = true
+		}
+	}
+	return strings.Join(paths, ":")
 }

@@ -82,7 +82,7 @@ func (s *session) resolve(ctx context.Context, p *page) error {
 			continue
 		}
 		if n.Data == "img" {
-			image, err := s.imageURL(p, value, filepath.Dir(p.source.logical))
+			image, err := s.imageURL(ctx, p, value, filepath.Dir(p.source.logical))
 			if err != nil {
 				s.inactive(p, n, key, err.Error())
 			} else {

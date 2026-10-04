@@ -1,13 +1,16 @@
 ---
 title: Installation and prerequisites
-version: 1
-last-updated: 2026-10-01
+version: 2
+last-updated: 2026-10-04
 ---
 
 # Installation and prerequisites
 
-Org, Markdown, code/plaintext and passive HTML need no external converter.
-Other readers require optional **Pandoc 3.9.0.2 through the 3.9 patch series**,
+Org, Markdown, code/plaintext and passive HTML need no document converter.
+Rendering a local SVG image reference requires **librsvg 2.57 or later**, which
+provides `rsvg-convert`; the Homebrew formula installs it automatically. Without
+that executable, the document remains readable and the image alternative is
+shown instead. Other readers require optional **Pandoc 3.9.0.2 through the 3.9 patch series**,
 including its bundled Lua 5.4. Compatibility and reader discovery run only when
 an optional reader or the full installed-reader listing is requested. Installation
 and native service startup work without Pandoc; installation never downloads it.
@@ -65,3 +68,8 @@ default symlink still points to the checkout; use explicit prefix installation
 for packaging. Neither mode invokes sudo or downloads Pandoc. The former
 `/usr/local` default is superseded by the user-local symlink; an earlier
 installation there is not removed automatically.
+
+## Document changes
+
+- Version 2: document the librsvg prerequisite for on-the-fly local SVG image
+  rasterization and its readable fallback.

@@ -401,6 +401,16 @@ validation. Current contracts take precedence over superseded requirements.
   source-checkout start, stop and restart targets.
 - Evidence :: [[file:../specs/017-manager-service-restart/validation.org][Manager restart validation]].
 
+** REVIEW W018 - Rasterize local SVG image references :defect:
+:PROPERTIES:
+:CUSTOM_ID: w-018
+:CREATED: 2026-10-04
+:END:
+- Specification :: [[file:../specs/018-svg-rasterization/spec.org][W018 - SVG rasterization]].
+- Scope :: Convert eligible rooted local SVG image references to bounded PNGs
+  during preview rendering without publishing source SVG or enabling active SVG.
+- Evidence :: [[file:../specs/018-svg-rasterization/validation.org][SVG rasterization validation]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

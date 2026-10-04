@@ -23,8 +23,9 @@ unmapped suffixes require --from. Ordinary .json is pretty-printed source code;
 as markdown+smart are validated. Native Markdown accepts only +smart, -smart
 and -raw_html; other native Markdown qualifiers are rejected. Optional readers
 accept their installed extension qualifiers. Custom readers, filters and extra
-arguments are not accepted. Org, Markdown, code/text and HTML use bundled converters.
-Other document readers require the optional converter described in README.md.
+arguments are not accepted. Org, Markdown, code/text and HTML use bundled document converters.
+Local SVG image references require rsvg-convert 2.57 or later for bounded PNG
+rasterization. Other document readers require the optional converter described in README.md.
 Embedded HTML in Markdown is omitted with a CLI notice and preview banner. --from=html uses passive native HTML and accepts no extensions.
 
 Code and .txt use private Org wrappers. Code has one Source code heading;
@@ -32,7 +33,8 @@ plain text has none. Copying preserves original UTF-8 text. Sources never execut
 Native HTML keeps its authored structure and permitted CSS without application
 chrome. Scripts, forms, remote fonts and automatic remote resources are blocked.
 Admitted rasters are embedded in file previews or authorized HTTP assets in
-service previews; unsupported media gets a notice.
+service previews. Local SVG image references are converted to PNG first; source
+SVG is not published inline. Unsupported media gets a notice.
 
 Environment settings (empty values use defaults):
   HTMLPREVIEW_TOC                     1; converted-page navigation; 0 disables

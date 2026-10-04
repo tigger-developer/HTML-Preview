@@ -1,7 +1,7 @@
 ---
 title: Local preview service
-version: 6
-last-updated: 2026-10-02
+version: 7
+last-updated: 2026-10-04
 ---
 
 # Local preview service
@@ -138,7 +138,9 @@ footnote paragraph handling.
 ## Start in the foreground
 
 Service startup, Org, Markdown, code/plaintext and passive HTML need no external
-converter. Other readers require optional Pandoc 3.9.0.2 or a later 3.9 patch,
+document converter. Local SVG image references require `rsvg-convert` 2.57 or
+later; the generated service PATH includes its discovered directory. Other readers
+require optional Pandoc 3.9.0.2 or a later 3.9 patch,
 with bundled Lua 5.4. To start the service, run:
 
 ```sh
@@ -445,6 +447,7 @@ existing journal; foreground mode writes diagnostics to stderr.
 
 ## Document changes
 
+- Version 7: include the discovered SVG rasterizer in generated service PATHs.
 - Version 4: configure annotation character limits through `annotations.max-chars`.
 
 - 20 September 2026: native Markdown via Goldmark; Pandoc becomes optional,

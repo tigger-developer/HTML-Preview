@@ -1,7 +1,7 @@
 ---
 title: Architecture
-version: 11
-last-updated: 2026-10-02
+version: 12
+last-updated: 2026-10-04
 ---
 
 # Architecture
@@ -11,6 +11,13 @@ Org, Markdown and internal code/plaintext wrappers use bundled Go converters;
 other readers use optional Pandoc. Passive authored HTML has its own sanitization
 route. A shared Go pipeline applies resource policy, reference rewriting and
 the reading interface before publishing a file preview or an authorized HTTP page.
+
+Local SVG image references cross a dedicated rasterization boundary. The renderer
+reads a rooted, bounded source snapshot, rejects unbounded or oversized dimensions,
+and passes the bytes to compatible `rsvg-convert` through standard input without
+a source path or base URL. It accepts only a bounded PNG result. File previews
+embed that PNG; service previews publish it through a parent-owned media route.
+Raw inline SVG remains blocked and SVG anchors retain download-only behaviour.
 
 Service annotations use current native footnotes with guarded create, edit and
 confirmed-delete operations. Source-bound block probes establish eligible
@@ -1158,6 +1165,8 @@ platforms without launching a fallback process.
 
 ## Document changes
 
+- Version 12: define bounded SVG-to-PNG image rendering without publishing source
+  SVG or expanding the passive-content boundary.
 - Version 11: extend source-checkout service activation and stopping to systemd
   user services while retaining the launchd replacement path.
 - Version 10: make service restart an ordered launchd or systemd user-service

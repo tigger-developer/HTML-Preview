@@ -1,0 +1,64 @@
+#+TITLE: W018 - SVG rasterization validation
+#+SCHEMA: 1
+#+TODO: AMBER RED | GREEN
+#+STARTUP: overview
+
+* GREEN RT018.1 - SVG rendering and passive bounds :testdef:
+:PROPERTIES:
+:REVISION: e32521c plus W018 emergency candidate working tree
+:COMMAND: go test -race ./internal/preview ./internal/buildtool ./integration -run 'RT018_1|RT001_14_ReleaseArchives' -count=1
+:EVIDENCE: All selected packages passed; preview completed in 12.613 seconds, build-tool in 1.475 seconds and integration in 40.452 seconds.
+:END:
+
+** RED execution 2026-10-04
+
+- Command :: =go test ./internal/preview -run '^TestRT018_1_LocalSVGImagesBecomePNG$' -count=1=
+- Observation :: The test failed for the intended reason: file preview produced
+  zero rendered SVG images and service preview published no generated media route.
+
+** Initial GREEN execution 2026-10-04
+
+- Command :: =go test ./internal/preview ./internal/buildtool -run 'RT018_1' -count=1=
+- Environment :: macOS arm64 with real `rsvg-convert` 2.63.2, temporary test
+  directories and no live service or browser mutation.
+- Observation :: Both packages passed. File and service previews exposed a 12 by
+  7 PNG; the network probe received no request; invalid bounds, document types,
+  namespaces and converter versions were rejected; missing conversion retained
+  the image alternative; generated service PATH included the converter directory.
+
+** Expanded GREEN execution 2026-10-04
+
+- Command :: =go test -race ./internal/preview ./internal/buildtool ./integration -run 'RT018_1|RT001_14_ReleaseArchives' -count=1=
+- Environment :: macOS arm64, real `rsvg-convert` 2.63.2, isolated temporary Go
+  cache and work directories removed after the run.
+- Observation :: Preview, build-tool and integration packages passed under the
+  race detector. The release regression verified the generated Homebrew formula
+  declares librsvg.
+
+* AMBER UT018.1 - Reported cheat-sheet preview :testdef:
+:PROPERTIES:
+:REASON: Requires operator review of the reported document in the existing browser after building or installing the candidate; automated checks do not open or control a browser.
+:END:
+
+* Checks
+
+- Source preservation :: The reported Markdown and SVG files were read only and
+  remain outside repository scope; repository tests use synthetic fixtures.
+- Full suite :: =make test= used Go 1.26.8 and passed every package except
+  =internal/preview=, which reached the existing 20-minute package timeout while
+  RT014.4 was running. No W018 test failed. The isolated command
+  =go test -race -timeout=10m ./internal/preview -run '^TestRT014_4_ClickableMarkdownCreation$' -count=1=
+  passed in 136.669 seconds.
+- Static analysis :: Go formatting, =go vet ./...= and
+  =golangci-lint run ./...= passed with the documented Go 1.26.8 toolchain.
+  The canonical =make lint= then stopped because StyLua was absent from inherited
+  PATH. A temporary StyLua 2.5.2 build with Lua 5.4 support passed
+  =--check assets/pandoc=, and the exact Pandoc sandbox/Lua-host check passed.
+  The temporary tool directory was removed; PATH and global installations were
+  unchanged.
+- Vulnerabilities :: =make vulncheck= passed both scans with no vulnerabilities
+  found.
+- Documentation :: =sanitize= found no changes in the new or revised passages;
+  its only proposed replacement was an unrelated historical en dash in
+  =docs/work.org=, which was preserved.
+- Deployment :: No installed binary or live service has been replaced or restarted.
