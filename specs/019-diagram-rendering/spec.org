@@ -3,7 +3,7 @@
 #+SUBTITLE: Emergency diagram preview extension
 #+STARTUP: overview
 #+OPTIONS: toc:2 num:nil
-#+OPERATOR_SIGNOFF: PENDING
+#+OPERATOR_SIGNOFF: APPROVED 2026-10-04 emergency scope
 
 * Synopsis
 ** Outcome
@@ -21,7 +21,7 @@
 ** Decisions
 - Mermaid uses strict configuration; PlantUML uses =SANDBOX=; no generated SVG enters the browser.
 ** Next step
-- Delivery and retrospective definition review, operator browser validation and closure.
+- Closed after delivery and retrospective definition review, and operator browser validation.
 
 * Context
 - Scope :: Markdown fences and Org source blocks labelled =mermaid= or

@@ -21,7 +21,8 @@
   The same run verified that the extracted owned Mermaid configuration contains
   =securityLevel: strict= and its exact path reaches the renderer invocation.
 
-* AMBER UT019.1 - Browser diagram presentation :testdef:
+* GREEN UT019.1 - Browser diagram presentation :testdef:
 :PROPERTIES:
-:REASON: Requires operator review after installation; no deployment or browser automation was authorized.
+:REVISION: bc83fbaac8c7983def797ed8530ea28b113312a7 rebuilt and installed locally
+:EVIDENCE: On 2026-10-04 the operator visually reviewed normal htmlpreview renders of Markdown Mermaid, Markdown PlantUML, Org Mermaid and Org PlantUML fixtures and reported all four passed.
 :END:

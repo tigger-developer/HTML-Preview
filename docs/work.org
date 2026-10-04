@@ -411,10 +411,11 @@ validation. Current contracts take precedence over superseded requirements.
   during preview rendering without publishing source SVG or enabling active SVG.
 - Evidence :: [[file:../specs/018-svg-rasterization/validation.org][SVG rasterization validation]].
 
-** REVIEW W019 - Render Mermaid and PlantUML diagrams :feature:
+** DONE W019 - Render Mermaid and PlantUML diagrams :feature:
 :PROPERTIES:
 :CUSTOM_ID: w-019
 :CREATED: 2026-10-04
+:CLOSED: 2026-10-04
 :END:
 - Specification :: [[file:../specs/019-diagram-rendering/spec.org][W019 - Diagram rendering]].
 - Scope :: Render explicit Mermaid and PlantUML blocks to bounded PNG assets
