@@ -20,6 +20,7 @@ h2,h3,h4,h5,h6,[role=heading] { font-weight:650; line-height:1.3; margin:1.8rem 
 h2 { font-size:1.7rem; color:var(--link); --hp-heading-color:var(--link); } h3 { font-size:1.4rem; } h4 { font-size:1.2rem; } h5,h6,[role=heading] { font-size:1.1rem; }
 a { color:var(--link); text-underline-offset:.15em; }
 a:hover { text-decoration-thickness:2px; }
+.underline { text-decoration:underline; }
 :focus-visible { outline:3px solid var(--link); outline-offset:3px; }
 pre,code,kbd,samp,.org-metadata,.todo,.done,.tag,.priority,.cookie,.timestamp { font-family:var(--mono); font-stretch:normal; }
 pre { padding:.85rem 1rem; overflow:auto; background:var(--panel); border:1px solid var(--rule); border-radius:.3rem; font-size:.86rem; line-height:1.5; white-space:pre; }

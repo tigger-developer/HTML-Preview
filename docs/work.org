@@ -422,6 +422,16 @@ validation. Current contracts take precedence over superseded requirements.
   while retaining literal source and denying PlantUML file or network access.
 - Evidence :: [[file:../specs/019-diagram-rendering/validation.org][Diagram rendering validation]].
 
+** REVIEW W020 - Preserve Org underlining :defect:
+:PROPERTIES:
+:CUSTOM_ID: w-020
+:CREATED: 2026-10-25
+:END:
+- Specification :: [[file:../specs/020-org-underline/spec.org][W020 - Org underlining]].
+- Scope :: Supply the missing underline style for converted Org previews.
+- Evidence :: [[file:../specs/020-org-underline/validation.org][Underline validation]]
+  and [[file:../specs/020-org-underline/internal-review.md][internal reviews]].
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded

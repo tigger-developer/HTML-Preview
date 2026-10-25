@@ -1,0 +1,37 @@
+#+TITLE: W020 - Org underline validation
+#+STARTUP: overview
+#+TODO: AMBER RED | GREEN
+
+* GREEN OT020.1 - Published underline markup and styles :testdef:
+:PROPERTIES:
+:REVISION: ae3365c plus the W020 underline declaration in assets/web/preview.css
+:EVIDENCE: Generated HTML contains three underline spans and the parsed matching CSS declaration; literal code retains its underscores. Existing native Org tests pass.
+:END:
+
+** Run 2026-10-25
+- Environment :: macOS, inherited Go toolchain, temporary build cache.
+- Build :: =go build -o <temporary-directory>/htmlpreview ./cmd/htmlpreview= succeeded.
+- Publication check :: A temporary =TestUnderlineOneOff= used the existing CLI
+  harness to render a synthetic Org document. The HTML parser found underlined
+  text Heading, underline and bold underline, plus literal code =_code_=.
+  The existing CSS parser found the underline decoration in the published page.
+  =go test ./internal/preview -run '^TestUnderlineOneOff$' -v -count=1 -timeout=1m=
+  passed. The temporary inspection code was moved out of the repository afterwards.
+- Preservation :: =go test ./internal/preview -run 'TestRT011_' -count=1 -timeout=3m=
+  passed in 4.151 seconds, covering the existing native Org regression group.
+- CSS lint :: =biome lint assets/web/preview.css= passed with no fixes applied.
+- Scope :: No new persistent test or dependency. No browser automation or visual
+  result is claimed. The full regression suite was not run for this CSS-only delta.
+- Candidate CSS SHA-256 :: 6426b707a72ea08f4530f1d49c02137a679ee365b76b7b233cc2d07a42a84cd7
+- Broader check :: =make lint= failed when golangci-lint rejected the repository
+  configuration as an unsupported version. The preceding formatting and Go vet
+  stages passed. This is not a successful full lint result; the CSS-only lint
+  above remains separate evidence. No lint configuration or tool was changed.
+
+* AMBER UT020.1 - Visual underline preservation :testdef:
+:PROPERTIES:
+:REASON: Awaiting user validation of the built candidate in a browser.
+:END:
+- Method :: User validation; ordinary, heading and nested-bold underlining in
+  light, dark and print, with literal code unchanged.
+- Installation :: The installed command and running service were not changed.

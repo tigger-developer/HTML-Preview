@@ -1,0 +1,107 @@
+#+TITLE: W020 - Preserve Org underlining
+#+SCHEMA: 10
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: APPROVED 2026-10-25 emergency scope
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+** Outcome
+- Org emphasis marked with underscores *appears underlined*.
+** Before
+- The converter emits an underline class with *no matching style*.
+** After
+- Converted previews *display underlining* through the shared stylesheet.
+** Changes
+- Add *one underline rule* to the existing CSS.
+** Unchanged
+- *Parsing, sanitization, source files and native HTML* retain their contracts.
+** Edge cases
+- *Literal underscores remain literal*; light, dark and print use the same rule.
+** Decisions
+- Use *existing rendering infrastructure*, with no dependency or browser harness.
+** Next step
+- Obtain *visual validation and operator closure* after recorded checks and reviews.
+
+* Context
+- Temporary specification :: Emergency scope approved 2026-10-25 under
+  =BYPASS-GATE-7=: restore visible Org =_underline_= in converted HTML by
+  supplying the missing stylesheet rule. This record is retrospective.
+- Baseline :: [[file:../011-conversion-performance/spec.org][W011 - Native Org conversion]]
+  requires underline preservation in its inline-content contract.
+  [[file:../../docs/ARCHITECTURE.md][Architecture: native Org conversion]] assigns
+  conversion to the native worker and presentation to the shared page pipeline.
+  [[file:../../docs/VISION.md][Vision]] retains readable local previews.
+  [[file:../../docs/work.org][Work ledger]] and
+  [[file:../../.sdlc/project.yaml][project profile]] define project authority.
+- Evidence :: =internal/orgconvert/convert.go= emits a span with class
+  =underline=; =internal/preview/html.go= retains that class. The stylesheet
+  lacks its declaration. Existing native Org regressions cover file and HTTP
+  publication, lists, links and footnotes, but not visual underlining.
+- Scope :: Shared converted-page styling only. No parser, sanitizer, dependency,
+  installation, running-service, configuration or native-HTML change.
+
+* Acceptance Criteria
+** AC020.1 - Org underlining is visible :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-020-1
+:END:
+- Criterion :: Converted Org previews *underline underscore emphasis*, including
+  within headings and nested bold text, in light, dark and print presentation.
+  Literal code containing underscores remains literal.
+- Proven by :: [[#ot-020-1][OT020.1 - Published underline markup and styles]] and
+  [[#ut-020-1][UT020.1 - Visual underline preservation]].
+
+* Test Definitions
+** OT020.1 - Published underline markup and styles :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-020-1
+:END:
+- Covers :: [[#ac-020-1][AC020.1 - Org underlining is visible]].
+- Boundary :: Generated HTML from the built executable's file preview.
+- Procedure :: Convert a temporary synthetic Org document containing ordinary,
+  heading and nested-bold underline plus literal code. Parse delivered HTML and
+  embedded CSS; verify underline spans and their text, the matching decoration
+  declaration, and literal code text. Run existing native Org regressions.
+- Expected :: Underline markup and styling survive publication; literal code
+  retains its underscores; existing native Org tests pass.
+- Bounds :: Local temporary files only; no external service or browser automation.
+- Test selection :: No new AT or RT. The one-line presentation correction needs
+  a bounded output inspection and visual judgement. A permanent assertion of
+  this CSS declaration would mirror implementation without proving appearance.
+  Existing regression coverage is retained unchanged.
+** UT020.1 - Visual underline preservation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-020-1
+:END:
+- Covers :: [[#ac-020-1][AC020.1 - Org underlining is visible]].
+- Method :: User validation.
+- Procedure :: Open the candidate's generated page, inspect ordinary, heading
+  and nested-bold underlining, then switch light/dark and inspect print preview.
+- Expected :: Emphasized text is visibly underlined throughout; literal code
+  retains underscores without acquiring underline decoration.
+- Record :: Date, browser and candidate in =validation.org=.
+
+* Edge Cases
+- Literal code :: The existing parser keeps underscores literal; no parser change.
+- Themes and print :: The declaration is outside media queries and has no colour
+  override. Visual confirmation remains in the user test.
+
+* Solution Design
+- Mechanism :: Add =.underline { text-decoration:underline; }= to
+  =assets/web/preview.css=. The shared publisher embeds the stylesheet for file
+  and HTTP previews and updates the existing content-security hash.
+- Proportionality :: Reuse the converter's existing class and shared stylesheet;
+  no new state, helper, framework or interface.
+- Security :: Static CSS only, with no resource URL or input interpolation.
+  Sanitization, access grants and source ownership remain unchanged.
+
+* Delivery Handoff
+- Candidate :: One stylesheet declaration; rebuilding is required to embed it.
+- Product documentation :: Unaffected: this restores W011's existing contract;
+  CLI, architecture, configuration and user procedures do not change.
+- Evidence :: [[file:validation.org][Validation]] and
+  [[file:internal-review.md][Internal reviews]].
+- Closure :: Requires visual user validation and explicit operator acceptance.
