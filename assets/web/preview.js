@@ -66,6 +66,84 @@ function clipboardService(controller, dispose) {
   };
 }
 
+// Copy detached semantic markup, never computed screen styles. Read current
+// regions on each activation so service refreshes and moved endnotes are included.
+function documentClipboardContent() {
+  const content = document.createElement('div');
+  for (const region of document.querySelectorAll('#hp-document-title, #hp-document')) {
+    content.append(region.cloneNode(true));
+  }
+  for (const notes of document.querySelectorAll('#hp-annotations section.footnotes')) {
+    content.append(notes.cloneNode(true));
+  }
+  content.querySelectorAll('button, input, textarea, script, style, template, .hp-feedback, .hp-footnote-controls').forEach(node => node.remove());
+  // Org underline is represented by a presentation class in the reader.
+  for (const node of content.querySelectorAll('.underline')) {
+    const underline = document.createElement('u');
+    underline.append(...node.childNodes); node.append(underline);
+  }
+  for (const node of content.querySelectorAll('*')) {
+    if (node.matches('a[href]') && !node.getAttribute('href').startsWith('#')) {
+      node.setAttribute('href', node.href);
+    }
+    if (node.matches('img[src]')) node.setAttribute('src', node.src);
+    // Snapshot the live attribute collection before removing attributes.
+    for (const attribute of Array.from(node.attributes)) {
+      if (!['href', 'src', 'alt', 'id', 'colspan', 'rowspan', 'start', 'value', 'scope'].includes(attribute.name)) {
+        node.removeAttribute(attribute.name);
+      }
+    }
+    if (node.tagName === 'DETAILS') node.setAttribute('open', '');
+  }
+  return { html: content.innerHTML, text: clipboardPlainText(content).trim() };
+}
+
+function clipboardPlainText(node) {
+  if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+  if (node.nodeType !== Node.ELEMENT_NODE) return '';
+  if (node.tagName === 'BR') return '\n';
+  if (node.tagName === 'IMG') return node.getAttribute('alt') || '';
+  const text = [...node.childNodes].map(clipboardPlainText).join('');
+  if (node.matches('td, th')) return text + '\t';
+  if (node.matches('p, h1, h2, h3, h4, h5, h6, li, dt, dd, tr, pre, blockquote, section, div, main, summary')) return text + '\n';
+  return text;
+}
+
+function enhanceDocumentCopy(header, controller, dispose) {
+  const button = document.createElement('button');
+  button.type = 'button'; button.textContent = 'Copy doc';
+  button.title = 'Copy the whole rendered document without preview colours';
+  const status = document.createElement('span');
+  status.className = 'hp-status'; status.setAttribute('role', 'status');
+  header.querySelector('.hp-toolbar').append(button);
+  let timer;
+  button.addEventListener('click', async () => {
+    clearTimeout(timer); status.remove(); button.disabled = true;
+    try {
+      const content = documentClipboardContent();
+      if (!navigator.clipboard?.write || typeof ClipboardItem !== 'function') {
+        throw new Error('Formatted clipboard access is unavailable in this browser.');
+      }
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([content.html], { type: 'text/html' }),
+        'text/plain': new Blob([content.text], { type: 'text/plain' }),
+      })]);
+      if (controller.signal.aborted) return;
+      status.textContent = 'Document copied.';
+      header.append(status);
+      timer = setTimeout(() => status.remove(), 3000);
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      const fallback = document.getElementById('hp-plaintext-toggle')
+        ? ' Try again or use Show plaintext to select and copy without formatting.'
+        : ' Try again, or select the text and use the destination application’s paste-without-formatting command.';
+      status.textContent = 'Document not copied. ' + error.message + fallback;
+      header.append(status);
+    } finally { button.disabled = false; }
+  }, { signal: controller.signal });
+  dispose(() => { clearTimeout(timer); button.remove(); status.remove(); });
+}
+
 function enhanceTheme(header, events, dispose) {
   const button = header.querySelector('#hp-theme-toggle');
   const root = document.documentElement;
@@ -531,6 +609,7 @@ function enhancePreview() {
   // Outline labels are captured before inline copy controls can affect headings.
   async function enhance() {
     await enhanceOutline(main, header, controller, dispose);
+    if (!controller.signal.aborted) enhanceDocumentCopy(header, controller, dispose);
     if (!controller.signal.aborted) enhancePlaintext(header, controller, dispose);
     if (!controller.signal.aborted) await enhanceCode(main, copyValue, controller, dispose);
     if (!controller.signal.aborted) await enhanceNavigation(controller, dispose);

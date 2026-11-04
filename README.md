@@ -1,7 +1,7 @@
 ---
 title: HTML-Preview
-version: 10
-last-updated: 2026-10-04
+version: 11
+last-updated: 2026-11-04
 ---
 
 # HTML-Preview
@@ -89,7 +89,9 @@ stop and start. None of these targets launches a detached server process. The
 ## Reading and reviewing
 
 Org and Markdown previews have a contents outline, folding controls, light
-and dark appearance, source-path copying, and code copying. Org task states,
+and dark appearance, source-path copying, code copying, and **Copy doc** for
+formatted copying without preview colours. The document uses the available
+width beside navigation and annotations. Org task states,
 tags, planning, drawers, and frontmatter retain useful visual structure.
 Source code uses local highlighting; the reader never executes it. Open the
 [Org example](examples/work.org) or [Markdown example](examples/code.md) to
@@ -140,6 +142,7 @@ Font and dependency provenance is recorded in `THIRD_PARTY_NOTICES.md`.
 
 ## Document changes
 
+- Version 11: use available reader width and add theme-neutral document copying.
 - Version 10: render explicit Mermaid and PlantUML blocks as bounded PNGs with
   literal-source fallback.
 - Version 9: rasterize bounded local SVG image references to PNG during preview

@@ -1,0 +1,55 @@
+#+TITLE: W021 - Reader width and document-copy validation
+#+STARTUP: overview
+#+TODO: AMBER RED | GREEN
+
+* Validation
+** GREEN OT021.1 - Build and scoped static verification :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot021-1
+:REVISION: ed1f794 plus W021 web assets and documentation; asset hashes below
+:EVIDENCE: make build, oxlint, biome lint and git diff --check exited zero; no new JavaScript diagnostics.
+:END:
+- Date :: 2026-11-04, macOS; Bash 5 with inherited environment bootstrap.
+- Build :: =make build= passed with a temporary Go build cache and offline module lookup.
+- JavaScript :: =oxlint assets/web/preview.js= passed with one existing
+  =detailIdentities= unused-function warning. The same warning was verified
+  against the unchanged =ed1f794= file; the change adds no new diagnostic.
+- Whitespace :: =git diff --check= passed.
+- CSS :: =biome lint assets/web/preview.css= passed with no changes applied.
+- JavaScript SHA-256 :: =0715a003d0dbfcc440010d4e933c6289f5632ee61b67dd8a160f6427f77a66a2=
+- CSS SHA-256 :: =a1300ae8bfd3dd5f68193e7e0410f12e3fd86324c976f9e3e1ff6e7a36600d88=
+- Boundary :: These checks establish build/syntax evidence, *not clipboard or visual results*.
+
+** AMBER UT021.1 - Responsive reading :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut021-1
+:REASON: Requires user validation of the built candidate at desktop and narrow viewport sizes.
+:END:
+- Method :: User validation using [[file:spec.org::#ut021-1][UT021.1 - Responsive reading]].
+- Activation :: The running service was observed using a different checkout.
+  No service configuration or installed executable outside this repository was changed.
+
+** AMBER UT021.2 - Clipboard behaviour :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut021-2
+:REASON: Chromium and Firefox clipboard/paste behaviour requires user validation.
+:END:
+- Method :: User validation using [[file:spec.org::#ut021-2][UT021.2 - Clipboard behaviour]].
+- Baseline :: User validation before implementation isolated dark colour transfer
+  to Chromium. This does *not* establish the new Copy doc button's behaviour.
+
+* Additional checks and limitations
+- Focused regressions :: =go test -race -timeout=2m ./internal/preview -run
+  'TestRT015_1_ThemeControl|TestRT014_2_CodeCopyContract'= passed in 15.689 seconds
+  against the current assets. These existing tests protect published theme controls
+  and literal code-copy content, not new browser execution.
+- Full lint :: =make lint= failed at =golangci-lint= with
+  =unsupported version of the configuration: ""=. It reached this step after
+  formatting and =go vet=. No Go code, linter configuration or dependencies changed.
+  The complete lint target is *not green*; no broad lint claim is made.
+- Vulnerability scan :: Not run; no dependency or deployment change is included.
+- Browser automation :: Not used. No test framework or simulated DOM was introduced.
+- Regression suite :: Execution pending at this record's initial checkpoint.
+
+* Review evidence
+- [[file:audits.yaml][Canonical self-review record]] owns review results and limitations.

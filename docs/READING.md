@@ -1,7 +1,7 @@
 ---
 title: Reading and navigation
-version: 3
-last-updated: 2026-10-04
+version: 4
+last-updated: 2026-11-04
 ---
 
 # Reading and navigation
@@ -23,6 +23,17 @@ appearance. New pages follow the system theme until the button is used. A manual
 choice lasts for the current page, including annotation refreshes and plaintext
 view; reloading or opening another page returns to automatic detection. The
 button supports keyboard activation and is hidden when printing or without JavaScript.
+
+**Copy doc** copies the current rendered title, document body and footnotes,
+including folded content. It preserves semantic formatting such as headings,
+emphasis, links and tables, without preview colours, navigation or controls.
+It supplies both HTML and plain text; the destination chooses which to paste.
+The button copies rendered content even while Show plaintext is active. It does
+not include the frontmatter panel or unsaved annotation drafts. Images and local
+links retain their preview destinations, so this is not a portable export.
+Ordinary selection-copy keeps the browser's behaviour, including Chromium's
+colour copying. Clipboard refusal displays an error; Show plaintext offers a
+manual alternative for Org and Markdown sources. No success is reported on refusal.
 
 Code uses local syntax highlighting and the embedded Iosevka Custom font.
 Fenced Markdown and Org source blocks labelled `mermaid` or `plantuml` render a
@@ -53,8 +64,10 @@ htmlpreview examples/work.org examples/code.md
 ```
 
 Every preview is a complete styled HTML document. Navigation defaults to on
-through source heading level three in both formats. At widths of 72rem and
-above it stays in a left sidebar; narrower Org previews hide it and Markdown
+through source heading level three in both formats. The document uses the
+available width beside the navigation and annotation panels, with modest page
+padding. Table cells keep words intact; oversized tables scroll horizontally.
+At widths of 72rem and above it stays in a left sidebar; narrower Org previews hide it and Markdown
 previews place it immediately below the header/frontmatter. An explicit
 `HTMLPREVIEW_TOC=0` disables it for every document, including linked pages.
 Navigation branches have separate disclosure buttons; their heading links still
@@ -137,6 +150,7 @@ This is a local preview, not a portable export or a whole-process sandbox.
 
 ## Document changes
 
+- Version 4: use available reading width and add theme-neutral whole-document copying.
 - Version 3: describe bounded Mermaid and PlantUML block rendering.
 - Version 2: describe bounded local SVG-to-PNG rendering and its inactive-image
   fallback.

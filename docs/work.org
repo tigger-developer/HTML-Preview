@@ -440,8 +440,9 @@ validation. Current contracts take precedence over superseded requirements.
 
 - Scope :: *Use available reader width* and add *Copy doc* with semantic HTML
   and plain text, excluding preview colours and controls.
-- Specification :: =tickets/W021-width-and-document-copy/spec.org=;
-  emergency reconciliation pending.
+- Specification :: [[file:../tickets/W021-width-and-document-copy/spec.org][W021 - Reader width and document copying]].
+- Validation :: [[file:../tickets/W021-width-and-document-copy/validation.org][W021 - Build and pending browser checks]].
+- Review :: [[file:../tickets/W021-width-and-document-copy/audits.yaml][W021 - Canonical review evidence]].
 
 * Migration record
 :PROPERTIES:

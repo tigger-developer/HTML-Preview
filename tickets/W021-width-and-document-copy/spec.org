@@ -1,0 +1,164 @@
+#+TITLE: W021 - Full-width reading and theme-neutral document copying
+#+SCHEMA: 11
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: PENDING
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+** Outcome
+- *Use available width* and *copy a whole document without preview colours*.
+** Before
+- The reader was *capped at 54rem*. Chromium selection-copy retained dark colours.
+** After
+- The reader *fills its column*. *Copy doc* supplies semantic HTML and plain text.
+** Changes
+- Remove the reader cap, keep table words intact, and add a lifecycle-owned copy control.
+** Unchanged
+- *Ordinary selection-copy remains browser-owned*. Source files, annotation writes,
+  theme selection and navigation behaviour remain unchanged.
+** Edge cases
+- Folded content and sidebar footnotes are included. Clipboard refusal is visible.
+- Local links and images remain preview-dependent; this is *not portable export*.
+** Decisions
+- Copy *rendered title, body and footnotes*, excluding frontmatter and interface controls.
+- *Human validation* establishes actual clipboard and layout behaviour.
+** Next step
+- Validate Chromium pasting and desktop/mobile layout against the built candidate.
+
+-----
+
+* Context
+** Problem and scope
+- The document column wastes available space, and narrow table cells split words.
+- Chromium copies dark foreground/background styling during ordinary selection-copy.
+- Emergency scope covers *both available-width reading and a Copy doc button*.
+  It does not change selection-copy, browser choice, installation or service configuration.
+** Authority and starting point
+- Route :: Emergency delivery authorized on 2026-11-04; this is a *retrospective*
+  definition, not an advance approved specification.
+- Baseline :: Commit =b0b6d22=, ticket-directory migration; clean worktree before edits.
+- Product :: [[file:../../docs/VISION.md][Product vision]], current direction;
+  [[file:../../docs/READING.md][Reading controls]] and
+  [[file:../../docs/ARCHITECTURE.md][Architecture]], current reader lifecycle.
+- Existing contracts :: W002 code and outline controls, W009 reader/annotation UX,
+  and W015 page-local themes retain their behaviour. The 54rem reading cap is superseded.
+- Implementation evidence :: =assets/web/preview.css=, =preview.js= and
+  =annotations.js=; =internal/preview/theme_test.go= protects published theme controls.
+
+* Acceptance Criteria
+** AC021.1 - Available reader width :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac021-1
+:END:
+- The document *fills the available column* beside responsive navigation and
+  annotation panels at 100% browser zoom, retaining page padding.
+- Table cells *do not split words merely to squeeze columns*; oversized tables
+  remain horizontally scrollable rather than widening the page.
+- Verification :: [[#ut021-1][UT021.1 - Responsive reading]].
+** AC021.2 - Theme-neutral whole-document clipboard :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac021-2
+:END:
+- *Copy doc* copies the current rendered title, body and footnotes, including
+  folded sections and footnotes moved into the annotation panel.
+- Clipboard HTML *preserves headings, emphasis, underline, lists, links and tables*
+  without preview colours or controls. Plain text is supplied alongside it.
+- Copying *does not mutate* the live document, selection, folds, theme or source.
+- Frontmatter panels, navigation, controls and unsaved annotation drafts are excluded.
+- Verification :: [[#ut021-2][UT021.2 - Clipboard behaviour]].
+** AC021.3 - Accessible, repeatable copying and visible failure :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac021-3
+:END:
+- The button supports *keyboard activation* and reports success only after the
+  clipboard write resolves. Refusal or unavailable support produces a visible error.
+- Refreshes and repeated activations *do not duplicate controls* or copy old regions.
+- Verification :: [[#ut021-2][UT021.2 - Clipboard behaviour]].
+
+* Test Definitions
+** UT021.1 - Responsive reading :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut021-1
+:END:
+- Covers :: [[#ac021-1][AC021.1 - Available reader width]].
+- Action :: Open a five-column Markdown table and an Org document at 100% zoom
+  in Chromium. Check wide and narrow windows, navigation on/off, annotations
+  on/off, plaintext and print preview; repeat desktop reading in Firefox.
+- Expected :: Body uses the remaining column with modest margins, words remain
+  intact, wide tables scroll internally, and navigation/annotation controls remain usable.
+  Narrow annotation view retains the existing stacked layout; printing remains readable.
+** UT021.2 - Clipboard behaviour :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut021-2
+:END:
+- Covers :: [[#ac021-2][AC021.2 - Whole-document clipboard]] and
+  [[#ac021-3][AC021.3 - Repeatable copying and failure]].
+- Action :: In Chromium dark mode, copy Org and Markdown documents containing a
+  title, headings, bold/italic/underline, a list, table, code, link and footnotes.
+  Fold sections; open annotations so endnotes move. Activate Copy doc with keyboard
+  and pointer. Paste into a rich document and a plain-text editor. Repeat after
+  service refresh, in light mode, Firefox and Show plaintext. Try empty body and
+  clipboard refusal/unsupported access.
+- Expected :: Rich paste retains semantic formatting but *no dark background or
+  light foreground*. Whole folded body and endnotes appear once, without controls.
+  Plain text contains all body text with line/table separators. Source and live
+  folds remain unchanged. Refresh copies current content once. Empty documents do
+  not throw; failures show an error and no success. Rendered content is copied
+  even from Show plaintext. Local image/link portability is not promised.
+** OT021.1 - Build and scoped static verification :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot021-1
+:END:
+- Action :: Build the binary; run JavaScript/CSS lint and diff whitespace checks.
+  Compare any lint warning with the unchanged baseline.
+- Expected :: Build and checks succeed with *no new JavaScript diagnostics*.
+- Purpose :: Integration and syntax evidence supporting all criteria; it does
+  not establish browser behaviour.
+** Evidence selection
+- No new AT/RT :: The changed contracts require computed CSS, browser ClipboardItem
+  execution and paste-destination judgement. This project has no retained browser
+  harness; adding one or mocking a DOM solely for this change would not establish
+  that behaviour. Source-string assertions are not substitutes. The existing Go
+  regression suite is run as broader preservation evidence, not a new clipboard test.
+
+* Edge Cases
+- Clipboard permission and API support vary. Refusal *retains a visible error*;
+  no automatic plain-text downgrade is reported as formatted success.
+- Copy uses the current rendered snapshot, not unsaved annotation drafts.
+- Oversized unbreakable table content *scrolls inside the table*.
+- Without JavaScript, static reading remains available and no copy button is added.
+
+* Solution Design
+** Reader and clipboard ownership
+- Remove the 54rem maximum from shared reader regions, stretch within the grid,
+  and override arbitrary word wrapping in table cells. Existing breakpoints and
+  bounded sidebars remain authoritative.
+- Extend the existing reader lifecycle. On explicit activation, clone title/body
+  plus sidebar endnotes into a detached container; remove UI nodes, hidden state,
+  styling and operational attributes. Retain semantic/link/table attributes and
+  convert Org underline to semantic underline markup.
+- Serialize detached markup directly, *without computed styles*. Build plain text
+  from that same cleaned tree with block and cell separators. Write both formats
+  in one ClipboardItem, then report completion or refusal.
+- Dispose listeners, feedback and timers on teardown. Read current regions per click.
+** Security and compatibility
+- Only already-sanitized preview content is copied. No raw source HTML, script
+  execution, clipboard reads, source writes, new dependencies or external services are added.
+- Clipboard writes require explicit activation. Detached DOM processing does not
+  change live nodes. Existing local links/images retain their preview destinations.
+- Ordinary browser selection-copy and existing path/code copy contracts are unchanged.
+- Architectural review checks ownership and sanitization; user tests establish
+  layout and paste results. No new service, configuration or test architecture is introduced.
+
+* Delivery Handoff
+- Entry :: Emergency implementation is already authorized; *operator acceptance
+  remains pending*. Outstanding tests and existing gate limitations are in validation.
+- Required reading :: =assets/web/preview.js=, =preview.css=, current endnote movement
+  in =annotations.js=, and the named reading/architecture authorities.
+- Documentation :: =README.md=, =docs/READING.md= and =docs/ARCHITECTURE.md= describe
+  width, Copy doc, clipboard failure and portability boundaries.
+- Evidence :: [[file:validation.org][Execution and user validation]];
+  [[file:audits.yaml][Canonical self-review evidence]].

@@ -1,7 +1,7 @@
 ---
 title: Architecture
-version: 13
-last-updated: 2026-10-04
+version: 14
+last-updated: 2026-11-04
 ---
 
 # Architecture
@@ -37,6 +37,15 @@ The existing reader lifecycle owns the button and media-query listeners. CSS
 applies the existing light/dark palettes and retains light print output.
 No preference is stored or sent to the service. See
 [W015 theme controls](../tickets/015-theme-toggle/spec.org).
+
+The reader regions fill their available grid column; navigation and annotations
+retain their responsive column limits. The reader lifecycle also owns **Copy doc**.
+Each activation clones the current title, body and any endnotes moved into the
+annotation panel. It removes interface controls and presentation attributes,
+preserves semantic markup and writes HTML plus plain text through the browser
+clipboard API. Copying changes neither the live document nor source files.
+Ordinary selection-copy remains browser-owned. See
+[W021 reading width and document copying](../tickets/W021-width-and-document-copy/spec.org).
 
 **Validation:** Native Org reader and annotation reviews passed on
 22 September 2026. See [migration validation](../tickets/011-conversion-performance/validation.org).
@@ -1170,6 +1179,7 @@ platforms without launching a fallback process.
 
 ## Document changes
 
+- Version 14: use available reader width and describe theme-neutral document copying.
 - Version 13: define bounded PNG rendering for Mermaid and PlantUML blocks.
 - Version 12: define bounded SVG-to-PNG image rendering without publishing source
   SVG or expanding the passive-content boundary.
