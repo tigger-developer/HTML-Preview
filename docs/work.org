@@ -432,7 +432,7 @@ validation. Current contracts take precedence over superseded requirements.
 - Evidence :: [[file:../tickets/020-org-underline/validation.org][Underline validation]]
   and [[file:../tickets/020-org-underline/internal-review.md][internal reviews]].
 
-** ACTIVE W021 - Full-width reading and theme-neutral document copying :feature:defect:
+** BLOCKED W021 - Full-width reading and theme-neutral document copying :feature:defect:
 :PROPERTIES:
 :CUSTOM_ID: w-021
 :CREATED: 2026-11-04
@@ -443,6 +443,9 @@ validation. Current contracts take precedence over superseded requirements.
 - Specification :: [[file:../tickets/W021-width-and-document-copy/spec.org][W021 - Reader width and document copying]].
 - Validation :: [[file:../tickets/W021-width-and-document-copy/validation.org][W021 - Build and pending browser checks]].
 - Review :: [[file:../tickets/W021-width-and-document-copy/audits.yaml][W021 - Canonical review evidence]].
+- Boundary :: *Implemented and built*. Full lint rejects the unchanged Go linter
+  configuration; the full suite reaches its 20-minute package timeout. Delivery
+  review and browser validation remain pending; the running service was not changed.
 
 * Migration record
 :PROPERTIES:

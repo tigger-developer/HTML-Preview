@@ -112,6 +112,10 @@
 :PROPERTIES:
 :CUSTOM_ID: ot021-1
 :END:
+- Supports :: [[#ac021-1][AC021.1 - Available reader width]],
+  [[#ac021-2][AC021.2 - Whole-document clipboard]], and
+  [[#ac021-3][AC021.3 - Repeatable copying and failure]];
+  the linked user tests remain necessary to establish their outcomes.
 - Action :: Build the binary; run JavaScript/CSS lint and diff whitespace checks.
   Compare any lint warning with the unchanged baseline.
 - Expected :: Build and checks succeed with *no new JavaScript diagnostics*.

@@ -6,7 +6,7 @@
 ** GREEN OT021.1 - Build and scoped static verification :testdef:
 :PROPERTIES:
 :CUSTOM_ID: ot021-1
-:REVISION: ed1f794 plus W021 web assets and documentation; asset hashes below
+:REVISION: d75e344 plus semantic accessibility-attribute retention; current asset hashes below
 :EVIDENCE: make build, oxlint, biome lint and git diff --check exited zero; no new JavaScript diagnostics.
 :END:
 - Date :: 2026-11-04, macOS; Bash 5 with inherited environment bootstrap.
@@ -16,7 +16,9 @@
   against the unchanged =ed1f794= file; the change adds no new diagnostic.
 - Whitespace :: =git diff --check= passed.
 - CSS :: =biome lint assets/web/preview.css= passed with no changes applied.
-- JavaScript SHA-256 :: =0715a003d0dbfcc440010d4e933c6289f5632ee61b67dd8a160f6427f77a66a2=
+- Current JavaScript SHA-256 :: =13714f1b2117e80d01095798396c88358b180c3cb07ab8dde212bbced5dfb6f9=
+- Initial JavaScript SHA-256 :: =0715a003d0dbfcc440010d4e933c6289f5632ee61b67dd8a160f6427f77a66a2=;
+  superseded by retention of semantic role, heading-level and accessible-name attributes.
 - CSS SHA-256 :: =a1300ae8bfd3dd5f68193e7e0410f12e3fd86324c976f9e3e1ff6e7a36600d88=
 - Boundary :: These checks establish build/syntax evidence, *not clipboard or visual results*.
 
@@ -43,13 +45,40 @@
   'TestRT015_1_ThemeControl|TestRT014_2_CodeCopyContract'= passed in 15.689 seconds
   against the current assets. These existing tests protect published theme controls
   and literal code-copy content, not new browser execution.
+- Final focused run :: The same command passed in *15.818 seconds* after the
+  semantic-attribute adjustment. Build, JavaScript lint, CSS lint and diff checks
+  also passed again, with the same baseline JavaScript warning.
 - Full lint :: =make lint= failed at =golangci-lint= with
   =unsupported version of the configuration: ""=. It reached this step after
   formatting and =go vet=. No Go code, linter configuration or dependencies changed.
   The complete lint target is *not green*; no broad lint claim is made.
+  Installed =golangci-lint= reports version *2.15.0*. W020's existing validation
+  record documents the same configuration refusal before this change.
 - Vulnerability scan :: Not run; no dependency or deployment change is included.
 - Browser automation :: Not used. No test framework or simulated DOM was introduced.
 - Regression suite :: Execution pending at this record's initial checkpoint.
+- Final broad-suite result :: =make test= exited 2 after the preview package
+  exceeded its *20-minute timeout* (1200.408 seconds). The running test was
+  =TestRT014_4_ClickableMarkdownCreation= (1m2s), subcase =mixed=false/code= (2s).
+  These durations do *not establish that the named test hung*. Integration,
+  annotation, buildtool and orgconvert packages reported passes. The run began
+  with the initial web delta before the final failure-message and accessibility
+  adjustments; it is not a passing result for the final candidate.
+- Broad-suite output excerpt ::
+  #+begin_example
+  panic: test timed out after 20m0s
+      running tests:
+          TestRT014_4_ClickableMarkdownCreation (1m2s)
+          TestRT014_4_ClickableMarkdownCreation/mixed=false/code (2s)
+  FAIL github.com/tigger-developer/HTML-Preview/internal/preview 1200.408s
+  #+end_example
 
 * Review evidence
 - [[file:audits.yaml][Canonical self-review record]] owns review results and limitations.
+- Admission :: Full lint and regression verification did not pass. Delivery-code
+  review is *not admitted*, so no review round or PASS is recorded. Retrospective
+  definition review awaits the delivery-code prerequisite; the durable specification
+  is present. Source inspection and focused checks do not substitute for that gate.
+- Schema :: The installed validator accepts the declared OT/UT inventory. Its
+  =ready: true= is limited to those records and does not override the additional
+  failed project-wide checks above or establish an effective review verdict.

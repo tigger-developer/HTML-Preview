@@ -89,7 +89,7 @@ function documentClipboardContent() {
     if (node.matches('img[src]')) node.setAttribute('src', node.src);
     // Snapshot the live attribute collection before removing attributes.
     for (const attribute of Array.from(node.attributes)) {
-      if (!['href', 'src', 'alt', 'id', 'colspan', 'rowspan', 'start', 'value', 'scope'].includes(attribute.name)) {
+      if (!['href', 'src', 'alt', 'id', 'colspan', 'rowspan', 'start', 'value', 'scope', 'role', 'aria-level', 'aria-label'].includes(attribute.name)) {
         node.removeAttribute(attribute.name);
       }
     }
