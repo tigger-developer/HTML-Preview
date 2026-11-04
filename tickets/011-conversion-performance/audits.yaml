@@ -150,28 +150,28 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
               sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
               bytes: 7425
-            - path: /Users/tigger/code/tigoss/html-preview/specs/001-local-document-preview/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/001-local-document-preview/spec.org
               sha256: e3ff995cfe23fb46cd9c114a452e27ea37ead79b3d526ce068d5334038b1ce6e
               bytes: 111653
-            - path: /Users/tigger/code/tigoss/html-preview/specs/002-code-and-outline/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/002-code-and-outline/spec.org
               sha256: 1323aaaebe175984d9b7ea39ef0e71927094468f16cbdfd811dac641083be612
               bytes: 45682
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: 0b48eea39ce4fb4a4d5223f56e892ef1a6812fdc2cdcdff50a9545358fe59de7
               bytes: 108554
-            - path: /Users/tigger/code/tigoss/html-preview/specs/010-folding-and-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/010-folding-and-service/spec.org
               sha256: 1c60bae356e35aa9b62b8b0ec28c0cfe7972815bf721aadc8b5ecbf25305b702
               bytes: 8082
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/assessment.org
               sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
               bytes: 17064
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: b2fd80a6932c20dffdcae520dcd2984d63410bea331b23864585727de49a381f
               bytes: 44910
           round: 1
@@ -504,40 +504,40 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/service/config.example.yaml
               sha256: 86c525f2c06543e6c30fc68bd9b853fefecf7d29d6eb3b4afd6f2302d760962c
               bytes: 650
-            - path: /Users/tigger/code/tigoss/html-preview/specs/001-local-document-preview/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/001-local-document-preview/spec.org
               sha256: e3ff995cfe23fb46cd9c114a452e27ea37ead79b3d526ce068d5334038b1ce6e
               bytes: 111653
-            - path: /Users/tigger/code/tigoss/html-preview/specs/002-code-and-outline/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/002-code-and-outline/spec.org
               sha256: 1323aaaebe175984d9b7ea39ef0e71927094468f16cbdfd811dac641083be612
               bytes: 45682
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: 0b48eea39ce4fb4a4d5223f56e892ef1a6812fdc2cdcdff50a9545358fe59de7
               bytes: 108554
-            - path: /Users/tigger/code/tigoss/html-preview/specs/010-folding-and-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/010-folding-and-service/spec.org
               sha256: 1c60bae356e35aa9b62b8b0ec28c0cfe7972815bf721aadc8b5ecbf25305b702
               bytes: 8082
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/assessment.org
               sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
               bytes: 17064
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 73d222427e333c7e91766175038c4ce368d28484d211205c3fb347d699c250c6
               bytes: 58085
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/validation.org
               sha256: 672859286ba729ff4060093c9041609e3440ca1efe8fac95e70e860ba6c2199f
               bytes: 35527
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/validation.org
               sha256: 065e3a4c22bd289e59e79126c881b377963c65d3c9b50abb4021e2cb5bd53a68
               bytes: 11330
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
               bytes: 49831
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: 70b43bfa15625b4602412be53ee290ad8db84f38eddc4e0a8a5be958f9143035
               bytes: 28026
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/README.md
@@ -703,7 +703,7 @@ audits:
 
         ## Conditions (bounded, reversible; no code or design change)
 
-        **C1 — RT/OT execution currency is not established for the audited revision in `specs/011-conversion-performance/validation.org`.** Every W011 RT record names a 20 September revision (`e171898`, `342fa00`, `216bee6`, `de0cb56`, corpus checkpoint). Since then, code those RTs exercise has changed: the worker protocol, bounds and memory supervision moved to `internal/convertworker/worker.go` with `internal/orgconvert/worker.go` reduced to aliases (699 bytes); highlighting moved to `internal/converthtml`; `render.go` dispatch was rewritten around `convertNative`; and `internal/annotation/blocks.go` (8,173 bytes) carries later target changes. The W011 test code itself changed — `internal/preview/native_org_test.go` now parameterizes `testStartedNativeWorkerBounds(t, format)` and records a W014 expectation in `TestRT011_1_ServedOrgAndMarkdown` — and no W011 record cites an execution of that text. TESTING.md requires affected reruns before the delivery-code audit; the reconciliation note's "no code changed in this reconciliation" is honest but covers only the documentation change. Required correction: in `validation.org`, either cite the existing executions that already cover the current code (W014's `75c13b0` full `go test -race -timeout=20m ./...` inventory with its named remediation reruns, its `TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown` selector, and the W013 reruns of the block-placement pack), or record one affected-selector rerun at the closure candidate. RT011.4 needs explicit coverage because `internal/annotation/blocks.go` changed after its recorded revision. No new automation is required; OT011.2 packaging is already covered by W014's `75c13b0` archive/licence/vulnerability run, and OT011.1's ratio is not invalidated by a package-move refactor — say so rather than repeating the 108-operation benchmark.
+        **C1 — RT/OT execution currency is not established for the audited revision in `tickets/011-conversion-performance/validation.org`.** Every W011 RT record names a 20 September revision (`e171898`, `342fa00`, `216bee6`, `de0cb56`, corpus checkpoint). Since then, code those RTs exercise has changed: the worker protocol, bounds and memory supervision moved to `internal/convertworker/worker.go` with `internal/orgconvert/worker.go` reduced to aliases (699 bytes); highlighting moved to `internal/converthtml`; `render.go` dispatch was rewritten around `convertNative`; and `internal/annotation/blocks.go` (8,173 bytes) carries later target changes. The W011 test code itself changed — `internal/preview/native_org_test.go` now parameterizes `testStartedNativeWorkerBounds(t, format)` and records a W014 expectation in `TestRT011_1_ServedOrgAndMarkdown` — and no W011 record cites an execution of that text. TESTING.md requires affected reruns before the delivery-code audit; the reconciliation note's "no code changed in this reconciliation" is honest but covers only the documentation change. Required correction: in `validation.org`, either cite the existing executions that already cover the current code (W014's `75c13b0` full `go test -race -timeout=20m ./...` inventory with its named remediation reruns, its `TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown` selector, and the W013 reruns of the block-placement pack), or record one affected-selector rerun at the closure candidate. RT011.4 needs explicit coverage because `internal/annotation/blocks.go` changed after its recorded revision. No new automation is required; OT011.2 packaging is already covered by W014's `75c13b0` archive/licence/vulnerability run, and OT011.1's ratio is not invalidated by a package-move refactor — say so rather than repeating the 108-operation benchmark.
 
         **C2 — False converter attribution in comments on W011-owned components.** CODING.md requires correcting a comment that behaviour has falsified. Org conversion is native, and annotation writes exist only for Org and Markdown, both native; these passages now misdirect a maintainer:
 
@@ -715,7 +715,7 @@ audits:
 
         Required correction: name the selected converter or the conversion pass, not Pandoc. Comment text only.
 
-        **C3 — UT011.1 omits the viewing conditions its own definition requires.** The signed-off Record clause is "Date, candidate revision, browser/viewport and observations"; the record supplies date, evidence and an explicit disclosure that the exact executable revision was not supplied, but says nothing about browser or viewport. TESTING.md's paired ledger lists the same field. Required correction: add the disclosure, following the precedent already used in `specs/014-native-markdown/validation.org` ("Browser and viewport details were not supplied; no automated visual result is implied"), to UT011.1 and UT011.2. This is a record edit; no retest is requested and none is implied.
+        **C3 — UT011.1 omits the viewing conditions its own definition requires.** The signed-off Record clause is "Date, candidate revision, browser/viewport and observations"; the record supplies date, evidence and an explicit disclosure that the exact executable revision was not supplied, but says nothing about browser or viewport. TESTING.md's paired ledger lists the same field. Required correction: add the disclosure, following the precedent already used in `tickets/014-native-markdown/validation.org` ("Browser and viewport details were not supplied; no automated visual result is implied"), to UT011.1 and UT011.2. This is a record edit; no retest is requested and none is implied.
 
         ## Verified
 
@@ -858,13 +858,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
               sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
               bytes: 7425
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/assessment.org
               sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
               bytes: 17064
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: c1c6ef7fa1f3e23a9d1567dad78e961f135967522726deb1f6a83ad2c6f446ab
               bytes: 54423
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/validation.org
               sha256: b83dd9faeb60bce69ae1dd6c46b84f6614a16dd3f6a2209f03a47c27174a9b9c
               bytes: 7291
           round: 1
@@ -1037,13 +1037,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
               sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
               bytes: 7425
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/assessment.org
               sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
               bytes: 17064
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: c1c6ef7fa1f3e23a9d1567dad78e961f135967522726deb1f6a83ad2c6f446ab
               bytes: 54423
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/validation.org
               sha256: 7c7ae8f837b14e3602e930e7ef9e9502d0b4ff502083943f0e34d9670d79de84
               bytes: 8904
           round: 2
@@ -1289,13 +1289,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
               sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
               bytes: 7425
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/assessment.org
               sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
               bytes: 17064
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 0ce4fa6d3ceccb50acf21e6fc1bb66c6fed9df308075694a1af8811b85bee89a
               bytes: 56860
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/validation.org
               sha256: 12fee9192c934eb21815508d9ea3dc1befdb3082b9e1f77aad7abd52418a2fa0
               bytes: 22658
             - path: /Users/tigger/code/tigoss/html-preview/third_party/go-org/LICENSE
@@ -1410,9 +1410,9 @@ audits:
 
             ## Conditions (bounded, reversible; no code or design change)
 
-            **C1 — Operator-agent narration in `specs/011-conversion-performance/spec.org`.** The hands-off decision log's "Verification allowance clarification" opens "The operator clarified that agent-authored verification estimates may be amended during hands-off delivery." DOCUMENTATION.md requires decision logs to record the decision, rationale and consequences, not conversational history, and prohibits paraphrasing operator-agent permissions. Required correction: state the decision impersonally, for example "Agent-authored verification estimates are routine and may be amended during hands-off delivery. The 108-operation estimate counts one complete comparison and does not prohibit justified replacement samples after remediation." Keep the remaining sentences unchanged.
+            **C1 — Operator-agent narration in `tickets/011-conversion-performance/spec.org`.** The hands-off decision log's "Verification allowance clarification" opens "The operator clarified that agent-authored verification estimates may be amended during hands-off delivery." DOCUMENTATION.md requires decision logs to record the decision, rationale and consequences, not conversational history, and prohibits paraphrasing operator-agent permissions. Required correction: state the decision impersonally, for example "Agent-authored verification estimates are routine and may be amended during hands-off delivery. The 108-operation estimate counts one complete comparison and does not prohibit justified replacement samples after remediation." Keep the remaining sentences unchanged.
 
-            **C2 — Same narration in `specs/011-conversion-performance/validation.org`.** The "Benchmark checkpoint" Progress bullet states "The operator clarified that routine verification estimates may be amended during hands-off delivery." Required correction: record the amended allowance and its consequence factually (for example "The estimate was amended; the remaining 33 measurements then ran, giving 108 retained final operations and 33 preliminary or interrupted operations"), without describing the exchange. The AMBER-to-GREEN history and operation counts stay.
+            **C2 — Same narration in `tickets/011-conversion-performance/validation.org`.** The "Benchmark checkpoint" Progress bullet states "The operator clarified that routine verification estimates may be amended during hands-off delivery." Required correction: record the amended allowance and its consequence factually (for example "The estimate was amended; the remaining 33 measurements then ran, giving 108 retained final operations and 33 preliminary or interrupted operations"), without describing the exchange. The AMBER-to-GREEN history and operation counts stay.
 
             Neither condition affects code, tests, evidence validity or the recorded results.
 
@@ -1658,13 +1658,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
               sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
               bytes: 7425
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/assessment.org
               sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
               bytes: 17064
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 4905fd8352c7976ea0fc58f938f976bbbf1ae74aa1b4cc29199e94576ab221ee
               bytes: 57158
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/validation.org
               sha256: 07acc7019753e11c76a75e26fd6536cfa400f391c1c66facbc7d19e89f0d3cb8
               bytes: 26893
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/README.md
@@ -2049,13 +2049,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/transport.go
               sha256: ea7cff1b10e391b52646593b9254a39d1e46e90631d7eec67efcb2b78cc5d04f
               bytes: 7425
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/assessment.org
               sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
               bytes: 17064
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 4905fd8352c7976ea0fc58f938f976bbbf1ae74aa1b4cc29199e94576ab221ee
               bytes: 57158
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/validation.org
               sha256: 1a4aa4ddb1fc66911eabb1bb81b43d4b0e236f691d5cc44c62f4d118e9f94026
               bytes: 29218
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/README.md
@@ -2433,19 +2433,19 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/service/config.example.yaml
               sha256: 86c525f2c06543e6c30fc68bd9b853fefecf7d29d6eb3b4afd6f2302d760962c
               bytes: 650
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/assessment.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/assessment.org
               sha256: 7d6ee04f489de8554d6b601f2950de8e7954ea381dac6af58b236e103d5582ca
               bytes: 17064
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 73d222427e333c7e91766175038c4ce368d28484d211205c3fb347d699c250c6
               bytes: 58085
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/validation.org
               sha256: a6ad877c44a2ee2465b29df56002db59de60e1dfb645a6e3a128cf18ff441932
               bytes: 31586
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
               bytes: 49831
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: 70b43bfa15625b4602412be53ee290ad8db84f38eddc4e0a8a5be958f9143035
               bytes: 28026
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/README.md
@@ -2551,7 +2551,7 @@ audits:
 
             ## Conditions (bounded, reversible; no code or design change)
 
-            **C1 — RT/OT execution currency is not established for the audited revision in `specs/011-conversion-performance/validation.org`.** Every W011 RT record names a 20 September revision (`e171898`, `342fa00`, `216bee6`, `de0cb56`, corpus checkpoint). Since then, code those RTs exercise has changed: the worker protocol, bounds and memory supervision moved to `internal/convertworker/worker.go` with `internal/orgconvert/worker.go` reduced to aliases (699 bytes); highlighting moved to `internal/converthtml`; `render.go` dispatch was rewritten around `convertNative`; and `internal/annotation/blocks.go` (8,173 bytes) carries later target changes. The W011 test code itself changed — `internal/preview/native_org_test.go` now parameterizes `testStartedNativeWorkerBounds(t, format)` and records a W014 expectation in `TestRT011_1_ServedOrgAndMarkdown` — and no W011 record cites an execution of that text. TESTING.md requires affected reruns before the delivery-code audit; the reconciliation note's "no code changed in this reconciliation" is honest but covers only the documentation change. Required correction: in `validation.org`, either cite the existing executions that already cover the current code (W014's `75c13b0` full `go test -race -timeout=20m ./...` inventory with its named remediation reruns, its `TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown` selector, and the W013 reruns of the block-placement pack), or record one affected-selector rerun at the closure candidate. RT011.4 needs explicit coverage because `internal/annotation/blocks.go` changed after its recorded revision. No new automation is required; OT011.2 packaging is already covered by W014's `75c13b0` archive/licence/vulnerability run, and OT011.1's ratio is not invalidated by a package-move refactor — say so rather than repeating the 108-operation benchmark.
+            **C1 — RT/OT execution currency is not established for the audited revision in `tickets/011-conversion-performance/validation.org`.** Every W011 RT record names a 20 September revision (`e171898`, `342fa00`, `216bee6`, `de0cb56`, corpus checkpoint). Since then, code those RTs exercise has changed: the worker protocol, bounds and memory supervision moved to `internal/convertworker/worker.go` with `internal/orgconvert/worker.go` reduced to aliases (699 bytes); highlighting moved to `internal/converthtml`; `render.go` dispatch was rewritten around `convertNative`; and `internal/annotation/blocks.go` (8,173 bytes) carries later target changes. The W011 test code itself changed — `internal/preview/native_org_test.go` now parameterizes `testStartedNativeWorkerBounds(t, format)` and records a W014 expectation in `TestRT011_1_ServedOrgAndMarkdown` — and no W011 record cites an execution of that text. TESTING.md requires affected reruns before the delivery-code audit; the reconciliation note's "no code changed in this reconciliation" is honest but covers only the documentation change. Required correction: in `validation.org`, either cite the existing executions that already cover the current code (W014's `75c13b0` full `go test -race -timeout=20m ./...` inventory with its named remediation reruns, its `TestRT011_7_StartedNative|TestRT011_1_ServedOrgAndMarkdown` selector, and the W013 reruns of the block-placement pack), or record one affected-selector rerun at the closure candidate. RT011.4 needs explicit coverage because `internal/annotation/blocks.go` changed after its recorded revision. No new automation is required; OT011.2 packaging is already covered by W014's `75c13b0` archive/licence/vulnerability run, and OT011.1's ratio is not invalidated by a package-move refactor — say so rather than repeating the 108-operation benchmark.
 
             **C2 — False converter attribution in comments on W011-owned components.** CODING.md requires correcting a comment that behaviour has falsified. Org conversion is native, and annotation writes exist only for Org and Markdown, both native; these passages now misdirect a maintainer:
 
@@ -2563,7 +2563,7 @@ audits:
 
             Required correction: name the selected converter or the conversion pass, not Pandoc. Comment text only.
 
-            **C3 — UT011.1 omits the viewing conditions its own definition requires.** The signed-off Record clause is "Date, candidate revision, browser/viewport and observations"; the record supplies date, evidence and an explicit disclosure that the exact executable revision was not supplied, but says nothing about browser or viewport. TESTING.md's paired ledger lists the same field. Required correction: add the disclosure, following the precedent already used in `specs/014-native-markdown/validation.org` ("Browser and viewport details were not supplied; no automated visual result is implied"), to UT011.1 and UT011.2. This is a record edit; no retest is requested and none is implied.
+            **C3 — UT011.1 omits the viewing conditions its own definition requires.** The signed-off Record clause is "Date, candidate revision, browser/viewport and observations"; the record supplies date, evidence and an explicit disclosure that the exact executable revision was not supplied, but says nothing about browser or viewport. TESTING.md's paired ledger lists the same field. Required correction: add the disclosure, following the precedent already used in `tickets/014-native-markdown/validation.org` ("Browser and viewport details were not supplied; no automated visual result is implied"), to UT011.1 and UT011.2. This is a record edit; no retest is requested and none is implied.
 
             ## Verified
 

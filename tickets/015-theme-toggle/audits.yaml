@@ -157,10 +157,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/theme_test.go
               sha256: e2fa866ad2846c5116391093924bcce8ab1b13d8e2936054c5210bd23e9b8c03
               bytes: 1901
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/spec.org
               sha256: 3a39d6f7fb8ca1f7aeaf6ab32f0d168d297ba4a5401b6fc7509d3872e24f158c
               bytes: 6633
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/validation.org
               sha256: c91133b785e21ec185f5cdb79eafaec172bdf10e5aeeeb76f5442fc329cd935a
               bytes: 1804
           round: 1
@@ -314,10 +314,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/theme_test.go
               sha256: f733344d8cead887a6a1bccc0452399c9a5eb0a8fbca93eca215a71ec32fc271
               bytes: 2114
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/spec.org
               sha256: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77
               bytes: 6691
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/validation.org
               sha256: e842d81cfa286c0ffa2aebb981506cba15576ef8b65a7145b39ea25c0e02d2b7
               bytes: 2409
           round: 2
@@ -444,10 +444,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/theme_test.go
               sha256: f733344d8cead887a6a1bccc0452399c9a5eb0a8fbca93eca215a71ec32fc271
               bytes: 2114
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/spec.org
               sha256: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77
               bytes: 6691
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/validation.org
               sha256: e842d81cfa286c0ffa2aebb981506cba15576ef8b65a7145b39ea25c0e02d2b7
               bytes: 2409
           round: 3
@@ -492,11 +492,11 @@ audits:
       external_round: 1
       status: passed
       updated: "2026-09-24T00:09:59Z"
-      revision: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (specs/015-theme-toggle/spec.org, W015 retrospective emergency review)
+      revision: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (tickets/015-theme-toggle/spec.org, W015 retrospective emergency review)
       verdict: PASS
       response: |-
         GATE: definition
-        REVISION: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (specs/015-theme-toggle/spec.org, W015 retrospective emergency review)
+        REVISION: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (tickets/015-theme-toggle/spec.org, W015 retrospective emergency review)
 
         VERDICT: PASS
 
@@ -638,18 +638,18 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/theme_test.go
               sha256: f733344d8cead887a6a1bccc0452399c9a5eb0a8fbca93eca215a71ec32fc271
               bytes: 2114
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/spec.org
               sha256: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77
               bytes: 6691
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/validation.org
               sha256: e842d81cfa286c0ffa2aebb981506cba15576ef8b65a7145b39ea25c0e02d2b7
               bytes: 2409
           round: 1
-          revision: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (specs/015-theme-toggle/spec.org, W015 retrospective emergency review)
+          revision: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (tickets/015-theme-toggle/spec.org, W015 retrospective emergency review)
           verdict: PASS
           response: |-
             GATE: definition
-            REVISION: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (specs/015-theme-toggle/spec.org, W015 retrospective emergency review)
+            REVISION: 20ae89f10727cb0150344dc73fa883f4d1deaaa6db8900a0f05688778e2aff77 (tickets/015-theme-toggle/spec.org, W015 retrospective emergency review)
 
             VERDICT: PASS
 

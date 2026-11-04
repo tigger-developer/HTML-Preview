@@ -70,7 +70,7 @@ provides a durable cross-cutting category that the standard tags cannot express.
 :CREATED: YYYY-MM-DD
 :END:
 
-- *Specification:* [[file:../specs/NNN-concise-descriptor/spec.org][WNNN - Concise descriptor]]
+- *Specification:* [[file:../tickets/NNN-concise-descriptor/spec.org][WNNN - Concise descriptor]]
 #+end_example
 
 Use =OWNER= and =BRANCH= properties only when concurrent work needs explicit
@@ -95,9 +95,9 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-07
 :END:
 
-- Specification :: [[file:../specs/001-local-document-preview/spec.org][W001 - Installable Markdown and Org previews with linked browsing]].
-- Audit evidence :: [[file:../specs/001-local-document-preview/audits.org][W001 - Definition and implementation audit evidence]].
-- User validation :: [[file:../specs/001-local-document-preview/validation.org][W001 - Pending browser validation]].
+- Specification :: [[file:../tickets/001-local-document-preview/spec.org][W001 - Installable Markdown and Org previews with linked browsing]].
+- Audit evidence :: [[file:../tickets/001-local-document-preview/audits.org][W001 - Definition and implementation audit evidence]].
+- User validation :: [[file:../tickets/001-local-document-preview/validation.org][W001 - Pending browser validation]].
 
 ** DONE W002 - Code highlighting, copying and document navigation :feature:
 :PROPERTIES:
@@ -108,9 +108,9 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-08
 :END:
 
-- Specification :: [[file:../specs/002-code-and-outline/spec.org][W002 - Code highlighting, copying and document navigation]].
-- Audit evidence :: [[file:../specs/002-code-and-outline/audits.org][W002 - Definition and implementation audit evidence]].
-- User validation :: [[file:../specs/002-code-and-outline/validation.org][W002 - Browser validation]].
+- Specification :: [[file:../tickets/002-code-and-outline/spec.org][W002 - Code highlighting, copying and document navigation]].
+- Audit evidence :: [[file:../tickets/002-code-and-outline/audits.org][W002 - Definition and implementation audit evidence]].
+- User validation :: [[file:../tickets/002-code-and-outline/validation.org][W002 - Browser validation]].
 
 ** DONE W003 - Format-specific contents defaults :feature:
 :PROPERTIES:
@@ -121,9 +121,9 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-08
 :END:
 
-- Specification :: [[file:../specs/003-format-contents-defaults/spec.org][W003 - Format-specific contents defaults]].
-- Audit evidence :: [[file:../specs/003-format-contents-defaults/audits.org][W003 - Implementation audit]].
-- Validation :: [[file:../specs/003-format-contents-defaults/validation.org][W003 - Defaults and documentation evidence]].
+- Specification :: [[file:../tickets/003-format-contents-defaults/spec.org][W003 - Format-specific contents defaults]].
+- Audit evidence :: [[file:../tickets/003-format-contents-defaults/audits.org][W003 - Implementation audit]].
+- Validation :: [[file:../tickets/003-format-contents-defaults/validation.org][W003 - Defaults and documentation evidence]].
 
 ** DONE W004 - Org metadata and preview controls :defect:
 :PROPERTIES:
@@ -134,9 +134,9 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-10
 :END:
 
-- Specification :: [[file:../specs/004-fold-initial-property-drawers/spec.org][W004 - Org metadata and preview controls]].
-- Audit evidence :: [[file:../specs/004-fold-initial-property-drawers/audits.yaml][W004 - Definition and implementation audit record]].
-- User validation :: [[file:../specs/004-fold-initial-property-drawers/validation.org][W004 - Generated Org drawer validation]].
+- Specification :: [[file:../tickets/004-fold-initial-property-drawers/spec.org][W004 - Org metadata and preview controls]].
+- Audit evidence :: [[file:../tickets/004-fold-initial-property-drawers/audits.yaml][W004 - Definition and implementation audit record]].
+- User validation :: [[file:../tickets/004-fold-initial-property-drawers/validation.org][W004 - Generated Org drawer validation]].
 
 ** DONE W005 - Responsive navigation and quieter Org metadata :feature:
 :PROPERTIES:
@@ -147,10 +147,10 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-10
 :END:
 
-- Specification :: [[file:../specs/005-navigation-and-metadata/spec.org][W005 - Responsive navigation and quieter Org metadata]].
-- Historical audit reference :: =specs/005-navigation-and-metadata/audits.yaml=;
+- Specification :: [[file:../tickets/005-navigation-and-metadata/spec.org][W005 - Responsive navigation and quieter Org metadata]].
+- Historical audit reference :: =tickets/005-navigation-and-metadata/audits.yaml=;
   the previously linked file is absent. The validation record below remains available.
-- Validation :: [[file:../specs/005-navigation-and-metadata/validation.org][W005 - Navigation and metadata validation]].
+- Validation :: [[file:../tickets/005-navigation-and-metadata/validation.org][W005 - Navigation and metadata validation]].
 - Historical delivery blocker :: The installed audit runner timed out before persisting
   its session mapping. Its resume command refuses the absent mapping. The
   supported recovery requires runner repair or an operator-authorized fresh
@@ -165,9 +165,9 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-11
 :END:
 
-- Specification :: [[file:../specs/006-local-preview-service/spec.org][W006 - Local preview service and automatic fallback]].
-- Audit evidence :: [[file:../specs/006-local-preview-service/audits.yaml][W006 - Definition and implementation audit record]].
-- Validation :: [[file:../specs/006-local-preview-service/validation.org][W006 - Service and browser qualification]].
+- Specification :: [[file:../tickets/006-local-preview-service/spec.org][W006 - Local preview service and automatic fallback]].
+- Audit evidence :: [[file:../tickets/006-local-preview-service/audits.yaml][W006 - Definition and implementation audit record]].
+- Validation :: [[file:../tickets/006-local-preview-service/validation.org][W006 - Service and browser qualification]].
 - Scope :: *On-demand HTTP within configured trees*, hardcoded loopback binding,
   token-prefixed links, automatic single-document fallback and optional user
   service packaging. Existing delivery records remain separate.
@@ -179,7 +179,7 @@ validation. Current contracts take precedence over superseded requirements.
   complete format contract in direct service inputs and linked targets, including
   passive native HTML. *The amended design was approved on 12 September*;
   delivery admission still requires its current definition evidence.
-- Dependency :: [[file:../specs/008-input-formats/spec.org][W008 - Input formats]]
+- Dependency :: [[file:../tickets/008-input-formats/spec.org][W008 - Input formats]]
   supplies the format pipeline before W006 service integration is qualified.
 - Operator qualification :: The implementation candidate and local checks are
   recorded in validation.org. Native service-manager and browser qualification
@@ -201,13 +201,13 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-12
 :END:
 
-- Specification :: [[file:../specs/007-service-annotations/spec.org][W007 - Attributed autosaved annotations in service previews]].
-- Audit evidence :: [[file:../specs/007-service-annotations/audits.yaml][W007 - Retained definition and implementation reviews]].
-- Validation :: [[file:../specs/007-service-annotations/validation.org][W007 - Browser and filesystem qualification]].
+- Specification :: [[file:../tickets/007-service-annotations/spec.org][W007 - Attributed autosaved annotations in service previews]].
+- Audit evidence :: [[file:../tickets/007-service-annotations/audits.yaml][W007 - Retained definition and implementation reviews]].
+- Validation :: [[file:../tickets/007-service-annotations/validation.org][W007 - Browser and filesystem qualification]].
 - Scope :: *Service-only autosave and source refresh*, read-only sidecars and
   author attribution. The original event-history/selected-passage implementation
   remains the review baseline; *those requirements were withdrawn on 14 September*
-  in favour of [[file:../specs/009-reader-annotation-ux/spec.org][W009 - Native footnote annotations]].
+  in favour of [[file:../tickets/009-reader-annotation-ux/spec.org][W009 - Native footnote annotations]].
   The later paired amendment also supersedes the closed-comment read-only rule;
   supported native footnotes can now be edited.
 - Dependency :: *W006 delivery and recorded service qualification precede W007
@@ -231,9 +231,9 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-12
 :END:
 
-- Specification :: [[file:../specs/008-input-formats/spec.org][W008 - Preview Pandoc documents, source code and plain text]].
-- Audit evidence :: [[file:../specs/008-input-formats/audits.yaml][W008 - Definition and implementation audit record]].
-- Validation :: [[file:../specs/008-input-formats/validation.org][W008 - Format and browser qualification]].
+- Specification :: [[file:../tickets/008-input-formats/spec.org][W008 - Preview Pandoc documents, source code and plain text]].
+- Audit evidence :: [[file:../tickets/008-input-formats/audits.yaml][W008 - Definition and implementation audit record]].
+- Validation :: [[file:../tickets/008-input-formats/validation.org][W008 - Format and browser qualification]].
 - Scope :: *All installed Pandoc readers*, common code/plaintext Org wrappers,
   literal copying, ordinary JSON pretty printing and passive authored HTML.
 - Dependency direction :: W008 can be delivered in file mode independently;
@@ -251,8 +251,8 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-13
 :END:
 
-- Specification :: [[file:../specs/009-reader-annotation-ux/spec.org][W009 - Persistent reader controls and native footnote annotations]].
-- Audit evidence :: [[file:../specs/009-reader-annotation-ux/audits.yaml][W009 - Definition and implementation reviews]].
+- Specification :: [[file:../tickets/009-reader-annotation-ux/spec.org][W009 - Persistent reader controls and native footnote annotations]].
+- Audit evidence :: [[file:../tickets/009-reader-annotation-ux/audits.yaml][W009 - Definition and implementation reviews]].
 - Scope :: *Sticky responsive info bar, narrower navigation, point-inserted native
   footnotes, current annotation values, secondary editable IDs, visible comment
   pane and literal Org/Markdown source view*.
@@ -274,8 +274,8 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-15
 :END:
 
-- Specification :: [[file:../specs/010-folding-and-service/spec.org][W010 - Emergency folding and service change]].
-- Evidence :: [[file:../specs/010-folding-and-service/validation.org][Focused checks and pending operator validation]].
+- Specification :: [[file:../tickets/010-folding-and-service/spec.org][W010 - Emergency folding and service change]].
+- Evidence :: [[file:../tickets/010-folding-and-service/validation.org][Focused checks and pending operator validation]].
 - Authority :: Taḋg authorized *BYPASS-GATE-7*, prioritized =make serve= and the
   working config, and required *removal of browser automation*.
 
@@ -286,12 +286,12 @@ validation. Current contracts take precedence over superseded requirements.
 :CLOSED: 2026-09-24
 :END:
 
-- Specification :: [[file:../specs/011-conversion-performance/spec.org][W011 - Fast Org previews with go-org]].
+- Specification :: [[file:../tickets/011-conversion-performance/spec.org][W011 - Fast Org previews with go-org]].
 - Scope :: Replace Org conversion with go-org while retaining the existing
   intermediary annotation workflow. The later W014 native Markdown migration
   supersedes this increment's retained Pandoc path for Markdown; other readers
   use optional Pandoc.
-- Evidence :: [[file:../specs/011-conversion-performance/assessment.org][Converter comparison and effort assessment]].
+- Evidence :: [[file:../tickets/011-conversion-performance/assessment.org][Converter comparison and effort assessment]].
 - Earlier boundary :: Definition and feature-branch isolation governed the
   migration implementation. The 20 September integration decision supersedes
   that branch restriction for ongoing paired work.
@@ -302,7 +302,7 @@ validation. Current contracts take precedence over superseded requirements.
   developed on =011-conversion-performance= and integrated into =master= on
   20 September 2026 under explicit merge authority. Subsequent paired corrections
   remained on =master=; integration preceded the closure recorded above.
-  [[file:../specs/011-conversion-performance/validation.org][Validation evidence]] records regression,
+  [[file:../tickets/011-conversion-performance/validation.org][Validation evidence]] records regression,
   packaging and complete benchmark results, with human reader/annotation results.
 - User validation :: *Reader and annotation reviews PASS*, 22 September 2026.
   The linked validation record retains the accepted scope and earlier failures.
@@ -310,7 +310,7 @@ validation. Current contracts take precedence over superseded requirements.
   closure checks. Product documentation and specification references are reconciled.
 - Historical closure dependency :: External harness recovery was authorized on
   24 September 2026.
-  [[file:../specs/011-conversion-performance/audits.yaml][W011 retained audit evidence]] remains the sole audit authority.
+  [[file:../tickets/011-conversion-performance/audits.yaml][W011 retained audit evidence]] remains the sole audit authority.
 
 ** ACTIVE W012 - Replace stale installation links and launchd services :defect:
 :PROPERTIES:
@@ -318,9 +318,9 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-20
 :END:
 
-- Specification :: [[file:../specs/012-install-service-replacement/spec.org][W012 - Installer and service replacement]].
+- Specification :: [[file:../tickets/012-install-service-replacement/spec.org][W012 - Installer and service replacement]].
 - Scope :: Emergency correction for switching stable installations between checkouts.
-- Evidence :: [[file:../specs/012-install-service-replacement/validation.org][Replacement verification and native user test]].
+- Evidence :: [[file:../tickets/012-install-service-replacement/validation.org][Replacement verification and native user test]].
 
 ** ACTIVE W013 - UX fixes and improvements :feature:defect:
 :PROPERTIES:
@@ -328,11 +328,11 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-09-20
 :END:
 
-- Specification :: [[file:../specs/013-ux-fixes-and-improvements/spec.org][W013 - Open paired UX record]].
+- Specification :: [[file:../tickets/013-ux-fixes-and-improvements/spec.org][W013 - Open paired UX record]].
 - First increment :: Configurable top-level Org or Markdown section for the first
   footnote; shared title text with the format's native heading marker.
 - Current correction :: Wrapped description text, description labels and indented
-  quotes receive verified annotation targets. [[file:../specs/013-ux-fixes-and-improvements/validation.org][Correction evidence]]
+  quotes receive verified annotation targets. [[file:../tickets/013-ux-fixes-and-improvements/validation.org][Correction evidence]]
   separates automated checks from pending browser validation; section configuration
   remains in the backlog.
 - Boundary :: Keep open for explicitly agreed paired increments; track their
@@ -354,8 +354,8 @@ validation. Current contracts take precedence over superseded requirements.
 :CLOSED: 2026-09-20
 :END:
 
-- Specification :: [[file:../specs/014-native-markdown/spec.org][W014 - Native Markdown previews with Goldmark]].
-- Definition evidence :: [[file:../specs/014-native-markdown/audits.yaml][W014 - Retained definition review]].
+- Specification :: [[file:../tickets/014-native-markdown/spec.org][W014 - Native Markdown previews with Goldmark]].
+- Definition evidence :: [[file:../tickets/014-native-markdown/audits.yaml][W014 - Retained definition review]].
 - Scope :: *Pinned native Markdown conversion*, compatibility with the existing
   annotation HTML contract, omitted-HTML warnings and conditional dependencies.
 - Definition boundary :: *The native subset is selected*; fenced divs and other
@@ -366,9 +366,9 @@ validation. Current contracts take precedence over superseded requirements.
   no daily-driver installation change was included.
 - Acceptance :: Delivery accepted 2026-09-20 after user validation; integration
   into =master= authorized. No live installation or service restart is included.
-- Validation :: [[file:../specs/014-native-markdown/validation.org][W014 - Native Markdown validation evidence]].
+- Validation :: [[file:../tickets/014-native-markdown/validation.org][W014 - Native Markdown validation evidence]].
 - Separate work :: Annotation input guards remain in
-  [[file:../specs/013-ux-fixes-and-improvements/spec.org][W013 - UX fixes and improvements]].
+  [[file:../tickets/013-ux-fixes-and-improvements/spec.org][W013 - UX fixes and improvements]].
   Native Linux/WSL execution remains a separately disclosed platform limitation.
 
 ** REVIEW W015 - Light and dark theme toggle :feature:
@@ -376,40 +376,40 @@ validation. Current contracts take precedence over superseded requirements.
 :CUSTOM_ID: w-015
 :CREATED: 2026-09-24
 :END:
-- Specification :: [[file:../specs/015-theme-toggle/spec.org][W015 - Theme toggle]].
+- Specification :: [[file:../tickets/015-theme-toggle/spec.org][W015 - Theme toggle]].
 - Scope :: Emergency-authorized button immediately before the filename, preserving
   initial system detection and using a page-local manual override.
-- Evidence :: [[file:../specs/015-theme-toggle/validation.org][Published control and browser validation]].
+- Evidence :: [[file:../tickets/015-theme-toggle/validation.org][Published control and browser validation]].
 
 ** REVIEW W016 - Annotations beside Markdown reference definitions :defect:
 :PROPERTIES:
 :CUSTOM_ID: w-016
 :CREATED: 2026-09-28
 :END:
-- Specification :: [[file:../specs/016-markdown-reference-annotations/spec.org][W016 - Reference-adjacent annotations]].
+- Specification :: [[file:../tickets/016-markdown-reference-annotations/spec.org][W016 - Reference-adjacent annotations]].
 - Scope :: Preserve hidden reference definitions during block mapping so that
   served Markdown text remains annotatable.
-- Evidence :: [[file:../specs/016-markdown-reference-annotations/validation.org][Annotation lifecycle validation]].
+- Evidence :: [[file:../tickets/016-markdown-reference-annotations/validation.org][Annotation lifecycle validation]].
 
 ** REVIEW W017 - Manager-backed service restart :defect:
 :PROPERTIES:
 :CUSTOM_ID: w-017
 :CREATED: 2026-10-02
 :END:
-- Specification :: [[file:../specs/017-manager-service-restart/spec.org][W017 - Manager-backed service restart]].
+- Specification :: [[file:../tickets/017-manager-service-restart/spec.org][W017 - Manager-backed service restart]].
 - Scope :: Provide an ordered launchd or systemd user-service lifecycle for
   source-checkout start, stop and restart targets.
-- Evidence :: [[file:../specs/017-manager-service-restart/validation.org][Manager restart validation]].
+- Evidence :: [[file:../tickets/017-manager-service-restart/validation.org][Manager restart validation]].
 
 ** REVIEW W018 - Rasterize local SVG image references :defect:
 :PROPERTIES:
 :CUSTOM_ID: w-018
 :CREATED: 2026-10-04
 :END:
-- Specification :: [[file:../specs/018-svg-rasterization/spec.org][W018 - SVG rasterization]].
+- Specification :: [[file:../tickets/018-svg-rasterization/spec.org][W018 - SVG rasterization]].
 - Scope :: Convert eligible rooted local SVG image references to bounded PNGs
   during preview rendering without publishing source SVG or enabling active SVG.
-- Evidence :: [[file:../specs/018-svg-rasterization/validation.org][SVG rasterization validation]].
+- Evidence :: [[file:../tickets/018-svg-rasterization/validation.org][SVG rasterization validation]].
 
 ** DONE W019 - Render Mermaid and PlantUML diagrams :feature:
 :PROPERTIES:
@@ -417,20 +417,20 @@ validation. Current contracts take precedence over superseded requirements.
 :CREATED: 2026-10-04
 :CLOSED: 2026-10-04
 :END:
-- Specification :: [[file:../specs/019-diagram-rendering/spec.org][W019 - Diagram rendering]].
+- Specification :: [[file:../tickets/019-diagram-rendering/spec.org][W019 - Diagram rendering]].
 - Scope :: Render explicit Mermaid and PlantUML blocks to bounded PNG assets
   while retaining literal source and denying PlantUML file or network access.
-- Evidence :: [[file:../specs/019-diagram-rendering/validation.org][Diagram rendering validation]].
+- Evidence :: [[file:../tickets/019-diagram-rendering/validation.org][Diagram rendering validation]].
 
 ** REVIEW W020 - Preserve Org underlining :defect:
 :PROPERTIES:
 :CUSTOM_ID: w-020
 :CREATED: 2026-10-25
 :END:
-- Specification :: [[file:../specs/020-org-underline/spec.org][W020 - Org underlining]].
+- Specification :: [[file:../tickets/020-org-underline/spec.org][W020 - Org underlining]].
 - Scope :: Supply the missing underline style for converted Org previews.
-- Evidence :: [[file:../specs/020-org-underline/validation.org][Underline validation]]
-  and [[file:../specs/020-org-underline/internal-review.md][internal reviews]].
+- Evidence :: [[file:../tickets/020-org-underline/validation.org][Underline validation]]
+  and [[file:../tickets/020-org-underline/internal-review.md][internal reviews]].
 
 * Migration record
 :PROPERTIES:

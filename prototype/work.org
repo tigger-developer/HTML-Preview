@@ -69,7 +69,7 @@ provides a durable cross-cutting category that the standard tags cannot express.
 :CREATED: YYYY-MM-DD
 :END:
 
-- *Specification:* [[file:../specs/NNN-concise-descriptor/spec.org][WNNN - Concise descriptor]]
+- *Specification:* [[file:../tickets/NNN-concise-descriptor/spec.org][WNNN - Concise descriptor]]
 #+end_example
 
 Use =OWNER= and =BRANCH= properties only when concurrent work needs explicit
@@ -83,12 +83,12 @@ classification; it is provenance, not current state.
 :CUSTOM_ID: w-099
 :LEGACY_ID: 001
 :PRIORITY: P1
-:SOURCE: docs/archive/sdlc-v2/specs/001-website-extra-domains/spec.md
+:SOURCE: docs/archive/sdlc-v2/tickets/001-website-extra-domains/spec.md
 :CREATED: 2026-09-03
 :MIGRATION_DISPOSITION: unresolved
 :END:
 
-- *Specification:* [[file:archive/sdlc-v2/specs/001-website-extra-domains/spec.md][Additional Public Domains for Website Deployments]]
+- *Specification:* [[file:archive/sdlc-v2/tickets/001-website-extra-domains/spec.md][Additional Public Domains for Website Deployments]]
 - *Migration evidence:* The specification remains Draft and its latest audit is FAIL; no delivery authorization or explicit abandonment is recorded.
 
 ** REVIEW W100 - Disposable Runpod GPU Lifecycle :feature:migration:
@@ -96,12 +96,12 @@ classification; it is provenance, not current state.
 :CUSTOM_ID: w-100
 :LEGACY_ID: 002
 :PRIORITY: P1
-:SOURCE: docs/archive/sdlc-v2/specs/002-runpod-gpu-lifecycle/spec.md
+:SOURCE: docs/archive/sdlc-v2/tickets/002-runpod-gpu-lifecycle/spec.md
 :CREATED: 2026-09-05
 :MIGRATION_DISPOSITION: unresolved
 :END:
 
-- *Specification:* [[file:archive/sdlc-v2/specs/002-runpod-gpu-lifecycle/spec.md][Disposable Runpod GPU Lifecycle]]
+- *Specification:* [[file:archive/sdlc-v2/tickets/002-runpod-gpu-lifecycle/spec.md][Disposable Runpod GPU Lifecycle]]
 - *Migration evidence:* The specification remains Draft and its latest audit is FAIL; no delivery authorization or explicit abandonment is recorded.
 
 ** REVIEW W101 - vps-list Runpod inventory :feature:
@@ -112,9 +112,9 @@ classification; it is provenance, not current state.
 :CREATED: 2026-09-07
 :END:
 
-- *Specification:* [[file:../specs/101-vps-list-runpod-inventory/spec.org][W101 - vps-list Runpod inventory]]
-- *Evidence:* [[file:../specs/101-vps-list-runpod-inventory/audits.org][W101 - implementation audits]] and
-  [[file:../specs/101-vps-list-runpod-inventory/validation.org][W101 - operator validation]].
+- *Specification:* [[file:../tickets/101-vps-list-runpod-inventory/spec.org][W101 - vps-list Runpod inventory]]
+- *Evidence:* [[file:../tickets/101-vps-list-runpod-inventory/audits.org][W101 - implementation audits]] and
+  [[file:../tickets/101-vps-list-runpod-inventory/validation.org][W101 - operator validation]].
 
 * Legacy Acceptance Criteria (SDLC v1) :legacy:
 :PROPERTIES:
@@ -131,7 +131,7 @@ requirements, provenance, and test traceability. Archived tickets, comments,
 and =docs/ticket-migration.org= retain disposition, provenance, and rationale
 only; they are not current requirement or AC authorities. Requirements
 established or changed through SDLC v3 are governed by signed-off
-=specs/*/spec.org= artefacts.
+=tickets/*/spec.org= artefacts.
 
 
 ** Legacy status vocabulary at migration

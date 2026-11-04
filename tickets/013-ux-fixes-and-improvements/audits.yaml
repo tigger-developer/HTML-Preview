@@ -152,13 +152,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/wrapped_descriptions_test.go
               sha256: d81a7daf58cf0db16034e4260da33dad80889fd23ee52f55414c91632d8a87ce
               bytes: 3367
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 4905fd8352c7976ea0fc58f938f976bbbf1ae74aa1b4cc29199e94576ab221ee
               bytes: 57158
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/spec.org
               sha256: c7d5eea6be2cefacaf3924d3b847ddbc48ad25a427ea85d4b57755015efcd855
               bytes: 7447
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/validation.org
               sha256: ed230dca566427babcb3889929141a4c9e0c1dd852df72cf620626b850b60537
               bytes: 3687
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/README.md
@@ -288,13 +288,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/wrapped_descriptions_test.go
               sha256: d81a7daf58cf0db16034e4260da33dad80889fd23ee52f55414c91632d8a87ce
               bytes: 3367
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 4905fd8352c7976ea0fc58f938f976bbbf1ae74aa1b4cc29199e94576ab221ee
               bytes: 57158
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/spec.org
               sha256: c7d5eea6be2cefacaf3924d3b847ddbc48ad25a427ea85d4b57755015efcd855
               bytes: 7447
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/validation.org
               sha256: ed230dca566427babcb3889929141a4c9e0c1dd852df72cf620626b850b60537
               bytes: 3687
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/README.md
@@ -402,10 +402,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
               sha256: 3d7bf111ad2ccc143b2da910ccd18bc611bbe2e6e881423c0813d417ae59ce80
               bytes: 12041
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/spec.org
               sha256: af5eb8a1e37b8089a91c28156e17784407c43265423b4eb1217839fe73299a11
               bytes: 14571
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/validation.org
               sha256: 4bffb208e8a9c94bc3018d690c3d66f42c4c8a21ca134937e766fe9336710bd4
               bytes: 7161
             - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w013-input.ydzNuWzRCf/increment.diff
@@ -531,10 +531,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/html.go
               sha256: 3d7bf111ad2ccc143b2da910ccd18bc611bbe2e6e881423c0813d417ae59ce80
               bytes: 12041
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/spec.org
               sha256: 3879ab999acdd8560c6904e975b4910b4f4c3d151076ba6954855df9069da5e9
               bytes: 14847
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/validation.org
               sha256: c4119714b4aaafb03a23dcd017da454f5ea8a1633fa2e8f1a6dcf257dca70695
               bytes: 7756
             - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w013-input.ydzNuWzRCf/block-boundary-probe.txt
@@ -679,10 +679,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/service/config.example.yaml
               sha256: 86c525f2c06543e6c30fc68bd9b853fefecf7d29d6eb3b4afd6f2302d760962c
               bytes: 650
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/spec.org
               sha256: b8d5815827ea4c9296da139b00817862b1e887de1bbed51984c4708325baf76c
               bytes: 20399
-            - path: /Users/tigger/code/tigoss/html-preview/specs/013-ux-fixes-and-improvements/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/013-ux-fixes-and-improvements/validation.org
               sha256: eb58a71400fe4a18db6feffa81565cc917f8762d0dfa7c91aba63f6e67dd0a5a
               bytes: 10901
             - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-w013-config.JJmArLdGud/check.go

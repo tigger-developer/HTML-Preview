@@ -180,13 +180,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
               sha256: bd91c7a33e4251747715a0aaea9fb603fb0516ce451ccb4f6b2112a98893003f
               bytes: 6174
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 38485b346ab03606ce15a5c81c86bce7694af3068ef8d67758de3e8cdf1159f4
               bytes: 57348
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: d03f408d6b40b269615693266f997407fb738ea12a7fd8dd4104c7175387c1ae
               bytes: 44017
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
@@ -388,13 +388,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_footnotes.go
               sha256: bd91c7a33e4251747715a0aaea9fb603fb0516ce451ccb4f6b2112a98893003f
               bytes: 6174
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/011-conversion-performance/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/011-conversion-performance/spec.org
               sha256: 38485b346ab03606ce15a5c81c86bce7694af3068ef8d67758de3e8cdf1159f4
               bytes: 57348
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: dda055e47b4a02bfd43ba4489093d0d168116f829599c76aa067aa11ddb44fda
               bytes: 46016
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
@@ -640,10 +640,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_http.go
               sha256: 695d102292648654c01592a43292ff5c3385a77f0c6021c429369b449b439fd5
               bytes: 6289
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: d386c116443aa42bb6bfa4880bf09e6b67825792397bf3e4b38ca8ef23b83a44
               bytes: 47611
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: d3cbb39214526e829ae52ced822c85bf8a5febc5706b387a6158a54f6f831e6b
               bytes: 7766
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
@@ -881,10 +881,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_http.go
               sha256: 695d102292648654c01592a43292ff5c3385a77f0c6021c429369b449b439fd5
               bytes: 6289
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: aa813cae9cb592eac065d09c614c4e3714255a81a6b2bc9dbe6a120c5e58433c
               bytes: 48357
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: b2c75774c6397188e6a88cae13d1d71f3772074a9be9a36ccc8e45b6703f937f
               bytes: 9717
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
@@ -1077,10 +1077,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_http.go
               sha256: 695d102292648654c01592a43292ff5c3385a77f0c6021c429369b449b439fd5
               bytes: 6289
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: aa813cae9cb592eac065d09c614c4e3714255a81a6b2bc9dbe6a120c5e58433c
               bytes: 48357
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: b2c75774c6397188e6a88cae13d1d71f3772074a9be9a36ccc8e45b6703f937f
               bytes: 9717
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
@@ -1271,10 +1271,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_http.go
               sha256: 695d102292648654c01592a43292ff5c3385a77f0c6021c429369b449b439fd5
               bytes: 6289
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: aa813cae9cb592eac065d09c614c4e3714255a81a6b2bc9dbe6a120c5e58433c
               bytes: 48357
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: 719759fb461736b4392357c391293cd590cf0ebca87c69ad7b73ad205ea1bc96
               bytes: 11123
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
@@ -1597,10 +1597,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: e10e1062b299162f57951d5578436da5ec60c3fc2a283dd38a8c3b4646f1d01e
               bytes: 1387
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: d0331442d058115c509a4182096e31d328dad1fdd15ae1beaa89bd4f87d172e4
               bytes: 49449
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: b285d09925d4c783432d939824d7d121f1380118877e80dc3b5ff66dd7dd953d
               bytes: 24556
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
@@ -1999,10 +1999,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: e10e1062b299162f57951d5578436da5ec60c3fc2a283dd38a8c3b4646f1d01e
               bytes: 1387
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
               bytes: 49831
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: 16f16f5a1799bcfc5d89dce5f9a43acae376873cd146ed8167150aa8fec8ff7d
               bytes: 27254
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md
@@ -2404,10 +2404,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: e10e1062b299162f57951d5578436da5ec60c3fc2a283dd38a8c3b4646f1d01e
               bytes: 1387
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
               bytes: 49831
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/validation.org
               sha256: 16f16f5a1799bcfc5d89dce5f9a43acae376873cd146ed8167150aa8fec8ff7d
               bytes: 27254
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-targets/blocks.md

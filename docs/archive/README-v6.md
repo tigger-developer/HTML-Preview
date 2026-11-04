@@ -15,17 +15,17 @@ reader selection and resource limits.
 Org and Markdown are first-class native Go formats. Code/plaintext wrappers
 and passive HTML also work without Pandoc. Install optional Pandoc only for other
 readers, such as DOCX, ODT, EPUB and specialist Markdown dialects. The
-[native Org validation record](specs/011-conversion-performance/validation.org) tracks
+[native Org validation record](tickets/011-conversion-performance/validation.org) tracks
 its compatibility checks, performance measurements and passing reader and
 annotation user reviews of 22 September 2026.
-The [native Markdown migration](specs/014-native-markdown/spec.org) was accepted
+The [native Markdown migration](tickets/014-native-markdown/spec.org) was accepted
 and merged into master on 20 September 2026; its
-[validation record](specs/014-native-markdown/validation.org) includes passing
+[validation record](tickets/014-native-markdown/validation.org) includes passing
 automated, performance and user checks. Native Linux/WSL execution remains
 separate from cross-build and macOS evidence.
 
-The [input-format support](specs/008-input-formats/spec.org) extends the
-earlier Org/Markdown-only scope. Its [validation record](specs/008-input-formats/validation.org)
+The [input-format support](tickets/008-input-formats/spec.org) extends the
+earlier Org/Markdown-only scope. Its [validation record](tickets/008-input-formats/validation.org)
 tracks automated evidence and pending native qualification separately.
 
 The optional [local service](docs/SERVICE.md) renders supported linked files on
@@ -33,7 +33,7 @@ request within configured roots, or its startup directory when no config exists.
 Start it with `htmlpreview --serve`;
 normal invocations then use its loopback HTTP URLs. Absent service or an input
 outside its roots selects a single-document file preview. Installation never
-starts the service. [Service validation](specs/006-local-preview-service/validation.org)
+starts the service. [Service validation](tickets/006-local-preview-service/validation.org)
 distinguishes regression evidence from pending native qualification.
 
 Service previews of genuine Org and Markdown sources also offer
@@ -42,7 +42,7 @@ footnotes. Existing native notes remain editable after close, with their IDs
 preserved and attribution labelled Created or Edited. Source changes refresh without
 discarding an active draft; read-only sources use an adjacent Org sidecar.
 The persistent info bar also offers literal Org/Markdown source inspection.
-[Reader validation](specs/009-reader-annotation-ux/validation.org) retains the
+[Reader validation](tickets/009-reader-annotation-ux/validation.org) retains the
 earlier paired evidence; the native Org validation above records the later
 reader and annotation acceptance.
 
@@ -51,15 +51,15 @@ annotation and folding work was accepted on 21 September 2026, including
 superseded requirements. [The work ledger](docs/work.org) owns closure status.
 Historical validation records retain unexecuted checks; acceptance does not
 turn those into test passes or establish Linux/WSL runtime validation.
-The [original specification](specs/001-local-document-preview/spec.org),
-[audit record](specs/001-local-document-preview/audits.org) and
-[validation record](specs/001-local-document-preview/validation.org) preserve
+The [original specification](tickets/001-local-document-preview/spec.org),
+[audit record](tickets/001-local-document-preview/audits.org) and
+[validation record](tickets/001-local-document-preview/validation.org) preserve
 the initial delivery evidence, including the unperformed Homebrew trial.
 
-[The approved code and navigation change](specs/002-code-and-outline/spec.org)
+[The approved code and navigation change](tickets/002-code-and-outline/spec.org)
 adds highlighting, code copying, margin bars and configurable contents.
-Its [audit record](specs/002-code-and-outline/audits.org) retains the delivery
-review; the [change evidence](specs/002-code-and-outline/validation.org)
+Its [audit record](tickets/002-code-and-outline/audits.org) retains the delivery
+review; the [change evidence](tickets/002-code-and-outline/validation.org)
 retains that increment's historical validation scope.
 
 ```sh

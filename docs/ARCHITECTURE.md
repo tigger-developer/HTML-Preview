@@ -36,12 +36,12 @@ only on the current document root and survives reader-region refreshes.
 The existing reader lifecycle owns the button and media-query listeners. CSS
 applies the existing light/dark palettes and retains light print output.
 No preference is stored or sent to the service. See
-[W015 theme controls](../specs/015-theme-toggle/spec.org).
+[W015 theme controls](../tickets/015-theme-toggle/spec.org).
 
 **Validation:** Native Org reader and annotation reviews passed on
-22 September 2026. See [migration validation](../specs/011-conversion-performance/validation.org).
+22 September 2026. See [migration validation](../tickets/011-conversion-performance/validation.org).
 The native Markdown migration was accepted and merged on 20 September 2026;
-its [validation record](../specs/014-native-markdown/validation.org) includes
+its [validation record](../tickets/014-native-markdown/validation.org) includes
 the reading and annotation user tests. Native Linux/WSL execution remains
 separate from Go/HTTP and cross-build verification.
 
@@ -53,7 +53,7 @@ Current operational interfaces are in [SERVICE.md](SERVICE.md),
 
 ## Native Markdown conversion - 20 September 2026
 
-[W014 - Native Markdown previews](../specs/014-native-markdown/spec.org) adds pinned
+[W014 - Native Markdown previews](../tickets/014-native-markdown/spec.org) adds pinned
 Goldmark 1.8.6 without a fork. Its adapter normalizes heading sections and IDs,
 contents, highlighted code records and footnote/backlink markup to the established
 browser contract. Existing block-probe, projection and source-write boundaries
@@ -75,11 +75,11 @@ Native requests never query Pandoc. Optional-reader discovery is lazy, bounded
 and cached on success for the service lifetime; failed discovery remains retryable.
 Native conversion failure never falls back to Pandoc. File-mode, service, link,
 annotation and packaging evidence is retained in
-[W014 validation](../specs/014-native-markdown/validation.org).
+[W014 validation](../tickets/014-native-markdown/validation.org).
 
 ## Native Org conversion - 20 September 2026
 
-[W011 - Fast Org previews](../specs/011-conversion-performance/spec.org) replaces
+[W011 - Fast Org previews](../tickets/011-conversion-performance/spec.org) replaces
 Pandoc for Org and the internal Org wrappers for code/plaintext. That migration
 left Markdown on Pandoc; W014 subsequently replaced it with Goldmark. Other
 readers retain optional Pandoc. The existing preservation, annotation projection,
@@ -117,7 +117,7 @@ The distribution retains parser, highlighter and transitive licences. The
 vulnerability gate checks the linked application and a locked unreplaced
 upstream module, preserving advisory coverage despite the local replacement.
 See [parser provenance](../third_party/go-org/README.md) and
-[validation](../specs/011-conversion-performance/validation.org) for the patches,
+[validation](../tickets/011-conversion-performance/validation.org) for the patches,
 execution evidence and accepted human reader and annotation reviews.
 
 The accepted compatibility layer adds some formatting work. Future optimization
@@ -129,7 +129,7 @@ design and are outside this implementation.
 
 ## Local service design history - 11 September 2026
 
-[W006 - Local preview service and automatic fallback](../specs/006-local-preview-service/spec.org)
+[W006 - Local preview service and automatic fallback](../tickets/006-local-preview-service/spec.org)
 defines a second delivery transport around the existing renderer. A per-user Go
 HTTP service renders requested documents within configured roots. A private
 Unix-domain control socket registers previews; browser URLs use a random token
@@ -153,7 +153,7 @@ qualification is claimed by this document update.
 
 The service implementation now exists as a delivery candidate under
 `internal/preview/service*.go`, sharing the W008 renderer and format catalogue.
-Its [validation record](../specs/006-local-preview-service/validation.org) retains
+Its [validation record](../tickets/006-local-preview-service/validation.org) retains
 the staged implementation evidence and pending native qualification. File mode
 now converts explicit inputs only; legacy graph settings are validated and
 diagnosed without pre-generation. The earlier processing and graph descriptions
@@ -172,7 +172,7 @@ expand it. Packaged managers retain an explicit user config path, now under
 
 ## Annotation design history - 12 September 2026
 
-[W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)
+[W007 - Attributed autosaved annotations in service previews](../tickets/007-service-annotations/spec.org)
 depends on delivered and qualified W006 service behaviour. It proposes a separate
 Go annotation boundary for constrained append-only writes, versioned embedded
 records, read-only sidecars and deterministic passage anchors. Browser composers
@@ -202,7 +202,7 @@ Browser composer, text mapping and presentation modules are packaged with the
 existing reader script. Refresh reuses its teardown/initialization boundary while
 retaining the composer outside replaced document regions. No dependency was added.
 The [annotation guide](ANNOTATIONS.md) records storage and operational limits;
-[validation](../specs/007-service-annotations/validation.org) distinguishes local
+[validation](../tickets/007-service-annotations/validation.org) distinguishes local
 regressions from pending native qualification. The operator authorized proceeding
 on 13 September while Linux/WSL qualification remains pending.
 
@@ -212,7 +212,7 @@ over server-owned documents and storage, never a client's personal filesystem.
 
 ## Input format design history - 12 September 2026
 
-[W008 - Input formats](../specs/008-input-formats/spec.org) introduces a shared
+[W008 - Input formats](../tickets/008-input-formats/spec.org) introduces a shared
 format resolver ahead of the existing conversion and publication boundaries.
 It discovers installed Pandoc readers, admits binary snapshots, creates literal
 Org wrappers for code/text, formats ordinary JSON without changing copy content,
@@ -225,7 +225,7 @@ blocking source scripts, form submissions and automatic external requests.
 This supersedes the blanket source-style prohibition only for native HTML;
 ordinary converted pages retain their current presentation and CSP.
 
-The amended [W006 service](../specs/006-local-preview-service/spec.org) consumes
+The amended [W006 service](../tickets/006-local-preview-service/spec.org) consumes
 this format contract for explicit inputs and linked targets. Reader selectors
 are validated representation choices, never filesystem grants. Scoped embedded
 media and inlined stylesheet dependencies participate in authorization, cache
@@ -245,7 +245,7 @@ requirements remain applicable.
 
 ## Reader and footnote design history - 14 September 2026
 
-[W009 - Persistent reader controls and native footnote annotations](../specs/009-reader-annotation-ux/spec.org)
+[W009 - Persistent reader controls and native footnote annotations](../tickets/009-reader-annotation-ux/spec.org)
 implements one sticky info bar and a shared responsive grid in the existing page
 template. It replaces the fixed navigation width and floating annotation panel;
 phone annotation mode reserves the larger lower pane for comments while keeping
@@ -308,7 +308,7 @@ and output budgets, with no separate annotation HTML renderer.
 Current verification uses Go/HTTP regressions and the standard native HTML/JS/CSS
 checks. On 14 September the operator stopped browser-fixture execution in favour
 of paired human interaction checks. That instruction supersedes the W007 browser
-runner prescription above. [W009 validation](../specs/009-reader-annotation-ux/validation.org)
+runner prescription above. [W009 validation](../tickets/009-reader-annotation-ux/validation.org)
 records objective evidence separately from pending browser/platform qualification.
 
 ### Editable-footnote amendment - 14 September 2026
@@ -383,7 +383,7 @@ A 12 September macOS arm64 comparison with Go 1.26.8 and `-trimpath` measured
 container, raster and native HTML implementation. The combined increase was
 462,576 bytes (5.4%); this includes the surrounding implementation and is not
 an isolated measurement of the CSS dependency. Candidate verification is
-recorded in [the input-format validation record](../specs/008-input-formats/validation.org).
+recorded in [the input-format validation record](../tickets/008-input-formats/validation.org).
 
 `htmlpreview` is a local Go command-line application that uses go-org for Org
 and Goldmark for Markdown, with optional Pandoc for other readers, repairs references, and opens
@@ -591,7 +591,7 @@ remote assets, so it is not the default mechanism for packaging only the theme.
 
 ### Code, contents and browser controls
 
-[W002 - Code and document navigation](../specs/002-code-and-outline/spec.org)
+[W002 - Code and document navigation](../tickets/002-code-and-outline/spec.org)
 extends the approved renderer. The Pandoc route runs with standalone output and
 the owned `page.html5` template. This intermediate wrapper includes only the
 generated body and optional contents; native Org and Markdown supply the same contract.
@@ -607,7 +607,7 @@ is never changed by rendering an Org file, so mixed inputs and linked targets
 remain independent. Validation precedes session allocation, including
 depth when contents are disabled. Source TOC metadata does not override these
 application choices. No standalone setting is exposed.
-This follows [W005 - Responsive navigation and quieter Org metadata](../specs/005-navigation-and-metadata/spec.org).
+This follows [W005 - Responsive navigation and quieter Org metadata](../tickets/005-navigation-and-metadata/spec.org).
 It supersedes W003's Org default-off choice; W003 had previously replaced W002's
 default-on choice. Existing explicit overrides retain their meaning.
 
@@ -1141,7 +1141,7 @@ phone annotation layout retains its explicit reader/pane split.
 
 ## Checkout installation and service replacement, 20 September 2026
 
-[W012 - Replace stale installation links and launchd services](../specs/012-install-service-replacement/spec.org)
+[W012 - Replace stale installation links and launchd services](../tickets/012-install-service-replacement/spec.org)
 supersedes the earlier refusal of mismatched user-local executable links and the
 load/unload service sequence. Default installation atomically replaces an existing
 symlink with the current checkout target, preserving the former target. Ordinary

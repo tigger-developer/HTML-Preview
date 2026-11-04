@@ -124,7 +124,7 @@ boundaries and design decisions.
 | Review and revise annotations | [Annotations](docs/ANNOTATIONS.md) |
 | Build and verify the project | [Development and packaging](docs/DEVELOPMENT.md) |
 | Understand purpose and design | [Vision](docs/VISION.md) and [architecture](docs/ARCHITECTURE.md) |
-| Check work and validation | [Work ledger](docs/work.org) and [Org](specs/011-conversion-performance/validation.org) and [Markdown](specs/014-native-markdown/validation.org) validation records |
+| Check work and validation | [Work ledger](docs/work.org) and [Org](tickets/011-conversion-performance/validation.org) and [Markdown](tickets/014-native-markdown/validation.org) validation records |
 
 The [previous detailed README](docs/archive/README-v6.md) is retained as a
 historical snapshot. Its installation, configuration, and development

@@ -138,13 +138,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/service/org.htmlpreview.agent.plist.tmpl
               sha256: feaef5a1391c6b8cee96a041be58d03210317160bec1904b63be27e749244c4d
               bytes: 769
-            - path: /Users/tigger/code/tigoss/html-preview/specs/012-install-service-replacement/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/012-install-service-replacement/spec.org
               sha256: 107b5f51fc923beb013d1041e760fe86d65f002896ea3750e73cf70e291b4ef4
               bytes: 12872
-            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/017-manager-service-restart/spec.org
               sha256: 4ee1a4db19962e5c85d06910b91bd5634e434aebb4f4c66eb5024fcf5e5d5b4d
               bytes: 12376
-            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/017-manager-service-restart/validation.org
               sha256: 337919e4b34d4f841bc8cef558b703173eeaeb2c4555ba4b663927aa39bf9202
               bytes: 3954
           round: 1
@@ -241,13 +241,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/service/org.htmlpreview.agent.plist.tmpl
               sha256: feaef5a1391c6b8cee96a041be58d03210317160bec1904b63be27e749244c4d
               bytes: 769
-            - path: /Users/tigger/code/tigoss/html-preview/specs/012-install-service-replacement/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/012-install-service-replacement/spec.org
               sha256: 107b5f51fc923beb013d1041e760fe86d65f002896ea3750e73cf70e291b4ef4
               bytes: 12872
-            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/017-manager-service-restart/spec.org
               sha256: 4ee1a4db19962e5c85d06910b91bd5634e434aebb4f4c66eb5024fcf5e5d5b4d
               bytes: 12376
-            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/017-manager-service-restart/validation.org
               sha256: 337919e4b34d4f841bc8cef558b703173eeaeb2c4555ba4b663927aa39bf9202
               bytes: 3954
           round: 2
@@ -409,13 +409,13 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/service/org.htmlpreview.agent.plist.tmpl
               sha256: feaef5a1391c6b8cee96a041be58d03210317160bec1904b63be27e749244c4d
               bytes: 769
-            - path: /Users/tigger/code/tigoss/html-preview/specs/012-install-service-replacement/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/012-install-service-replacement/spec.org
               sha256: 107b5f51fc923beb013d1041e760fe86d65f002896ea3750e73cf70e291b4ef4
               bytes: 12872
-            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/017-manager-service-restart/spec.org
               sha256: 4ee1a4db19962e5c85d06910b91bd5634e434aebb4f4c66eb5024fcf5e5d5b4d
               bytes: 12376
-            - path: /Users/tigger/code/tigoss/html-preview/specs/017-manager-service-restart/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/017-manager-service-restart/validation.org
               sha256: 337919e4b34d4f841bc8cef558b703173eeaeb2c4555ba4b663927aa39bf9202
               bytes: 3954
           round: 1

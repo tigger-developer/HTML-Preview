@@ -11,7 +11,7 @@ Go converter. Markdown uses bundled Goldmark 1.8.6; native HTML keeps its permit
 authored presentation. These formats need no Pandoc installation. Other document
 readers use optional Pandoc 3.9.0.2 or a later 3.9 patch. Discovery is lazy and a
 failed optional-reader request does not disable subsequent native previews. The
-[input-format validation record](../specs/008-input-formats/validation.org)
+[input-format validation record](../tickets/008-input-formats/validation.org)
 distinguishes automated checks from browser and platform validation.
 
 ## Selecting an input

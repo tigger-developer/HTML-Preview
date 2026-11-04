@@ -8,7 +8,7 @@ last-updated: 2026-10-04
 
 The optional service renders documents when a browser requests them. It listens
 only on `127.0.0.1`, on an automatically assigned HTTP port. There is no setting
-for another listening address. The [service validation record](../specs/006-local-preview-service/validation.org)
+for another listening address. The [service validation record](../tickets/006-local-preview-service/validation.org)
 separates automated checks from user tests; Linux/WSL validation remains pending.
 
 The project is licensed under Apache License 2.0. Font and dependency licences

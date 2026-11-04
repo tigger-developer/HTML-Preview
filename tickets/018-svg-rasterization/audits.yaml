@@ -159,10 +159,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: ea5ed5a254f3d34a592372f1d76a42888a7cf859eba6a6ea79d10f2e434da774
               bytes: 1476
-            - path: /Users/tigger/code/tigoss/html-preview/specs/018-svg-rasterization/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/018-svg-rasterization/spec.org
               sha256: 62b02b50b3866f34d926ef746c81c0d75b3aac0947ba301c1fd74248ffc5bd80
               bytes: 9949
-            - path: /Users/tigger/code/tigoss/html-preview/specs/018-svg-rasterization/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/018-svg-rasterization/validation.org
               sha256: 4f35fc4f7af2b6a5e7b3c32929d4c6eefb5bd1c89ca47d99bb7198826e4c63c7
               bytes: 3460
           round: 1
@@ -286,10 +286,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: ea5ed5a254f3d34a592372f1d76a42888a7cf859eba6a6ea79d10f2e434da774
               bytes: 1476
-            - path: /Users/tigger/code/tigoss/html-preview/specs/018-svg-rasterization/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/018-svg-rasterization/spec.org
               sha256: 62b02b50b3866f34d926ef746c81c0d75b3aac0947ba301c1fd74248ffc5bd80
               bytes: 9949
-            - path: /Users/tigger/code/tigoss/html-preview/specs/018-svg-rasterization/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/018-svg-rasterization/validation.org
               sha256: 4f35fc4f7af2b6a5e7b3c32929d4c6eefb5bd1c89ca47d99bb7198826e4c63c7
               bytes: 3460
           round: 2

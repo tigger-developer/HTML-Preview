@@ -117,16 +117,16 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
               sha256: 0ea88898e1377f2863ebabcd02b11d43a6b94883f7574712f7c80e38ef6a1870
               bytes: 10556
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
               bytes: 49831
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/validation.org
               sha256: e842d81cfa286c0ffa2aebb981506cba15576ef8b65a7145b39ea25c0e02d2b7
               bytes: 2409
-            - path: /Users/tigger/code/tigoss/html-preview/specs/016-markdown-reference-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/016-markdown-reference-annotations/spec.org
               sha256: 16eacdf3fb852467d8f99d526b0dbcb09906a7507d5744294ebdd741c14a0c25
               bytes: 6591
-            - path: /Users/tigger/code/tigoss/html-preview/specs/016-markdown-reference-annotations/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/016-markdown-reference-annotations/validation.org
               sha256: a4829c58712a74ec6094470037530b39352cb04af823c58a53051cec8ac23131
               bytes: 2132
             - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-reference.EuvxNU1WA6/go-mod/github.com/yuin/goldmark@v1.8.6/parser/link_ref.go
@@ -223,16 +223,16 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
               sha256: 0ea88898e1377f2863ebabcd02b11d43a6b94883f7574712f7c80e38ef6a1870
               bytes: 10556
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
               bytes: 49831
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/validation.org
               sha256: e842d81cfa286c0ffa2aebb981506cba15576ef8b65a7145b39ea25c0e02d2b7
               bytes: 2409
-            - path: /Users/tigger/code/tigoss/html-preview/specs/016-markdown-reference-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/016-markdown-reference-annotations/spec.org
               sha256: 16eacdf3fb852467d8f99d526b0dbcb09906a7507d5744294ebdd741c14a0c25
               bytes: 6591
-            - path: /Users/tigger/code/tigoss/html-preview/specs/016-markdown-reference-annotations/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/016-markdown-reference-annotations/validation.org
               sha256: c5f8171e3a6936bc0b3d440335880e080c2493110f96ce8c430d9d538150a37d
               bytes: 2299
             - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-reference.EuvxNU1WA6/go-mod/github.com/yuin/goldmark@v1.8.6/parser/link_ref.go
@@ -265,11 +265,11 @@ audits:
       external_round: 1
       status: passed
       updated: "2026-09-28T04:47:26Z"
-      revision: c26e488 (implementation/regression), 369b37f (supplemental validation); specs/016-markdown-reference-annotations/spec.org @ 16eacdf3
+      revision: c26e488 (implementation/regression), 369b37f (supplemental validation); tickets/016-markdown-reference-annotations/spec.org @ 16eacdf3
       verdict: PASS
       response: |-
         GATE: definition
-        REVISION: c26e488 (implementation/regression), 369b37f (supplemental validation); specs/016-markdown-reference-annotations/spec.org @ 16eacdf3
+        REVISION: c26e488 (implementation/regression), 369b37f (supplemental validation); tickets/016-markdown-reference-annotations/spec.org @ 16eacdf3
         VERDICT: PASS
 
         Assessment (Workflow: emergency, Review: retrospective — W016)
@@ -393,27 +393,27 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/service_cache_test.go
               sha256: 0ea88898e1377f2863ebabcd02b11d43a6b94883f7574712f7c80e38ef6a1870
               bytes: 10556
-            - path: /Users/tigger/code/tigoss/html-preview/specs/014-native-markdown/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/014-native-markdown/spec.org
               sha256: 133cddf994673b96598492a0fb93e84c4788bb27ad3c7ac4c93a93cb06c55a8c
               bytes: 49831
-            - path: /Users/tigger/code/tigoss/html-preview/specs/015-theme-toggle/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/015-theme-toggle/validation.org
               sha256: e842d81cfa286c0ffa2aebb981506cba15576ef8b65a7145b39ea25c0e02d2b7
               bytes: 2409
-            - path: /Users/tigger/code/tigoss/html-preview/specs/016-markdown-reference-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/016-markdown-reference-annotations/spec.org
               sha256: 16eacdf3fb852467d8f99d526b0dbcb09906a7507d5744294ebdd741c14a0c25
               bytes: 6591
-            - path: /Users/tigger/code/tigoss/html-preview/specs/016-markdown-reference-annotations/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/016-markdown-reference-annotations/validation.org
               sha256: c5f8171e3a6936bc0b3d440335880e080c2493110f96ce8c430d9d538150a37d
               bytes: 2299
             - path: /var/folders/wn/zk3zl2050rd7qkfgkfzn6rwr0000gp/T/htmlpreview-reference.EuvxNU1WA6/go-mod/github.com/yuin/goldmark@v1.8.6/parser/link_ref.go
               sha256: d6fdb79d57a0f15ec0c3f264d614eb750ae19db194ffe7d497a0e2467271656d
               bytes: 4015
           round: 1
-          revision: c26e488 (implementation/regression), 369b37f (supplemental validation); specs/016-markdown-reference-annotations/spec.org @ 16eacdf3
+          revision: c26e488 (implementation/regression), 369b37f (supplemental validation); tickets/016-markdown-reference-annotations/spec.org @ 16eacdf3
           verdict: PASS
           response: |-
             GATE: definition
-            REVISION: c26e488 (implementation/regression), 369b37f (supplemental validation); specs/016-markdown-reference-annotations/spec.org @ 16eacdf3
+            REVISION: c26e488 (implementation/regression), 369b37f (supplemental validation); tickets/016-markdown-reference-annotations/spec.org @ 16eacdf3
             VERDICT: PASS
 
             Assessment (Workflow: emergency, Review: retrospective — W016)

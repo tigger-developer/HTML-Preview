@@ -133,10 +133,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
               bytes: 1527
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/spec.org
               sha256: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5
               bytes: 3397
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/validation.org
               sha256: df144e2d90abf6f25b08f8932bae2b102a4dcda1ec4bd93e2071045b4ded8d59
               bytes: 1099
           round: 1
@@ -236,10 +236,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
               bytes: 1527
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/spec.org
               sha256: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5
               bytes: 3397
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/validation.org
               sha256: df144e2d90abf6f25b08f8932bae2b102a4dcda1ec4bd93e2071045b4ded8d59
               bytes: 1099
           round: 2
@@ -375,10 +375,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
               bytes: 1527
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/spec.org
               sha256: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5
               bytes: 3397
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/validation.org
               sha256: 03577c91c535d26e4d382719d3a2126ec81bef468bd994075a13bec1fb90008a
               bytes: 1344
           round: 3
@@ -511,10 +511,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
               bytes: 1527
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/spec.org
               sha256: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8
               bytes: 3660
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/validation.org
               sha256: 973f8dc8606b5f9970135f902e8c3b6a11c2ad81041c7e4d620f986621e22bf0
               bytes: 1502
           round: 4
@@ -549,11 +549,11 @@ audits:
       external_round: 2
       status: passed
       updated: "2026-10-04T22:23:10Z"
-      revision: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (specs/019-diagram-rendering/spec.org)
+      revision: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (tickets/019-diagram-rendering/spec.org)
       verdict: PASS
       response: |-
         GATE: definition
-        REVISION: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (specs/019-diagram-rendering/spec.org)
+        REVISION: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (tickets/019-diagram-rendering/spec.org)
         VERDICT: PASS
 
         Resolution of prior findings:
@@ -631,18 +631,18 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
               bytes: 1527
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/spec.org
               sha256: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5
               bytes: 3397
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/validation.org
               sha256: 03577c91c535d26e4d382719d3a2126ec81bef468bd994075a13bec1fb90008a
               bytes: 1344
           round: 1
-          revision: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5 (specs/019-diagram-rendering/spec.org)
+          revision: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5 (tickets/019-diagram-rendering/spec.org)
           verdict: FAIL
           response: |-
             GATE: definition
-            REVISION: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5 (specs/019-diagram-rendering/spec.org)
+            REVISION: 2c361992fe96cfd3dda7261a54aa26ea20d45376bcde8837319e2594e17178e5 (tickets/019-diagram-rendering/spec.org)
             VERDICT: FAIL
 
             Retrospective review (Workflow: emergency, Review: retrospective, BYPASS-GATE-7, scope: render explicit Mermaid and PlantUML blocks as bounded PNG while retaining source). No annotation records or blocks in spec.org; no feedback.yaml supplied; no duplicated audit state in spec.org, work.org or validation.org (validation states are test evidence). TDD evidence is present and RED was observed for the intended reason. Scope fidelity, proportionality and template inflation were explicitly assessed and are clean: the design stays inside the authorized change (packaging/service PATH exposure is a necessary delivery consequence, consistent with the W018 librsvg precedent), reuses the existing Host executor, limiter and media routes, and adds no mechanism to fill template sections.
@@ -728,18 +728,18 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/packaging/htmlpreview.rb.tmpl
               sha256: b7f8b0e791af41e62b2b4812ffe3016107ee9f374c8d5695df56634176182b52
               bytes: 1527
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/spec.org
               sha256: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8
               bytes: 3660
-            - path: /Users/tigger/code/tigoss/html-preview/specs/019-diagram-rendering/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/019-diagram-rendering/validation.org
               sha256: 973f8dc8606b5f9970135f902e8c3b6a11c2ad81041c7e4d620f986621e22bf0
               bytes: 1502
           round: 2
-          revision: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (specs/019-diagram-rendering/spec.org)
+          revision: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (tickets/019-diagram-rendering/spec.org)
           verdict: PASS
           response: |-
             GATE: definition
-            REVISION: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (specs/019-diagram-rendering/spec.org)
+            REVISION: 9405d7eeac817301c57e0f0c280326ca1d2a196d2bf364f263d1b3f05d8018c8 (tickets/019-diagram-rendering/spec.org)
             VERDICT: PASS
 
             Resolution of prior findings:

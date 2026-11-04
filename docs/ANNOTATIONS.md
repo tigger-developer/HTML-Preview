@@ -12,11 +12,11 @@ source. Read-only sources use an adjacent Org sidecar. Reading a page never
 creates annotations; file previews, code, plain text, binary documents and native
 HTML remain reading-only.
 
-The [native-footnote specification](../specs/009-reader-annotation-ux/spec.org) records this interface.
-Its [validation record](../specs/009-reader-annotation-ux/validation.org) retains
+The [native-footnote specification](../tickets/009-reader-annotation-ux/spec.org) records this interface.
+Its [validation record](../tickets/009-reader-annotation-ux/validation.org) retains
 the earlier Go/HTTP checks and human-test history. Later
-[Org](../specs/011-conversion-performance/validation.org) and
-[Markdown](../specs/014-native-markdown/validation.org) reader and annotation
+[Org](../tickets/011-conversion-performance/validation.org) and
+[Markdown](../tickets/014-native-markdown/validation.org) reader and annotation
 reviews passed. These results do not establish unperformed accessibility or
 Linux/WSL runtime checks.
 
@@ -24,7 +24,7 @@ Linux/WSL runtime checks.
 and attached comments to selections or whole documents. On 14 September 2026,
 native footnotes replaced that history. Verified block boundaries now determine
 new annotation positions. The
-[original specification](../specs/007-service-annotations/spec.org) retains the
+[original specification](../tickets/007-service-annotations/spec.org) retains the
 historical contract. Current saves retain only each annotation's latest value.
 
 ## Start and annotate
@@ -153,7 +153,7 @@ available. Markdown notes use their own continuation indentation rules; Markdown
 sources saved to an Org sidecar follow the Org guard. Blank lines within Org
 blocks remain intact. The writer still rejects text that would escape its
 footnote boundary. See the [Org footnote syntax](https://orgmode.org/manual/Creating-Footnotes.html)
-and [W013 - UX fixes and improvements](../specs/013-ux-fixes-and-improvements/spec.org).
+and [W013 - UX fixes and improvements](../tickets/013-ux-fixes-and-improvements/spec.org).
 
 ## Reading and source inspection
 

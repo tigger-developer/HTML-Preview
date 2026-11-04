@@ -33,7 +33,7 @@ service and a consistent, self-contained reading presentation.
   establish those results.
 - The native Markdown migration was accepted and merged on 20 September 2026,
   with reading and annotation user validation recorded in
-  [W014 validation](../specs/014-native-markdown/validation.org).
+  [W014 validation](../tickets/014-native-markdown/validation.org).
 
 See [usage](../README.md), [formats](FORMATS.md), [service configuration](SERVICE.md)
 and [annotations](ANNOTATIONS.md) for the current interfaces.
@@ -51,23 +51,23 @@ tests remain unexecuted.
 
 ## Native Org previews
 
-[W011 - Fast Org previews](../specs/011-conversion-performance/spec.org)
+[W011 - Fast Org previews](../tickets/011-conversion-performance/spec.org)
 replaces Org conversion with bundled Go code while preserving reading,
 annotation and source-protection behaviour. W014 subsequently adds native Markdown
 conversion; Pandoc remains optional for other readers. The earlier Pandoc-only conversion
 descriptions below are retained as history. Performance and compatibility
-evidence are recorded in [W011 validation](../specs/011-conversion-performance/validation.org);
+evidence are recorded in [W011 validation](../tickets/011-conversion-performance/validation.org);
 browser review remains separate from automated checks.
 
 **Status:** Product direction approved on 8 September 2026 through
-[the local-preview specification](../specs/001-local-document-preview/spec.org).
+[the local-preview specification](../tickets/001-local-document-preview/spec.org).
 That approval includes opt-in linked browsing. Implementation and verification
 are in progress; the proposal wording below records the design's development
 and does not establish release qualification.
 
 ## Local service proposal - 11 September 2026
 
-[W006 - Local preview service and automatic fallback](../specs/006-local-preview-service/spec.org)
+[W006 - Local preview service and automatic fallback](../tickets/006-local-preview-service/spec.org)
 defines an optional per-user HTTP service that renders linked documents on
 request. The command uses it only for configured directory trees; otherwise it
 retains a single-document file preview. Hardcoded loopback binding and random
@@ -81,7 +81,7 @@ requirements remain. Its specification records the approved token lifetime,
 compatibility and asset contracts; runtime qualification remains future work.
 
 The service is now an implementation candidate with its development evidence
-and pending native checks recorded in [W006 validation](../specs/006-local-preview-service/validation.org).
+and pending native checks recorded in [W006 validation](../tickets/006-local-preview-service/validation.org).
 It replaces the historical graph workflow below with requested-document HTTP
 rendering and single-document file fallback. The [service guide](SERVICE.md)
 describes explicit configuration, activation and rollback. Reading still leaves
@@ -97,7 +97,7 @@ continues to use an explicit user configuration.
 
 ## Annotation proposal - 12 September 2026
 
-[W007 - Attributed autosaved annotations in service previews](../specs/007-service-annotations/spec.org)
+[W007 - Attributed autosaved annotations in service previews](../tickets/007-service-annotations/spec.org)
 proposes named comments in service mode after W006 is delivered and qualified.
 Comments autosave into semantically identified source records, with adjacent Org
 sidecars for read-only sources. Open previews refresh when the source changes,
@@ -124,7 +124,7 @@ platform and human checks without treating implementation as qualification.
 
 ## Input format proposal - 12 September 2026
 
-[W008 - Preview Pandoc documents, source code and plain text](../specs/008-input-formats/spec.org)
+[W008 - Preview Pandoc documents, source code and plain text](../tickets/008-input-formats/spec.org)
 extends the initial Org/Markdown scope to every installed Pandoc built-in reader,
 common source-code files, plain text and passive native HTML. Code and text use
 temporary Org wrappers with filename and application-version metadata. Ordinary
@@ -150,7 +150,7 @@ does not extend annotation writes beyond genuine Org/Markdown sources.
 
 ## Reader and footnote proposal - 14 September 2026
 
-[W009 - Persistent reader controls and native footnote annotations](../specs/009-reader-annotation-ux/spec.org)
+[W009 - Persistent reader controls and native footnote annotations](../tickets/009-reader-annotation-ux/spec.org)
 is the implementation candidate following the annotation review. A persistent full-width info bar
 puts the home-abbreviated source path left and visibly stateful controls right.
 Navigation sizes to its content. Annotation mode opens a composer at a clicked
@@ -180,7 +180,7 @@ above; those paragraphs describe the existing candidate and its original design.
 The candidate retains the service/root boundary and uses verified source patches,
 current-value replacement and legacy reading/import. Read-only sources use sidecars
 with virtual preview markers; unselected native footnotes remain untouched.
-[W009 validation](../specs/009-reader-annotation-ux/validation.org) records the
+[W009 validation](../tickets/009-reader-annotation-ux/validation.org) records the
 current objective checks and pending paired browser/platform qualification.
 The earlier W007 event-history description is superseded by this candidate.
 
@@ -253,11 +253,11 @@ Fidelity means preserving useful document structure and meaning. It does not
 promise a full Emacs implementation or execution of Org source blocks.
 
 The code-copying, margin-bar and contents direction was approved through
-[W002 - Code and document navigation](../specs/002-code-and-outline/spec.org)
+[W002 - Code and document navigation](../tickets/002-code-and-outline/spec.org)
 on 8 September 2026. Standalone output is always enabled.
-The operator's later [W003 - Format-specific contents defaults](../specs/003-format-contents-defaults/spec.org)
+The operator's later [W003 - Format-specific contents defaults](../tickets/003-format-contents-defaults/spec.org)
 changed the Org default to off, superseding W002's initial default-on setting.
-The later [W005 - Responsive navigation and quieter Org metadata](../specs/005-navigation-and-metadata/spec.org)
+The later [W005 - Responsive navigation and quieter Org metadata](../tickets/005-navigation-and-metadata/spec.org)
 replaces that default with navigation enabled for both formats. Tags become
 plain muted-pink text; drawers present property rows or unboxed free text,
 without repeated source delimiters. Explicit navigation overrides remain.

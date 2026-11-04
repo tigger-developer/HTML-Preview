@@ -149,19 +149,19 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
               sha256: 34ba926717fc378e566bd3e18cc1ef590c9349ca7e9b8131a2cdef895eaf7e73
               bytes: 13615
-            - path: /Users/tigger/code/tigoss/html-preview/specs/005-navigation-and-metadata/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/005-navigation-and-metadata/spec.org
               sha256: 56f4efc28c729bf89fcfd30296a44dd4ea4b24abe1c91a5d8c18e9f8e4a6c06f
               bytes: 12451
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/007-service-annotations/spec.org
               sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
               bytes: 85482
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: 25a6d9df11dd01883c7c1eb06934a13acfc91c3f40fdf94c3a54e1cfe349e44f
               bytes: 38677
           round: 1
@@ -301,19 +301,19 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
               sha256: 34ba926717fc378e566bd3e18cc1ef590c9349ca7e9b8131a2cdef895eaf7e73
               bytes: 13615
-            - path: /Users/tigger/code/tigoss/html-preview/specs/005-navigation-and-metadata/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/005-navigation-and-metadata/spec.org
               sha256: 56f4efc28c729bf89fcfd30296a44dd4ea4b24abe1c91a5d8c18e9f8e4a6c06f
               bytes: 12451
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/007-service-annotations/spec.org
               sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
               bytes: 85482
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: 1baa1168cc0a1471ab4097972455ef33dd7401cb81a581029b597c02a9c33ba0
               bytes: 70638
           round: 2
@@ -545,19 +545,19 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
               sha256: 0229fa2e275ce80c5cca609caf64c7490e24ec9c5fd407a29b629545d0624256
               bytes: 16277
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/007-service-annotations/spec.org
               sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
               bytes: 85482
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: faeb34f3231619f3887184ab57126bee7f2a7fcf75d88366d645d3ae6103c542
               bytes: 75682
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/validation.org
               sha256: 94a17f42d1fb273693c61a9e0bf26303dc10543608b93a1228aee226a50e644b
               bytes: 6074
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json
@@ -779,19 +779,19 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
               sha256: 0229fa2e275ce80c5cca609caf64c7490e24ec9c5fd407a29b629545d0624256
               bytes: 16277
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/007-service-annotations/spec.org
               sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
               bytes: 85482
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: 4dd796d4da7bc7eeb82def35d5bf99ee6c05f62932632710674ff9635106e006
               bytes: 79269
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/validation.org
               sha256: c70c055ac935d4afb743f939c5bbae5c993a2f2854365f762f0d3f1c27fa6916
               bytes: 12384
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json
@@ -1026,19 +1026,19 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
               sha256: 0229fa2e275ce80c5cca609caf64c7490e24ec9c5fd407a29b629545d0624256
               bytes: 16277
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/007-service-annotations/spec.org
               sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
               bytes: 85482
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: c42ee6d8744dbd6ae7811a8e2dcd1bc3a835032c96fce28879bd82f2da5ef668
               bytes: 81255
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/validation.org
               sha256: 621257faffdc6605fd7b68229726a73e13a027724fe1bc14e5191eb28775a05e
               bytes: 14304
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json
@@ -1246,19 +1246,19 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
               sha256: 0229fa2e275ce80c5cca609caf64c7490e24ec9c5fd407a29b629545d0624256
               bytes: 16277
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/007-service-annotations/spec.org
               sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
               bytes: 85482
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: c42ee6d8744dbd6ae7811a8e2dcd1bc3a835032c96fce28879bd82f2da5ef668
               bytes: 81255
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/validation.org
               sha256: 621257faffdc6605fd7b68229726a73e13a027724fe1bc14e5191eb28775a05e
               bytes: 14304
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json
@@ -1514,19 +1514,19 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
               sha256: 0229fa2e275ce80c5cca609caf64c7490e24ec9c5fd407a29b629545d0624256
               bytes: 16277
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/007-service-annotations/spec.org
               sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
               bytes: 85482
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: bb8573465acf626fc3eeefa727fffbca15e49b05c329d28445dd92d8e1d65511
               bytes: 80277
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/validation.org
               sha256: d5dbff29636109edcb9fca03ef575147bf5de9c2be8899d00a0697759f2e6750
               bytes: 20894
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json
@@ -1750,22 +1750,22 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/testdata/annotations-browser.js
               sha256: 0229fa2e275ce80c5cca609caf64c7490e24ec9c5fd407a29b629545d0624256
               bytes: 16277
-            - path: /Users/tigger/code/tigoss/html-preview/specs/006-local-preview-service/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/006-local-preview-service/spec.org
               sha256: fbfe673519fe103fed2a004967ba96485956bc7fc2f4a781c111308bc319ea99
               bytes: 93437
-            - path: /Users/tigger/code/tigoss/html-preview/specs/007-service-annotations/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/007-service-annotations/spec.org
               sha256: 695fb5540d8c9945c4aed0592011303f5a377fe87e905790cad9c7d570015fdc
               bytes: 85482
-            - path: /Users/tigger/code/tigoss/html-preview/specs/008-input-formats/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/008-input-formats/spec.org
               sha256: 56b87c7a95b3c0fbc048bf7970b8043e32f13cad829954611e2d8c43a145e3f5
               bytes: 62969
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/feedback.yaml
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/feedback.yaml
               sha256: 0c7a7fa348d945020013bf7fc02c1597e8099b4becc012fa170dce6335af9f19
               bytes: 3478
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/spec.org
               sha256: 97344813250ae785a543dda8ac187787c06791b06c21a0b5108cdaa56b080d88
               bytes: 77602
-            - path: /Users/tigger/code/tigoss/html-preview/specs/009-reader-annotation-ux/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/009-reader-annotation-ux/validation.org
               sha256: e10bae2d6dc07c2a7fab44ed73617bbc34bec8041d54141f219ee135c176b37c
               bytes: 21060
             - path: /Users/tigger/code/tigoss/html-preview/testdata/annotation-text.json

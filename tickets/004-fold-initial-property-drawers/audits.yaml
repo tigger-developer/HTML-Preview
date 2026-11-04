@@ -63,10 +63,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
               sha256: 182ba2a4227e42498f22024d922be5c47d64971f176b2763170f0e1e5a63b78a
               bytes: 12104
-            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/004-fold-initial-property-drawers/spec.org
               sha256: 08ec9246b0bad5c830499a61278dd07f6490132646907ba647c3e4b50e06ffb5
               bytes: 25923
-            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/004-fold-initial-property-drawers/validation.org
               sha256: 15a8071d066828f23d409b0b63e8b41562f5345629dbee85b16d3cfb9f82cf1c
               bytes: 4670
           round: 1
@@ -138,10 +138,10 @@ audits:
             - path: /Users/tigger/code/tigoss/html-preview/internal/preview/render.go
               sha256: 182ba2a4227e42498f22024d922be5c47d64971f176b2763170f0e1e5a63b78a
               bytes: 12104
-            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/spec.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/004-fold-initial-property-drawers/spec.org
               sha256: 709c18dbc5a4ec64a7f6de6596bc30a2bce6a59fe3f3db8ae99ae7afe750ca27
               bytes: 26587
-            - path: /Users/tigger/code/tigoss/html-preview/specs/004-fold-initial-property-drawers/validation.org
+            - path: /Users/tigger/code/tigoss/html-preview/tickets/004-fold-initial-property-drawers/validation.org
               sha256: 7ee15c87f3b7f39b7174502c6775cc84c5275837334c72c06e4cda746aae01a3
               bytes: 6538
           round: 2

@@ -863,7 +863,7 @@ contract without adding a new converter path or changing source syntax.
   temporary archive; candidate is the release-ready W011 branch. Record complete
   revisions and toolchain versions. Do not modify the live service.
 - Corpus :: Freeze three local copies: the authorized approximately 532 kB long
-  Org document, =docs/work.org=, and =specs/009-reader-annotation-ux/spec.org=.
+  Org document, =docs/work.org=, and =tickets/009-reader-annotation-ux/spec.org=.
   Record sizes/hashes and use the exact same bytes for both builds. If the private
   corpus is unavailable, record the benchmark unavailable; do not claim a
   substitute proves its numeric target.
