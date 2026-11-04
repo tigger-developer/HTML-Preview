@@ -432,6 +432,17 @@ validation. Current contracts take precedence over superseded requirements.
 - Evidence :: [[file:../tickets/020-org-underline/validation.org][Underline validation]]
   and [[file:../tickets/020-org-underline/internal-review.md][internal reviews]].
 
+** ACTIVE W021 - Full-width reading and theme-neutral document copying :feature:defect:
+:PROPERTIES:
+:CUSTOM_ID: w-021
+:CREATED: 2026-11-04
+:END:
+
+- Scope :: *Use available reader width* and add *Copy doc* with semantic HTML
+  and plain text, excluding preview colours and controls.
+- Specification :: =tickets/W021-width-and-document-copy/spec.org=;
+  emergency reconciliation pending.
+
 * Migration record
 :PROPERTIES:
 :VISIBILITY: folded
