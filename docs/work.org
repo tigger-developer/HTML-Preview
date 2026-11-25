@@ -5,19 +5,26 @@
 #+TAGS: feature defect maintenance migration legacy
 #+OPTIONS: toc:2 num:nil
 
-* Current emergency reservation
+* Current emergency work
 
-** ACTIVE W022 - Paragraph-end references in Markdown quotations :defect:feature:
+** BLOCKED W022 - Paragraph-end references in Markdown quotations :defect:feature:
 :PROPERTIES:
 :CUSTOM_ID: w-022
 :SOURCE: operator
 :CREATED: 2026-11-25
 :END:
 
-Emergency reconciliation pending at
+Reservation published on 2026-11-25; reconciled at
 [[file:../tickets/W022-quoted-paragraph-annotations/spec.org][W022 - Paragraph-end references in Markdown quotations]].
 Scope: restore chapter annotation targets and append references to the selected
 quoted paragraph without changing enclosing lists. Sentence-level placement is excluded.
+Implementation and selected regression checks are recorded in
+[[file:../tickets/W022-quoted-paragraph-annotations/validation.org][W022 - Verification evidence]].
+Delivery readiness is blocked by existing lint findings and two reachable
+golang.org/x/net vulnerabilities. No service activation has occurred.
+[[file:../tickets/W022-quoted-paragraph-annotations/audits.yaml][W022 - Review record]]
+contains no reviews: readiness refused admission; retrospective review and user
+validation remain pending.
 
 This is the project's canonical work and requirements index. Each fact has one
 authoritative representation:

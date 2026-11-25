@@ -1,0 +1,91 @@
+#+TITLE: W022 - Quoted paragraph annotation verification
+#+TODO: AMBER RED | GREEN
+#+STARTUP: overview
+
+* Candidate and method
+Verification on 2026-11-25, macOS arm64, using native Go and HTTP tests.
+Implementation candidate: =7307eca= (paragraph-end quotation references).
+No Node packages, headless browsers, Chromium or Chrome tests were introduced or run.
+The whole regression suite was not run. Each selected test command used a 60-second
+limit; the document diagnostic used 45 seconds. Go caches were confined to an
+OS-allocated temporary directory. No service activation or source-document write occurred.
+
+* GREEN RT022.1 - HTTP placement and preservation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-022-1
+:REVISION: 7307eca
+:COMMAND: go test ./internal/preview -run 'TestHTTPBlockAnnotations|TestRT014_[45]_|TestHTTPRepeatedBlockNotesAndHeadingAnchor' -count=1 -timeout=60s
+:EVIDENCE: PASS; final run 6.702 seconds, including quoted paragraph creation, surrounding targets, repeated notes and existing guarded-write cases.
+:END:
+** Intended RED
+Before production edits, nested quotation, chapter heading and following-paragraph
+cases reported no eligible target. The amended standalone quotation case saved
+a reference after the entire quotation instead of the selected paragraph.
+Selected RED run: 0.242 seconds, exit 1.
+** Fixture correction
+An initial expanded repeated-note fixture reused one source pathname across
+cases, producing a cached browser revision mismatch. Each case now uses a distinct
+pathname; no production cache behaviour was changed. Subsequent selected runs
+passed, including the final candidate above.
+
+* GREEN RT022.2 - Annotation package preservation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-022-2
+:REVISION: 7307eca
+:COMMAND: go test ./internal/annotation -count=1 -timeout=60s
+:EVIDENCE: PASS; final run 2.098 seconds. Existing source, codec and guarded mutation assertions passed.
+:END:
+Preservation evidence; no artificial RED was introduced for unchanged behaviour.
+
+* GREEN OT022.1 - Reported document mapping :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-022-1
+:REVISION: 7307eca
+:EVIDENCE: Temporary Go overlay rendered the supplied chapters document with 20 verified targets; original baseline had only title and introduction. Final diagnostic rerun passed in 0.063 seconds.
+:END:
+The temporary diagnostic used the renderer and block verifier directly. It made
+no annotation save and did not open a browser. It establishes server-rendered
+target availability, not actual user interaction. Personal document text remains
+outside repository fixtures.
+
+* RED OT022.2 - Build and static verification :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-022-2
+:REVISION: 7307eca
+:EVIDENCE: Build, go vet, gofmt and git diff --check passed. Selected Go lint rules reported 37 findings in unchanged files; the combined static check remains RED.
+:END:
+- =make build= exited 0; =go vet ./internal/annotation ./internal/preview= exited 0.
+- =gofmt -l= on the three changed Go files emitted no filenames.
+- =git diff --check= exited 0.
+- The installed golangci-lint requires v2 configuration. Its migrate command
+  converted a temporary copy of the project's configuration, retaining the
+  configured rule selection; the repository configuration was not changed.
+- =golangci-lint run --config <temporary migrated config> --timeout=60s ./internal/annotation ./internal/preview=
+  exited 1: errcheck 1, gosec 16, staticcheck 20. No diagnostic named a changed file.
+- Examples: unchecked close in =internal/preview/diagram.go:91=; integer-to-rune
+  conversions in =internal/preview/css.go:210= and =:213=; existing staticcheck
+  findings in =internal/annotation/native_attribution_test.go= and other files.
+- Findings are retained as blockers, not waived or classified as false positives.
+- Sanitization processed the updated documentation. New prose required no changes;
+  existing quoted UI labels in the annotation guide retain their actual glyphs.
+
+* RED OT022.3 - Application vulnerability gate :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-022-3
+:REVISION: 7307eca
+:EVIDENCE: make vulncheck exited 2; govulncheck reported two reachable vulnerabilities in the unchanged golang.org/x/net v0.58.0 dependency, both addressed in v0.62.0.
+:END:
+- GO-2026-6866 - Ancestor namespace transitions during raw-text HTML rendering;
+  reported path through =orgconvert.footnoteBacklink= to =html.Render=.
+- GO-2026-6860 - Quadratic text-node coalescing;
+  reported paths through =orgconvert.headingID= to =html.Parse= and
+  =orgconvert.footnoteBacklink= to =html.ParseFragment=.
+- No dependency changes or exceptions were made. Dependency remediation is
+  outside this bounded annotation change.
+
+* AMBER UT022.1 - Browser annotation interaction :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-022-1
+:REASON: Awaiting passing verification gates, activated candidate and user validation. Running service was not restarted.
+:END:
+Method: user validation, following the specification's browser procedure.
