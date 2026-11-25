@@ -5,6 +5,20 @@
 #+TAGS: feature defect maintenance migration legacy
 #+OPTIONS: toc:2 num:nil
 
+* Current emergency reservation
+
+** ACTIVE W022 - Paragraph-end references in Markdown quotations :defect:feature:
+:PROPERTIES:
+:CUSTOM_ID: w-022
+:SOURCE: operator
+:CREATED: 2026-11-25
+:END:
+
+Emergency reconciliation pending at
+[[file:../tickets/W022-quoted-paragraph-annotations/spec.org][W022 - Paragraph-end references in Markdown quotations]].
+Scope: restore chapter annotation targets and append references to the selected
+quoted paragraph without changing enclosing lists. Sentence-level placement is excluded.
+
 This is the project's canonical work and requirements index. Each fact has one
 authoritative representation:
 
