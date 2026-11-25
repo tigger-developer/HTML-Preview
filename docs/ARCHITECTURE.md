@@ -1,7 +1,7 @@
 ---
 title: Architecture
-version: 14
-last-updated: 2026-11-04
+version: 15
+last-updated: 2026-11-25
 ---
 
 # Architecture
@@ -29,6 +29,12 @@ confirmed-delete operations. Source-bound block probes establish eligible
 insertion boundaries. Directory notifications drive server-sent events; the
 browser defers display updates during typing while saves continue independently.
 The [annotation guide](ANNOTATIONS.md) defines the current interaction and limits.
+
+Markdown quotation probes use Goldmark paragraph source spans. References stay
+at the selected paragraph end, preserving quotation and list structure during
+proof and saving. The existing rendered-structure comparison still rejects
+unverified boundaries. This supersedes whole-quotation reference placement for
+new Markdown annotations; Org containers retain their existing placement.
 
 The converted-page info bar includes a theme toggle before the filename.
 System colour-scheme detection remains the default; an explicit choice lives

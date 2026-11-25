@@ -8,7 +8,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/text"
 )
@@ -54,6 +56,12 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 			definitions.WriteString(":")
 		}
 		definitions.WriteString(" " + key + ending)
+	}
+	quoteEnds := make(map[int]bool)
+	if format != "org" {
+		for _, offset := range markdownQuoteParagraphEnds(data) {
+			quoteEnds[offset] = true
+		}
 	}
 
 	literal := literalContext{}
@@ -118,11 +126,11 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 				continue
 			}
 		}
+		if end := line.offset + len(strings.TrimRight(line.text, " \t\r")); quoteEnds[end] {
+			add(end, false, "")
+			continue
+		}
 		if format != "org" && strings.HasPrefix(trim, ">") {
-			if i+1 == len(lines) || !strings.HasPrefix(strings.TrimSpace(lines[i+1].text), ">") {
-				offset, after := afterBlockBoundary(lines, i, format)
-				add(offset, after, "quote")
-			}
 			continue
 		}
 		if format == "org" && drawerNameForAnnotation(trim) {
@@ -181,6 +189,35 @@ func MarkBlocks(data []byte, format, token string) ([]byte, map[string]BlockBoun
 		return nil, nil, err
 	}
 	return marked, candidates, nil
+}
+
+// Parser-owned paragraph spans keep references inside quotations and enclosing
+// list items, without probing literal code or inserting container-breaking lines.
+func markdownQuoteParagraphEnds(data []byte) []int {
+	md := goldmark.New(goldmark.WithExtensions(extension.Table, extension.DefinitionList, extension.Footnote))
+	root := md.Parser().Parse(text.NewReader(data))
+	var ends []int
+	var visit func(ast.Node)
+	visit = func(n ast.Node) {
+		if n.Kind() == ast.KindParagraph || n.Kind() == ast.KindTextBlock {
+			for parent := n.Parent(); parent != nil; parent = parent.Parent() {
+				if parent.Kind() != ast.KindBlockquote {
+					continue
+				}
+				if lines := n.Lines(); lines.Len() > 0 {
+					last := lines.At(lines.Len() - 1)
+					end := last.Start + len(bytes.TrimRight(data[last.Start:last.Stop], " \t\r\n"))
+					ends = append(ends, end)
+				}
+				break
+			}
+		}
+		for child := n.FirstChild(); child != nil; child = child.NextSibling() {
+			visit(child)
+		}
+	}
+	visit(root)
+	return ends
 }
 
 // Ask the existing Markdown parser which lines form hidden reference definitions.

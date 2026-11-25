@@ -1,7 +1,7 @@
 ---
 title: Document annotations
-version: 10
-last-updated: 2026-09-28
+version: 11
+last-updated: 2026-11-25
 ---
 
 # Document annotations
@@ -60,6 +60,10 @@ is appended at the block boundary, outside inline formatting and links. Code
 blocks, tables, rendered Org blocks and Markdown headings use a following
 `Annotations:` paragraph; repeated
 annotations extend that paragraph. This preserves Markdown heading anchors.
+Markdown quotations instead attach references to the end of the selected
+paragraph, inside its quotation and enclosing list item. Footnote definitions
+remain at the document end. This supersedes whole-quotation placement for new
+Markdown annotations; existing references remain readable and editable.
 Table cells and nested Org blocks belong to the whole outer block; their notes
 go after its closing syntax. Hidden comments and drawers remain inactive.
 Unsupported locations do not open a composer. After close, the normal footnote

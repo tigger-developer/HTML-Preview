@@ -25,7 +25,10 @@ func markdownBlockCases() []markdownBlockCase {
 		{"definition", "Term\n: Definition body with *definition emphasis*.\n", "definition emphasis", ": Definition body with *definition emphasis*."},
 		{"heading", "## Annotation heading\n", "Annotation heading", "## Annotation heading\n\nAnnotations: "},
 		{"table", "| Column | Value |\n|--------|-------|\n| Cell | Other |\n", "Cell", "| Cell | Other |\n\nAnnotations: "},
-		{"quote", "> Quoted paragraph.\n>\n> Another quoted paragraph.\n", "Quoted paragraph", "> Another quoted paragraph.\n\nAnnotations: "},
+		{"quote", "> Quoted paragraph.\n>\n> Another quoted paragraph.\n", "Quoted paragraph", "> Quoted paragraph."},
+		{"nested-quote", "## Quotation chapter\n\n1. List introduction.\n\n   > Nested quoted paragraph.\n   > Its final sentence.\n\n2. Next item.\n", "Nested quoted paragraph", "   > Its final sentence."},
+		{"quote-lazy", "> Lazy quoted paragraph\ncontinues without a prefix.\n", "Lazy quoted paragraph", "continues without a prefix."},
+		{"quote-code-neighbour", "> Prose beside quoted code.\n>\n> ```text\n> Literal code stays literal.\n> ```\n", "Prose beside quoted code", "> Prose beside quoted code."},
 		{"code", "```go\nprintln(\"source block\")\n```\n", "source block", "```\n\nAnnotations: "},
 	}
 }
@@ -226,28 +229,30 @@ func TestRT014_4_MarkdownRejectsUnverifiedTargets(t *testing.T) {
 
 func TestRT014_5_TwoNotesAtParagraphEnd(t *testing.T) {
 	s := startTestService(t, NativeHost())
-	path := source(t, s.root, "two.md", "An entire paragraph.\n\nAn unrelated paragraph.\n")
-	endpoint := annotationRegistrationURL(t, s, path, "Reviewer")
-	pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
-	for i := 1; i <= 2; i++ {
-		main, state := markdownBrowserPage(t, s, pageURL)
-		markdownCreateAtBlock(t, s, state, assertClickableAnnotationText(t, main, "An entire paragraph"), fmt.Sprintf("reviewer-%03d", i), i)
-	}
-	saved := readMarkdownSource(t, path)
-	if !strings.HasPrefix(saved, "An entire paragraph.[^reviewer-001][^reviewer-002]\n\nAn unrelated paragraph.\n") {
-		t.Fatal("successive references not at exact paragraph end")
-	}
-	status, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
-	if status != 200 {
-		t.Fatal(status)
-	}
-	notes := state["footnotes"].([]any)
-	if len(notes) != 2 {
-		t.Fatal("sidebar note count", len(notes))
-	}
-	for i, n := range notes {
-		if n.(map[string]any)["label"] != fmt.Sprintf("reviewer-%03d", i+1) {
-			t.Fatal("sidebar label mismatch")
+	for index, prefix := range []string{"", "> ", "1. List item.\n\n   > "} {
+		path := source(t, s.root, fmt.Sprintf("two-%d.md", index), prefix+"An entire paragraph.\n\nAn unrelated paragraph.\n")
+		endpoint := annotationRegistrationURL(t, s, path, "Reviewer")
+		pageURL := strings.Replace(endpoint, "/_annotations/v2/", "/", 1)
+		for i := 1; i <= 2; i++ {
+			main, state := markdownBrowserPage(t, s, pageURL)
+			markdownCreateAtBlock(t, s, state, assertClickableAnnotationText(t, main, "An entire paragraph"), fmt.Sprintf("reviewer-%03d", i), i)
+		}
+		saved := readMarkdownSource(t, path)
+		if !strings.HasPrefix(saved, prefix+"An entire paragraph.[^reviewer-001][^reviewer-002]\n\nAn unrelated paragraph.\n") {
+			t.Fatal("successive references not at exact paragraph end")
+		}
+		status, state := annotationJSON(t, s, "GET", endpoint, nil, nil)
+		if status != 200 {
+			t.Fatal(status)
+		}
+		notes := state["footnotes"].([]any)
+		if len(notes) != 2 {
+			t.Fatal("sidebar note count", len(notes))
+		}
+		for i, n := range notes {
+			if n.(map[string]any)["label"] != fmt.Sprintf("reviewer-%03d", i+1) {
+				t.Fatal("sidebar label mismatch")
+			}
 		}
 	}
 }

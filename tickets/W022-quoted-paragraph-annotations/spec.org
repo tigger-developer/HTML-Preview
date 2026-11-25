@@ -1,0 +1,156 @@
+#+TITLE: W022 - Paragraph-end references in Markdown quotations
+#+SCHEMA: 12
+#+STARTUP: overview
+#+OPTIONS: toc:2 num:nil
+#+OPERATOR_SIGNOFF: PENDING
+
+* Synopsis
+:PROPERTIES:
+:CUSTOM_ID: summary
+:END:
+** Outcome
+- Markdown quotations *remain annotatable* within numbered lists.
+** Before
+- Temporary references terminate lists and invalidate *whole chapter mappings*.
+** After
+- New references attach to the *selected paragraph end*, inside the quotation.
+- Footnote definitions *remain at the document end*.
+** Changes
+- Goldmark paragraph spans replace after-quotation insertion candidates.
+** Unchanged
+- Heading, table, code and Org placement, guarded writes and existing notes remain unchanged.
+** Edge cases
+- Wrapped paragraphs, multiple quoted paragraphs, repeated notes and neighbouring code preserve their source structure.
+** Decisions
+- Sentence-level placement is *out of scope*; no Writeback integration is included.
+** Next step
+- Resolve required verification blockers, review the candidate, then perform user validation.
+
+-----
+
+* Context
+:PROPERTIES:
+:CUSTOM_ID: context
+:END:
+** Problem and scope
+A Markdown document containing numbered list items with indented quotations exposed
+only its title and introduction as annotation targets. Temporary unindented
+references split lists; rendered-structure pairing then rejected the chapter subtrees.
+The emergency scope covers *paragraph-end references* in Markdown quotations and
+restoration of surrounding annotation targets. It excludes sentence segmentation,
+cell-level table annotations, service lifecycle changes and dependency upgrades.
+
+** Authority and starting point
+- Delivery authority :: BYPASS-GATE-7, 2026-11-25; subsequently clarified to paragraph-end quotation references. This specification is retrospective, not advance sign-off.
+- Profile :: [[file:../../.sdlc/project.yaml][Project profile]].
+- Product :: [[file:../../docs/ANNOTATIONS.md][Document annotation contract]].
+- Architecture :: [[file:../../docs/ARCHITECTURE.md][Source-bound block verification]].
+- Baseline :: [[file:../014-native-markdown/spec.org][W014 - Native Markdown previews]] and its maintained HTTP annotation regressions.
+- Supersession :: New Markdown quotation notes use the selected paragraph rather than the whole quotation. Existing notes retain their positions.
+- Constraints :: Existing Go/HTTP harness only; no Node packages or browser automation. Each selected check has a bounded timeout.
+
+* Acceptance Criteria
+** AC022.1 - Quoted paragraph references preserve surrounding structure :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-022-1
+:END:
+New quotation references attach at the *selected paragraph end*, including wrapped
+paragraphs and quotations within lists. Other paragraphs and headings remain
+annotatable. Successive notes append successive references without moving earlier ones.
+Definitions remain at the document end.
+- Proven by :: [[#rt-022-1][RT022.1 - HTTP placement and preservation]], [[#ot-022-1][OT022.1 - Reported document mapping]] and [[#ut-022-1][UT022.1 - Browser annotation interaction]].
+
+** AC022.2 - Existing annotation boundaries remain protected :ac:
+:PROPERTIES:
+:CUSTOM_ID: ac-022-2
+:END:
+Literal code and footnote definitions receive *no new inline annotation targets*.
+Heading, table, code and Org placement retain their existing semantics. Existing
+notes remain readable and editable; stale or forged writes remain rejected.
+- Proven by :: [[#rt-022-1][RT022.1 - HTTP placement and preservation]] and [[#rt-022-2][RT022.2 - Annotation package preservation]].
+
+* Test Definitions
+** RT022.1 - HTTP placement and preservation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-022-1
+:END:
+- Covers :: [[#ac-022-1][AC022.1 - Quoted paragraph references]] and [[#ac-022-2][AC022.2 - Existing boundaries]].
+- Method :: Existing Go HTTP service tests, using synthetic source files and actual authenticated save requests.
+- Cases :: Standalone and nested quotations, multiple paragraphs, wrapped and lazy-continuation lines, code neighbours, two successive notes, chapter heading and following paragraph; existing headings, tables, Org blocks, note editing/deletion and stale/forged rejection.
+- Expected :: Advertised targets map to the selected paragraph; saved source contains the exact paragraph-end reference, unchanged surrounding syntax and terminal definitions. Refresh permits subsequent writes.
+- Command :: =go test ./internal/preview -run 'TestHTTPBlockAnnotations|TestRT014_[45]_|TestHTTPRepeatedBlockNotesAndHeadingAnchor' -count=1 -timeout=60s=
+
+** RT022.2 - Annotation package preservation :testdef:
+:PROPERTIES:
+:CUSTOM_ID: rt-022-2
+:END:
+- Covers :: [[#ac-022-2][AC022.2 - Existing boundaries]].
+- Method :: =go test ./internal/annotation -count=1 -timeout=60s=.
+- Expected :: Existing codec, source preservation and guarded mutation tests pass.
+
+** OT022.1 - Reported document mapping :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-022-1
+:END:
+- Covers :: [[#ac-022-1][AC022.1 - Quoted paragraph references]].
+- Method :: One temporary Go overlay diagnostic renders the supplied document and counts verified targets without saving to it.
+- Expected :: Twenty targets, including both chapter headings and their paragraphs; original source remains untouched.
+- Bounds :: Local renderer only, no network or browser; 45-second timeout. Personal prose is not retained in repository fixtures.
+
+** OT022.2 - Build and static verification :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-022-2
+:END:
+- Covers :: [[#ac-022-1][AC022.1 - Quoted paragraph references]] and [[#ac-022-2][AC022.2 - Existing boundaries]].
+- Method :: Build, Go vet, formatting, diff check and project-selected Go lint rules on the affected packages.
+- Expected :: Binary builds; checks pass with no new findings. Existing incompatible lint configuration may be migrated only in a temporary copy for this check, retaining every selected rule.
+
+** OT022.3 - Application vulnerability gate :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ot-022-3
+:END:
+- Covers :: [[#ac-022-2][AC022.2 - Existing boundaries]].
+- Method :: =make vulncheck= against committed dependencies.
+- Expected :: No non-exempt reachable vulnerabilities. Existing dependency findings block deployment; this scope does not authorize dependency changes.
+
+** UT022.1 - Browser annotation interaction :testdef:
+:PROPERTIES:
+:CUSTOM_ID: ut-022-1
+:END:
+- Covers :: [[#ac-022-1][AC022.1 - Quoted paragraph references]].
+- Method :: User validation after the audited build is activated: open the reported document, annotate prose and quotations in both chapters, save two notes on one quoted paragraph, then reload.
+- Expected :: Pencil/selection/composer interaction works, references appear at the selected paragraph ends and both notes remain in the endnote pane without disturbing lists.
+
+* Edge Cases
+- Paragraphs with multiple source lines use the *last text segment*, not an intermediate sentence.
+- Quoted code, tables and definitions are not prose paragraphs. Parser classification and existing rendered proof prevent invented inline boundaries.
+- Frontmatter and excluded note definitions retain the existing source scanner guards.
+
+* Solution Design
+:PROPERTIES:
+:CUSTOM_ID: solution-design
+:END:
+Goldmark, already used for native Markdown rendering, supplies source spans for
+paragraphs and tight-list text blocks inside blockquotes. The existing block
+scanner admits these offsets only after its frontmatter, footnote and literal
+exclusions. References use ordinary inline boundaries, shared by temporary proof
+and guarded saves. The after-quotation insertion branch is retired for Markdown.
+The DOM verifier and browser's nearest-paragraph targeting are unchanged.
+
+A parser pass avoids reimplementing quotation/list nesting and excludes quoted
+literal blocks. No dependency, endpoint, storage format or browser code is added.
+The change is bounded by the existing source budget and renderer deadline.
+
+** Security impact
+Existing capability, origin, revision, source-root and atomic-write checks remain
+in force. Temporary probe markers are never persisted. Dependency scanning remains
+a delivery prerequisite; unrelated dependency upgrades require separate authority.
+
+* Delivery Handoff
+:PROPERTIES:
+:CUSTOM_ID: delivery-handoff
+:END:
+- Evidence :: [[file:validation.org][Validation results]] and [[file:audits.yaml][Review record]].
+- Documentation :: Annotation guide and architecture describe paragraph-end quotation placement and retain the superseded whole-quotation contract as history.
+- Sequence :: Preserve recorded RED, settle selected checks, pass delivery review, reconcile retrospective definition review, then obtain browser validation and closure.
+- Activation :: Building does not replace a running service. No service restart is included in this change's recorded execution.
